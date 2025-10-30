@@ -16,14 +16,15 @@ void Map::GenerateSimple()
 	{
 		for (int x = 0; x < width; ++x)
 		{
-			int idx = Index(x, y);
 			int r = dist(rng);
 
-			if (r < 70) m_tiles[idx].setTerrain(Tile::Terrain::Plain);
-			else if (r < 90) m_tiles[idx].setTerrain(Tile::Terrain::Mountain);
-			else m_tiles[idx].setTerrain(Tile::Terrain::River);
+			if (r < 55)       m_tiles[Index(x, y)].setTerrain(Tile::Terrain::Plain);
+			else if (r < 70)  m_tiles[Index(x, y)].setTerrain(Tile::Terrain::Forest);
+			else if (r < 85)  m_tiles[Index(x, y)].setTerrain(Tile::Terrain::Mountain);
+			else if (r < 95)  m_tiles[Index(x, y)].setTerrain(Tile::Terrain::River);
+			else              m_tiles[Index(x, y)].setTerrain(Tile::Terrain::Castle);
 
-			m_tiles[idx].setOccupied(false);
+			m_tiles[Index(x, y)].setOccupied(false);
 		}
 	}
 }

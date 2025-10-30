@@ -13,17 +13,16 @@ private:
 	bool playerTurn = true;
 	int turnCount = 1;
 
+	Array<Point> movableTiles;  // ← 青マス表示用（新追加）
+
 public:
 	GameManager();
-
 	void Update();
 
 private:
 	void UpdatePlayerTurn();
 	void UpdateEnemyTurn();
 	void DrawUI();
-
-	// 🔸 新要素
 	bool AllUnitsActed(bool playerSide) const;
 	void ResetActions();
 };

@@ -1,8 +1,13 @@
 ﻿#include "GameManager.hpp"
 #include "Pathfinding.hpp"
+#include "Map.hpp"
+#include "Unit.hpp"
+#include "Tile.hpp"
 
+
+// GameManager コンストラクタ
 GameManager::GameManager()
-	: map(20, 15)
+	: map(40, 25) // 🟩 サイズ拡大！（旧: 20,15）
 {
 	map.FitToScreen(Scene::Width(), Scene::Height(), uiHeight);
 
@@ -10,13 +15,15 @@ GameManager::GameManager()
 		Unit(U"劉備", 2, 2, true),
 		Unit(U"関羽", 4, 2, true),
 		Unit(U"張飛", 6, 2, true),
-		Unit(U"敵将A", 10, 8, false),
-		Unit(U"敵将B", 12, 9, false)
+		Unit(U"敵将A", 15, 10, false),
+		Unit(U"敵将B", 20, 12, false),
+		Unit(U"敵将C", 25, 14, false)
 	};
 
 	for (auto& u : units)
 		map.At(u.x, u.y).setOccupied(true);
 }
+
 
 // ========================
 // メイン更新
@@ -37,11 +44,65 @@ void GameManager::Update()
 		}
 	}
 
+	// 🌀 スムーズ移動アニメーション
+	bool anyMoving = false;
+	for (auto& u : units)
+	{
+		// 安全チェックを追加
+		if (!u.isMoving) continue;
+		if (u.movePath.size() < 2)
+		{
+			u.isMoving = false;
+			continue;
+		}
+
+		anyMoving = true;
+
+		Vec2 current = Vec2(u.movePath.front());
+		Vec2 next = Vec2(u.movePath[1]);
+
+		u.moveTimer += Scene::DeltaTime() * u.moveSpeed;
+		u.pos = current.lerp(next, u.moveTimer);
+
+		if (u.moveTimer >= 1.0)
+		{
+			u.moveTimer = 0.0;
+			u.movePath.pop_front();
+			u.x = (int)next.x;
+			u.y = (int)next.y;
+			u.pos = next;
+
+			if (u.movePath.size() < 2)
+				u.isMoving = false;
+		}
+
+	}
+
 	// === 以下は既存の描画・フェーズ処理 ===
+	if (anyMoving)
+	{
+		map.Draw();
+		for (auto& u : units)
+			if (u.alive)
+				u.Draw(map.tileSize);
+		return;
+	}
+
+	// === 通常の更新処理 ===
 	map.Draw();
 	for (auto& u : units)
 		if (u.alive)
 			u.Draw(map.tileSize);
+	for (const auto& p : movableTiles)
+	{
+		RectF(p.x * map.tileSize, p.y * map.tileSize, map.tileSize, map.tileSize)
+			.draw(ColorF(0.2, 0.5, 1.0, 0.35));  // 半透明の青
+	}
+	for (auto& u : units)
+	{
+		if (u.alive)
+			u.Draw(map.tileSize);
+	}
 
 	if (playerTurn)
 		UpdatePlayerTurn();
@@ -49,6 +110,7 @@ void GameManager::Update()
 		UpdateEnemyTurn();
 
 	DrawUI();
+
 }
 
 
@@ -57,13 +119,19 @@ void GameManager::Update()
 // ========================
 void GameManager::UpdatePlayerTurn()
 {
+	// 全員行動済み → 敵ターンへ
 	if (AllUnitsActed(true))
 	{
 		playerTurn = false;
+		movableTiles.clear(); // 🟩 ハイライト消去
 		return;
 	}
 
-	// 左クリック：ユニット選択
+	// === 経路探索補助 ===
+	auto inBounds = [&](Point p) { return map.InBounds(p.x, p.y); };
+	auto passable = [&](Point p) { return map.At(p.x, p.y).isPassable(); };
+
+	// === 左クリック：ユニット選択 ===
 	if (MouseL.down())
 	{
 		Point mouse = Cursor::Pos();
@@ -71,6 +139,8 @@ void GameManager::UpdatePlayerTurn()
 		int ty = mouse.y / map.tileSize;
 
 		selectedIndex = -1;
+		movableTiles.clear();
+
 		for (int i = 0; i < (int)units.size(); ++i)
 		{
 			if (!units[i].alive || !units[i].isPlayer) continue;
@@ -78,12 +148,42 @@ void GameManager::UpdatePlayerTurn()
 			{
 				if (units[i].acted) continue;
 				selectedIndex = i;
+
+				// 🟩 移動範囲探索
+				const int range = units[i].moveRange;
+				const Point start = { units[i].x, units[i].y };
+				Array<Point> frontier = { start };
+				Grid<int> cost(map.width, map.height, -1);
+				cost[start.y][start.x] = 0;
+
+				while (!frontier.isEmpty())
+				{
+					Point cur = frontier.front();
+					frontier.pop_front();
+
+					const Point dirs[4] = { {1,0},{-1,0},{0,1},{0,-1} };
+					for (auto d : dirs)
+					{
+						Point nxt = cur + d;
+						if (!inBounds(nxt)) continue;
+						if (!passable(nxt)) continue;
+
+						int newCost = cost[cur.y][cur.x] + 1;
+						if (newCost > range) continue;
+						if (cost[nxt.y][nxt.x] == -1 || newCost < cost[nxt.y][nxt.x])
+						{
+							cost[nxt.y][nxt.x] = newCost;
+							frontier << nxt;
+							movableTiles << nxt;
+						}
+					}
+				}
 				break;
 			}
 		}
 	}
 
-	// 右クリック：移動＋攻撃
+	// === 右クリック：A*移動＋攻撃（既存処理） ===
 	if (MouseR.down() && selectedIndex >= 0)
 	{
 		Point mouse = Cursor::Pos();
@@ -92,38 +192,58 @@ void GameManager::UpdatePlayerTurn()
 		if (!map.InBounds(tx, ty)) return;
 
 		Unit& actor = units[selectedIndex];
-		if (actor.acted) return;
+		if (actor.acted || actor.isMoving) return;
 
-		int dist = std::abs(actor.x - tx) + std::abs(actor.y - ty);
-		if (dist <= 5 && !map.At(tx, ty).occupied())
+		// 🟩 移動範囲外クリックならキャンセル
+		if (!movableTiles.includes(Point{ tx, ty })) return;
+
+		// 経路探索
+		auto path = AStar(Point{ actor.x, actor.y }, Point{ tx, ty }, inBounds, passable);
+		if (path.isEmpty()) return;
+
+		if (path.size() - 1 > actor.moveRange)
+			path.resize(actor.moveRange + 1);
+
+		map.At(actor.x, actor.y).setOccupied(false);
+		map.At(path.back().x, path.back().y).setOccupied(true);
+
+		actor.movePath = path;
+		actor.isMoving = true;
+		actor.moveTimer = 0.0;
+		actor.acted = true;
+		selectedIndex = -1;
+		movableTiles.clear(); // 🟩 ハイライト消去
+		return;
+	}
+
+	// === 移動完了後の攻撃処理（既存） ===
+	for (auto& actor : units)
+	{
+		if (!actor.isPlayer || actor.isMoving) continue;
+		if (actor.acted)
 		{
-			map.At(actor.x, actor.y).setOccupied(false);
-			actor.x = tx;
-			actor.y = ty;
-			map.At(tx, ty).setOccupied(true);
-
 			for (auto& enemy : units)
 			{
 				if (!enemy.alive || enemy.isPlayer) continue;
-				int md = std::abs(enemy.x - actor.x) + std::abs(enemy.y - actor.y);
+				int md = Abs(enemy.x - actor.x) + Abs(enemy.y - actor.y);
 				if (md == 1)
 				{
 					enemy.soldiers -= actor.atk;
-					RectF(enemy.x * map.tileSize, enemy.y * map.tileSize, map.tileSize, map.tileSize)
-						.draw(ColorF(1.0, 0.3, 0.3, 0.6));
+					enemy.lastDamage = actor.atk;
+					enemy.damageTimer = 0.0;
 					if (enemy.soldiers <= 0)
 					{
+						enemy.soldiers = 0;
 						enemy.alive = false;
 						map.At(enemy.x, enemy.y).setOccupied(false);
 					}
 				}
 			}
-
-			actor.acted = true;
-			selectedIndex = -1;
 		}
 	}
 }
+
+
 
 // ========================
 // 敵ターン（AI行動フェーズ）
@@ -143,20 +263,23 @@ void GameManager::UpdateEnemyTurn()
 		return;
 	}
 
-	// 敵の行動間隔（テンポ調整）
+	// 敵の行動テンポ（移動間隔）
 	if (timer < 0.5) return;
 	timer = 0;
 
-	
+	// 経路探索のための関数
 	auto inBounds = [&](Point p) { return map.InBounds(p.x, p.y); };
 	auto passable = [&](Point p) { return map.At(p.x, p.y).isPassable(); };
 
-	// 敵を順番に処理
 	for (auto& enemy : units)
 	{
+		// === 無効ユニットをスキップ ===
 		if (!enemy.alive || enemy.isPlayer || enemy.acted) continue;
+		if (enemy.isMoving) return; // 既に移動中なら次のフレームで処理
 
-		
+		//----------------------------------------
+		// 1️⃣ 隣接攻撃チェック
+		//----------------------------------------
 		for (auto& player : units)
 		{
 			if (!player.alive || !player.isPlayer) continue;
@@ -164,20 +287,24 @@ void GameManager::UpdateEnemyTurn()
 			if (md == 1)
 			{
 				player.soldiers -= enemy.atk;
-				RectF(player.x * map.tileSize, player.y * map.tileSize, map.tileSize, map.tileSize)
-					.draw(ColorF(1.0, 0.25, 0.25, 0.7));
+				player.lastDamage = enemy.atk;
+				player.damageTimer = 0.0;
 
 				if (player.soldiers <= 0)
 				{
+					player.soldiers = 0;
 					player.alive = false;
 					map.At(player.x, player.y).setOccupied(false);
 				}
+
 				enemy.acted = true;
 				return;
 			}
 		}
 
-		
+		//----------------------------------------
+		// 2️⃣ 攻撃できない → 最も近いプレイヤーを選択
+		//----------------------------------------
 		Unit* target = nullptr;
 		int bestScore = 999999;
 		for (auto& player : units)
@@ -193,7 +320,9 @@ void GameManager::UpdateEnemyTurn()
 		}
 		if (!target) { enemy.acted = true; continue; }
 
-		
+		//----------------------------------------
+		// 3️⃣ ターゲット隣接マス候補
+		//----------------------------------------
 		Array<Point> adjGoals;
 		const Point tgt = { target->x, target->y };
 		const Point dirs[4] = { {1,0},{-1,0},{0,1},{0,-1} };
@@ -204,59 +333,52 @@ void GameManager::UpdateEnemyTurn()
 			if (!passable(g)) continue;
 			adjGoals << g;
 		}
+
 		if (adjGoals.isEmpty()) { enemy.acted = true; continue; }
 
-		
+		//----------------------------------------
+		// 4️⃣ A*経路探索
+		//----------------------------------------
 		Array<Point> bestPath;
-		int bestLen = 99999;
+		int bestLen = 999999;
 		for (auto g : adjGoals)
 		{
 			auto path = AStar(Point{ enemy.x, enemy.y }, g, inBounds, passable);
 			if (!path.isEmpty() && path.size() < bestLen)
 			{
-				bestLen = static_cast<int>(path.size());
+				bestLen = (int)path.size();
 				bestPath = std::move(path);
 			}
 		}
 
-		
-		if (!bestPath.isEmpty() && bestPath.size() >= 2)
+		if (bestPath.isEmpty())
 		{
-			int steps = Min(enemy.moveRange, (int)bestPath.size() - 1); // ←移動力反映
-			Point next = bestPath[steps];
-
-			if (inBounds(next) && passable(next))
-			{
-				map.At(enemy.x, enemy.y).setOccupied(false);
-				enemy.x = next.x;
-				enemy.y = next.y;
-				map.At(enemy.x, enemy.y).setOccupied(true);
-			}
+			enemy.acted = true;
+			continue;
 		}
 
-		
-		for (auto& player : units)
-		{
-			if (!player.alive || !player.isPlayer) continue;
-			int md = Abs(player.x - enemy.x) + Abs(player.y - enemy.y);
-			if (md == 1)
-			{
-				player.soldiers -= enemy.atk;
-				RectF(player.x * map.tileSize, player.y * map.tileSize, map.tileSize, map.tileSize)
-					.draw(ColorF(1.0, 0.25, 0.25, 0.7));
+		//----------------------------------------
+		// 5️⃣ 経路が見つかった → 移動準備
+		//----------------------------------------
+		if (bestPath.size() > enemy.moveRange + 1)
+			bestPath.resize(enemy.moveRange + 1);
 
-				if (player.soldiers <= 0)
-				{
-					player.alive = false;
-					map.At(player.x, player.y).setOccupied(false);
-				}
-			}
-		}
+		// 経路保存・占有予約・アニメーション開始
+		map.At(enemy.x, enemy.y).setOccupied(false);
+		map.At(bestPath.back().x, bestPath.back().y).setOccupied(true);
 
+		enemy.movePath = bestPath;
+		enemy.isMoving = true;
+		enemy.moveTimer = 0.0;
+
+		// 行動済みにして移動開始
 		enemy.acted = true;
-		return; // この敵の行動を終了（テンポ調整）
+		return; // この敵の行動は移動フェーズへ
 	}
 }
+
+		// 4️⃣ A*経路探索で最短経*
+
 
 
 // ========================

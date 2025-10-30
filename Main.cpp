@@ -1,25 +1,22 @@
 ﻿# include <Siv3D.hpp>
-# include "GameManager.hpp"
+# include "GameSceneManager.hpp"
+# include "WorldMapScene.hpp"
+# include "CityScene.hpp"
+# include "BattleScene.hpp"
 
 void Main()
 {
-	// ウィンドウ設定
-	Window::SetTitle(U"三國志風 戦略シミュレーション");
 	Window::SetFullscreen(true);
-
-	// フォント登録
 	FontAsset::Register(U"small", 14);
 
-	// ゲームマネージャ生成
-	GameManager game;
+	GameSceneManager::setScene(std::make_unique<WorldMapScene>());
 
-	// メインループ
 	while (System::Update())
 	{
-		// 背景クリア（毎フレーム描画）
-		Scene::SetBackground(ColorF(0.15, 0.3, 0.15));
+		// ESCで終了しないようにする
+		if (KeyEscape.down()) continue;
 
-		// 1フレーム分のゲーム更新＋描画
-		game.Update();
+		GameSceneManager::update();
+		GameSceneManager::draw();
 	}
 }
