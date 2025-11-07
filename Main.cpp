@@ -1,25 +1,19 @@
 ﻿# include <Siv3D.hpp>
 # include "GameSceneManager.hpp"
-# include "WorldMapScene.hpp"
-# include "CityScene.hpp"
-# include "BattleScene.hpp"
 
 void Main()
 {
-	Window::SetFullscreen(true);
-	FontAsset::Register(U"small", 14);
+	Window::Resize(1280, 720);
+	Scene::SetBackground(ColorF{ 0.1, 0.1, 0.15 });
 
-	GameSceneManager::setScene(std::make_unique<WorldMapScene>());
+	// ✅ インスタンスを生成して使う
+	FontAsset::Register(U"small", 24, Typeface::Medium);
+
+	GameSceneManager game;
 
 	while (System::Update())
 	{
-		// ← ここ！ 毎フレーム左上のPrintログを全消去
-		ClearPrint();
-
-		// ESCで終了しない
-		if (KeyEscape.down()) continue;
-
-		GameSceneManager::update();
-		GameSceneManager::draw();
+		game.update();
+		game.draw();
 	}
 }

@@ -1,43 +1,48 @@
 ﻿#include "GameSceneManager.hpp"
+#include "FactionSelectScene.hpp"
 #include "WorldMapScene.hpp"
 #include "CityScene.hpp"
-#include "BattleScene.hpp"
+
+GameSceneManager::GameSceneManager()
+{
+	m_currentName = U"FactionSelectScene";
+	m_currentScene = std::make_unique<FactionSelectScene>();
+}
 
 void GameSceneManager::update()
 {
-	if (nextScene.starts_with(U"City:"))
+	if (!m_currentScene) return;
+	m_currentScene->update();
+
+	if (m_currentScene->isSceneEnd())
 	{
-		String cityName = nextScene.substr(5);
-		Print << U"🌆 " << cityName << U" の情報画面を開く";
+		const String next = m_currentScene->nextSceneName();
 
-		CityData data;
-		data.name = cityName;
-		data.gold = 500;
-		data.food = 400;
-		data.troops = 100;
-		data.ruler = U"所属不明";
-		data.color = Palette::Gray;
+		if (m_currentName == U"FactionSelectScene")
+		{
+			auto* fs = dynamic_cast<FactionSelectScene*>(m_currentScene.get());
+			if (fs)
+			{
+				Faction selected = fs->getSelectedFaction();
+				m_currentScene = std::make_unique<WorldMapScene>(selected);
+				m_currentName = U"WorldMapScene";
+				return;
+			}
+		}
 
-		setScene(std::make_unique<CityScene>(data));
+		if (next.starts_with(U"City:"))
+		{
+			String city = next.substr(5);
+			m_currentScene = std::make_unique<CityScene>(city);
+			m_currentName = U"CityScene";
+			return;
+		}
+
 	}
-	else if (nextScene.starts_with(U"Battle:"))
-	{
-		String cityName = nextScene.substr(7);
-		Print << U"🗡 " << cityName << U" から出撃！";
-		setScene(std::make_unique<BattleScene>());
-	}
-
-	else if (nextScene == U"World")
-	{
-		setScene(std::make_unique<WorldMapScene>());
-	}
-
-	if (currentScene)
-		currentScene->update();
 }
 
-void GameSceneManager::draw()
+void GameSceneManager::draw() const
 {
-	if (currentScene)
-		currentScene->draw();
+	if (m_currentScene)
+		m_currentScene->draw();
 }

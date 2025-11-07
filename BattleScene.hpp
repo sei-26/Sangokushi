@@ -54,10 +54,7 @@ public:
 		else
 		{
 			endTimer += Scene::DeltaTime();
-			if (endTimer >= 2.0)
-			{
-				GameSceneManager::SetNextScene(U"World");
-			}
+			if (endTimer >= 2.0){}
 		}
 	}
 

@@ -156,6 +156,12 @@
     <ClCompile Include="GameSceneManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FactionSelectScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldMapScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\icon.ico">
@@ -852,6 +858,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WorldMapScene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FactionSelectScene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Faction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
