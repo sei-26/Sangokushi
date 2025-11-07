@@ -13,7 +13,10 @@ void Main()
 
 	while (System::Update())
 	{
-		// ESCで終了しないようにする
+		// ← ここ！ 毎フレーム左上のPrintログを全消去
+		ClearPrint();
+
+		// ESCで終了しない
 		if (KeyEscape.down()) continue;
 
 		GameSceneManager::update();

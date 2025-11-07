@@ -1,37 +1,88 @@
 ﻿#pragma once
+#include <algorithm>
 #include "SceneBase.hpp"
 #include "GameSceneManager.hpp"
-#include "GameManager.hpp"  // ← 戦闘システムを呼び出す
-#include "CityData.hpp"
+#include "GameManager.hpp"  // ← enum BattleResult をここから使う
 
 class BattleScene : public SceneBase
 {
 private:
-	GameManager game;  // 🟢 実際の戦闘を管理するクラス
-	bool battleEnded = false;
+	GameManager game;
+
+	BattleResult result = BattleResult::None; // ✅ OK: GameManager側のenumを使用
+	bool isEnding = false;
+	double endTimer = 0.0;
+	Audio bgm;
+
+	// 勝敗判定
+	BattleResult calcResult() const
+	{
+		const auto& units = game.GetUnits();
+		bool anyEnemyAlive = std::any_of(units.begin(), units.end(),
+								[](const Unit& u) { return !u.isPlayer && u.alive; });
+		bool anyPlayerAlive = std::any_of(units.begin(), units.end(),
+								[](const Unit& u) { return  u.isPlayer && u.alive; });
+
+		if (!anyEnemyAlive && anyPlayerAlive)  return BattleResult::Victory;
+		if (!anyPlayerAlive && anyEnemyAlive)  return BattleResult::Defeat;
+		if (!anyEnemyAlive && !anyPlayerAlive) return BattleResult::Defeat;
+		return BattleResult::None;
+	}
 
 public:
 	BattleScene()
 	{
-		Print << U"⚔️ 戦闘シーン開始 (GameManager使用)";
+		ClearPrint();
+		bgm = Audio{ U"example/bgm_battle.mp3", Loop::Yes };
+		bgm.play();
 	}
 
 	void update() override
 	{
-		// 🟢 GameManagerの更新（戦闘ロジック処理）
-		game.Update();
-
-		// 🟡 戦闘終了 or 戻る操作
-		if (MouseR.down())
+		if (!isEnding)
 		{
-			battleEnded = true;
-			GameSceneManager::SetNextScene(U"World");
+			game.Update();
+
+			BattleResult r = calcResult();
+			if (r != BattleResult::None)
+			{
+				result = r;
+				isEnding = true;
+				bgm.stop();
+			}
+		}
+		else
+		{
+			endTimer += Scene::DeltaTime();
+			if (endTimer >= 2.0)
+			{
+				GameSceneManager::SetNextScene(U"World");
+			}
 		}
 	}
 
 	void draw() const override
 	{
-		// 🟢 GameManagerが内部で描画を担当
-		// （もし別UIを重ねたいならここに追加）
+		if (isEnding)
+		{
+			String msg;
+			Color col = Palette::White;
+			if (result == BattleResult::Victory)
+			{
+				msg = U"勝利！";
+				col = Palette::Yellow;
+			}
+			else if (result == BattleResult::Defeat)
+			{
+				msg = U"敗北…";
+				col = Palette::Gray;
+			}
+
+			RectF(Scene::CenterF().movedBy(-150, -60), 300, 120)
+				.draw(ColorF(0, 0, 0, 0.6))
+				.drawFrame(2, Palette::White);
+
+			FontAsset(U"small")(msg).drawAt(Scene::Center(), col);
+		}
 	}
 };
