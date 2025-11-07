@@ -5,9 +5,9 @@ FactionSelectScene::FactionSelectScene()
 	, m_font(28)
 {
 	m_factions = {
-		{ U"劉備軍", Palette::Green, { U"新野" }, {} },
-		{ U"曹操軍", Palette::Blue,  { U"許昌" }, {} },
-		{ U"孫権軍", Palette::Red,   { U"建業" }, {} },
+		{ U"劉備", Palette::Green, { U"新野" }, {} },
+		{ U"曹操", Palette::Blue,  { U"許昌" }, {} },
+		{ U"孫堅", Palette::Red,   { U"寿春" }, {} },
 	};
 }
 

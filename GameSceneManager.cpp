@@ -32,8 +32,8 @@ void GameSceneManager::update()
 
 		if (next.starts_with(U"City:"))
 		{
-			String city = next.substr(5);
-			m_currentScene = std::make_unique<CityScene>(city);
+			String cityName = next.substr(5);
+			m_currentScene = std::make_unique<CityScene>(cityName);
 			m_currentName = U"CityScene";
 			return;
 		}
