@@ -4,8 +4,8 @@
 class SceneBase
 {
 protected:
-	bool m_isEnd = false;      // このシーンが終了したか？
-	String m_nextScene = U"";  // 次のシーン名
+	bool m_isEnd = false;
+	String m_nextScene; // 例: "WorldMapScene", "City:新野"
 
 public:
 	virtual ~SceneBase() = default;
@@ -13,5 +13,5 @@ public:
 	virtual void draw() const = 0;
 
 	bool isSceneEnd() const { return m_isEnd; }
-	String nextSceneName() const { return m_nextScene; }
+	const String& nextSceneName() const { return m_nextScene; }
 };

@@ -1,14 +1,17 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
-#include "CityData.hpp"
-#include "Unit.hpp"
 
 struct Faction
 {
 	String name;
-	Color color;
+	ColorF color;
 	Array<String> cities;
-	Array<Unit> units;
-	int gold = 1000;
-	int food = 1000;
+	Array<String> officers;
+
+	Faction() = default;
+
+	Faction(const String& n, const ColorF& c,
+			const Array<String>& ci, const Array<String>& of)
+		: name(n), color(c), cities(ci), officers(of) {
+	}
 };

@@ -9,8 +9,8 @@ private:
 	int m_cursor = 0;
 	Faction m_selected;
 
-	Font m_titleFont;  // ← 追加
-	Font m_font;       // ← 追加
+	Font m_titleFont;
+	Font m_font;
 
 public:
 	FactionSelectScene();
