@@ -1,67 +1,96 @@
 ﻿#include "WorldMapScene.hpp"
+#include "CityScene.hpp"
 
-WorldMapScene::WorldMapScene(const Faction& faction)
+// =======================================================
+//  コンストラクタ（2 引数版）
+// =======================================================
+WorldMapScene::WorldMapScene(const Faction& faction, const Array<CityData>& allCities)
 	: m_playerFaction(faction)
+	, m_cities(allCities)      // ★ 全都市データをコピー
 {
-	m_cities = {
-		{ U"洛陽", Vec2(200, 180), ColorF{Palette::Red},    800, 600, 200, 80, U"曹操" },
-		{ U"許昌", Vec2(400, 240), ColorF{Palette::Orange}, 600, 500, 150, 70, U"夏侯惇" },
-		{ U"新野", Vec2(300, 380), ColorF{Palette::Green},  500, 400, 100, 75, U"劉備" },
-		{ U"寿春", Vec2(500, 400), ColorF{Palette::Blue},   700, 500, 180, 85, U"孫堅" },
-		{ U"長安", Vec2(100, 250), ColorF{Palette::Purple}, 900, 800, 250, 60, U"董卓" },
-	};
+	m_selectedCity = none;
+	m_hasSelection = false;
+	m_hovered = -1;
 }
 
+
+// =======================================================
+//  update()
+// =======================================================
 void WorldMapScene::update()
 {
 	m_hovered = -1;
 
-	for (int i = 0; i < static_cast<int>(m_cities.size()); ++i)
+	for (int i = 0; i < m_cities.size(); ++i)
 	{
-		const Vec2& pos = m_cities[i].pos;
-		if (Circle(pos, 20).mouseOver())
+		const auto& c = m_cities[i];
+
+		if (Circle(c.pos, 20).mouseOver())
 		{
 			m_hovered = i;
 
-			if (MouseL.down() && m_cities[i].ruler == m_playerFaction.name)
+			// 自勢力の都市だけ選択可能
+			if (MouseL.down() && c.owner == m_playerFaction.name)
 			{
-				m_selectedCity = m_cities[i];
+				m_selectedCity = c;     // Optional に保存
+				m_hasSelection = true;
+
 				m_isEnd = true;
-				m_nextScene = U"City:" + m_cities[i].name;
+				m_nextScene = U"City";  // CityScene へ
 				return;
 			}
 		}
 	}
-
-	if (MouseR.down())
-	{
-		m_isEnd = true;
-		m_nextScene = U"FactionSelectScene";
-	}
 }
 
+
+// =======================================================
+//  draw()
+// =======================================================
 void WorldMapScene::draw() const
 {
-	Scene::SetBackground(ColorF{ 0.2, 0.3, 0.2 });
+	Scene::SetBackground(ColorF{ 0.2, 0.25, 0.2 });
 
+	// ----------------------------
+	//  ● 都市の描画
+	// ----------------------------
 	for (const auto& c : m_cities)
 	{
-		ColorF col = (c.ruler == m_playerFaction.name)
-			? ColorF{ m_playerFaction.color }
-		: ColorF{ c.color, 0.4 };
-		Circle(c.pos, 16).draw(col);
-		FontAsset(U"small")(c.name).drawAt(c.pos.x, c.pos.y - 25, Palette::White);
+		bool myCity = (c.owner == m_playerFaction.name);
+
+		// 色：自軍は勢力色、それ以外は薄色
+		ColorF dotColor = myCity
+			? m_playerFaction.color
+			: ColorF(c.color, 0.4);
+
+		Circle{ c.pos, 16 }.draw(dotColor);
+		FontAsset(U"small")(c.name).drawAt(c.pos.x, c.pos.y - 25);
 	}
 
+	// ----------------------------
+	//  ● 都市にカーソルが乗った時の情報
+	// ----------------------------
 	if (m_hovered >= 0)
 	{
 		const auto& c = m_cities[m_hovered];
-		RectF(20, 20, 240, 110).draw(ColorF(0, 0, 0, 0.6));
-		FontAsset(U"small")(Format(U"🏰 {}（{}）", c.name, c.ruler)).draw(30, 30, Palette::Yellow);
-		FontAsset(U"small")(Format(U"金:{} 兵:{} 食:{} 治安:{}", c.gold, c.troops, c.food, c.order)).draw(30, 58, Palette::White);
-		if (c.ruler == m_playerFaction.name)
-			FontAsset(U"small")(U"左クリックで城に入る").draw(30, 86, Palette::Skyblue);
-		else
-			FontAsset(U"small")(U"他勢力の都市").draw(30, 86, Palette::Gray);
+
+		RectF(20, 20, 350, 140).draw(ColorF(0, 0, 0, 0.6));
+
+		FontAsset(U"small")(U"都市: ").draw(30, 30);
+		FontAsset(U"small")(c.name).draw(120, 30);
+
+		FontAsset(U"small")(U"統治者: ").draw(30, 55);
+		FontAsset(U"small")(c.owner).draw(120, 55);
+
+		FontAsset(U"small")(U"金: " + Format(c.gold)).draw(30, 80);
+		FontAsset(U"small")(U"兵: " + Format(c.troops)).draw(150, 80);
+
+		FontAsset(U"small")(U"食料: " + Format(c.food)).draw(30, 105);
+		FontAsset(U"small")(U"治安: " + Format(c.order)).draw(150, 105);
+
+		bool myCity = (c.owner == m_playerFaction.name);
+		FontAsset(U"small")(
+			myCity ? U"左クリックで内政画面へ" : U"他勢力の都市"
+		).draw(30, 130, Palette::White);
 	}
 }

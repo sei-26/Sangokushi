@@ -872,5 +872,8 @@
     <ClInclude Include="GameManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Advisor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

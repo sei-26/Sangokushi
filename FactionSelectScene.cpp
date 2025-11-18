@@ -1,13 +1,36 @@
 ﻿#include "FactionSelectScene.hpp"
 
 FactionSelectScene::FactionSelectScene()
-	: m_titleFont(36)
-	, m_font(28)
 {
+	// 必ず Main.cpp で FontAsset::Register を済ませてある前提
+
+	// 勢力リスト
 	m_factions = {
-		{ U"劉備", ColorF{Palette::Green}, { U"新野" }, {} },
-		{ U"曹操", ColorF{Palette::Blue},  { U"許昌" }, {} },
-		{ U"孫堅", ColorF{Palette::Red},   { U"寿春" }, {} },
+		Faction{
+	U"劉備",
+	ColorF(Palette::Green),
+	{},        // 空の cities
+	{}         // 空の officers
+},
+Faction{
+	U"曹操",
+	ColorF(Palette::Red),
+	{},
+	{}
+},
+Faction{
+	U"孫堅",
+	ColorF(Palette::Yellow),
+	{},
+	{}
+},
+Faction{
+	U"董卓",
+	ColorF(Palette::Purple),
+	{},
+	{}
+}
+
 	};
 }
 
@@ -17,10 +40,14 @@ void FactionSelectScene::update()
 	{
 		for (size_t i = 0; i < m_factions.size(); ++i)
 		{
-			Rect rect(Scene::Center().x - 100, 230 + static_cast<int>(i) * 60, 200, 50);
+			// ボタン位置
+			Rect rect(Scene::Center().x - 100,
+					  230 + static_cast<int>(i) * 60,
+					  200, 50);
+
 			if (rect.mouseOver())
 			{
-				m_selected = m_factions[i];
+				m_selectedIndex = static_cast<int>(i);
 				m_isEnd = true;
 				m_nextScene = U"WorldMapScene";
 				return;
@@ -32,13 +59,24 @@ void FactionSelectScene::update()
 void FactionSelectScene::draw() const
 {
 	Scene::SetBackground(ColorF{ 0.1, 0.1, 0.15 });
-	m_titleFont(U"勢力を選択してください").drawAt(Scene::Center().x, 100, Palette::Yellow);
 
+	// タイトル
+	FontAsset(U"title")(U"勢力を選択してください")
+		.drawAt(Scene::Center().x, 100, Palette::Yellow);
+
+	// 勢力リスト描画
 	for (size_t i = 0; i < m_factions.size(); ++i)
 	{
-		Rect rect(Scene::Center().x - 100, 230 + static_cast<int>(i) * 60, 200, 50);
-		ColorF c = rect.mouseOver() ? m_factions[i].color : ColorF{ 0.4 };
-		rect.draw(c);
-		m_font(m_factions[i].name).drawAt(rect.center(), Palette::White);
+		Rect rect(Scene::Center().x - 100,
+				  230 + static_cast<int>(i) * 60,
+				  200, 50);
+
+		bool hovered = rect.mouseOver();
+
+		rect.draw(hovered ? ColorF(m_factions[i].color, 0.8)
+						  : ColorF(0.4));
+
+		FontAsset(U"small")(m_factions[i].name)
+			.drawAt(rect.center(), Palette::White);
 	}
 }

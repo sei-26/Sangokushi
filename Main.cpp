@@ -4,14 +4,18 @@
 void Main()
 {
 	Window::Resize(1280, 720);
-	Scene::SetBackground(ColorF{ 0.1, 0.1, 0.15 });
-	FontAsset::Register(U"small", 24, Typeface::Medium);
+	Scene::SetBackground(ColorF{ 0.2, 0.2, 0.2 });
 
-	GameSceneManager game;
+	// ★フォント登録を先頭に移動（絶対最初に必要）
+	FontAsset::Register(U"small", 22);
+	FontAsset::Register(U"title", 36);
+
+	// ★ここからゲーム開始
+	GameSceneManager manager;
 
 	while (System::Update())
 	{
-		game.update();
-		game.draw();
+		manager.update();
+		manager.draw();
 	}
 }

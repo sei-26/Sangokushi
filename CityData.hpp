@@ -3,21 +3,43 @@
 
 struct CityData
 {
+	// ★ メンバの順番（これに合わせて初期化順も揃える）
 	String name;
-	Vec2   pos;
-	ColorF color;
+	Vec2 pos;
+	Color color;
 
 	int gold;
 	int troops;
 	int food;
-	int order;   // 治安(0-100)
-	String ruler;
+	int order;
 
-	CityData() = default;
+	int agriculture;
+	int commerce;
+	int barracks;
 
-	CityData(const String& n, const Vec2& p, const ColorF& c,
-			 int g, int t, int f, int o, const String& r)
-		: name(n), pos(p), color(c),
-		gold(g), troops(t), food(f), order(o), ruler(r) {
+	String owner;
+
+	CityData(
+		const String& name,
+		const Vec2& pos,
+		const Color& color,
+		int gold, int troops, int food, int order,
+		const String& owner,
+		int agriculture = 1,
+		int commerce = 1,
+		int barracks = 1
+	)
+		: name(name)
+		, pos(pos)
+		, color(color)
+		, gold(gold)
+		, troops(troops)
+		, food(food)
+		, order(order)
+		, agriculture(agriculture)
+		, commerce(commerce)
+		, barracks(barracks)
+		, owner(owner)    // ★ 最後に owner を確実にコピー！
+	{
 	}
 };

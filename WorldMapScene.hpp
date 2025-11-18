@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <Siv3D.hpp>
 #include "SceneBase.hpp"
 #include "CityData.hpp"
 #include "Faction.hpp"
@@ -6,17 +7,21 @@
 class WorldMapScene : public SceneBase
 {
 private:
-	Array<CityData> m_cities;
 	Faction m_playerFaction;
+
+	Array<CityData> m_cities;              // 全都市データ（コピー or 参照）
+	Optional<CityData> m_selectedCity;     // 選択された都市
+	bool m_hasSelection = false;
+
 	int m_hovered = -1;
 
-	CityData m_selectedCity; // （今回は未使用。将来 CityData 丸渡し用）
-
 public:
-	explicit WorldMapScene(const Faction& faction);
+	// ★ 2 引数版（必須）
+	WorldMapScene(const Faction& faction, const Array<CityData>& allCities);
 
 	void update() override;
 	void draw() const override;
 
-	const CityData& getSelectedCity() const { return m_selectedCity; } // 将来用
+	bool hasSelectedCity() const { return m_hasSelection; }
+	Optional<CityData> getSelectedCity() const { return m_selectedCity; }
 };

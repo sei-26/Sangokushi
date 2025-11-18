@@ -4,7 +4,7 @@
 struct Faction
 {
 	String name;
-	ColorF color;
+	ColorF color = Palette::White;   // 初期化
 	Array<String> cities;
 	Array<String> officers;
 
@@ -12,6 +12,10 @@ struct Faction
 
 	Faction(const String& n, const ColorF& c,
 			const Array<String>& ci, const Array<String>& of)
-		: name(n), color(c), cities(ci), officers(of) {
+		: name(n)
+		, color(c)
+		, cities(ci)
+		, officers(of)
+	{
 	}
 };
