@@ -27,6 +27,10 @@ GameSceneManager::GameSceneManager()
 				 700,500,180,85, U"孫堅"),
 		CityData(U"長安", Vec2(100,250), Palette::Purple,
 				 900,800,250,60, U"董卓"),
+		CityData(U"北海", Vec2(600,150), Palette::Cyan,
+				 650,450,160,70, U"公孫瓚"),
+		CityData(U"業", Vec2(750,300), Palette::Yellow,
+				 720,480,170,65, U"袁紹"),
 	};
 }
 

@@ -7,31 +7,42 @@ FactionSelectScene::FactionSelectScene()
 	// 勢力リスト
 	m_factions = {
 		Faction{
-	U"劉備",
-	ColorF(Palette::Green),
-	{},        // 空の cities
-	{}         // 空の officers
-},
-Faction{
-	U"曹操",
-	ColorF(Palette::Red),
-	{},
-	{}
-},
-Faction{
-	U"孫堅",
-	ColorF(Palette::Yellow),
-	{},
-	{}
-},
-Faction{
-	U"董卓",
-	ColorF(Palette::Purple),
-	{},
-	{}
-}
-
-	};
+			U"劉備",
+			ColorF(Palette::Green),
+			{},        // 空の cities
+			{}         // 空の officers
+		},
+		Faction{
+			U"曹操",
+			ColorF(Palette::Red),
+			{},
+			{}
+		},
+		Faction{
+			U"孫堅",
+			ColorF(Palette::Yellow),
+			{},
+			{}
+		},
+		Faction{
+			U"董卓",
+			ColorF(Palette::Purple),
+			{},
+			{}
+		},
+		Faction{
+			U"袁紹",
+			ColorF(Palette::Blue),
+			{},
+			{}
+		},
+		Faction{
+			U"公孫瓚",
+			ColorF(Palette::Blue),
+			{},
+			{}
+		},
+	}; 
 }
 
 void FactionSelectScene::update()

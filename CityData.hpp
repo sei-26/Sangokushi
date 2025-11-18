@@ -39,7 +39,7 @@ struct CityData
 		, agriculture(agriculture)
 		, commerce(commerce)
 		, barracks(barracks)
-		, owner(owner)    // ★ 最後に owner を確実にコピー！
+		, owner(owner)    
 	{
 	}
 };
