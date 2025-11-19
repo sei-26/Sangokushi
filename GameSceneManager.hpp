@@ -5,6 +5,8 @@
 #include "Faction.hpp"
 #include "Advisor.hpp"
 #include "CityData.hpp"
+#include "WorldMapScene.hpp"
+#include "CityScene.hpp"
 
 class GameSceneManager
 {

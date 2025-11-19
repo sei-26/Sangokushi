@@ -115,6 +115,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArmyConfigScene.cpp" />
+    <ClCompile Include="AttackSelectScene.cpp" />
     <ClCompile Include="BattleScene.cpp" />
     <ClCompile Include="CityScene.cpp" />
     <ClCompile Include="FactionSelectScene.cpp" />
@@ -127,6 +129,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TurnEndScene.cpp" />
     <ClCompile Include="WorldMapScene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -334,6 +337,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Advisor.hpp" />
+    <ClInclude Include="ArmyConfigScene.hpp" />
+    <ClInclude Include="AttackSelectScene.hpp" />
     <ClInclude Include="BattleScene.hpp" />
     <ClInclude Include="CityData.hpp" />
     <ClInclude Include="CityScene.hpp" />
@@ -346,6 +351,7 @@
     <ClInclude Include="GameSceneManager.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Tile.hpp" />
+    <ClInclude Include="TurnEndScene.hpp" />
     <ClInclude Include="Unit.hpp" />
     <ClInclude Include="WorldMapScene.hpp" />
   </ItemGroup>

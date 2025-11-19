@@ -1,5 +1,6 @@
 ﻿#include "CityScene.hpp"
-
+#include <Siv3D.hpp>
+#include "AttackSelectScene.hpp"
 CityScene::CityScene(const CityData& city, const Advisor& adv)
 	: m_city(city)
 	, m_advisor(adv)
@@ -57,6 +58,14 @@ void CityScene::update()
 		m_nextScene = U"TurnEnd";
 		return;
 	}
+	else if (m_btnAttack.leftClicked())
+	{
+		m_message = U"諸葛亮「出陣の準備をいたしましょう」";
+
+		m_isEnd = true;
+		m_nextScene = U"AttackSelectScene";
+		return;
+	}
 
 	// ================================
 	//  戻るボタン（最後に判定）
@@ -97,12 +106,15 @@ void CityScene::draw() const
 	m_btnCom.draw(Palette::Darkcyan);
 	m_btnTrain.draw(Palette::Steelblue);
 	m_btnOrder.draw(Palette::Darkorange);
+	m_btnAttack.draw(Palette::Firebrick);
+	
+
 
 	m_font(U"農業強化").drawAt(m_btnAgr.center(), Palette::White);
 	m_font(U"商業強化").drawAt(m_btnCom.center(), Palette::White);
 	m_font(U"訓練").drawAt(m_btnTrain.center(), Palette::White);
 	m_font(U"治安維持").drawAt(m_btnOrder.center(), Palette::White);
-
+	m_font(U"進攻").drawAt(m_btnAttack.center(), Palette::White);
 	// ================================
 	//  戻るボタン
 	// ================================

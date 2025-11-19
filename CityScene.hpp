@@ -17,11 +17,19 @@ private:
 	RectF m_btnCom{ 500, 160, 200, 40 };
 	RectF m_btnTrain{ 500, 220, 200, 40 };
 	RectF m_btnOrder{ 500, 280, 200, 40 };
-	RectF m_btnBack{ 1100, 600, 150, 50 };
 
+	// ★ 進攻ボタン（治安維持のすぐ下）
+	RectF m_btnAttack{ 500, 340, 200, 40 };
+
+	RectF m_btnBack{ 1100, 600, 150, 50 };
+	
 public:
 	CityScene(const CityData& city, const Advisor& adv);
+	
 
 	void update() override;
 	void draw() const override;
+
+
+	CityData getCity() const { return m_city; }
 };

@@ -17,10 +17,18 @@ struct Unit {
 	Unit() = default;
 
 	Unit(const String& n, int px, int py, bool player)
-		: name(n), x(px), y(py), isPlayer(player) {
-		pos = Vec2(px, py);
-		targetPos = pos;
+		: name(n)
+		, soldiers(100)
+		, atk(10)
+		, x(px)
+		, y(py)
+		, isPlayer(player)
+		, alive(true)
+		, pos(Vec2(px, py))
+		, targetPos(Vec2(px, py))
+	{
 	}
+
 
 	void Update(double dt) {
 		if (pos.distanceFrom(targetPos) > 0.001) {

@@ -1,10 +1,11 @@
-﻿#include "WorldMapScene.hpp"
+﻿#pragma once
+#include"WorldMapScene.hpp"
 #include "CityScene.hpp"
 
 // =======================================================
 //  コンストラクタ（2 引数版）
 // =======================================================
-WorldMapScene::WorldMapScene(const Faction& faction, const Array<CityData>& allCities)
+WorldMapScene::WorldMapScene(const Faction & faction, const Array<CityData>&allCities)
 	: m_playerFaction(faction)
 	, m_cities(allCities)      // ★ 全都市データをコピー
 {

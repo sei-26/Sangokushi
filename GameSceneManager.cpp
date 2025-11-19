@@ -3,7 +3,10 @@
 #include "WorldMapScene.hpp"
 #include "CityScene.hpp"
 #include "BattleScene.hpp"
+#include "TurnEndScene.hpp"
+#include "AttackSelectScene.hpp"
 
+// ==============================================
 GameSceneManager::GameSceneManager()
 {
 	m_currentName = U"FactionSelectScene";
@@ -53,6 +56,7 @@ void GameSceneManager::update()
 		m_currentName = U"WorldMapScene";
 		return;
 	}
+	
 
 	// ワールド → 都市
 	if (next == U"City")
@@ -66,6 +70,25 @@ void GameSceneManager::update()
 		}
 		return;
 	}
+	// 都市 → 侵攻（AttackSelectScene）
+	if (next == U"AttackSelectScene")
+	{
+		auto* city = dynamic_cast<CityScene*>(m_currentScene.get());
+		if (city)
+		{
+			CityData fromCity = city->getCity();
+
+			// ★ 引数は 2 つ必要
+			m_currentScene = std::make_unique<AttackSelectScene>(
+				fromCity,
+				m_allCities
+			);
+
+			m_currentName = U"AttackSelectScene";
+		}
+		return;
+	}
+
 
 	// 都市 → 戦闘
 	if (next == U"BattleScene")
@@ -78,11 +101,13 @@ void GameSceneManager::update()
 	// 都市 → ターン終了 → マップ
 	if (next == U"TurnEnd")
 	{
-		applyTurnGrowth();  // ★ 全都市成長
-		m_currentScene = std::make_unique<WorldMapScene>(m_playerFaction, m_allCities);
-		m_currentName = U"WorldMapScene";
+		applyTurnGrowth();
+
+		m_currentScene = std::make_unique<TurnEndScene>(m_advisor, m_turn);
+		m_currentName = U"TurnEndScene";
 		return;
 	}
+
 
 	// 戦闘 → マップ
 	if (next == U"WorldMapScene")
@@ -91,6 +116,7 @@ void GameSceneManager::update()
 		m_currentName = U"WorldMapScene";
 		return;
 	}
+
 }
 
 void GameSceneManager::applyTurnGrowth()

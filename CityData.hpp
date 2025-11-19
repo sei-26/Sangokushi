@@ -3,7 +3,7 @@
 
 struct CityData
 {
-	// ★ メンバの順番（これに合わせて初期化順も揃える）
+	// ★ メンバ
 	String name;
 	Vec2 pos;
 	Color color;
@@ -19,6 +19,10 @@ struct CityData
 
 	String owner;
 
+	// ★ デフォルトコンストラクタ（必須）
+	CityData() = default;
+
+	// ★ 通常コンストラクタ
 	CityData(
 		const String& name,
 		const Vec2& pos,
@@ -39,7 +43,7 @@ struct CityData
 		, agriculture(agriculture)
 		, commerce(commerce)
 		, barracks(barracks)
-		, owner(owner)    
+		, owner(owner)
 	{
 	}
 };
