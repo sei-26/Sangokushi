@@ -1,24 +1,51 @@
 ﻿#include "BattleScene.hpp"
+#include "BattleSystem.hpp"
+#include "GameManager.hpp"
 
-BattleScene::BattleScene()
+BattleScene::BattleScene(const CityData& atkCity,
+						 const CityData& defCity,
+						 const Officer& leader,
+						 int soldiers)
 {
+	BattleSetup st;
+	st.attackerCity = new CityData(atkCity);
+	st.defenderCity = new CityData(defCity);
+	st.attackerLeader = new Officer(leader);
+
+	if (!defCity.officers.isEmpty())
+		st.defenderLeader = new Officer(defCity.officers[0]);
+	else
+		st.defenderLeader = new Officer(-1, U"名無し", 0);
+
+	st.attackerSoldiers = soldiers;
+	st.defenderSoldiers = defCity.troops;
+
+	system = std::make_unique<BattleSystem>(st);
 }
 
 void BattleScene::update()
 {
-	m_game.Update();
+	auto& mgr = system->GetManager();
+	mgr.UpdatePKBattle();
 
-	if (m_game.IsBattleFinished())
+	if (system->IsFinished())
 	{
-		m_isEnd = true;
-		m_nextScene = U"WorldMapSceneFromBattle";
+		system->ApplyResultToCities();
+		m_sceneEnd = true;
+		m_nextScene = U"WorldMapScene";
 	}
 }
 
+
 void BattleScene::draw() const
 {
-	Scene::SetBackground(ColorF{ 0.05, 0.05, 0.1 });
+	Scene::SetBackground(ColorF(0.1));
 
-	// ✅ GameManager::DrawUI() を const 対応に変更
-	const_cast<GameManager&>(m_game).DrawUI();
+	auto& mgr = system->GetManager();
+
+	// ★ SRPGマップ＋ユニット描画
+	mgr.DrawSRPGBoard();
+
+	// ★ 8PK式 HPバーUI
+	mgr.DrawPKUI();
 }

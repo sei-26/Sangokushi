@@ -1,43 +1,49 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
-#include <algorithm>    // std::none_of
-#include "Map.hpp"
-#include "Unit.hpp"
+#include "Officer.hpp"
+#include "Map.hpp"    // ← はるのプロジェクトのマップクラス
+#include "Unit.hpp"   // ← はるのユニットクラス
 
-// 勝敗結果
-enum class BattleResult
-{
-	None,
-	Victory,
-	Defeat
-};
-
+// ========================================
+// SRPG表示 × 8PK式ダメージ の融合版 GameManager
+// ========================================
 class GameManager
 {
 private:
-	Map map;
-	Array<Unit> units;
-	bool playerTurn = true;
-	int  turnCount = 1;
-	int  selectedIndex = -1;
-	const int uiHeight = 80;
+	Map map;                 // ★ はるのマップクラス（Tileではない）
+	Array<Unit> units;       // ★ ユニット
+	int selectedIndex = -1;
+
+	int turnCount = 1;
+	bool battleFinished = false;
+
+	// ★ 8PK戦闘モード変数
+	bool pkMode = false;
+	double pkTimer = 0.0;
 
 public:
 	GameManager();
 
-	// 毎フレーム呼ぶ
-	void Update();
-	void DrawUI();
+	// バトル初期化（SRPG見た目 + 8PK戦闘処理）
+	void InitializeBattle(const Officer& attacker,
+						  const Officer& defender,
+						  int attackerSoldiers,
+						  int defenderSoldiers);
 
-	// ターン別更新
-	void UpdatePlayerTurn();
-	void UpdateEnemyTurn();
+	// 8PK式じわじわダメージ
+	void UpdatePKBattle();
 
-	// 勝敗
-	bool IsBattleFinished() const;
-	BattleResult GetBattleResult() const;
-public:
-	// 既存のpublicの最後あたりに1行追加
+	// SRPGの見た目を描画（マップ + ユニット）
+	void DrawSRPGBoard() const;
+
+	// 8PKステータスUI
+	void DrawPKUI() const;
+
+	// 勝敗判定
+	bool IsBattleFinished() const { return battleFinished; }
+
+	// Getter
 	const Array<Unit>& GetUnits() const { return units; }
-
+	int GetTurnCount() const { return turnCount; }
+	Map& GetMap() { return map; }
 };

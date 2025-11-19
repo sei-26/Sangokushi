@@ -15,6 +15,8 @@ private:
 	std::unique_ptr<SceneBase> m_currentScene;
 	int m_turn = 1;
 
+	bool checkAllCitiesOwned() const;
+
 	// ★ 全都市を管理するリスト
 	Array<CityData> m_allCities;
 

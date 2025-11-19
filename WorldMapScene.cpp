@@ -36,7 +36,7 @@ void WorldMapScene::update()
 				m_selectedCity = c;     // Optional に保存
 				m_hasSelection = true;
 
-				m_isEnd = true;
+				m_sceneEnd = true;
 				m_nextScene = U"City";  // CityScene へ
 				return;
 			}
@@ -61,8 +61,8 @@ void WorldMapScene::draw() const
 
 		// 色：自軍は勢力色、それ以外は薄色
 		ColorF dotColor = myCity
-			? m_playerFaction.color
-			: ColorF(c.color, 0.4);
+			? ColorF(m_playerFaction.color)
+			: ColorF(c.color).withA(0.4);
 
 		Circle{ c.pos, 16 }.draw(dotColor);
 		FontAsset(U"small")(c.name).drawAt(c.pos.x, c.pos.y - 25);

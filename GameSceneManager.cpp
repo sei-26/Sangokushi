@@ -1,10 +1,18 @@
-﻿#include "GameSceneManager.hpp"
+﻿#pragma once
+#include <Siv3D.hpp>
+#include "GameSceneManager.hpp"
 #include "FactionSelectScene.hpp"
 #include "WorldMapScene.hpp"
 #include "CityScene.hpp"
 #include "BattleScene.hpp"
 #include "TurnEndScene.hpp"
 #include "AttackSelectScene.hpp"
+#include "ArmyConfigScene.hpp"
+#include "CityData.hpp"
+#include "OfficerDatabase.hpp"
+#include "Faction.hpp"
+#include "BattleMapScene.hpp"
+#include "GameClearScene.hpp"
 
 // ==============================================
 GameSceneManager::GameSceneManager()
@@ -12,13 +20,7 @@ GameSceneManager::GameSceneManager()
 	m_currentName = U"FactionSelectScene";
 	m_currentScene = std::make_unique<FactionSelectScene>();
 
-	// ★ 軍師初期化
-	m_advisor.name = U"諸葛亮";
-	m_advisor.agricultureBonus = 20;
-	m_advisor.commerceBonus = 15;
-	m_advisor.orderBonus = 10;
-
-	// ★ 全都市を初期化（絶対必要）
+	// ★ 全都市を初期化（あなたの元コード）
 	m_allCities = {
 		CityData(U"洛陽", Vec2(200,180), Palette::Red,
 				 800,600,200,80, U"曹操"),
@@ -35,7 +37,53 @@ GameSceneManager::GameSceneManager()
 		CityData(U"業", Vec2(750,300), Palette::Yellow,
 				 720,480,170,65, U"袁紹"),
 	};
+
+	// ============================
+	// ★ 勢力ごとに武将を割り当てる
+	// ============================
+	Array<Officer> all = OfficerDatabase::LoadAll();
+
+	// 劉備軍（勢力ID 1）
+	Array<Officer> liubeiArmy = { all[0], all[1], all[2] };
+
+	// 曹操軍（勢力ID 2）
+	Array<Officer> caos = { all[3], all[4], all[5] };
+
+	// 孫堅軍（勢力ID 3）
+	Array<Officer> sons = { all[6] };
+
+	// 董卓軍（勢力ID 4）
+	Array<Officer> dongzhuo = { all[7] };
+
+	// 公孫瓚軍（勢力ID 5）
+	Array<Officer> gongsons = { all[8] };
+
+	// 袁紹軍（勢力ID 6）
+	Array<Officer> yuans = { all[9] };
+
+	// ============================
+	// ★ 都市 owner に応じて武将配置
+	// ============================
+	for (auto& city : m_allCities)
+	{
+		if (city.owner == U"劉備")      city.officers = liubeiArmy;
+		if (city.owner == U"曹操")      city.officers = caos;
+		if (city.owner == U"孫堅")      city.officers = sons;
+		if (city.owner == U"董卓")      city.officers = dongzhuo;
+		if (city.owner == U"公孫瓚")    city.officers = gongsons;
+		if (city.owner == U"袁紹")      city.officers = yuans;
+	}
 }
+bool GameSceneManager::checkAllCitiesOwned() const
+{
+	for (const auto& c : m_allCities)
+	{
+		if (c.owner != m_playerFaction.name)
+			return false;
+	}
+	return true;
+}
+
 
 void GameSceneManager::update()
 {
@@ -56,7 +104,6 @@ void GameSceneManager::update()
 		m_currentName = U"WorldMapScene";
 		return;
 	}
-	
 
 	// ワールド → 都市
 	if (next == U"City")
@@ -88,15 +135,42 @@ void GameSceneManager::update()
 		}
 		return;
 	}
-
-
-	// 都市 → 戦闘
-	if (next == U"BattleScene")
+	// 侵攻先 → 部隊編成
+	if (next == U"ArmyConfigScene")
 	{
-		m_currentScene = std::make_unique<BattleScene>();
-		m_currentName = U"BattleScene";
+		auto* atk = dynamic_cast<AttackSelectScene*>(m_currentScene.get());
+		if (atk)
+		{
+			CityData fromCity = atk->getFromCity();
+			CityData targetCity = atk->getTargetCity();
+
+			m_currentScene = std::make_unique<ArmyConfigScene>(fromCity, targetCity);
+			m_currentName = U"ArmyConfigScene";
+		}
 		return;
 	}
+
+	// 都市 → 戦闘
+	if (next == U"BattleMapScene")
+	{
+		auto* ac = dynamic_cast<ArmyConfigScene*>(m_currentScene.get());
+		if (ac)
+		{
+			CityData fromCity = ac->getFromCity();
+			CityData targetCity = ac->getTargetCity();
+			Officer leader = ac->getSelectedOfficer();
+			int soldiers = ac->getSoldierAllocation();
+
+			m_currentScene = std::make_unique<BattleMapScene>(
+				fromCity, targetCity, leader, soldiers
+			);
+			m_currentName = U"BattleMapScene";
+		}
+		return;
+	}
+
+
+
 
 	// 都市 → ターン終了 → マップ
 	if (next == U"TurnEnd")
@@ -116,6 +190,14 @@ void GameSceneManager::update()
 		m_currentName = U"WorldMapScene";
 		return;
 	}
+	// ★全都市制覇チェック
+	if (checkAllCitiesOwned())
+	{
+		m_currentScene = std::make_unique<GameClearScene>();
+		m_currentName = U"GameClearScene";
+		return;
+	}
+
 
 }
 

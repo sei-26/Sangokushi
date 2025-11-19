@@ -1,21 +1,19 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
+#include "CityData.hpp"
+#include "Officer.hpp"
 
 struct Faction
 {
-	String name;
-	ColorF color = Palette::White;   // 初期化
-	Array<String> cities;
-	Array<String> officers;
+	String name;                // 勢力名（劉備・曹操など）
+	Color color;                // 勢力色
+	Array<CityData> cities;     // 所有都市（後で使う）
+	Array<Officer> officers;    // 所属武将
 
 	Faction() = default;
 
-	Faction(const String& n, const ColorF& c,
-			const Array<String>& ci, const Array<String>& of)
-		: name(n)
-		, color(c)
-		, cities(ci)
-		, officers(of)
+	Faction(const String& n, const Color& c)
+		: name(n), color(c)
 	{
 	}
 };

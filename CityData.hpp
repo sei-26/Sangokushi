@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
+#include "Officer.hpp"
 
 struct CityData
 {
-	// ★ メンバ
 	String name;
 	Vec2 pos;
 	Color color;
@@ -19,10 +19,10 @@ struct CityData
 
 	String owner;
 
-	// ★ デフォルトコンストラクタ（必須）
+	Array<Officer> officers;   // ← ★これが重要！各都市の武将リスト
+
 	CityData() = default;
 
-	// ★ 通常コンストラクタ
 	CityData(
 		const String& name,
 		const Vec2& pos,

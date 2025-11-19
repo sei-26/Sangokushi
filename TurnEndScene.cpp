@@ -26,7 +26,7 @@ void TurnEndScene::update()
 	const RectF okBtn{ 550, 500, 180, 50 };
 	if (m_faceAlpha >= 1.0 && okBtn.leftClicked())
 	{
-		m_isEnd = true;
+		m_sceneEnd = true;
 		m_nextScene = U"WorldMapScene";
 	}
 }

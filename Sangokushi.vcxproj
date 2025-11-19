@@ -117,7 +117,10 @@
   <ItemGroup>
     <ClCompile Include="ArmyConfigScene.cpp" />
     <ClCompile Include="AttackSelectScene.cpp" />
+    <ClCompile Include="BattleGameManager.cpp" />
+    <ClCompile Include="BattleMapScene.cpp" />
     <ClCompile Include="BattleScene.cpp" />
+    <ClCompile Include="BattleSystem.cpp" />
     <ClCompile Include="CityScene.cpp" />
     <ClCompile Include="FactionSelectScene.cpp" />
     <ClCompile Include="GameManager.cpp" />
@@ -339,13 +342,19 @@
     <ClInclude Include="Advisor.hpp" />
     <ClInclude Include="ArmyConfigScene.hpp" />
     <ClInclude Include="AttackSelectScene.hpp" />
+    <ClInclude Include="BattleGameManager.hpp" />
+    <ClInclude Include="BattleMapScene.hpp" />
     <ClInclude Include="BattleScene.hpp" />
+    <ClInclude Include="BattleSystem.hpp" />
     <ClInclude Include="CityData.hpp" />
     <ClInclude Include="CityScene.hpp" />
     <ClInclude Include="Faction.hpp" />
     <ClInclude Include="FactionSelectScene.hpp" />
+    <ClInclude Include="GameClearScene.hpp" />
     <ClInclude Include="GameManager.hpp" />
     <ClInclude Include="Map.hpp" />
+    <ClInclude Include="Officer.hpp" />
+    <ClInclude Include="OfficerDatabase.hpp" />
     <ClInclude Include="Pathfinding.hpp" />
     <ClInclude Include="SceneBase.hpp" />
     <ClInclude Include="GameSceneManager.hpp" />

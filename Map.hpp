@@ -5,9 +5,9 @@
 class Map
 {
 public:
-	int width = 20;
-	int height = 15;
-	int tileSize = 32;
+	int width = 50;
+	int height = 30;
+	int tileSize = 64;
 
 private:
 	std::vector<Tile> m_tiles;

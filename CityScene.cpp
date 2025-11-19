@@ -13,7 +13,7 @@ void CityScene::update()
 	// ESC で戻る
 	if (KeyEscape.down())
 	{
-		m_isEnd = true;
+		m_sceneEnd = true;
 		m_nextScene = U"WorldMapScene";
 		return;
 	}
@@ -27,7 +27,7 @@ void CityScene::update()
 		m_city.agriculture += 10;
 		m_message = U"諸葛亮「農地を整備しましたぞ」";
 
-		m_isEnd = true;
+		m_sceneEnd = true;
 		m_nextScene = U"TurnEnd";
 		return;
 	}
@@ -36,7 +36,7 @@ void CityScene::update()
 		m_city.commerce += 10;
 		m_message = U"諸葛亮「市がにぎわいを見せています」";
 
-		m_isEnd = true;
+		m_sceneEnd = true;
 		m_nextScene = U"TurnEnd";
 		return;
 	}
@@ -45,7 +45,7 @@ void CityScene::update()
 		m_city.troops += 20;
 		m_message = U"諸葛亮「兵を鍛錬しました」";
 
-		m_isEnd = true;
+		m_sceneEnd = true;
 		m_nextScene = U"TurnEnd";
 		return;
 	}
@@ -54,7 +54,7 @@ void CityScene::update()
 		m_city.order = Min(m_city.order + 5, 100);
 		m_message = U"諸葛亮「治安が改善しました」";
 
-		m_isEnd = true;
+		m_sceneEnd = true;
 		m_nextScene = U"TurnEnd";
 		return;
 	}
@@ -62,7 +62,7 @@ void CityScene::update()
 	{
 		m_message = U"諸葛亮「出陣の準備をいたしましょう」";
 
-		m_isEnd = true;
+		m_sceneEnd = true;
 		m_nextScene = U"AttackSelectScene";
 		return;
 	}
@@ -72,7 +72,7 @@ void CityScene::update()
 	// ================================
 	if (m_btnBack.leftClicked())
 	{
-		m_isEnd = true;
+		m_sceneEnd = true;
 		m_nextScene = U"WorldMapScene";
 		return;
 	}

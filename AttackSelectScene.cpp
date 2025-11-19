@@ -1,66 +1,61 @@
 ﻿#include "AttackSelectScene.hpp"
 
-AttackSelectScene::AttackSelectScene(const CityData& from, const Array<CityData>& allCities)
+AttackSelectScene::AttackSelectScene(const CityData& from, const Array<CityData>& all)
 	: m_fromCity(from)
-	, m_allCities(allCities)
+	, m_allCities(all)
 {
-	// 隣接都市（距離 ≦ 220）を抽出
-	for (int i = 0; i < m_allCities.size(); i++)
-	{
-		if (m_allCities[i].name == m_fromCity.name) continue;
-
-		double dist = m_fromCity.pos.distanceFrom(m_allCities[i].pos);
-
-		if (dist <= 220)
-		{
-			m_neighbors << i;
-		}
-	}
 }
 
 void AttackSelectScene::update()
 {
-	int y = 150;
-
-	for (int idx : m_neighbors)
+	// 侵攻先を選択
+	for (const auto& city : m_allCities)
 	{
-		RectF btn{ 400, y, 300, 40 };
+		// 同勢力には攻められない
+		if (city.owner == m_fromCity.owner)
+			continue;
 
-		if (btn.leftClicked())
+		RectF button(city.pos, Vec2{ 120, 40 });
+
+		if (button.mouseOver() && MouseL.down())
 		{
-			// 侵攻先確定 → 戦闘へ
-			m_isEnd = true;
-			m_nextScene = U"BattleScene";
-			return;
+			m_targetCity = city;
 		}
-
-		y += 60;
 	}
 
-	if (KeyEscape.down())
+	// Enter で決定して ArmyConfigScene へ
+	if (m_targetCity && KeyEnter.down())
 	{
-		m_isEnd = true;
-		m_nextScene = U"City";
-		return;
+		m_sceneEnd = true;
+		m_nextScene = U"ArmyConfigScene";
 	}
 }
 
 void AttackSelectScene::draw() const
 {
-	FontAsset(U"title")(m_fromCity.name + U" からの侵攻先選択").drawAt(Scene::Center().x, 50);
+	Scene::SetBackground(ColorF(0.15));
 
-	int y = 150;
+	FontAsset(U"medium")(U"侵攻先を選択してください").drawAt(400, 80);
 
-	for (int idx : m_neighbors)
+	// 攻撃対象候補
+	for (const auto& city : m_allCities)
 	{
-		const auto& c = m_allCities[idx];
-		RectF btn{ 400, y, 300, 40 };
+		if (city.owner == m_fromCity.owner)
+			continue;
 
-		btn.draw(ColorF(0.2, 0.2, 0.4));
-		FontAsset(U"menu")(c.name).drawAt(btn.center(), Palette::White);
+		RectF button(city.pos, Vec2{ 120,40 });
+		bool hov = button.mouseOver();
 
-		y += 60;
+		button.draw(hov ? ColorF(0.5, 0.3, 0.3) : ColorF(0.3, 0.3, 0.3));
+		button.drawFrame(2);
+		FontAsset(U"small")(city.name).drawAt(button.center());
 	}
 
-	FontAsset(U"menu")(U"Escで戻る").drawAt(Scene::Center().x, 600);
+	// 選択済み表示
+	if (m_targetCity)
+	{
+		FontAsset(U"medium")(U"目標: {}"_fmt(m_targetCity->name))
+			.draw(40, 500, Palette::Yellow);
+		FontAsset(U"small")(U"Enterで決定").draw(40, 540, Palette::Gray);
+	}
 }
