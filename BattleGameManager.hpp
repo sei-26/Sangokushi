@@ -27,28 +27,23 @@ private:
 	Array<Point> moveRange;
 
 public:
-	// 初期化（都市データと主将）
 	void InitializeBattle(
 		const CityData& fromCity,
 		const CityData& targetCity,
 		const Officer& selectedLeader,
 		int selectedSoldiers);
+
 	void ApplyBattleResult(CityData& atkCity, CityData& defCity);
 
-	// メイン更新
 	void Update();
 
-	// 描画
 	void Draw() const;
 
-	// シーン側から戦闘終了判定
 	bool IsBattleFinished() const { return phase == TurnPhase::BattleEnd; }
 
-	// 戦闘結果を都市へ反映（必要なら呼ぶ）
 	bool PlayerWon() const;
 
 private:
-	// ターン関連
 	void UpdatePlayerTurn();
 	void UpdateEnemyTurn();
 
@@ -59,14 +54,11 @@ private:
 
 	void EnemyAction(int targetIdx);
 
-	// 戦闘
 	bool AreAdjacent(const Unit& a, const Unit& b) const;
 	void ResolveCombat(Unit& attacker, Unit& defender);
 
-	// AI
 	int FindClosestEnemyIndex(int i) const;
 
-	// タイル周り
 	bool CanMoveTo(int x, int y) const;
 	Array<Point> GetNeighbors(const Point& p) const;
 	Array<Point> FindPath(const Point& start, const Point& goal) const;

@@ -1,30 +1,38 @@
 ﻿#include "AttackSelectScene.hpp"
 
-AttackSelectScene::AttackSelectScene(const CityData& from, const Array<CityData>& all)
-	: m_fromCity(from)
-	, m_allCities(all)
+AttackSelectScene::AttackSelectScene(int fromIndex, Array<CityData>* allCities)
+	: m_fromCityIndex(fromIndex)        // ←★ 必須！
+	, m_allCities(allCities)
 {
+	m_fromCity = &((*m_allCities)[fromIndex]);
 }
+
 
 void AttackSelectScene::update()
 {
-	// 侵攻先を選択
-	for (const auto& city : m_allCities)
+	// -----------------------------------
+	// 侵攻先選択（コピー禁止版）
+	// -----------------------------------
+	for (int i = 0; i < m_allCities->size(); ++i)
 	{
-		// 同勢力には攻められない
-		if (city.owner == m_fromCity.owner)
+		CityData& city = (*m_allCities)[i];
+
+		// 同勢力へは攻めない
+		if (city.owner == m_fromCity->owner)
 			continue;
 
 		RectF button(city.pos, Vec2{ 120, 40 });
 
 		if (button.mouseOver() && MouseL.down())
 		{
-			m_targetCity = city;
+			m_targetIndex = i;  // ★ コピーなし、安全
 		}
 	}
 
-	// Enter で決定して ArmyConfigScene へ
-	if (m_targetCity && KeyEnter.down())
+	// -----------------------------------
+	// Enter で決定 → ArmyConfigScene
+	// -----------------------------------
+	if (m_targetIndex && KeyEnter.down())
 	{
 		m_sceneEnd = true;
 		m_nextScene = U"ArmyConfigScene";
@@ -34,13 +42,13 @@ void AttackSelectScene::update()
 void AttackSelectScene::draw() const
 {
 	Scene::SetBackground(ColorF(0.15));
-
 	FontAsset(U"medium")(U"侵攻先を選択してください").drawAt(400, 80);
 
-	// 攻撃対象候補
-	for (const auto& city : m_allCities)
+	for (int i = 0; i < m_allCities->size(); ++i)
 	{
-		if (city.owner == m_fromCity.owner)
+		const CityData& city = (*m_allCities)[i];
+
+		if (city.owner == m_fromCity->owner)
 			continue;
 
 		RectF button(city.pos, Vec2{ 120,40 });
@@ -51,11 +59,13 @@ void AttackSelectScene::draw() const
 		FontAsset(U"small")(city.name).drawAt(button.center());
 	}
 
-	// 選択済み表示
-	if (m_targetCity)
+	if (m_targetIndex)
 	{
-		FontAsset(U"medium")(U"目標: {}"_fmt(m_targetCity->name))
+		const CityData& t = (*m_allCities)[m_targetIndex.value()];
+		FontAsset(U"medium")(U"目標: {}"_fmt(t.name))
 			.draw(40, 500, Palette::Yellow);
-		FontAsset(U"small")(U"Enterで決定").draw(40, 540, Palette::Gray);
+
+		FontAsset(U"small")(U"Enterで決定")
+			.draw(40, 540, Palette::Gray);
 	}
 }

@@ -2,7 +2,7 @@
 #include <queue>
 
 //==========================================================
-// 戦場初期化
+// 初期化
 //==========================================================
 void BattleGameManager::InitializeBattle(
 	const CityData& fromCity,
@@ -14,11 +14,11 @@ void BattleGameManager::InitializeBattle(
 	map.FitToScreen(Scene::Width(), Scene::Height(), 0);
 	units.clear();
 
-	//--------------------------------------
-	// 攻撃側（3ユニット）
-	//--------------------------------------
+	//--------------------------------
+	// 攻撃側（味方）3ユニット
+	//--------------------------------
 	{
-		Unit u(selectedLeader.name, 2, 3, true); // ★味方
+		Unit u(selectedLeader.name, 2, 3, true);
 		u.soldiers = selectedSoldiers;
 		u.initialSoldiers = selectedSoldiers;
 		u.atk = selectedLeader.war;
@@ -30,34 +30,35 @@ void BattleGameManager::InitializeBattle(
 			if (off.name == selectedLeader.name) continue;
 			if (added >= 2) break;
 
-			Unit sub(off.name, 2, 5 + added * 2, true); // ★味方
+			Unit sub(off.name, 2, 5 + added * 2, true);
 			sub.soldiers = Max(100, fromCity.troops / 10);
 			sub.initialSoldiers = sub.soldiers;
 			sub.atk = off.war;
+
 			units << sub;
 			added++;
 		}
 	}
 
-	//--------------------------------------
-	// 防衛側（3ユニット）
-	//--------------------------------------
+	//--------------------------------
+	// 防衛側（敵）3ユニット
+	//--------------------------------
 	{
 		int added = 0;
 		for (const auto& off : targetCity.officers)
 		{
 			if (added >= 3) break;
 
-			Unit u(off.name, map.width - 3, 4 + added * 2, false); // ★敵
+			Unit u(off.name, map.width - 3, 4 + added * 2, false);
 			u.soldiers = Max(100, targetCity.troops / 3);
 			u.initialSoldiers = u.soldiers;
 			u.atk = off.war;
+
 			units << u;
 			added++;
 		}
 	}
 
-	// 行動初期化
 	for (auto& u : units)
 	{
 		u.acted = false;
@@ -69,31 +70,148 @@ void BattleGameManager::InitializeBattle(
 	moveRange.clear();
 }
 
-
 //==========================================================
 // メイン更新
 //==========================================================
 void BattleGameManager::Update()
 {
-	if (phase == TurnPhase::BattleEnd) return;
-
-	if (phase == TurnPhase::PlayerTurn)
-		UpdatePlayerTurn();
-	else
-		UpdateEnemyTurn();
-
-	if (PlayerWon())
+	//-------------------------------------------
+	// ★ 勝利判定を一番最初にする！！
+	//-------------------------------------------
+	if (phase != TurnPhase::BattleEnd && PlayerWon())
+	{
 		phase = TurnPhase::BattleEnd;
+		actingIndex = 0;
+		moveRange.clear();
+		return;     // ← これが最重要
+	}
+
+	if (phase == TurnPhase::BattleEnd)
+		return;
+
+	//-------------------------------------------
+	// アニメ更新
+	//-------------------------------------------
+	for (auto& u : units)
+		u.Update(Scene::DeltaTime());
+
+	//-------------------------------------------
+	// ターン処理
+	//-------------------------------------------
+	switch (phase)
+	{
+	case TurnPhase::PlayerTurn:
+		UpdatePlayerTurn();
+		break;
+
+	case TurnPhase::EnemyTurn:
+		UpdateEnemyTurn();
+		break;
+	}
+}
+
+
+
+//==========================================================
+// プレイヤーターン
+//==========================================================
+void BattleGameManager::UpdatePlayerTurn()
+{
+	bool allActed = true;
+	for (auto& u : units)
+		if (u.isPlayer && u.alive && !u.acted)
+			allActed = false;
+
+	if (allActed)
+	{
+		actingIndex = 0;
+		moveRange.clear();
+		phase = TurnPhase::EnemyTurn;
+		return;
+	}
+
+	while (actingIndex < units.size())
+	{
+		Unit& u = units[actingIndex];
+		if (u.isPlayer && u.alive && !u.acted)
+			break;
+
+		actingIndex++;
+	}
+
+	if (actingIndex >= units.size())
+		return;
+
+	if (moveRange.isEmpty())
+		CalculateMoveRange();
+
+	MoveUnit();
+	TryAttack();
 }
 
 //==========================================================
-// 描画
+// 敵ターン
+//==========================================================
+void BattleGameManager::UpdateEnemyTurn()
+{
+	// ★ 敵ターン開始時の actingIndex 調整
+	if (actingIndex >= units.size())
+		actingIndex = 0;
+
+	bool allActed = true;
+	for (auto& u : units)
+		if (!u.isPlayer && u.alive && !u.acted)
+			allActed = false;
+
+	if (allActed)
+	{
+		for (auto& u : units)
+			u.acted = false;
+
+		actingIndex = 0;
+		phase = TurnPhase::PlayerTurn;
+		moveRange.clear();
+		return;
+	}
+
+	while (actingIndex < units.size())
+	{
+		Unit& u = units[actingIndex];
+		if (!u.isPlayer && u.alive && !u.acted)
+			break;
+
+		actingIndex++;
+	}
+
+	if (actingIndex >= units.size())
+	{
+		for (auto& u : units)
+			u.acted = false;
+
+		actingIndex = 0;
+		phase = TurnPhase::PlayerTurn;
+		moveRange.clear();
+		return;
+	}
+
+	Unit& enemy = units[actingIndex];
+
+	int tgt = FindClosestEnemyIndex(actingIndex);
+	if (tgt >= 0)
+		EnemyAction(tgt);
+
+	enemy.acted = true;
+	actingIndex++;
+}
+
+
+//==========================================================
+// Draw
 //==========================================================
 void BattleGameManager::Draw() const
 {
 	map.Draw();
 
-	// 移動範囲
 	for (auto& p : moveRange)
 	{
 		RectF r(
@@ -106,7 +224,6 @@ void BattleGameManager::Draw() const
 		r.drawFrame(3, ColorF(0.5, 0.8, 1.0, 0.7));
 	}
 
-	// ユニット
 	for (auto& u : units)
 		if (u.alive)
 			u.Draw(map.tileSize);
@@ -120,52 +237,7 @@ void BattleGameManager::Draw() const
 }
 
 //==========================================================
-// プレイヤーターン
-//==========================================================
-void BattleGameManager::UpdatePlayerTurn()
-{
-    if (actingIndex >= units.size())
-    {
-        phase = TurnPhase::EnemyTurn;
-        actingIndex = 0;
-        moveRange.clear();
-        return;
-    }
-
-    Unit& u = units[actingIndex];
-
-    if (!u.isPlayer || !u.alive)
-    {
-        actingIndex++;
-        return;
-    }
-
-    if (u.acted)
-    {
-        actingIndex++;
-        return;
-    }
-
-    // ★ 行動開始時に一度だけ移動範囲生成
-    if (moveRange.isEmpty())
-    {
-        CalculateMoveRange();
-    }
-
-    MoveUnit();
-    TryAttack();
-}
-
-//==========================================================
-// 選択ユニット
-//==========================================================
-void BattleGameManager::SelectUnit()
-{
-	// actingIndex のユニットが対象なので何もしない
-}
-
-//==========================================================
-// BFSで移動範囲
+// CalculateMoveRange
 //==========================================================
 void BattleGameManager::CalculateMoveRange()
 {
@@ -187,7 +259,6 @@ void BattleGameManager::CalculateMoveRange()
 		auto [p, dist] = q.front();
 		q.pop();
 
-		// ★占有チェック（自ユニットのスタート地点以外）
 		bool occupied = false;
 		for (const auto& other : units)
 		{
@@ -200,11 +271,8 @@ void BattleGameManager::CalculateMoveRange()
 			}
 		}
 
-		// ★占有されていなければ表示
 		if (!occupied)
-		{
 			moveRange << p;
-		}
 
 		if (dist >= MAX_MOVE) continue;
 
@@ -219,33 +287,34 @@ void BattleGameManager::CalculateMoveRange()
 	}
 }
 
-
 //==========================================================
-// クリックで移動
+// MoveUnit
 //==========================================================
 void BattleGameManager::MoveUnit()
 {
 	if (!MouseL.down()) return;
 
-	Point click(Cursor::Pos().x / map.tileSize,
-		Cursor::Pos().y / map.tileSize);
+	Point click(Cursor::Pos().x / map.tileSize, Cursor::Pos().y / map.tileSize);
 
-	if (!moveRange.contains(click)) return;
+	if (!moveRange.contains(click))
+		return;
 
 	Unit& u = units[actingIndex];
+
 	auto path = FindPath(Point(u.x, u.y), click);
 	if (path.isEmpty()) return;
 
+	u.targetPos = Vec2(click.x, click.y);
 	u.x = click.x;
 	u.y = click.y;
-	u.pos = Vec2(click.x, click.y);
-	u.acted = true;
 
+	u.acted = true;
 	moveRange.clear();
+	actingIndex++;
 }
 
 //==========================================================
-// 攻撃
+// TryAttack
 //==========================================================
 void BattleGameManager::TryAttack()
 {
@@ -260,47 +329,15 @@ void BattleGameManager::TryAttack()
 		{
 			ResolveCombat(atk, def);
 			atk.acted = true;
-			break;
+			moveRange.clear();
+			actingIndex++;
+			return;
 		}
 	}
-
-	actingIndex++;
 }
 
 //==========================================================
-// 敵ターン
-//==========================================================
-void BattleGameManager::UpdateEnemyTurn()
-{
-	if (actingIndex >= units.size())
-	{
-		for (auto& u : units)
-			u.acted = false;
-
-		actingIndex = 0;
-		phase = TurnPhase::PlayerTurn;
-		moveRange.clear();
-		return;
-	}
-
-	Unit& enemy = units[actingIndex];
-
-	if (enemy.isPlayer || !enemy.alive)
-	{
-		actingIndex++;
-		return;
-	}
-
-	int tgt = FindClosestEnemyIndex(actingIndex);
-
-	if (tgt >= 0)
-		EnemyAction(tgt);
-
-	actingIndex++;
-}
-
-//==========================================================
-// 敵AI
+// EnemyAction
 //==========================================================
 void BattleGameManager::EnemyAction(int targetIdx)
 {
@@ -339,13 +376,26 @@ void BattleGameManager::ResolveCombat(Unit& attacker, Unit& defender)
 	int dmg = Max(10, attacker.atk * 2 + Random(0, 20));
 	defender.ApplyDamage(dmg);
 
-	// 攻撃エフェクト
 	attacker.damageTimer = 0.2;
 	attacker.lastDamage = 0;
+
+	// ★ 死亡時に削除！
+	if (!defender.alive)
+	{
+		// defender の参照からインデックスを逆算
+		int idx = &defender - units.data();
+
+		// actingIndex より手前が消えたら補正
+		if (idx < actingIndex)
+			actingIndex--;
+
+		units.remove_at(idx);
+	}
 }
 
+
 //==========================================================
-// ターゲット選択（最弱・最短）
+// ターゲット選択
 //==========================================================
 int BattleGameManager::FindClosestEnemyIndex(int i) const
 {
@@ -462,26 +512,34 @@ bool BattleGameManager::PlayerWon() const
 			return false;
 	return true;
 }
+
+//==========================================================
+// 戦闘結果反映
+//==========================================================
 void BattleGameManager::ApplyBattleResult(CityData& atkCity, CityData& defCity)
 {
-	int atkLoss = 0;
-	int defLoss = 0;
 
-	for (const auto& u : units)
+	// ★ プレイヤー側が勝利した前提で都市を奪う
+	bool attackerWins = PlayerWon();
+
+	if (attackerWins)
 	{
-		if (u.isPlayer)
-			atkLoss += Max(0, u.initialSoldiers - u.soldiers);
-		else
-			defLoss += Max(0, u.initialSoldiers - u.soldiers);
-	}
-
-	atkCity.troops = Max(0, atkCity.troops - atkLoss);
-	defCity.troops = Max(0, defCity.troops - defLoss);
-
-	// ★都市占領
-	if (defCity.troops <= 0)
-	{
+		// --- 都市占領 ---
 		defCity.owner = atkCity.owner;
+
+		// --- 勝った側の兵は減る（最低0） ---
+		atkCity.troops = Max(atkCity.troops - 200, 0);
+
+		// --- 敵都市の兵はほぼ壊滅 ---
+		defCity.troops = Max(defCity.troops - 500, 0);
+
+		// --- 治安を下げて現実っぽく ---
+		defCity.order = Max(defCity.order - 30, 0);
+	}
+	else
+	{
+		// 敵が防衛成功した場合（とりあえず簡易版）
+		atkCity.troops = Max(atkCity.troops - 300, 0);
 	}
 }
 

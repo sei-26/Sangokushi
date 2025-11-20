@@ -17,13 +17,18 @@ private:
 
 	bool checkAllCitiesOwned() const;
 
-	// ★ 全都市を管理するリスト
+	// ★ 全都市リスト
 	Array<CityData> m_allCities;
 
-	// 勢力を保持しておく（CityScene→戻る時に必要）
+	// ★ 勢力（曹操・劉備 など）
 	Faction m_playerFaction;
 
+	// ★ 勢力選択時に決まった「スタート都市名」
+	//     WorldMapScene でクリア判定に使うため必須
+	String m_startCityName = U"";
+
 	Advisor m_advisor;
+
 public:
 	GameSceneManager();
 

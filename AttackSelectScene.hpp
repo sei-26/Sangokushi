@@ -3,19 +3,30 @@
 #include "SceneBase.hpp"
 #include "CityData.hpp"
 
+// ======================================================
+//   侵攻先選択シーン（CityData コピーなし完全版）
+// ======================================================
 class AttackSelectScene : public SceneBase
 {
 private:
-	CityData m_fromCity;           // 出陣元の都市
-	Array<CityData> m_allCities;   // 全都市（防衛都市含む）
-	Optional<CityData> m_targetCity;
+	// ★ コピー禁止：ポインタに変更
+	CityData* m_fromCity = nullptr;
+	Array<CityData>* m_allCities = nullptr;
+
+	// ★ 侵攻先もインデックスで管理（安全）
+	Optional<int> m_targetIndex;
 
 public:
-	AttackSelectScene(const CityData& from, const Array<CityData>& all);
+	// ★ 全て参照（ポインタ）渡しへ
+	AttackSelectScene(int fromIndex, Array<CityData>* allCities);
 
 	void update() override;
 	void draw() const override;
 
-	CityData getFromCity() const { return m_fromCity; }
-	CityData getTargetCity() const { return m_targetCity.value(); }
+	// ★ シーン遷移用：インデックスで返す
+	int getFromIndex() const { return m_fromCityIndex; }
+	int getTargetIndex() const { return m_targetIndex.value(); }
+
+private:
+	int m_fromCityIndex = -1;
 };

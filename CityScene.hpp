@@ -7,29 +7,26 @@
 class CityScene : public SceneBase
 {
 private:
-	CityData m_city;
+	CityData* m_city;     // ★ コピー禁止 → ポインタで本物を参照
 	Advisor m_advisor;
 	Font m_font = Font(24);
 	String m_message;
 
-	// ===== 誤判定防止：ボタンはメンバにする =====
 	RectF m_btnAgr{ 500, 100, 200, 40 };
 	RectF m_btnCom{ 500, 160, 200, 40 };
 	RectF m_btnTrain{ 500, 220, 200, 40 };
 	RectF m_btnOrder{ 500, 280, 200, 40 };
-
-	// ★ 進攻ボタン（治安維持のすぐ下）
 	RectF m_btnAttack{ 500, 340, 200, 40 };
-
 	RectF m_btnBack{ 1100, 600, 150, 50 };
-	
+
+	int m_cityIndex = -1;  // ★ 都市インデックスを保持
+
 public:
-	CityScene(const CityData& city, const Advisor& adv);
-	
+	CityScene(int cityIndex, Array<CityData>* cities, const Advisor& adv);
 
 	void update() override;
 	void draw() const override;
 
-
-	CityData getCity() const { return m_city; }
+	// ★ シーン遷移用：インデックスを返すだけで OK
+	int getCityIndex() const { return m_cityIndex; }
 };

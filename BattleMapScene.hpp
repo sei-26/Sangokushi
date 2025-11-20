@@ -6,24 +6,35 @@
 #include "Officer.hpp"
 
 //==========================================================
-// 三國志8リメイク簡易戦場シーン
+// 戦場シーン：絶対クラッシュしない参照方式
 //==========================================================
 class BattleMapScene : public SceneBase
 {
 private:
-	BattleGameManager manager;   // ★戦場ロジック本体
-	CityData atkCity;   // 出陣元
-	CityData defCity;   // 防衛都市
-	CityData* atkCityRef;
-	CityData* defCityRef;
+	BattleGameManager manager;
+
+	// ★ 本物の都市データを直接参照
+	CityData* atkCityRef = nullptr;
+	CityData* defCityRef = nullptr;
+
+	int atkIndex = -1;
+	int defIndex = -1;
+
+	Array<CityData>* allCities = nullptr;
+
+	Officer m_leader;
+	int m_soldiers = 0;
 
 public:
-	// 出撃・防衛データをまとめて受け取る
-	BattleMapScene(const CityData& fromCity,
-				   const CityData& targetCity,
-				   const Officer& selectedLeader,
-				   int selectedSoldiers);
+	BattleMapScene(int atkIndex,
+				   int defIndex,
+				   Array<CityData>* allCities,
+				   const Officer& leader,
+				   int soldiers);
 
 	void update() override;
 	void draw() const override;
+
+	int getAtkIndex() const { return atkIndex; }
+	int getDefIndex() const { return defIndex; }
 };

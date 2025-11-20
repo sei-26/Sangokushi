@@ -7,22 +7,27 @@
 class ArmyConfigScene : public SceneBase
 {
 private:
-	CityData m_fromCity;
-	CityData m_targetCity;
+	// ★ コピー禁止！本物の参照を保持する
+	CityData* m_fromCity = nullptr;
+	CityData* m_targetCity = nullptr;
+	Array<CityData>* m_allCities = nullptr;
+
+	int m_fromIndex = -1;
+	int m_targetIndex = -1;
 
 	int m_selectedOfficerIndex = 0;
-	int m_soldierAllocation = 500;   // 初期出陣兵数（少なめ）
+	int m_soldierAllocation = 500;
 
 public:
-	ArmyConfigScene(const CityData& from, const CityData& target);
+	ArmyConfigScene(int fromIndex, int targetIndex, Array<CityData>* allCities);
 
 	void update() override;
 	void draw() const override;
 
+	// ★ コピー禁止 → インデックスで返す
+	int getFromIndex() const { return m_fromIndex; }
+	int getTargetIndex() const { return m_targetIndex; }
+
 	Officer getSelectedOfficer() const;
 	int getSoldierAllocation() const;
-
-	// 都市へのアクセスも必要なら
-	CityData getFromCity() const { return m_fromCity; }
-	CityData getTargetCity() const { return m_targetCity; }
 };

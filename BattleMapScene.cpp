@@ -1,18 +1,26 @@
 ﻿#include "BattleMapScene.hpp"
 
 //==========================================================
-// コンストラクタ：戦場を初期化
+// コンストラクタ：本物の CityData を参照で受け取る
 //==========================================================
 BattleMapScene::BattleMapScene(
-	const CityData& fromCity,
-	const CityData& targetCity,
-	const Officer& selectedLeader,
-	int selectedSoldiers)
+	int atkIndex_,
+	int defIndex_,
+	Array<CityData>* all,
+	const Officer& leader,
+	int soldiers)
 {
-	atkCityRef = const_cast<CityData*>(&fromCity);
-	defCityRef = const_cast<CityData*>(&targetCity);
+	atkIndex = atkIndex_;
+	defIndex = defIndex_;
+	allCities = all;
 
-	manager.InitializeBattle(fromCity, targetCity, selectedLeader, selectedSoldiers);
+	atkCityRef = &((*allCities)[atkIndex]);
+	defCityRef = &((*allCities)[defIndex]);
+
+	m_leader = leader;
+	m_soldiers = soldiers;
+
+	manager.InitializeBattle(*atkCityRef, *defCityRef, leader, soldiers);
 }
 
 
@@ -21,19 +29,18 @@ BattleMapScene::BattleMapScene(
 //==========================================================
 void BattleMapScene::update()
 {
-	manager.Update();
-
-	if (manager.IsBattleFinished())
+	if (!manager.IsBattleFinished())
 	{
-		manager.ApplyBattleResult(*atkCityRef, *defCityRef);
-
-		// ★占領処理はここで完了
-
-		m_sceneEnd = true;
-		m_nextScene = U"WorldMapScene";
+		manager.Update();
+		return;
 	}
-}
 
+	// ★戦闘が終わったら確実に本物の CityData に結果を書き込む
+	manager.ApplyBattleResult(*atkCityRef, *defCityRef);
+
+	m_sceneEnd = true;
+	m_nextScene = U"WorldMapScene";
+}
 
 
 //==========================================================
@@ -43,9 +50,12 @@ void BattleMapScene::draw() const
 {
 	Scene::SetBackground(ColorF(0.1, 0.1, 0.12));
 
-	manager.Draw();
+	// ★戦闘終了後は描画しない（安全）
+	if (!manager.IsBattleFinished())
+	{
+		manager.Draw();
 
-	// 操作説明
-	FontAsset(U"small")(U"[左クリック] 移動 ／ 隣接で攻撃")
-		.draw(20, Scene::Height() - 35, Palette::Gray);
+		FontAsset(U"small")(U"[左クリック] 移動 ／ 隣接で攻撃")
+			.draw(20, Scene::Height() - 35, Palette::Gray);
+	}
 }

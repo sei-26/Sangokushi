@@ -4,22 +4,22 @@
 
 struct CityData
 {
-	String name;
-	Vec2 pos;
-	Color color;
+	String name = U"";
+	Vec2 pos = Vec2{ 0,0 };
+	Color color = Palette::White;
 
-	int gold;
-	int troops;
-	int food;
-	int order;
+	int gold = 0;
+	int troops = 0;
+	int food = 0;
+	int order = 0;
 
-	int agriculture;
-	int commerce;
-	int barracks;
+	int agriculture = 1;
+	int commerce = 1;
+	int barracks = 1;
 
-	String owner;
-
-	Array<Officer> officers;   // ← ★これが重要！各都市の武将リスト
+	String owner = U"";
+	String initialOwner;
+	Array<Officer> officers{};
 
 	CityData() = default;
 
@@ -44,6 +44,7 @@ struct CityData
 		, commerce(commerce)
 		, barracks(barracks)
 		, owner(owner)
+		, initialOwner(owner)
 	{
 	}
 };

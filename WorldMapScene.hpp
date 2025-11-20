@@ -7,21 +7,27 @@
 class WorldMapScene : public SceneBase
 {
 private:
+	Array<CityData>* m_allCities;
 	Faction m_playerFaction;
 
-	Array<CityData> m_cities;              // 全都市データ（コピー or 参照）
-	Optional<CityData> m_selectedCity;     // 選択された都市
-	bool m_hasSelection = false;
-
 	int m_hovered = -1;
+	int m_selectedIndex = -1;
+
+	bool m_gameClear = false;
+	double m_clearTimer = 0.0;
+
+	// ★ 勢力選択で決まったスタート都市名
+	String m_startCityName = U"";
 
 public:
-	// ★ 2 引数版（必須）
-	WorldMapScene(const Faction& faction, const Array<CityData>& allCities);
+	// ★★★ 完全版コンストラクタ（必須） ★★★
+	WorldMapScene(const Faction& faction,
+				  Array<CityData>* allCities,
+				  const String& startCityName);
 
 	void update() override;
 	void draw() const override;
 
-	bool hasSelectedCity() const { return m_hasSelection; }
-	Optional<CityData> getSelectedCity() const { return m_selectedCity; }
+	Optional<std::reference_wrapper<CityData>> getSelectedCityRef();
+	int getSelectedCityIndex() const { return m_selectedIndex; }
 };

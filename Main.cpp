@@ -3,8 +3,9 @@
 
 void Main()
 {
-	Window::Resize(1280, 720);
-	Scene::SetBackground(ColorF{ 0.2, 0.2, 0.2 });
+	Window::Resize(1920, 1080);          // ★ フルHD化
+	Scene::SetBackground(ColorF(0.1, 0.12, 0.16));
+
 
 	// ★フォント登録を先頭に移動（絶対最初に必要）
 	FontAsset::Register(U"title", 40);
