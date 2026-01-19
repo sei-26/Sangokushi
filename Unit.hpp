@@ -1,101 +1,82 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
 
+enum class Side { Player, Enemy };
+
 struct Unit
 {
 	String name;
+	Side side;
+	Point pos;
 
-	int soldiers = 100;         // ★兵力（絶対必要）
-	int initialSoldiers = 100;  // 初期兵力
-	int atk = 10;
+	int soldiers;
+	int initialSoldiers;
+	int atk;
 
-	int x = 0, y = 0;
-	bool isPlayer = true;
-	bool alive = true;
-	bool acted = false;
+	bool alive;
+	bool acted;
+	bool isPlayer;
 
-	// 移動
-	Vec2 pos;
-	Vec2 targetPos;
-	double moveSpeed = 8.0;
-
-	// エフェクト
+	// アニメーション用
 	double damageTimer = 0.0;
 	int lastDamage = 0;
+	Vec2 drawPos;
 
-	Unit() = default;
-
-	Unit(const String& n, int px, int py, bool player)
-		: name(n),
-		x(px), y(py),
-		isPlayer(player),
-		alive(true),
-		acted(false),
-		pos(Vec2(px, py)),
-		targetPos(Vec2(px, py))
+	Unit(String n, Side s, Point p, int count = 1000)
+		: name(n), side(s), pos(p)
+		, soldiers(count), initialSoldiers(count)
+		, atk(100), alive(true), acted(false)
+		, drawPos(p.x, p.y)
 	{
-	}
-
-	// 被ダメージ処理
-	void ApplyDamage(int amount)
-	{
-		if (amount <= 0 || !alive) return;
-
-		lastDamage = amount;
-		soldiers -= amount;
-		if (soldiers < 0) soldiers = 0;
-
-		damageTimer = 0.6;
-		if (soldiers <= 0) alive = false;
+		isPlayer = (side == Side::Player);
 	}
 
 	void Update(double dt)
 	{
-		Vec2 d = targetPos - pos;
-		double dist = d.length();
-
-		if (dist > 0.001)
-		{
-			double speed = moveSpeed;
-			if (dist < 0.20)
-				speed *= (dist / 0.20);
-
-			pos += d.normalized() * speed * dt;
-			if ((targetPos - pos).length() < 0.02)
-				pos = targetPos;
-		}
-
-		if (damageTimer > 0.0)
-		{
-			damageTimer -= dt;
-			if (damageTimer < 0.0) damageTimer = 0.0;
-		}
+		if (damageTimer > 0) damageTimer -= dt;
+		Vec2 target(pos.x, pos.y);
+		drawPos = drawPos.lerp(target, 10.0 * dt);
 	}
 
-	void Draw(int tileSize = 32) const
+	void ApplyDamage(int dmg)
 	{
-		const Vec2 center = pos * tileSize + Vec2(tileSize / 2.0, tileSize / 2.0);
+		soldiers = Max(0, soldiers - dmg);
+		lastDamage = dmg;
+		damageTimer = 1.0;
+		if (soldiers <= 0) alive = false;
+	}
 
-		Color col = isPlayer ? Palette::Red : Palette::Blue;
-		if (acted) col = ColorF(col, 0.5);
+	// ★ 修正：offset 引数を追加し、デフォルト値を設定
+	// これで引数が1個でも2個でもエラーになりません
+	void draw(int cellSize, Point offset = Point(0, 0)) const
+	{
+		if (!alive) return;
 
-		Circle(center, tileSize * 0.35).draw(col);
+		// 座標計算（オフセットを加算）
+		double px = offset.x + drawPos.x * cellSize;
+		double py = offset.y + drawPos.y * cellSize;
 
-		// HPバー
-		double ratio = Math::Clamp(double(soldiers) / 100.0, 0.0, 1.0);
+		// 色
+		Color color = isPlayer ? Palette::Blue : Palette::Red;
+		if (acted) color = Palette::Gray;
 
-		RectF(center.x - tileSize * 0.35, center.y - tileSize * 0.55,
-			tileSize * 0.7, 6).draw(ColorF(0, 0, 0, 0.5));
-
-		RectF(center.x - tileSize * 0.35, center.y - tileSize * 0.55,
-			tileSize * 0.7 * ratio, 6)
-			.draw(isPlayer ? Palette::Orange : Palette::Skyblue);
+		// 本体
+		RectF(px + 4, py + 4, cellSize - 8, cellSize - 8).draw(color);
+		RectF(px + 4, py + 4, cellSize - 8, cellSize - 8).drawFrame(2, Palette::White);
 
 		// 名前
-		if (FontAsset::IsRegistered(U"small"))
+		FontAsset(U"Default")(name).drawAt(px + cellSize / 2, py + cellSize / 2 - 10);
+
+		// バー
+		double rate = (double)soldiers / initialSoldiers;
+		RectF(px + 5, py + cellSize - 15, cellSize - 10, 6).draw(Palette::Black);
+		RectF(px + 5, py + cellSize - 15, (cellSize - 10) * rate, 6).draw(Palette::Limegreen);
+		FontAsset(U"Default")(soldiers).drawAt(px + cellSize / 2, py + cellSize - 5, Palette::White);
+
+		// ダメージ
+		if (damageTimer > 0)
 		{
-			FontAsset(U"small")(Format(name, U"(", soldiers, U")"))
-				.drawAt(center.x, center.y - tileSize * 0.8);
+			FontAsset(U"title")(lastDamage).drawAt(px + cellSize / 2, py - 20, Palette::Yellow);
 		}
 	}
 };

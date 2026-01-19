@@ -177,9 +177,6 @@
     <ClCompile Include="AttackSelectScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BattleSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BattleMapScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -903,9 +900,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Officer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BattleSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OfficerDatabase.hpp">

@@ -1,51 +1,41 @@
 ﻿#include "BattleScene.hpp"
-#include "BattleSystem.hpp"
-#include "GameManager.hpp"
 
-BattleScene::BattleScene(const CityData& atkCity,
-						 const CityData& defCity,
-						 const Officer& leader,
-						 int soldiers)
+BattleScene::BattleScene(GameManager* gm)
+	: m_gameManager(gm)
 {
-	BattleSetup st;
-	st.attackerCity = new CityData(atkCity);
-	st.defenderCity = new CityData(defCity);
-	st.attackerLeader = new Officer(leader);
+	// ダミーデータ
+	CityData dummyAtk(U"味方拠点", Point(0, 0), U"劉備");
+	CityData dummyDef(U"敵拠点", Point(0, 0), U"曹操");
 
-	if (!defCity.officers.isEmpty())
-		st.defenderLeader = new Officer(defCity.officers[0]);
-	else
-		st.defenderLeader = new Officer(-1, U"名無し", 0);
+	// 武将
+	Officer leader(U"関羽", 95, 97, 75, 60);
 
-	st.attackerSoldiers = soldiers;
-	st.defenderSoldiers = defCity.troops;
-
-	system = std::make_unique<BattleSystem>(st);
+	// ★ エラー修正：m_gameManagerではなく、m_battleManagerを呼び出します
+	m_battleManager.InitializeBattle(dummyAtk, dummyDef, leader, 3000);
 }
 
 void BattleScene::update()
 {
-	auto& mgr = system->GetManager();
-	mgr.UpdatePKBattle();
+	m_battleManager.Update();
 
-	if (system->IsFinished())
+	if (m_battleManager.IsBattleFinished())
 	{
-		system->ApplyResultToCities();
-		m_sceneEnd = true;
-		m_nextScene = U"WorldMapScene";
+		if (MouseL.down())
+		{
+			m_sceneEnd = true;
+			m_nextScene = U"WorldMap";
+		}
 	}
 }
 
-
 void BattleScene::draw() const
 {
-	Scene::SetBackground(ColorF(0.1));
+	Scene::SetBackground(ColorF{ 0.1, 0.1, 0.1 });
+	m_battleManager.Draw();
 
-	auto& mgr = system->GetManager();
-
-	// ★ SRPGマップ＋ユニット描画
-	mgr.DrawSRPGBoard();
-
-	// ★ 8PK式 HPバーUI
-	mgr.DrawPKUI();
+	if (m_battleManager.IsBattleFinished())
+	{
+		Scene::Rect().draw(ColorF(0, 0, 0, 0.6));
+		FontAsset(U"title")(U"戦闘終了 - クリックで戻る").drawAt(Scene::Center(), Palette::White);
+	}
 }

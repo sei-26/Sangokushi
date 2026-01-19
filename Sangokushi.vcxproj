@@ -120,7 +120,6 @@
     <ClCompile Include="BattleGameManager.cpp" />
     <ClCompile Include="BattleMapScene.cpp" />
     <ClCompile Include="BattleScene.cpp" />
-    <ClCompile Include="BattleSystem.cpp" />
     <ClCompile Include="CityScene.cpp" />
     <ClCompile Include="FactionSelectScene.cpp" />
     <ClCompile Include="GameManager.cpp" />
@@ -345,7 +344,6 @@
     <ClInclude Include="BattleGameManager.hpp" />
     <ClInclude Include="BattleMapScene.hpp" />
     <ClInclude Include="BattleScene.hpp" />
-    <ClInclude Include="BattleSystem.hpp" />
     <ClInclude Include="CityData.hpp" />
     <ClInclude Include="CityScene.hpp" />
     <ClInclude Include="Faction.hpp" />

@@ -1,20 +1,24 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
 
+// シーンの基底クラス
 class SceneBase
 {
-protected:
-	bool m_sceneEnd = false;     // ← これが全Sceneで使われる
-	String m_nextScene = U"";    // ← 次のシーン名
-
 public:
 	virtual ~SceneBase() = default;
 
-	// 派生クラスが実装する
 	virtual void update() = 0;
 	virtual void draw() const = 0;
 
-	// SceneManager が呼ぶ
+	// ★ これらを追加！
+	// シーンが終わったかどうか
 	bool isSceneEnd() const { return m_sceneEnd; }
-	String nextSceneName() const { return m_nextScene; }
+
+	// 次のシーン名を取得
+	String getNextScene() const { return m_nextScene; }
+
+protected:
+	// 遷移管理用フラグ
+	bool m_sceneEnd = false;
+	String m_nextScene;
 };

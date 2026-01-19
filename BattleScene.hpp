@@ -1,21 +1,19 @@
 ﻿#pragma once
 #include "SceneBase.hpp"
 #include "GameManager.hpp"
-#include "CityData.hpp"
-#include "Officer.hpp"
-#include "BattleSystem.hpp"
+#include "BattleGameManager.hpp" // ★これをインクルード
 
 class BattleScene : public SceneBase
 {
-private:
-	std::unique_ptr<BattleSystem> system;  // ★これだけ
-
 public:
-	BattleScene(const CityData& atkCity,
-				const CityData& defCity,
-				const Officer& leader,
-				int soldiers);
+	BattleScene(GameManager* gm);
 
 	void update() override;
 	void draw() const override;
+
+private:
+	GameManager* m_gameManager;
+
+	// ★ 戦闘処理はすべてこのクラスに任せる
+	BattleGameManager m_battleManager;
 };

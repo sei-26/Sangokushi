@@ -3,8 +3,7 @@
 
 struct Advisor
 {
-	String name = U"諸葛亮"; // 仮の軍師
-	int agricultureBonus = 10;  // %アップ
-	int commerceBonus = 10;  // %アップ
-	int orderBonus = 5;   // %アップ
+	String name = U"諸葛亮";
+	int agricultureBonus = 10;
+	int commerceBonus = 10;
 };

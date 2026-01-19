@@ -2,64 +2,56 @@
 #include <Siv3D.hpp>
 #include "Unit.hpp"
 #include "Map.hpp"
-#include "Officer.hpp"
 #include "CityData.hpp"
+#include "Officer.hpp"
 
-//==========================================================
-// 三國志8リメイク簡易戦場：バトル管理本体
-//==========================================================
+enum class TurnPhase
+{
+	PlayerTurn,
+	EnemyTurn,
+	BattleEnd
+};
+
 class BattleGameManager
 {
 public:
-	enum class TurnPhase
-	{
-		PlayerTurn,
-		EnemyTurn,
-		BattleEnd
-	};
-
-private:
 	Map map;
 	Array<Unit> units;
 	TurnPhase phase = TurnPhase::PlayerTurn;
 
-	int actingIndex = 0;
-	Array<Point> moveRange;
+	int actingIndex = 0;        // 行動中のユニット番号
+	Array<Point> moveRange;     // 移動可能範囲
 
-public:
-	void InitializeBattle(
-		const CityData& fromCity,
-		const CityData& targetCity,
-		const Officer& selectedLeader,
-		int selectedSoldiers);
+	// 初期化
+	void InitializeBattle(const CityData& fromCity, const CityData& targetCity, const Officer& leader, int soldiers);
 
-	void ApplyBattleResult(CityData& atkCity, CityData& defCity);
-
+	// 更新と描画
 	void Update();
-
 	void Draw() const;
 
-	bool IsBattleFinished() const { return phase == TurnPhase::BattleEnd; }
+	// ★ 追加：戦闘終了判定（エラー修正）
+	bool IsBattleFinished() const;
 
-	bool PlayerWon() const;
+	// 戦闘結果の適用
+	void ApplyBattleResult(CityData& atkCity, CityData& defCity);
 
 private:
+	// 内部処理用
 	void UpdatePlayerTurn();
 	void UpdateEnemyTurn();
 
-	void SelectUnit();
 	void CalculateMoveRange();
 	void MoveUnit();
 	void TryAttack();
 
 	void EnemyAction(int targetIdx);
+	int FindClosestEnemyIndex(int myIdx) const;
 
 	bool AreAdjacent(const Unit& a, const Unit& b) const;
-	void ResolveCombat(Unit& attacker, Unit& defender);
-
-	int FindClosestEnemyIndex(int i) const;
-
+	void ResolveCombat(Unit& atk, Unit& def);
 	bool CanMoveTo(int x, int y) const;
+
 	Array<Point> GetNeighbors(const Point& p) const;
 	Array<Point> FindPath(const Point& start, const Point& goal) const;
+	bool PlayerWon() const;
 };
