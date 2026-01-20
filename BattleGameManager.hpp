@@ -54,4 +54,6 @@ private:
 	Array<Point> GetNeighbors(const Point& p) const;
 	Array<Point> FindPath(const Point& start, const Point& goal) const;
 	bool PlayerWon() const;
+	bool PlayerLost() const;
+
 };

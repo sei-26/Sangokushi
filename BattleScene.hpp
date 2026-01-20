@@ -6,14 +6,15 @@
 class BattleScene : public SceneBase
 {
 public:
-	BattleScene(GameManager* gm);
+	BattleScene(GameManager* gm, CityData& attacker, CityData& defender);
 
 	void update() override;
 	void draw() const override;
 
 private:
 	GameManager* m_gameManager;
-
-	// ★ 戦闘処理はすべてこのクラスに任せる
 	BattleGameManager m_battleManager;
+
+	CityData* m_attackerData;
+	CityData* m_defenderData;
 };

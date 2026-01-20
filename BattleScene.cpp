@@ -1,17 +1,24 @@
 ﻿#include "BattleScene.hpp"
 
-BattleScene::BattleScene(GameManager* gm)
+BattleScene::BattleScene(GameManager* gm, CityData& attacker, CityData& defender)
 	: m_gameManager(gm)
+	, m_attackerData(&attacker)
+	, m_defenderData(&defender)
 {
-	// ダミーデータ
-	CityData dummyAtk(U"味方拠点", Point(0, 0), U"劉備");
-	CityData dummyDef(U"敵拠点", Point(0, 0), U"曹操");
+	Officer leader;
+	if (attacker.officers.isEmpty())
+	{
+			leader = Officer(U"守備隊長",50,50,50);
+	}
+	else
+	{
+		leader = attacker.officers[0]; // 先頭の武将をリーダーに
+	}
 
-	// 武将
-	Officer leader(U"関羽", 95, 97, 75, 60);
+	int soldiers = attacker.troops;
 
-	// ★ エラー修正：m_gameManagerではなく、m_battleManagerを呼び出します
-	m_battleManager.InitializeBattle(dummyAtk, dummyDef, leader, 3000);
+	m_battleManager.InitializeBattle(attacker, defender, leader, soldiers);
+
 }
 
 void BattleScene::update()
@@ -22,6 +29,8 @@ void BattleScene::update()
 	{
 		if (MouseL.down())
 		{
+			m_battleManager.ApplyBattleResult(*m_attackerData, *m_defenderData);
+
 			m_sceneEnd = true;
 			m_nextScene = U"WorldMap";
 		}

@@ -36,15 +36,26 @@ bool BattleGameManager::IsBattleFinished() const
 // 更新
 void BattleGameManager::Update()
 {
-	if (phase != TurnPhase::BattleEnd && PlayerWon())
+	// 1. アニメーションは常に更新
+	for (auto& u : units) u.Update(Scene::DeltaTime());
+
+	// 2. すでに終わっていたら何もしない
+	if (phase == TurnPhase::BattleEnd) return;
+
+	// 3. 勝利判定
+	if (PlayerWon())
 	{
 		phase = TurnPhase::BattleEnd;
 		return;
 	}
-	if (phase == TurnPhase::BattleEnd) return;
 
-	for (auto& u : units) u.Update(Scene::DeltaTime());
+	if (PlayerLost())
+	{
+		phase = TurnPhase::BattleEnd;
+		return;
+	}
 
+	// 5. ターン処理
 	switch (phase)
 	{
 	case TurnPhase::PlayerTurn: UpdatePlayerTurn(); break;
@@ -137,7 +148,11 @@ void BattleGameManager::Draw() const
 	}
 
 	String turnText = (phase == TurnPhase::PlayerTurn) ? U"味方ターン" : U"敵ターン";
-	if (phase == TurnPhase::BattleEnd) turnText = U"戦闘終了";
+	if (phase == TurnPhase::BattleEnd)
+	{
+		if (PlayerWon()) turnText = U"勝利！";
+		else turnText = U"敗北...";
+	}
 
 	FontAsset(U"medium")(turnText).draw(Scene::Width() / 2 - 100, -40, Palette::White);
 }
@@ -297,17 +312,49 @@ bool BattleGameManager::PlayerWon() const
 	for (auto& u : units) if (!u.isPlayer && u.alive) return false;
 	return true;
 }
-
+// 味方ユニット（isPlayer == true）で、生きている（alive == true）奴が一人もいなければ「負け」
+bool BattleGameManager::PlayerLost() const
+{
+	// 味方が全滅しているか？
+	for (auto& u : units) if (u.isPlayer && u.alive) return false;
+	return true;
+}
 void BattleGameManager::ApplyBattleResult(CityData& atkCity, CityData& defCity)
 {
+	
+		int playerSurvivors = 0;
+		int EnemySurvivors = 0;
+
+		for (const auto& u : units)
+		{
+			if (u.alive)
+			{
+				if (u.isPlayer) playerSurvivors += u.soldiers;
+				else  EnemySurvivors += u.soldiers;	
+			}
+		}
 	if (PlayerWon())
-	{
+		{
+		// 攻撃側の勝利
+		atkCity.troops = playerSurvivors;
 		defCity.owner = atkCity.owner;
-		atkCity.troops = Max(atkCity.troops - 200, 0);
-		defCity.troops = 1000;
-	}
+		defCity.troops = 500;
+		defCity.order = Max(0, defCity.order -50);
+		}
 	else
 	{
-		atkCity.troops = Max(atkCity.troops - 500, 0);
+		atkCity.troops = playerSurvivors;
+		defCity.troops = EnemySurvivors;
+	}
+	if (PlayerLost())
+	{
+		phase = TurnPhase::BattleEnd;
+		return;
+	}
+
+	switch (phase)
+	{
+	case TurnPhase::PlayerTurn: UpdatePlayerTurn(); break;
+	case TurnPhase::EnemyTurn:  UpdateEnemyTurn();  break;
 	}
 }

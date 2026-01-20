@@ -87,7 +87,34 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 	}
 	else if (nextScene == U"Battle")
 	{
-		m_currentScene = new BattleScene(&m_gameManager);
+		if (m_selectedCityIndex < 0 || m_selectedCityIndex >= m_cities.size())
+		{
+			// ログを出力（デバッグ用）
+			Console << U"Error: Invalid City Index: " << m_selectedCityIndex;
+			m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
+			return;
+		}
+
+		// 2. 攻撃側データの取得（安全確認済み）
+		CityData* attacker = &m_cities[m_selectedCityIndex];
+
+		// 3. 防御側データの検索
+		CityData* defender = nullptr;
+		for (auto& city : m_cities)
+		{
+			if (city.owner != m_playerFaction.name)
+			{
+				defender = &city;
+				break;
+			}
+		}
+
+		// 敵がいない場合の保険（ここも重要）
+		static CityData dummyEnemy(U"賊軍", Point(0, 0), U"賊");
+		if (defender == nullptr) defender = &dummyEnemy;
+
+		// 4. シーン遷移
+		m_currentScene = new BattleScene(&m_gameManager, *attacker, *defender);
 	}
 
 }

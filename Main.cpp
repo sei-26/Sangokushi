@@ -8,12 +8,12 @@ void Main()
 
 	// ★ フォント登録（ここで行うのが正解）
 	// コード内で使っているフォントアセット名を登録しておきます
-	FontAsset::Register(U"title", 40);
-	FontAsset::Register(U"menu", 24);
-	FontAsset::Register(U"small", 26);
-	FontAsset::Register(U"Default", 20); // WorldMapで使っているので追加推奨
-	FontAsset::Register(U"huge", 80);    // クリア画面用
-	FontAsset::Register(U"medium", 40);  // クリア画面用
+	FontAsset::Register(U"Default", 20);
+	FontAsset::Register(U"title", 40);   // ← これが必要です！
+	FontAsset::Register(U"menu", 20);
+	FontAsset::Register(U"huge", 80);
+	FontAsset::Register(U"small", 14);
+	FontAsset::Register(U"medium", 30);
 
 	// ★ ここでマネージャーを作成
 	// コンストラクタの中で自動的に WorldMapScene が作られるようにします
