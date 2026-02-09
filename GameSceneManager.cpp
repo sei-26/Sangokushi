@@ -69,7 +69,25 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 
 	if (nextScene == U"WorldMap")
 	{
+		bool isAlive = false;
+		for (const auto& city : m_cities)
+		{
+			{
+				if (city.owner == m_playerFaction.name)
+				{
+					isAlive = true;
+					break;
+				}
+			}
+		}
+		if (!isAlive)
+		{
+			System::MessageBoxOK(U"あなたの勢力は滅亡しました。ゲームオーバーです。", MessageBoxStyle::Error);
+			System::Exit();
+			return;
+		}
 		m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
+	
 	}
 	else if (nextScene == U"City")
 	{

@@ -29,6 +29,16 @@ void WorldMapScene::update()
 
 			int m = m_gameManager->month;
 
+			if (m_gameManager->pendingBattle.isOccurring)
+			{
+				int atkIdx = m_gameManager->pendingBattle.atkCityIndex;
+				int defIdx = m_gameManager->pendingBattle.defCityIndex;
+
+				m_nextScene = U"Battle ";
+				m_sceneEnd = true;
+
+				return;
+			}
 			// ---------------------------------------------------------
 			// ★ 変更点：季節の変わり目（3, 6, 9, 12月）だけ演出を入れる
 			// ---------------------------------------------------------

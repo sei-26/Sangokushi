@@ -20,6 +20,15 @@ public:
 	int getYear() const { return year; }
 	int getMonth() const { return month; }
 
+	struct PendingBattle
+	{
+		bool isOccurring = false;
+		int atkCityIndex = -1;
+		int defCityIndex = -1;
+	};
+
+	PendingBattle pendingBattle;
+
 	// ------------------------------------------------------------------
 	// 互換性用ダミー機能
 	// ------------------------------------------------------------------
@@ -35,4 +44,5 @@ public:
 	void DrawPKUI() const {}
 	void DrawSRPGBoard() const {}
 	bool IsBattleFinished() const { return false; }
+
 };

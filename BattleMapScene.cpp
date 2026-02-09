@@ -20,7 +20,7 @@ BattleMapScene::BattleMapScene(
 	m_leader = leader;
 	m_soldiers = soldiers;
 
-	manager.InitializeBattle(*atkCityRef, *defCityRef, leader, soldiers);
+	manager.InitializeBattle(*atkCityRef, *defCityRef, leader, soldiers, true);
 }
 
 

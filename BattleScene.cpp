@@ -17,7 +17,7 @@ BattleScene::BattleScene(GameManager* gm, CityData& attacker, CityData& defender
 
 	int soldiers = attacker.troops;
 
-	m_battleManager.InitializeBattle(attacker, defender, leader, soldiers);
+	m_battleManager.InitializeBattle(attacker, defender, leader, soldiers, true);
 
 }
 

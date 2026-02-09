@@ -6,13 +6,16 @@ void BattleGameManager::InitializeBattle(
 	const CityData& fromCity,
 	const CityData& targetCity,
 	const Officer& selectedLeader,
-	int selectedSoldiers)
+	int selectedSoldiers,
+	bool playerIsAtk)
 {
 	(void)fromCity; (void)targetCity;
 
 	map = Map(15, 10, 60);
 	map.FitToScreen(Scene::Width(), Scene::Height(), 0);
 	units.clear();
+
+	isPlayerAttacker = playerIsAtk;
 
 	// 味方
 	units.push_back(Unit(selectedLeader.name, Side::Player, Point(1, 4), selectedSoldiers));
@@ -321,40 +324,56 @@ bool BattleGameManager::PlayerLost() const
 }
 void BattleGameManager::ApplyBattleResult(CityData& atkCity, CityData& defCity)
 {
-	
-		int playerSurvivors = 0;
-		int EnemySurvivors = 0;
+	// 1. 生存兵数の集計
+	int playerSurvivors = 0;
+	int enemySurvivors = 0;
+	for (const auto& u : units)
+	{
+		if (u.alive)
+		{
+			if (u.isPlayer) playerSurvivors += u.soldiers;
+			else            enemySurvivors += u.soldiers;
+		}
+	}
 
-		for (const auto& u : units)
-		{
-			if (u.alive)
-			{
-				if (u.isPlayer) playerSurvivors += u.soldiers;
-				else  EnemySurvivors += u.soldiers;	
-			}
-		}
+	// 2. 結果反映
 	if (PlayerWon())
+	{
+		// === プレイヤー勝利！ ===
+
+		if (isPlayerAttacker)
 		{
-		// 攻撃側の勝利
-		atkCity.troops = playerSurvivors;
-		defCity.owner = atkCity.owner;
-		defCity.troops = 500;
-		defCity.order = Max(0, defCity.order -50);
+			// 【攻め】で勝った場合 → 敵の城を奪う！
+			atkCity.troops = playerSurvivors; // 帰還
+			defCity.owner = atkCity.owner;    // 領土変更
+			defCity.troops = 500;             // 占領兵
+			defCity.order = Max(0, defCity.order - 50);
 		}
+		else
+		{
+			// 【守り】で勝った場合 → 城を守り切った！
+			// （領土は変わらない）
+			defCity.troops = playerSurvivors; // 防衛兵が残る
+			atkCity.troops = enemySurvivors;  // 敵は敗走
+		}
+	}
 	else
 	{
-		atkCity.troops = playerSurvivors;
-		defCity.troops = EnemySurvivors;
-	}
-	if (PlayerLost())
-	{
-		phase = TurnPhase::BattleEnd;
-		return;
-	}
+		// === プレイヤー敗北... ===
 
-	switch (phase)
-	{
-	case TurnPhase::PlayerTurn: UpdatePlayerTurn(); break;
-	case TurnPhase::EnemyTurn:  UpdateEnemyTurn();  break;
+		if (isPlayerAttacker)
+		{
+			// 【攻め】で負けた場合 → 撤退
+			atkCity.troops = playerSurvivors; // ほぼ0
+			defCity.troops = enemySurvivors;  // 敵は健在
+		}
+		else
+		{
+			// 【守り】で負けた場合 → 自分の城を奪われる！！
+			atkCity.troops = enemySurvivors;  // 敵が入城
+			defCity.troops = 500;             // 敵の占領兵
+			defCity.owner = atkCity.owner;    // ★領土を奪われる★
+			defCity.order = Max(0, defCity.order - 50);
+		}
 	}
 }

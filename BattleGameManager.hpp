@@ -23,14 +23,17 @@ public:
 	Array<Point> moveRange;     // 移動可能範囲
 
 	// 初期化
-	void InitializeBattle(const CityData& fromCity, const CityData& targetCity, const Officer& leader, int soldiers);
+	void InitializeBattle(const CityData& fromCity, const CityData& targetCity, const Officer& leader, int soldiers, bool  playerIsAtk);
 
 	// 更新と描画
 	void Update();
 	void Draw() const;
 
-	// ★ 追加：戦闘終了判定（エラー修正）
+	//戦闘終了判定（エラー修正）
 	bool IsBattleFinished() const;
+
+	//プレイヤーが攻撃側かどうか
+	bool isPlayerAttacker = true;
 
 	// 戦闘結果の適用
 	void ApplyBattleResult(CityData& atkCity, CityData& defCity);
