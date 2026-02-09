@@ -87,7 +87,7 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 			return;
 		}
 		m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
-	
+
 	}
 	else if (nextScene == U"City")
 	{
@@ -105,34 +105,100 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 	}
 	else if (nextScene == U"Battle")
 	{
-		if (m_selectedCityIndex < 0 || m_selectedCityIndex >= m_cities.size())
+		CityData* pPlayerCity = nullptr;
+		CityData* pEnemyCity = nullptr;
+		bool isPlayerAttacker = true;
+
+		// ========================================================
+		// パターンA：防衛戦イベント（敵から攻められた）
+		// ========================================================
+		if (m_gameManager.pendingBattle.isOccurring)
 		{
-			// ログを出力（デバッグ用）
-			Console << U"Error: Invalid City Index: " << m_selectedCityIndex;
+			int atkIdx = m_gameManager.pendingBattle.atkCityIndex;
+			int defIdx = m_gameManager.pendingBattle.defCityIndex;
+
+			// 安全性チェック
+			if (atkIdx < 0 || atkIdx >= static_cast<int>(m_cities.size()) ||
+				defIdx < 0 || defIdx >= static_cast<int>(m_cities.size()))
+			{
+				Console << U"[ERROR] 無効な都市インデックス: atk=" << atkIdx
+					<< U", def=" << defIdx << U", size=" << m_cities.size();
+				m_gameManager.pendingBattle.isOccurring = false;
+				m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
+				return;
+			}
+
+			// 防衛戦なので、プレイヤーは防御側
+			pEnemyCity = &m_cities[atkIdx];  // 敵（攻め）
+			pPlayerCity = &m_cities[defIdx]; // 自分（守り）
+			isPlayerAttacker = false;
+
+			Console << U"[防衛戦] " << pEnemyCity->name << U"(" << pEnemyCity->troops
+				<< U"兵) → " << pPlayerCity->name << U"(" << pPlayerCity->troops << U"兵)";
+
+			// イベントフラグをリセット
+			m_gameManager.pendingBattle.isOccurring = false;
+		}
+		// ========================================================
+		// パターンB：通常攻撃（プレイヤーが攻める）
+		// ========================================================
+		else
+		{
+			// 安全性チェック
+			if (m_selectedCityIndex < 0 || m_selectedCityIndex >= static_cast<int>(m_cities.size()))
+			{
+				Console << U"[ERROR] 無効な選択都市: " << m_selectedCityIndex;
+				m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
+				return;
+			}
+
+			pPlayerCity = &m_cities[m_selectedCityIndex];
+
+			// 兵数チェック
+			if (pPlayerCity->troops <= 0)
+			{
+				Console << U"[ERROR] 兵が不足しています";
+				m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
+				return;
+			}
+
+			isPlayerAttacker = true;
+
+			// 敵都市を探す
+			for (auto& city : m_cities)
+			{
+				if (city.owner != m_playerFaction.name && city.troops > 0)
+				{
+					pEnemyCity = &city;
+					break;
+				}
+			}
+
+			if (pEnemyCity == nullptr)
+			{
+				Console << U"[INFO] 攻撃可能な敵都市がありません";
+				m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
+				return;
+			}
+
+			Console << U"[出陣] " << pPlayerCity->name << U"(" << pPlayerCity->troops
+				<< U"兵) → " << pEnemyCity->name << U"(" << pEnemyCity->troops << U"兵)";
+		}
+
+		// ========================================================
+		// 最終安全チェック
+		// ========================================================
+		if (pPlayerCity == nullptr || pEnemyCity == nullptr)
+		{
+			Console << U"[ERROR] 都市データが無効です";
 			m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
 			return;
 		}
 
-		// 2. 攻撃側データの取得（安全確認済み）
-		CityData* attacker = &m_cities[m_selectedCityIndex];
-
-		// 3. 防御側データの検索
-		CityData* defender = nullptr;
-		for (auto& city : m_cities)
-		{
-			if (city.owner != m_playerFaction.name)
-			{
-				defender = &city;
-				break;
-			}
-		}
-
-		// 敵がいない場合の保険（ここも重要）
-		static CityData dummyEnemy(U"賊軍", Point(0, 0), U"賊");
-		if (defender == nullptr) defender = &dummyEnemy;
-
-		// 4. シーン遷移
-		m_currentScene = new BattleScene(&m_gameManager, *attacker, *defender);
+		// ========================================================
+		// BattleScene を作成（4引数バージョン）
+		// ========================================================
+		m_currentScene = new BattleScene(&m_gameManager, *pPlayerCity, *pEnemyCity, isPlayerAttacker);
 	}
 
 }

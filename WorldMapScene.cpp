@@ -29,14 +29,18 @@ void WorldMapScene::update()
 
 			int m = m_gameManager->month;
 
+			// ★ 修正：防衛戦が発生した場合の処理
 			if (m_gameManager->pendingBattle.isOccurring)
 			{
 				int atkIdx = m_gameManager->pendingBattle.atkCityIndex;
 				int defIdx = m_gameManager->pendingBattle.defCityIndex;
 
-				m_nextScene = U"Battle ";
+				// ★ 修正：スペースを削除して統一
+				m_nextScene = U"Battle";
 				m_sceneEnd = true;
 
+				Console << U"[防衛戦発生] " << (*m_allCities)[atkIdx].name
+					<< U" が " << (*m_allCities)[defIdx].name << U" に侵攻！";
 				return;
 			}
 			// ---------------------------------------------------------

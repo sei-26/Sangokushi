@@ -1,29 +1,57 @@
 ﻿#include "BattleGameManager.hpp"
 #include <queue>
 
-// 初期化
+// ★ 修正：初期化処理で敵のデータを正しく使用
 void BattleGameManager::InitializeBattle(
-	const CityData& fromCity,
-	const CityData& targetCity,
+	const CityData& playerCity,
+	const CityData& enemyCity,
 	const Officer& selectedLeader,
 	int selectedSoldiers,
 	bool playerIsAtk)
 {
-	(void)fromCity; (void)targetCity;
-
 	map = Map(15, 10, 60);
 	map.FitToScreen(Scene::Width(), Scene::Height(), 0);
 	units.clear();
 
 	isPlayerAttacker = playerIsAtk;
 
-	// 味方
-	units.push_back(Unit(selectedLeader.name, Side::Player, Point(1, 4), selectedSoldiers));
-	units.push_back(Unit(U"副将", Side::Player, Point(1, 5), 1000));
+	// ========================================================
+	// プレイヤー側のユニット配置
+	// ========================================================
+	int playerMainForce = Max(selectedSoldiers, 100);     // 最低100
+	int playerSubForce = Max(selectedSoldiers / 3, 50);   // 最低50
 
-	// 敵
-	units.push_back(Unit(U"敵将A", Side::Enemy, Point(12, 4), 2000));
-	units.push_back(Unit(U"敵将B", Side::Enemy, Point(12, 6), 1500));
+	units.push_back(Unit(selectedLeader.name, Side::Player, Point(1, 4), playerMainForce));
+	units.push_back(Unit(U"副将", Side::Player, Point(1, 5), playerSubForce));
+
+	// ========================================================
+	// 敵側のユニット配置
+	// ========================================================
+
+	// 敵の兵数を取得（最低100は確保）
+	int enemySoldiers = Max(enemyCity.troops, 100);
+
+	// 敵の将軍名を取得
+	String enemyLeaderName = U"敵将";
+	if (!enemyCity.officers.isEmpty())
+	{
+		enemyLeaderName = enemyCity.officers[0].name;
+	}
+	else
+	{
+		// 武将がいない場合は「勢力名 + 兵」
+		enemyLeaderName = enemyCity.owner + U"兵";
+	}
+
+	// 敵の兵力配置
+	int enemyMainForce = enemySoldiers;
+	int enemySubForce = Max(enemySoldiers / 2, 50);  // 最低50、0にならない
+
+	units.push_back(Unit(enemyLeaderName, Side::Enemy, Point(12, 4), enemyMainForce));
+	units.push_back(Unit(U"敵副将", Side::Enemy, Point(12, 6), enemySubForce));
+
+	Console << U"[戦力配置] プレイヤー=" << playerMainForce << U"+" << playerSubForce
+		<< U", 敵=" << enemyMainForce << U"+" << enemySubForce;
 
 	phase = TurnPhase::PlayerTurn;
 	actingIndex = 0;
@@ -146,7 +174,6 @@ void BattleGameManager::Draw() const
 
 	for (auto& u : units)
 	{
-		// ★ エラー修正：小文字の draw を呼び出す
 		if (u.alive) u.draw(map.tileSize);
 	}
 
@@ -315,13 +342,14 @@ bool BattleGameManager::PlayerWon() const
 	for (auto& u : units) if (!u.isPlayer && u.alive) return false;
 	return true;
 }
-// 味方ユニット（isPlayer == true）で、生きている（alive == true）奴が一人もいなければ「負け」
+
 bool BattleGameManager::PlayerLost() const
 {
-	// 味方が全滅しているか？
 	for (auto& u : units) if (u.isPlayer && u.alive) return false;
 	return true;
 }
+
+// ★ 戦闘結果の反映（既存のコードを維持）
 void BattleGameManager::ApplyBattleResult(CityData& atkCity, CityData& defCity)
 {
 	// 1. 生存兵数の集計
