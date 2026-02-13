@@ -8,7 +8,8 @@
 class GameSceneManager
 {
 public:
-	GameSceneManager();
+	// CSV対応版：引数を受け取るコンストラクタ
+	GameSceneManager(GameManager* gm, const Faction& playerFaction, const Array<CityData>& cities);
 	~GameSceneManager();
 
 	void update();
@@ -17,11 +18,10 @@ public:
 
 private:
 	SceneBase* m_currentScene;
-	GameManager m_gameManager; // ゲーム管理（年月など）
+	GameManager* m_gameManager;
 
 	Array<CityData> m_cities;
 	Faction m_playerFaction;
 
-	// ★ これを追加：選択中の都市の番号
 	int m_selectedCityIndex = 0;
 };

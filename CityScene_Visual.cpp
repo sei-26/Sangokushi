@@ -6,12 +6,16 @@ CityScene::CityScene(GameManager* gm, CityData& city)
 {
 	m_message = U"ようこそ " + m_cityData->name + U" へ。\n指示をください、殿。";
 
-	// ボタン配置（左側）
-	int startX = 60;
-	int startY = 280;
-	int btnW = 280;
-	int btnH = 65;
-	int gap = 85;
+	// ★ 画面サイズに応じたボタン配置
+	int screenW = Scene::Width();
+	int screenH = Scene::Height();
+
+	// ボタンサイズを画面サイズに合わせる
+	int btnW = static_cast<int>(screenW * 0.175);  // 画面幅の17.5%
+	int btnH = static_cast<int>(screenH * 0.072);  // 画面高さの7.2%
+	int startX = static_cast<int>(screenW * 0.0375);
+	int startY = static_cast<int>(screenH * 0.311);
+	int gap = static_cast<int>(screenH * 0.094);
 
 	m_btnAgr = Rect(startX, startY + gap * 0, btnW, btnH);
 	m_btnCom = Rect(startX, startY + gap * 1, btnW, btnH);
@@ -19,10 +23,16 @@ CityScene::CityScene(GameManager* gm, CityData& city)
 	m_btnOrder = Rect(startX, startY + gap * 3, btnW, btnH);
 
 	// 出陣ボタンは右下に大きく
-	m_btnAttack = Rect(Scene::Width() - 350, Scene::Height() - 180, 300, 120);
+	m_btnAttack = Rect(screenW - static_cast<int>(screenW * 0.219),
+					   screenH - static_cast<int>(screenH * 0.2),
+					   static_cast<int>(screenW * 0.188),
+					   static_cast<int>(screenH * 0.133));
 
 	// 戻るボタン
-	m_btnBack = Rect(50, Scene::Height() - 100, 200, 70);
+	m_btnBack = Rect(static_cast<int>(screenW * 0.031),
+					 screenH - static_cast<int>(screenH * 0.111),
+					 static_cast<int>(screenW * 0.125),
+					 static_cast<int>(screenH * 0.078));
 }
 
 void CityScene::update()
@@ -101,6 +111,10 @@ void CityScene::update()
 void CityScene::draw() const
 {
 	double time = Scene::Time();
+
+	// ★ 画面サイズを取得
+	int screenW = Scene::Width();
+	int screenH = Scene::Height();
 
 	// =================================================================
 	// 🎨 背景：豪華絢爛な宮殿
@@ -183,7 +197,7 @@ void CityScene::draw() const
 	// 👑 タイトル（超豪華版）
 	// =================================================================
 	{
-		Vec2 titlePos(Scene::Center().x, 80);
+		Vec2 titlePos(screenW / 2.0, screenH * 0.089);
 
 		// 🌟 タイトル背後の光芒
 		{
@@ -191,7 +205,7 @@ void CityScene::draw() const
 			for (int ray = 0; ray < 12; ++ray)
 			{
 				double angle = (time * 0.3 + ray * Math::TwoPi / 12);
-				double rayLength = 250 + sin(time * 2 + ray) * 30;
+				double rayLength = screenH * 0.278 + sin(time * 2 + ray) * 30;
 				Vec2 rayEnd = titlePos + Vec2(Cos(angle), Sin(angle)) * rayLength;
 
 				Triangle(
@@ -203,7 +217,7 @@ void CityScene::draw() const
 		}
 
 		// タイトル背景パネル
-		RectF titlePanel(Arg::center(titlePos), 600, 100);
+		RectF titlePanel(Arg::center(titlePos), screenW * 0.375, screenH * 0.111);
 
 		// パネルの発光
 		{
@@ -240,14 +254,14 @@ void CityScene::draw() const
 
 		// サブタイトル
 		FontAsset(U"menu")(U"～ " + m_cityData->owner + U" の治世 ～")
-			.drawAt(titlePos.movedBy(0, 45), ColorF(1.0, 0.9, 0.6));
+			.drawAt(titlePos.movedBy(0, screenH * 0.05), ColorF(1.0, 0.9, 0.6));
 	}
 
 	// =================================================================
 	// 📊 ステータスパネル（宝石のように輝く）
 	// =================================================================
 	{
-		RectF statsPanel(Scene::Width() - 550, 200, 500, 450);
+		RectF statsPanel(screenW - screenW * 0.344, screenH * 0.222, screenW * 0.313, screenH * 0.5);
 
 		// パネルの輝き
 		{
@@ -293,43 +307,47 @@ void CityScene::draw() const
 			FontAsset(U"title")(Format(value)).draw(statX + 180, y + 5, barColor);
 
 			// バー（背景）
-			RectF barBg(static_cast<double>(statX + 50), static_cast<double>(y + 40), 400.0, 20.0);
+			RectF barBg(static_cast<double>(statX + 50), static_cast<double>(y + 40), screenW * 0.25, 20.0);
 			barBg.draw(ColorF(0.1, 0.08, 0.06));
 			barBg.drawFrame(2, ColorF(0.5, 0.4, 0.3));
 
-			// バー（実際の値 - 虹色グラデーション）
+			// バー（実際の値）
 			double ratio = Min(1.0, static_cast<double>(value) / maxValue);
-			RectF bar(static_cast<double>(statX + 50), static_cast<double>(y + 40), 400.0 * ratio, 20.0);
+			RectF bar(static_cast<double>(statX + 50), static_cast<double>(y + 40), screenW * 0.25 * ratio, 20.0);
 			bar.draw(Arg::left = barColor, Arg::right = barColor.lerp(Palette::White, 0.3));
 
 			// ✨ バーの輝き
 			{
 				ScopedRenderStates2D blend(BlendState::Additive);
-				RectF(static_cast<double>(statX + 50), static_cast<double>(y + 40), 400.0 * ratio, 10.0)
+				RectF(static_cast<double>(statX + 50), static_cast<double>(y + 40), screenW * 0.25 * ratio, 10.0)
 					.draw(ColorF(1, 1, 1, 0.4));
 
 				// 流れる光
-				double flowPos = Math::Fmod(time * 200, 400.0 * ratio);
+				double flowPos = Math::Fmod(time * 200, screenW * 0.25 * ratio);
 				Circle(statX + 50 + flowPos, y + 50, 8).draw(ColorF(1, 1, 1, 0.6));
 			}
 			};
 
-		drawParameter(U"$", U"金", m_cityData->gold, 5000, Palette::Gold, statY + 60);
-		drawParameter(U"米", U"兵糧", m_cityData->food, 5000, Palette::Orange, statY + 140);
-		drawParameter(U"兵", U"兵士", m_cityData->troops, 10000, Palette::Red, statY + 220);
-		drawParameter(U"安", U"治安", m_cityData->order, 100, Palette::Skyblue, statY + 300);
+		int baseY = statY + static_cast<int>(screenH * 0.067);
+		int gap = static_cast<int>(screenH * 0.089);
+
+		drawParameter(U"$", U"金", m_cityData->gold, 5000, Palette::Gold, baseY + gap * 0);
+		drawParameter(U"米", U"兵糧", m_cityData->food, 5000, Palette::Orange, baseY + gap * 1);
+		drawParameter(U"兵", U"兵士", m_cityData->troops, 10000, Palette::Red, baseY + gap * 2);
+		drawParameter(U"安", U"治安", m_cityData->order, 100, Palette::Skyblue, baseY + gap * 3);
 
 		// 発展度
 		FontAsset(U"small")(U"農業: {} / 商業: {} / 兵舎: {}"_fmt(
 			m_cityData->agriculture, m_cityData->commerce, m_cityData->barracks))
-			.draw(statX + 10, statY + 390, ColorF(0.8, 0.8, 0.8));
+			.draw(statX + 10, statY + static_cast<int>(screenH * 0.433), ColorF(0.8, 0.8, 0.8));
 	}
 
 	// =================================================================
 	// 🎮 内政ボタン群（超煌びやか）
 	// =================================================================
 
-	auto drawFancyButton = [&](const Rect& btn, String text, String subtext, Color mainColor, bool isHovered) {
+	auto drawFancyButton = [&](const Rect& btn, String text, String subtext, Color mainColor, bool isHovered)
+	{
 		// ホバー時の輝き
 		if (isHovered)
 		{
@@ -344,16 +362,18 @@ void CityScene::draw() const
 		Color topColor = isHovered ? mainColor.lerp(Palette::White, 0.4) : mainColor;
 		Color bottomColor = isHovered ? mainColor : mainColor.lerp(Palette::Black, 0.4);
 
-
 		RectF(btn).draw(Arg::top = topColor, Arg::bottom = bottomColor);
 
 		// 金色の枠
-		RectF(btn).drawFrame(4, isHovered ? ColorF(1, 1, 0.9) : ColorF(0.8, 0.7, 0.5));
+		if (isHovered) RectF(btn).drawFrame(4, ColorF(1, 1, 0.9)); else RectF(btn).drawFrame(4, ColorF(0.8, 0.7, 0.5));
 
 		// 光沢（上部ハイライト）
 		RectF(static_cast<double>(btn.x), static_cast<double>(btn.y),
+			  static_cast<double>(btn.w), static_cast<double>(btn.h) * 0.35);
+			double glowAlpha = isHovered ? 0.3 : 0.2;
+		RectF(static_cast<double>(btn.x), static_cast<double>(btn.y),
 			  static_cast<double>(btn.w), static_cast<double>(btn.h) * 0.35)
-			.draw(ColorF(1, 1, 1, isHovered ? 0.3 : 0.2));
+			.draw(ColorF(1, 1, 1, glowAlpha));
 
 		// テキスト（多重影）
 		FontAsset(U"title")(text).drawAt(btn.center().movedBy(3, -7), ColorF(0, 0, 0, 0.6));
@@ -374,7 +394,7 @@ void CityScene::draw() const
 				Circle(corner, 5).draw(ColorF(1, 1, 0.8, 0.8));
 			}
 		}
-		};
+	};
 
 	drawFancyButton(m_btnAgr, U"農業開発", U"金 100 消費", ColorF(0.3, 0.7, 0.4), m_btnAgr.mouseOver());
 	drawFancyButton(m_btnCom, U"商業投資", U"金 100 消費", ColorF(0.4, 0.5, 0.9), m_btnCom.mouseOver());
@@ -493,8 +513,18 @@ void CityScene::draw() const
 		bool isHovered = m_btnBack.mouseOver();
 
 		m_btnBack.movedBy(2, 2).draw(ColorF(0, 0, 0, 0.4));
-		RectF(m_btnBack).draw(isHovered ? ColorF(0.35, 0.30, 0.25) : ColorF(0.25, 0.20, 0.15));
-		RectF(m_btnBack).drawFrame(3, ColorF(0.7, 0.6, 0.4));
+
+		// 修正：条件演算子をif文に変更
+		if (isHovered)
+		{
+			m_btnBack.draw(ColorF(0.35, 0.30, 0.25));
+		}
+		else
+		{
+			m_btnBack.draw(ColorF(0.25, 0.20, 0.15));
+		}
+
+		m_btnBack.drawFrame(3, ColorF(0.7, 0.6, 0.4));
 
 		FontAsset(U"menu")(U"← マップに戻る").drawAt(m_btnBack.center().movedBy(1, 1), ColorF(0, 0, 0, 0.5));
 		FontAsset(U"menu")(U"← マップに戻る").drawAt(m_btnBack.center(), Palette::White);
@@ -502,7 +532,7 @@ void CityScene::draw() const
 		if (isHovered)
 		{
 			ScopedRenderStates2D blend(BlendState::Additive);
-			RectF(m_btnBack).drawFrame(2, ColorF(1, 1, 0.8, 0.4));
+			m_btnBack.drawFrame(2, ColorF(1, 1, 0.8, 0.4));
 		}
 	}
 

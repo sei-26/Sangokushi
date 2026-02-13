@@ -8,8 +8,17 @@ void BattleGameManager::InitializeBattle(
 	int selectedSoldiers,
 	bool playerIsAtk)
 {
-	map = Map(15, 10, 60);
-	map.FitToScreen(Scene::Width(), Scene::Height(), 0);
+	// ★ 画面サイズに応じたマップサイズ
+	int screenW = Scene::Width();
+	int screenH = Scene::Height();
+
+	// マップサイズを画面に合わせて調整（アスペクト比を保つ）
+	int cellSize = Min(screenW / 18, screenH / 13);  // セルサイズを計算
+	int mapWidth = (screenW - 100) / cellSize;
+	int mapHeight = (screenH - 100) / cellSize;
+
+	map = Map(mapWidth, mapHeight, cellSize);
+	map.FitToScreen(screenW, screenH, 0);
 	units.clear();
 
 	isPlayerAttacker = playerIsAtk;
@@ -44,6 +53,9 @@ void BattleGameManager::InitializeBattle(
 	phase = TurnPhase::PlayerTurn;
 	actingIndex = 0;
 	moveRange.clear();
+
+	// playerCity使用済み（警告回避）
+	(void)playerCity;
 }
 
 bool BattleGameManager::IsBattleFinished() const
@@ -142,68 +154,47 @@ void BattleGameManager::Draw() const
 {
 	double time = Scene::Time();
 
-	// =================================================================
-	// 🎨 戦場の背景（超派手版）
-	// =================================================================
-	Scene::SetBackground(ColorF{ 0.15, 0.18, 0.12 });
+	Scene::SetBackground(ColorF{ 0.22, 0.26, 0.20 });
 
-	// 🔥 戦場の煙と炎
+	// 大気の霧
 	{
 		ScopedRenderStates2D blend(BlendState::Additive);
-
-		// 煙の層
-		for (int i = 0; i < 15; ++i)
+		for (int i = 0; i < 12; ++i)
 		{
-			double smokeTime = time * 0.08 + i * 0.5;
-			double x = Math::Fmod(i * 200 + smokeTime * 25, Scene::Width() + 400) - 200;
-			double y = 80 + sin(smokeTime * 1.5) * 40;
-			double size = 180 + sin(smokeTime * 2) * 30;
-
-			Circle(x, y, size).draw(ColorF(0.3, 0.25, 0.2, 0.08));
-		}
-
-		// 遠くの火災
-		for (int i = 0; i < 8; ++i)
-		{
-			double fireTime = time * 2 + i;
-			double x = i * 240.0 + sin(fireTime) * 30;
-			double y = 50 + sin(fireTime * 3) * 15;
-
-			Circle(x, y, 40).draw(ColorF(1.0, 0.5, 0.2, 0.15));
-			Circle(x, y - 20, 25).draw(ColorF(1.0, 0.7, 0.3, 0.12));
+			double fogTime = time * 0.05 + i;
+			double x = Math::Fmod(i * 300.0 + fogTime * 20, Scene::Width() + 200.0) - 100;
+			double y = 100 + sin(fogTime * 2) * 30;
+			Circle(x, y, 250).draw(ColorF(0.35, 0.40, 0.35, 0.04));
 		}
 	}
 
-	// ⚡ 戦場の光（稲妻風）
-	if (static_cast<int>(time * 0.5) % 7 == 0)
+	// 天空の星
 	{
 		ScopedRenderStates2D blend(BlendState::Additive);
-		double flash = sin(time * 20) * 0.5 + 0.5;
-		Scene::Rect().draw(ColorF(1, 1, 0.9, 0.05 * flash));
+		for (int i = 0; i < 50; ++i)
+		{
+			double starX = static_cast<double>((i * 73) % Scene::Width());
+			double starY = static_cast<double>((i * 41) % 300);
+			double twinkle = sin(time * 3 + i) * 0.5 + 0.5;
+			Circle(starX, starY, 2).draw(ColorF(1, 1, 0.9, 0.3 * twinkle));
+		}
 	}
 
 	const Transformer2D t2d{ Mat3x2::Translate(50, 50) };
 
-	// =================================================================
-	// 🗺️ マップ描画（戦場風）
-	// =================================================================
+	// マップ描画
 	for (int y = 0; y < map.height; ++y)
 	{
 		for (int x = 0; x < map.width; ++x)
 		{
-			RectF tile(x * map.tileSize, y * map.tileSize, map.tileSize, map.tileSize);
+			RectF tile(static_cast<double>(x * map.tileSize), static_cast<double>(y * map.tileSize),
+					   static_cast<double>(map.tileSize), static_cast<double>(map.tileSize));
 			Color tileColor = map.tiles[y][x].getColor();
 
-			// タイルの影
 			tile.movedBy(1, 1).draw(ColorF(0, 0, 0, 0.15));
-
-			// タイル本体
-			tile.draw(Arg::top = tileColor, Arg::bottom = tileColor.lerp(Palette::Black, 0.3));
-
-			// 枠線
+			tile.draw(Arg::top = tileColor, Arg::bottom = tileColor.lerp(Palette::Black, 0.25));
 			tile.drawFrame(1, ColorF(0, 0, 0, 0.4));
 
-			// 地形ごとのテクスチャ
 			int type = map.tiles[y][x].type;
 			if (type == 1) // 森
 			{
@@ -212,239 +203,208 @@ void BattleGameManager::Draw() const
 					double treeX = tile.x + (tree + 1) * map.tileSize * 0.25;
 					double treeY = tile.y + map.tileSize * 0.5;
 					Triangle(treeX, treeY - 15, treeX - 8, treeY + 5, treeX + 8, treeY + 5)
-						.draw(ColorF(0.15, 0.3, 0.15, 0.4));
+						.draw(ColorF(0.15, 0.35, 0.15, 0.4));
 				}
 			}
 			else if (type == 2) // 山
 			{
 				Vec2 peak = tile.center().movedBy(0, -10);
 				Triangle(peak, peak.movedBy(-15, 20), peak.movedBy(15, 20))
-					.draw(ColorF(0.3, 0.25, 0.2, 0.4));
+					.draw(ColorF(0.35, 0.30, 0.25, 0.4));
 			}
 			else if (type == 3) // 城
 			{
 				RectF(tile.x + 10, tile.y + 10, map.tileSize - 20, map.tileSize - 20)
-					.draw(ColorF(0.4, 0.4, 0.4, 0.3));
+					.draw(ColorF(0.5, 0.5, 0.5, 0.3));
 			}
 		}
 	}
 
-	// =================================================================
-	// 🎯 移動範囲の表示（超派手版）
-	// =================================================================
+	// 移動範囲の表示（魔法陣風）
 	for (auto& p : moveRange)
 	{
-		RectF tile(p.x * map.tileSize, p.y * map.tileSize, map.tileSize, map.tileSize);
+		RectF tile(static_cast<double>(p.x * map.tileSize), static_cast<double>(p.y * map.tileSize),
+				   static_cast<double>(map.tileSize), static_cast<double>(map.tileSize));
 
-		// 🌟 脈動する光
-		double pulse = 0.6 + sin(time * 5) * 0.3;
+		double pulse = 0.5 + sin(time * 4) * 0.3;
 
-		// 外側の発光
+		// 魔法陣の円
 		{
 			ScopedRenderStates2D blend(BlendState::Additive);
-			tile.stretched(4).draw(ColorF(0.3, 0.6, 1.0, 0.2 * pulse));
+			Circle(tile.center(), map.tileSize * 0.4).drawFrame(2, ColorF(0.5, 0.8, 1.0, 0.4 * pulse));
+			Circle(tile.center(), map.tileSize * 0.3).drawFrame(1, ColorF(0.7, 0.9, 1.0, 0.5 * pulse));
+
+			// 回転する魔法陣
+			for (int i = 0; i < 6; ++i)
+			{
+				double angle = time * 2 + i * Math::TwoPi / 6;
+				Vec2 pos = tile.center() + Vec2(Cos(angle), Sin(angle)) * (map.tileSize * 0.25);
+				Circle(pos, 3).draw(ColorF(0.8, 0.95, 1.0, 0.6 * pulse));
+			}
 		}
 
-		// 半透明の青い範囲
-		tile.stretched(-4).draw(ColorF(0.2, 0.5, 1.0, 0.18 * pulse));
-
-		// 魔法陣風のフレーム
+		tile.stretched(-4).draw(ColorF(0.2, 0.5, 1.0, 0.12 * pulse));
 		tile.stretched(-4).drawFrame(3, ColorF(0.5, 0.8, 1.0, 0.6 * pulse));
-
-		// ✨ 四隅の輝き
-		for (auto corner : { tile.tl(), tile.tr(), tile.bl(), tile.br() })
-		{
-			Circle(corner, 5 + sin(time * 6) * 2).draw(ColorF(0.7, 0.9, 1.0, 0.8 * pulse));
-		}
-
-		// 🌀 中心の魔法陣
-		{
-			ScopedRenderStates2D blend(BlendState::Additive);
-			double rotation = time * 2;
-			Vec2 center = tile.center();
-
-			for (int ring = 0; ring < 2; ++ring)
-			{
-				double radius = 15 + ring * 8;
-				Circle(center, radius).drawFrame(1.5, ColorF(0.6, 0.8, 1.0, 0.3 * pulse));
-			}
-		}
 	}
 
-	// =================================================================
-	// 👥 ユニット描画
-	// =================================================================
-
-	// 選択中のユニットに光の柱
-	if (actingIndex < units.size() && phase == TurnPhase::PlayerTurn)
+	// 行動中ユニットの光の柱
+	if (actingIndex < units.size() && units[actingIndex].alive && !units[actingIndex].acted)
 	{
-		const Unit& selected = units[actingIndex];
-		if (selected.alive && selected.isPlayer)
+		const Unit& activeUnit = units[actingIndex];
+		Vec2 centerPos(activeUnit.pos.x * map.tileSize + map.tileSize * 0.5,
+					   activeUnit.pos.y * map.tileSize + map.tileSize * 0.5);
+
+		ScopedRenderStates2D blend(BlendState::Additive);
+
+		// 光の柱
+		for (int layer = 0; layer < 5; ++layer)
 		{
-			Vec2 unitCenter(selected.drawPos.x * map.tileSize + map.tileSize / 2,
-							selected.drawPos.y * map.tileSize + map.tileSize / 2);
+			double layerAlpha = (5 - layer) * 0.08;
+			double layerWidth = (layer + 1) * 15.0;
 
-			ScopedRenderStates2D blend(BlendState::Additive);
+			RectF(centerPos.x - layerWidth / 2, 0, layerWidth, centerPos.y)
+				.draw(Arg::top = ColorF(1, 1, 1, 0),
+	  Arg::bottom = ColorF(activeUnit.isPlayer ? 0.3 : 0.9,
+		  activeUnit.isPlayer ? 0.5 : 0.3,
+		  activeUnit.isPlayer ? 1.0 : 0.3, layerAlpha));
+		}
 
-			// 🌟 光の柱
-			for (int layer = 0; layer < 3; ++layer)
-			{
-				double height = 800 - layer * 150;
-				double width = 40 - layer * 8;
-				double alpha = 0.15 - layer * 0.04;
+		// 足元の魔法陣
+		for (int ring = 0; ring < 3; ++ring)
+		{
+			double radius = map.tileSize * (0.6 + ring * 0.2) + sin(time * 3 + ring) * 5;
+			Circle(centerPos, radius).drawFrame(2, ColorF(activeUnit.isPlayer ? 0.4 : 1.0,
+				activeUnit.isPlayer ? 0.7 : 0.4,
+				activeUnit.isPlayer ? 1.0 : 0.4,
+				0.4 - ring * 0.1));
+		}
 
-				RectF(Arg::center(unitCenter.x, unitCenter.y - height / 2), width, height)
-					.draw(ColorF(0.3, 0.6, 1.0, alpha));
-			}
-
-			// 地面の光の輪
-			for (int ring = 0; ring < 4; ++ring)
-			{
-				double radius = 30 + ring * 12 + sin(time * 4 + ring) * 5;
-				Circle(unitCenter, radius).drawFrame(2, ColorF(0.5, 0.8, 1.0, 0.4 - ring * 0.08));
-			}
+		// 回転するルーン文字風
+		for (int i = 0; i < 8; ++i)
+		{
+			double angle = time + i * Math::TwoPi / 8;
+			Vec2 runePos = centerPos + Vec2(Cos(angle), Sin(angle)) * (map.tileSize * 0.5);
+			RectF(Arg::center(runePos), 4, 8).rotated(angle).draw(ColorF(1, 1, 0.8, 0.5));
 		}
 	}
 
+	// ユニット描画
 	for (auto& u : units)
 	{
 		if (u.alive) u.draw(map.tileSize);
 	}
 
-	// =================================================================
-	// 🎮 UI表示（超豪華版）
-	// =================================================================
+	// UI表示
 	{
 		RectF turnPanel(Scene::Width() / 2 - 250, 10, 500, 90);
 
-		// パネルの背後の光
 		{
 			ScopedRenderStates2D blend(BlendState::Additive);
-			turnPanel.stretched(8).draw(ColorF(1, 1, 0.8, 0.15));
+			turnPanel.stretched(4).draw(ColorF(1, 1, 0.8, 0.15));
 		}
 
-		// パネルの影
-		turnPanel.movedBy(4, 4).draw(ColorF(0, 0, 0, 0.6));
+		turnPanel.movedBy(4, 4).draw(ColorF(0, 0, 0, 0.5));
 
-		// パネル本体
 		Color panelColor = (phase == TurnPhase::PlayerTurn) ?
-			ColorF(0.25, 0.45, 0.85) : ColorF(0.85, 0.35, 0.35);
+			ColorF(0.25, 0.45, 0.9) : ColorF(0.9, 0.35, 0.35);
+
+		if (phase == TurnPhase::BattleEnd)
+		{
+			panelColor = PlayerWon() ? ColorF(0.3, 0.9, 0.4) : ColorF(0.6, 0.6, 0.6);
+		}
 
 		turnPanel.draw(Arg::top = panelColor, Arg::bottom = panelColor.lerp(Palette::Black, 0.5));
 		turnPanel.drawFrame(5, ColorF(1, 1, 0.9));
 
-		// 装飾的な角（宝石風）
 		for (auto corner : { turnPanel.tl(), turnPanel.tr(), turnPanel.bl(), turnPanel.br() })
 		{
-			Circle(corner, 12).draw(ColorF(1, 1, 0.9));
-			Circle(corner, 10).draw(panelColor);
-			Circle(corner, 6).draw(ColorF(1, 1, 1, 0.8 + sin(time * 4) * 0.2));
+			Circle(corner, 12).draw(ColorF(1, 0.9, 0.6));
+			Circle(corner, 10).draw(ColorF(1, 1, 0.8, 0.8 + sin(time * 4) * 0.2));
 		}
 
-		// ターンテキスト
 		String turnText = (phase == TurnPhase::PlayerTurn) ? U"味方ターン" : U"敵ターン";
-		Color textColor = Palette::White;
-
 		if (phase == TurnPhase::BattleEnd)
 		{
-			if (PlayerWon())
-			{
-				turnText = U"🎉 大勝利！ 🎉";
-				panelColor = ColorF(0.3, 0.85, 0.4);
-			}
-			else
-			{
-				turnText = U"敗北...";
-				panelColor = ColorF(0.5, 0.5, 0.5);
-			}
+			if (PlayerWon()) turnText = U"🎉 大勝利！ 🎉";
+			else turnText = U"敗北...";
 		}
 
-		// テキストの多重影
-		for (int layer = 3; layer > 0; --layer)
+		for (int layer = 4; layer > 0; --layer)
 		{
 			FontAsset(U"huge")(turnText).drawAt(
 				turnPanel.center().movedBy(layer, layer),
-				ColorF(0, 0, 0, 0.3)
+				ColorF(0, 0, 0, 0.15)
 			);
 		}
-		FontAsset(U"huge")(turnText).drawAt(turnPanel.center(), textColor);
+		FontAsset(U"huge")(turnText).drawAt(turnPanel.center(), Palette::White);
 
-		// テキストの輝き
 		{
 			ScopedRenderStates2D blend(BlendState::Additive);
 			FontAsset(U"huge")(turnText).drawAt(turnPanel.center(), ColorF(1, 1, 1, 0.3));
 		}
 	}
 
-	// 操作ヒント
 	if (phase == TurnPhase::PlayerTurn && !moveRange.isEmpty())
 	{
-		RectF hintPanel(Scene::Width() / 2 - 300, Scene::Height() - 60, 600, 50);
+		RectF hintPanel(Scene::Width() / 2 - 300, Scene::Height() - 70, 600, 60);
 		hintPanel.draw(ColorF(0, 0, 0, 0.8));
-		hintPanel.drawFrame(2, ColorF(1, 1, 0.9));
+		hintPanel.drawFrame(2, ColorF(1, 1, 0.8));
 		FontAsset(U"menu")(U"[左クリック] 移動 ／ 隣接で自動攻撃")
 			.drawAt(hintPanel.center(), ColorF(1, 1, 0.9));
 	}
 
-	// =================================================================
-	// 🎆 勝利/敗北時の超派手演出
-	// =================================================================
-	if (phase == TurnPhase::BattleEnd)
+	// 勝利時の花火演出
+	if (phase == TurnPhase::BattleEnd && PlayerWon())
 	{
-		double endTime = 3.0; // 演出の長さ
-		double t = Min(endTime, time); // 実際は戦闘終了からの時間を使う
+		ScopedRenderStates2D blend(BlendState::Additive);
 
-		if (PlayerWon())
+		for (int i = 0; i < 30; ++i)
 		{
-			// ✨ 勝利の光の祝福
-			ScopedRenderStates2D blend(BlendState::Additive);
+			double fireworkTime = time * 2 + i * 0.5;
+			double x = static_cast<double>((i * 137) % Scene::Width());
+			double baseY = Scene::Height() / 2;
 
-			// 金色の光の粒子が降り注ぐ
-			for (int i = 0; i < 150; ++i)
+			for (int spark = 0; spark < 12; ++spark)
 			{
-				double particleTime = time + i * 0.1;
-				double x = Math::Fmod(i * 37.5 + sin(particleTime) * 100, Scene::Width());
-				double y = Math::Fmod(particleTime * 80 + i * 15, Scene::Height());
+				double angle = spark * Math::TwoPi / 12;
+				double dist = Math::Fmod(fireworkTime, 2.0) * 150;
+				double alpha = Max(0.0, 1.0 - Math::Fmod(fireworkTime, 2.0) / 2.0);
 
-				Circle(x, y, 4 + sin(particleTime * 5) * 2)
-					.draw(ColorF(1.0, 0.9, 0.5, 0.6));
-			}
+				Vec2 sparkPos = Vec2(x, baseY) + Vec2(Cos(angle), Sin(angle)) * dist;
 
-			// 🌟 爆発する光の輪
-			for (int ring = 0; ring < 8; ++ring)
-			{
-				double radius = ring * 100.0 + sin(time * 3 + ring) * 30;
-				Circle(Scene::Center(), radius)
-					.drawFrame(3, ColorF(1, 1, 0.7, 0.3 - ring * 0.03));
-			}
+				Color fireworkColor;
+				if (i % 3 == 0) fireworkColor = ColorF(1.0, 0.5, 0.5);
+				else if (i % 3 == 1) fireworkColor = ColorF(0.5, 1.0, 0.7);
+				else fireworkColor = ColorF(0.7, 0.7, 1.0);
 
-			// ✨ 回転する星
-			for (int star = 0; star < 12; ++star)
-			{
-				double angle = time * 2 + star * Math::TwoPi / 12;
-				double dist = 200 + sin(time * 3 + star) * 50;
-				Vec2 starPos = Scene::Center() + Vec2(Cos(angle), Sin(angle)) * dist;
-
-				Circle(starPos, 12).draw(ColorF(1, 1, 0.8, 0.8));
-				Circle(starPos, 8).draw(ColorF(1, 1, 1, 1));
+				Circle(sparkPos, 4).draw(fireworkColor.withAlpha(static_cast<uint8>(alpha * 200)));
 			}
 		}
-		else
+
+		// 金色の紙吹雪
+		for (int i = 0; i < 100; ++i)
 		{
-			// 💀 敗北の暗闇
-			double darknessAlpha = Min(0.6, t / endTime * 0.6);
-			Scene::Rect().draw(ColorF(0, 0, 0, darknessAlpha));
+			double confettiTime = time + i * 0.1;
+			double x = Math::Fmod(i * 23.7 + sin(confettiTime) * 50, static_cast<double>(Scene::Width()));
+			double y = Math::Fmod(confettiTime * 100, static_cast<double>(Scene::Height()));
+			double rotation = confettiTime * 5;
 
-			// 赤い煙
-			ScopedRenderStates2D blend(BlendState::Additive);
-			for (int i = 0; i < 30; ++i)
-			{
-				double smokeTime = time * 0.5 + i;
-				double x = Math::Fmod(i * 60 + smokeTime * 20, Scene::Width());
-				double y = Scene::Height() - Math::Fmod(smokeTime * 40, Scene::Height());
+			RectF(Arg::center(x, y), 5, 10).rotated(rotation).draw(ColorF(1.0, 0.8, 0.5, 0.7));
+		}
+	}
 
-				Circle(x, y, 60).draw(ColorF(0.5, 0.1, 0.1, 0.1));
-			}
+	// 敗北時の演出
+	if (phase == TurnPhase::BattleEnd && PlayerLost())
+	{
+		Scene::Rect().draw(ColorF(0, 0, 0, 0.3));
+
+		for (int i = 0; i < 200; ++i)
+		{
+			double rainTime = time * 5 + i;
+			double x = static_cast<double>((i * 7) % Scene::Width());
+			double y = Math::Fmod(rainTime * 300, static_cast<double>(Scene::Height() + 100)) - 100;
+
+			Line(x, y, x - 2, y + 15).draw(1, ColorF(0.7, 0.7, 0.8, 0.3));
 		}
 	}
 }
