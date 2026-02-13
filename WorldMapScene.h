@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "SceneBase.hpp"
 #include "GameManager.hpp"
 
@@ -26,8 +26,8 @@ private:
 	String m_seasonText;
 	ColorF m_seasonColor;
 
-	// ★ 紙テクスチャをキャッシュ（draw() が const のため mutable & Optional を使用）
-	mutable Optional<RenderTexture> m_paperTexture;
+	// ★ 紙テクスチャをキャッシュ（draw() が const のため mutable にする）
+	mutable RenderTexture m_paperTexture;
 	mutable uint32 m_lastMapWidth = 0;
 	mutable uint32 m_lastMapHeight = 0;
 };

@@ -121,7 +121,7 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 			if (atkIdx < 0 || atkIdx >= static_cast<int>(m_cities.size()) ||
 				defIdx < 0 || defIdx >= static_cast<int>(m_cities.size()))
 			{
-				Console << U"[ERROR] 無効な都市インデックス: atk=" << atkIdx
+				Print << U"[ERROR] 無効な都市インデックス: atk=" << atkIdx
 					<< U", def=" << defIdx << U", size=" << m_cities.size();
 				m_gameManager.pendingBattle.isOccurring = false;
 				m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
@@ -133,7 +133,7 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 			pPlayerCity = &m_cities[defIdx]; // 自分（守り）
 			isPlayerAttacker = false;
 
-			Console << U"[防衛戦] " << pEnemyCity->name << U"(" << pEnemyCity->troops
+			Print << U"[防衛戦] " << pEnemyCity->name << U"(" << pEnemyCity->troops
 				<< U"兵) → " << pPlayerCity->name << U"(" << pPlayerCity->troops << U"兵)";
 
 			// イベントフラグをリセット
@@ -147,7 +147,7 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 			// 安全性チェック
 			if (m_selectedCityIndex < 0 || m_selectedCityIndex >= static_cast<int>(m_cities.size()))
 			{
-				Console << U"[ERROR] 無効な選択都市: " << m_selectedCityIndex;
+				Print << U"[ERROR] 無効な選択都市: " << m_selectedCityIndex;
 				m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
 				return;
 			}
@@ -157,7 +157,7 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 			// 兵数チェック
 			if (pPlayerCity->troops <= 0)
 			{
-				Console << U"[ERROR] 兵が不足しています";
+				Print << U"[ERROR] 兵が不足しています";
 				m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
 				return;
 			}
@@ -176,7 +176,7 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 
 			if (pEnemyCity == nullptr)
 			{
-				Console << U"[INFO] 攻撃可能な敵都市がありません";
+				Print << U"[INFO] 攻撃可能な敵都市がありません";
 				m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
 				return;
 			}
@@ -190,7 +190,7 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 		// ========================================================
 		if (pPlayerCity == nullptr || pEnemyCity == nullptr)
 		{
-			Console << U"[ERROR] 都市データが無効です";
+			Print << U"[ERROR] 都市データが無効です";
 			m_currentScene = new WorldMapScene(&m_gameManager, m_playerFaction, &m_cities);
 			return;
 		}

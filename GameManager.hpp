@@ -2,7 +2,7 @@
 #include <Siv3D.hpp>
 #include "Faction.hpp"
 #include "CityData.hpp"
-#include "Unit.hpp"
+#include "Unit_Visual.hpp"
 #include "Officer.hpp"
 
 // 前方宣言

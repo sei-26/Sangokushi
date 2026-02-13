@@ -117,10 +117,10 @@
   <ItemGroup>
     <ClCompile Include="ArmyConfigScene.cpp" />
     <ClCompile Include="AttackSelectScene.cpp" />
-    <ClCompile Include="BattleGameManager.cpp" />
+    <ClCompile Include="BattleGameManager_Visual.cpp" />
     <ClCompile Include="BattleMapScene.cpp" />
     <ClCompile Include="BattleScene.cpp" />
-    <ClCompile Include="CityScene.cpp" />
+    <ClCompile Include="CityScene_Visual.cpp" />
     <ClCompile Include="FactionSelectScene.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GameSceneManager.cpp" />
@@ -132,7 +132,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TurnEndScene.cpp" />
-    <ClCompile Include="WorldMapScene.cpp" />
+    <ClCompile Include="WorldMapScene_Visual.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\engine\texture\box-shadow\128.png" />
@@ -359,7 +359,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TurnEndScene.hpp" />
-    <ClInclude Include="Unit.hpp" />
+    <ClInclude Include="Unit_Visual.hpp" />
     <ClInclude Include="WorldMapScene.hpp" />
   </ItemGroup>
   <ItemGroup>

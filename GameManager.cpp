@@ -17,9 +17,10 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 		if (city.order < 50) income /= 2;
 		city.gold += income;
 
-		if (city.owner != U"劉備") // プレイヤー以外
+		// AI勢力の兵力増加（プレイヤー以外）
+		if (city.owner != U"劉備")
 		{
-			city.troops += 500; // 毎月500人増える！
+			city.troops += 500;
 			if (city.troops > 10000) city.troops = 10000;
 		}
 	}
@@ -30,7 +31,6 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 		month = 1;
 		year++;
 	}
-	
 
 	// 3. 7月の収穫
 	if (month == 7)
@@ -40,30 +40,114 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 			city.food += city.agriculture * 5;
 		}
 	}
+
+	// 4. 戦争イベントのリセット
 	pendingBattle = PendingBattle();
 
-	//全都市チェック
-	for (int i = 0; i < cities.size(); ++i)
-	{
-		// 「敵の都市」で、かつ「兵士が3000以上」なら攻撃チャンス
-		if (cities[i].owner != U"劉備" && cities[i].troops >= 1000)
-		{
-			// 攻撃対象（プレイヤーの都市）を探す
-			for (int j = 0; j < cities.size(); ++j)
-			{
-				// プレイヤーの都市を見つけたら、30%の確率で攻撃！
-				if (cities[j].owner == U"劉備")
-				{
-					if (RandomBool(0.3))
-					{
-						// 戦争発生！データを保存してループを抜ける
-						pendingBattle.isOccurring = true;
-						pendingBattle.atkCityIndex = i; // 敵（攻め）
-						pendingBattle.defCityIndex = j; // 自分（守り）
+	// =================================================================
+	// ★ 新システム：複数勢力の戦争システム
+	// =================================================================
 
-						// コンソールにログを出す
-						Console << U"敵襲！ " << cities[i].name << U" が " << cities[j].name << U" に侵攻！";
-						return; // 今月は1回だけ戦争
+	// まず、すべての勢力をリストアップ
+	HashSet<String> allFactions;
+	for (const auto& city : cities)
+	{
+		allFactions.insert(city.owner);
+	}
+
+	// 各勢力について、戦争を起こすかチェック
+	for (const String& faction : allFactions)
+	{
+		// この勢力の都市で、十分な兵力がある都市を探す
+		for (int i = 0; i < cities.size(); ++i)
+		{
+			// 攻撃側の条件：
+			// - この勢力に属する
+			// - 兵士が2000以上いる
+			if (cities[i].owner == faction && cities[i].troops >= 2000)
+			{
+				// 隣接する敵勢力の都市を探す（簡易版：全都市から選択）
+				for (int j = 0; j < cities.size(); ++j)
+				{
+					// 防御側の条件：
+					// - 異なる勢力
+					if (cities[j].owner != faction)
+					{
+						// ★ 戦争発生確率の調整
+						double warProbability = 0.0;
+
+						if (cities[j].owner == U"劉備")
+						{
+							// プレイヤーへの攻撃：10%の確率（低め）
+							warProbability = 0.10;
+						}
+						else
+						{
+							// AI同士の戦争：15%の確率
+							warProbability = 0.15;
+						}
+
+						if (RandomBool(warProbability))
+						{
+							// ========================================
+							// プレイヤーが関わる戦争
+							// ========================================
+							if (cities[i].owner == U"劉備" || cities[j].owner == U"劉備")
+							{
+								// プレイヤーが攻撃側または防御側
+								pendingBattle.isOccurring = true;
+								pendingBattle.atkCityIndex = i;
+								pendingBattle.defCityIndex = j;
+
+								Print << U"[戦争発生] " << cities[i].name << U"(" << cities[i].owner
+									<< U") が " << cities[j].name << U"(" << cities[j].owner << U") に侵攻！";
+								return; // プレイヤー関連の戦争が発生したら即座に処理
+							}
+							// ========================================
+							// AI同士の戦争（自動解決）
+							// ========================================
+							else
+							{
+								Print << U"[AI戦争] " << cities[i].name << U"(" << cities[i].owner
+									<< U") vs " << cities[j].name << U"(" << cities[j].owner << U")";
+
+								// 簡易戦闘シミュレーション
+								int atkPower = cities[i].troops;
+								int defPower = cities[j].troops;
+
+								// 防御側に少しボーナス
+								defPower = static_cast<int>(defPower * 1.2);
+
+								// 勝敗判定
+								if (atkPower > defPower)
+								{
+									// 攻撃側の勝利
+									Print << U"  → " << cities[i].owner << U" の勝利！ "
+										<< cities[j].name << U" を占領！";
+
+									// 都市を奪う
+									cities[j].owner = cities[i].owner;
+									cities[j].troops = 500; // 占領兵
+									cities[j].order = Max(0, cities[j].order - 50);
+
+									// 攻撃側も損害を受ける
+									cities[i].troops = Max(500, cities[i].troops - defPower / 2);
+								}
+								else
+								{
+									// 防御側の勝利
+									Print << U"  → " << cities[j].owner << U" の防衛成功！";
+
+									// 両軍とも損害
+									cities[i].troops = Max(300, cities[i].troops - defPower / 3);
+									cities[j].troops = Max(500, cities[j].troops - atkPower / 3);
+								}
+
+								// AI同士の戦争は1回だけ（プレイヤーには関係ない）
+								// 次の月に別の戦争が起きる可能性はある
+								return;
+							}
+						}
 					}
 				}
 			}

@@ -156,10 +156,10 @@
     <ClCompile Include="FactionSelectScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WorldMapScene.cpp">
+    <ClCompile Include="WorldMapScene_Visual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CityScene.cpp">
+    <ClCompile Include="CityScene_Visual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BattleScene.cpp">
@@ -180,7 +180,7 @@
     <ClCompile Include="BattleMapScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BattleGameManager.cpp">
+    <ClCompile Include="BattleGameManager_Visual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -854,7 +854,7 @@
     <ClInclude Include="Map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Unit.hpp">
+    <ClInclude Include="Unit_Visual.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Pathfinding.hpp">

@@ -10,7 +10,7 @@ BattleScene::BattleScene(GameManager* gm, CityData& playerCity, CityData& enemyC
 	// NULLチェック
 	if (gm == nullptr)
 	{
-		Console << U"[ERROR] GameManagerがnullです";
+		Print << U"[ERROR] GameManagerがnullです";
 		return;
 	}
 
