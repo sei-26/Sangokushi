@@ -857,7 +857,7 @@
     <ClInclude Include="Map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Unit_Visual.hpp">
+    <ClInclude Include="Unit.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Pathfinding.hpp">
@@ -915,6 +915,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameClearScene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Aicontroller.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Officerportrait.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Saveloadscene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Saveloadmanager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

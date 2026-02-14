@@ -1,4 +1,5 @@
 ﻿#include "CityScene.hpp"
+#include "OfficerPortrait.hpp"
 
 CityScene::CityScene(GameManager* gm, CityData& city)
 	: m_gameManager(gm)
@@ -397,21 +398,20 @@ void CityScene::draw() const
 	// 🎮 内政ボタン群（超煌びやか）
 	// =================================================================
 
-	auto drawFancyButton = [&](const Rect& btn, String text, String subtext, ColorF mainColor, bool isHovered) {
+	auto drawFancyButton = [&](const Rect& btn, String text, String subtext, Color mainColor, bool isHovered) {
 		// ホバー時の輝き
 		if (isHovered)
 		{
 			ScopedRenderStates2D blend(BlendState::Additive);
-			// ColorF::withAlpha expects 0.0-1.0, use ~80/255
-			RectF(btn).stretched(10).draw(mainColor.withAlpha(80.0 / 255.0));
+			RectF(btn).stretched(10).draw(mainColor.withAlpha(static_cast<uint8>(80)));
 		}
 
 		// ボタンの影
 		btn.movedBy(4, 4).draw(ColorF(0, 0, 0, 0.5));
 
 		// ボタン本体
-		ColorF topColor = isHovered ? mainColor.lerp(ColorF(Palette::White), 0.4) : mainColor;
-		ColorF bottomColor = isHovered ? mainColor : mainColor.lerp(ColorF(Palette::Black), 0.4);
+		Color topColor = isHovered ? mainColor.lerp(Palette::White, 0.4) : mainColor;
+		Color bottomColor = isHovered ? mainColor : mainColor.lerp(Palette::Black, 0.4);
 
 		RectF(btn).draw(Arg::top = topColor, Arg::bottom = bottomColor);
 
@@ -443,7 +443,7 @@ void CityScene::draw() const
 				Circle(corner, 5).draw(ColorF(1, 1, 0.8, 0.8));
 			}
 		}
-	};
+		};
 
 	drawFancyButton(m_btnAgr, U"農業開発", U"金 100 消費", ColorF(0.3, 0.7, 0.4), m_btnAgr.mouseOver());
 	drawFancyButton(m_btnCom, U"商業投資", U"金 100 消費", ColorF(0.4, 0.5, 0.9), m_btnCom.mouseOver());
@@ -607,5 +607,29 @@ void CityScene::draw() const
 
 		// メッセージテキスト
 		FontAsset(U"menu")(m_message).draw(msgPanel.x + 30, msgPanel.y + 25, ColorF(0.15, 0.12, 0.08));
+	}
+
+	// =================================================================
+	// 🎖️ 配置武将の顔表示
+	// =================================================================
+	if (!m_cityData->officers.isEmpty())
+	{
+		double portraitX = screenW * 0.5;
+		double portraitY = screenH * 0.15;
+
+		// 武将の顔
+		OfficerPortrait::Draw(m_cityData->officers[0], Vec2(portraitX, portraitY), 120);
+		OfficerPortrait::DrawNamePlate(m_cityData->officers[0], Vec2(portraitX, portraitY), 120);
+
+		// 武将が複数いる場合は小さく表示
+		if (m_cityData->officers.size() > 1)
+		{
+			for (size_t i = 1; i < Min(size_t(3), m_cityData->officers.size()); ++i)
+			{
+				double smallX = portraitX + (static_cast<double>(i) - 1.5) * 70;
+				double smallY = portraitY + 100;
+				OfficerPortrait::DrawSmall(m_cityData->officers[i], Vec2(smallX, smallY), 40);
+			}
+		}
 	}
 }

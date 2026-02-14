@@ -340,6 +340,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Advisor.hpp" />
+    <ClInclude Include="Aicontroller.hpp" />
     <ClInclude Include="ArmyConfigScene.hpp" />
     <ClInclude Include="AttackSelectScene.hpp" />
     <ClInclude Include="BattleGameManager.hpp" />
@@ -354,13 +355,16 @@
     <ClInclude Include="Map.hpp" />
     <ClInclude Include="Officer.hpp" />
     <ClInclude Include="OfficerDatabase.hpp" />
+    <ClInclude Include="Officerportrait.hpp" />
     <ClInclude Include="Pathfinding.hpp" />
+    <ClInclude Include="Saveloadmanager.hpp" />
+    <ClInclude Include="Saveloadscene.hpp" />
     <ClInclude Include="SceneBase.hpp" />
     <ClInclude Include="GameSceneManager.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TurnEndScene.hpp" />
-    <ClInclude Include="Unit_Visual.hpp" />
+    <ClInclude Include="Unit.hpp" />
     <ClInclude Include="WorldMapScene.hpp" />
   </ItemGroup>
   <ItemGroup>

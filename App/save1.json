@@ -1,0 +1,471 @@
+﻿{
+  "cities": [
+    {
+      "agriculture": 80,
+      "barracks": 70,
+      "colorB": 225,
+      "colorG": 105,
+      "colorR": 65,
+      "commerce": 90,
+      "food": 5000,
+      "gold": 3000,
+      "name": "許昌",
+      "officers": [
+        {
+          "intelligence": 98,
+          "leadership": 95,
+          "name": "曹操",
+          "politics": 96,
+          "power": 85
+        },
+        {
+          "intelligence": 65,
+          "leadership": 88,
+          "name": "夏侯惇",
+          "politics": 58,
+          "power": 92
+        },
+        {
+          "intelligence": 62,
+          "leadership": 90,
+          "name": "夏侯淵",
+          "politics": 55,
+          "power": 91
+        },
+        {
+          "intelligence": 68,
+          "leadership": 89,
+          "name": "曹仁",
+          "politics": 72,
+          "power": 88
+        }
+      ],
+      "order": 85,
+      "owner": "曹操",
+      "posX": 450,
+      "posY": 450,
+      "troops": 8000
+    },
+    {
+      "agriculture": 70,
+      "barracks": 60,
+      "colorB": 225,
+      "colorG": 105,
+      "colorR": 65,
+      "commerce": 75,
+      "food": 3000,
+      "gold": 2000,
+      "name": "陳留",
+      "officers": [
+        {
+          "intelligence": 55,
+          "leadership": 85,
+          "name": "曹洪",
+          "politics": 60,
+          "power": 87
+        },
+        {
+          "intelligence": 75,
+          "leadership": 94,
+          "name": "張遼",
+          "politics": 70,
+          "power": 93
+        },
+        {
+          "intelligence": 70,
+          "leadership": 92,
+          "name": "徐晃",
+          "politics": 65,
+          "power": 90
+        }
+      ],
+      "order": 80,
+      "owner": "曹操",
+      "posX": 420,
+      "posY": 480,
+      "troops": 5000
+    },
+    {
+      "agriculture": 75,
+      "barracks": 65,
+      "colorB": 225,
+      "colorG": 105,
+      "colorR": 65,
+      "commerce": 80,
+      "food": 4000,
+      "gold": 2500,
+      "name": "洛陽",
+      "officers": [
+        {
+          "intelligence": 62,
+          "leadership": 88,
+          "name": "楽進",
+          "politics": 58,
+          "power": 89
+        },
+        {
+          "intelligence": 72,
+          "leadership": 90,
+          "name": "于禁",
+          "politics": 68,
+          "power": 86
+        },
+        {
+          "intelligence": 75,
+          "leadership": 85,
+          "name": "李典",
+          "politics": 70,
+          "power": 84
+        }
+      ],
+      "order": 75,
+      "owner": "曹操",
+      "posX": 380,
+      "posY": 420,
+      "troops": 6000
+    },
+    {
+      "agriculture": 90,
+      "barracks": 80,
+      "colorB": 60,
+      "colorG": 20,
+      "colorR": 220,
+      "commerce": 95,
+      "food": 6000,
+      "gold": 4000,
+      "name": "鄴",
+      "officers": [
+        {
+          "intelligence": 65,
+          "leadership": 82,
+          "name": "袁紹",
+          "politics": 78,
+          "power": 75
+        },
+        {
+          "intelligence": 45,
+          "leadership": 88,
+          "name": "顔良",
+          "politics": 40,
+          "power": 95
+        },
+        {
+          "intelligence": 42,
+          "leadership": 87,
+          "name": "文醜",
+          "politics": 38,
+          "power": 94
+        }
+      ],
+      "order": 90,
+      "owner": "袁紹",
+      "posX": 480,
+      "posY": 280,
+      "troops": 10000
+    },
+    {
+      "agriculture": 85,
+      "barracks": 75,
+      "colorB": 60,
+      "colorG": 20,
+      "colorR": 220,
+      "commerce": 80,
+      "food": 5000,
+      "gold": 3000,
+      "name": "冀州",
+      "officers": [
+        {
+          "intelligence": 78,
+          "leadership": 91,
+          "name": "張郃",
+          "politics": 72,
+          "power": 89
+        },
+        {
+          "intelligence": 60,
+          "leadership": 86,
+          "name": "高覧",
+          "politics": 55,
+          "power": 88
+        },
+        {
+          "intelligence": 85,
+          "leadership": 83,
+          "name": "審配",
+          "politics": 88,
+          "power": 72
+        }
+      ],
+      "order": 85,
+      "owner": "袁紹",
+      "posX": 520,
+      "posY": 250,
+      "troops": 7000
+    },
+    {
+      "agriculture": 70,
+      "barracks": 60,
+      "colorB": 60,
+      "colorG": 20,
+      "colorR": 220,
+      "commerce": 70,
+      "food": 3500,
+      "gold": 2000,
+      "name": "青州",
+      "officers": [
+        {
+          "intelligence": 82,
+          "leadership": 80,
+          "name": "逢紀",
+          "politics": 75,
+          "power": 70
+        },
+        {
+          "intelligence": 95,
+          "leadership": 90,
+          "name": "沮授",
+          "politics": 90,
+          "power": 68
+        },
+        {
+          "intelligence": 96,
+          "leadership": 88,
+          "name": "田豊",
+          "politics": 85,
+          "power": 65
+        }
+      ],
+      "order": 75,
+      "owner": "袁紹",
+      "posX": 620,
+      "posY": 320,
+      "troops": 5000
+    },
+    {
+      "agriculture": 65,
+      "barracks": 55,
+      "colorB": 50,
+      "colorG": 205,
+      "colorR": 50,
+      "commerce": 60,
+      "food": 3000,
+      "gold": 1500,
+      "name": "徐州",
+      "officers": [
+        {
+          "intelligence": 75,
+          "leadership": 85,
+          "name": "劉備",
+          "politics": 82,
+          "power": 80
+        },
+        {
+          "intelligence": 75,
+          "leadership": 95,
+          "name": "関羽",
+          "politics": 68,
+          "power": 97
+        }
+      ],
+      "order": 70,
+      "owner": "劉備",
+      "posX": 580,
+      "posY": 520,
+      "troops": 4000
+    },
+    {
+      "agriculture": 60,
+      "barracks": 50,
+      "colorB": 50,
+      "colorG": 205,
+      "colorR": 50,
+      "commerce": 55,
+      "food": 2500,
+      "gold": 1200,
+      "name": "下邳",
+      "officers": [
+        {
+          "intelligence": 45,
+          "leadership": 88,
+          "name": "張飛",
+          "politics": 35,
+          "power": 96
+        },
+        {
+          "intelligence": 75,
+          "leadership": 93,
+          "name": "趙雲",
+          "politics": 65,
+          "power": 95
+        }
+      ],
+      "order": 65,
+      "owner": "劉備",
+      "posX": 650,
+      "posY": 480,
+      "troops": 3000
+    },
+    {
+      "agriculture": 55,
+      "barracks": 45,
+      "colorB": 50,
+      "colorG": 205,
+      "colorR": 50,
+      "commerce": 50,
+      "food": 2000,
+      "gold": 1000,
+      "name": "小沛",
+      "officers": [
+        {
+          "intelligence": 80,
+          "leadership": 75,
+          "name": "簡雍",
+          "politics": 85,
+          "power": 68
+        }
+      ],
+      "order": 60,
+      "owner": "劉備",
+      "posX": 600,
+      "posY": 500,
+      "troops": 2500
+    },
+    {
+      "agriculture": 70,
+      "barracks": 60,
+      "colorB": 219,
+      "colorG": 112,
+      "colorR": 147,
+      "commerce": 65,
+      "food": 4000,
+      "gold": 2000,
+      "name": "汝南",
+      "officers": [
+        {
+          "intelligence": 55,
+          "leadership": 80,
+          "name": "黄祖",
+          "politics": 58,
+          "power": 82
+        },
+        {
+          "intelligence": 68,
+          "leadership": 76,
+          "name": "蔡瑁",
+          "politics": 72,
+          "power": 74
+        }
+      ],
+      "order": 75,
+      "owner": "劉表",
+      "posX": 350,
+      "posY": 580,
+      "troops": 5000
+    },
+    {
+      "agriculture": 75,
+      "barracks": 65,
+      "colorB": 219,
+      "colorG": 112,
+      "colorR": 147,
+      "commerce": 70,
+      "food": 4500,
+      "gold": 2500,
+      "name": "襄陽",
+      "officers": [
+        {
+          "intelligence": 72,
+          "leadership": 78,
+          "name": "劉表",
+          "politics": 80,
+          "power": 70
+        }
+      ],
+      "order": 80,
+      "owner": "劉表",
+      "posX": 320,
+      "posY": 620,
+      "troops": 6000
+    },
+    {
+      "agriculture": 65,
+      "barracks": 55,
+      "colorB": 219,
+      "colorG": 112,
+      "colorR": 147,
+      "commerce": 60,
+      "food": 3000,
+      "gold": 1500,
+      "name": "江夏",
+      "officers": [
+        {
+          "intelligence": 60,
+          "leadership": 75,
+          "name": "張允",
+          "politics": 65,
+          "power": 76
+        }
+      ],
+      "order": 70,
+      "owner": "劉表",
+      "posX": 380,
+      "posY": 680,
+      "troops": 4000
+    },
+    {
+      "agriculture": 60,
+      "barracks": 55,
+      "colorB": 0,
+      "colorG": 215,
+      "colorR": 255,
+      "commerce": 70,
+      "food": 3000,
+      "gold": 1800,
+      "name": "寿春",
+      "officers": [
+        {
+          "intelligence": 55,
+          "leadership": 65,
+          "name": "袁術",
+          "politics": 60,
+          "power": 72
+        }
+      ],
+      "order": 65,
+      "owner": "袁術",
+      "posX": 480,
+      "posY": 580,
+      "troops": 4000
+    },
+    {
+      "agriculture": 55,
+      "barracks": 50,
+      "colorB": 0,
+      "colorG": 140,
+      "colorR": 255,
+      "commerce": 60,
+      "food": 2500,
+      "gold": 1200,
+      "name": "濮陽",
+      "officers": [
+        {
+          "intelligence": 50,
+          "leadership": 70,
+          "name": "張楊",
+          "politics": 55,
+          "power": 78
+        }
+      ],
+      "order": 60,
+      "owner": "張楊",
+      "posX": 520,
+      "posY": 380,
+      "troops": 3000
+    }
+  ],
+  "month": 1,
+  "playTimeSeconds": 1,
+  "playerFactionName": "曹操",
+  "saveDateTime": "2026-02-15 08:03:41",
+  "year": 200
+}

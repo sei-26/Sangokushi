@@ -206,6 +206,8 @@ void Main()
 	GameManager gameManager;
 	gameManager.year = 200;  // 西暦200年（官渡の戦い）
 	gameManager.month = 1;
+	gameManager.playerFactionName = selectedFaction;  // ★ プレイヤー勢力名を設定
+	gameManager.playTimer.start();  // ★ プレイタイマー開始
 
 	// シーンマネージャー起動
 	GameSceneManager sceneManager(&gameManager, playerFaction, cities);

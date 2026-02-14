@@ -1,4 +1,5 @@
 ﻿#include "BattleGameManager.hpp"
+#include "OfficerPortrait.hpp"
 #include <queue>
 
 void BattleGameManager::InitializeBattle(
@@ -287,13 +288,12 @@ void BattleGameManager::Draw() const
 			double layerAlpha = (5 - layer) * 0.08;
 			double layerWidth = (layer + 1) * 15.0;
 
-			ColorF bottomCol = activeUnit.isPlayer
+			ColorF glowColor = activeUnit.isPlayer
 				? ColorF(0.3, 0.5, 1.0, layerAlpha)
 				: ColorF(0.9, 0.3, 0.3, layerAlpha);
-			ColorF topCol = ColorF(1, 1, 1, 0);
 
 			RectF(centerPos.x - layerWidth / 2, 0, layerWidth, centerPos.y)
-				.draw(bottomCol);
+				.draw(glowColor);
 		}
 
 		// 足元の魔法陣
@@ -337,8 +337,8 @@ void BattleGameManager::Draw() const
 		turnPanel.movedBy(4, 4).draw(ColorF(0, 0, 0, 0.5));
 
 		Color panelColor = (phase == TurnPhase::PlayerTurn) ?
-// 			ColorF(0.25, 0.45, 0.9) : ColorF(0.9, 0.35, 0.35);
-ColorF(0.25, 0.45, 0.9) : ColorF(0.9, 0.35, 0.35);
+			ColorF(0.25, 0.45, 0.9) : ColorF(0.9, 0.35, 0.35);
+
 		if (phase == TurnPhase::BattleEnd)
 		{
 			panelColor = PlayerWon() ? ColorF(0.3, 0.9, 0.4) : ColorF(0.6, 0.6, 0.6);
@@ -372,6 +372,71 @@ ColorF(0.25, 0.45, 0.9) : ColorF(0.9, 0.35, 0.35);
 		{
 			ScopedRenderStates2D blend(BlendState::Additive);
 			FontAsset(U"huge")(turnText).drawAt(turnPanel.center(), ColorF(1, 1, 1, 0.3));
+		}
+	}
+
+	// =================================================================
+	// 🎖️ 対決する武将の顔表示
+	// =================================================================
+	{
+		// プレイヤー武将（左側）
+		if (!units.isEmpty())
+		{
+			for (const auto& unit : units)
+			{
+				if (unit.side == Side::Player)
+				{
+					Officer playerOfficer;
+					playerOfficer.name = unit.name;
+					playerOfficer.leadership = 85;
+					playerOfficer.power = 85;
+					playerOfficer.intelligence = 75;
+					playerOfficer.politics = 75;
+
+					Vec2 playerPortraitPos(screenW * 0.15, screenH * 0.1);
+					OfficerPortrait::Draw(playerOfficer, playerPortraitPos, 100);
+					OfficerPortrait::DrawNamePlate(playerOfficer, playerPortraitPos, 100);
+
+					// 兵力表示
+					FontAsset(U"menu")(U"兵力: {}"_fmt(unit.soldiers))
+						.drawAt(playerPortraitPos.x, playerPortraitPos.y + 80, Palette::White);
+					break;
+				}
+			}
+		}
+
+		// 敵武将（右側）
+		if (!units.isEmpty())
+		{
+			for (const auto& unit : units)
+			{
+				if (unit.side == Side::Enemy)
+				{
+					Officer enemyOfficer;
+					enemyOfficer.name = unit.name;
+					enemyOfficer.leadership = 80;
+					enemyOfficer.power = 80;
+					enemyOfficer.intelligence = 70;
+					enemyOfficer.politics = 70;
+
+					Vec2 enemyPortraitPos(screenW * 0.85, screenH * 0.1);
+					OfficerPortrait::Draw(enemyOfficer, enemyPortraitPos, 100);
+					OfficerPortrait::DrawNamePlate(enemyOfficer, enemyPortraitPos, 100);
+
+					// 兵力表示
+					FontAsset(U"menu")(U"兵力: {}"_fmt(unit.soldiers))
+						.drawAt(enemyPortraitPos.x, enemyPortraitPos.y + 80, Palette::White);
+					break;
+				}
+			}
+		}
+
+		// VS表示
+		{
+			ScopedRenderStates2D blend(BlendState::Additive);
+			FontAsset(U"huge")(U"VS")
+				.drawAt(screenW / 2, screenH * 0.1,
+						ColorF(1, 0.5 + sin(time * 5) * 0.5, 0));
 		}
 	}
 

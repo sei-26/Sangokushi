@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
-#include "Unit_Visual.hpp"
+#include "Unit.hpp"
 #include "Map.hpp"
 #include "CityData.hpp"
 #include "Officer.hpp"

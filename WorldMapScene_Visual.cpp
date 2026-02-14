@@ -1,5 +1,7 @@
 ﻿#include "WorldMapScene.hpp"
 #include "CityScene.hpp"
+#include "OfficerPortrait.hpp"
+#include "SaveLoadManager.hpp"
 
 WorldMapScene::WorldMapScene(GameManager* gm,
 	const Faction& faction,
@@ -12,10 +14,39 @@ WorldMapScene::WorldMapScene(GameManager* gm,
 	, m_cutInTimer(0.0)
 	, m_seasonColor(Palette::White)
 {
+	// ★ セーブ・ロードボタンの配置
+	m_btnSave = Rect(Scene::Width() - 250, 100, 200, 60);
+	m_btnLoad = Rect(Scene::Width() - 250, 180, 200, 60);
 }
 
 void WorldMapScene::update()
 {
+	// ★ セーブボタン
+	if (m_btnSave.leftClicked())
+	{
+		if (m_gameManager && m_allCities)
+		{
+			SaveData saveData = m_gameManager->CreateSaveData(*m_allCities);
+			SaveLoadManager::Save(saveData, 1);  // スロット1にセーブ
+			Print << U"💾 セーブしました！";
+		}
+	}
+
+	// ★ ロードボタン
+	if (m_btnLoad.leftClicked())
+	{
+		auto loadedData = SaveLoadManager::Load(1);  // スロット1からロード
+		if (loadedData && m_gameManager && m_allCities)
+		{
+			// ゲームデータを復元
+			*m_allCities = loadedData->cities;
+			m_gameManager->year = loadedData->year;
+			m_gameManager->month = loadedData->month;
+			m_gameManager->playerFactionName = loadedData->playerFactionName;
+			Print << U"📂 ロードしました！ " << loadedData->year << U"年" << loadedData->month << U"月";
+		}
+	}
+
 	if (KeyEnter.down())
 	{
 		if (m_gameManager && m_allCities)
@@ -298,6 +329,13 @@ void WorldMapScene::draw() const
 				// 都市名（影付き）
 				FontAsset(U"menu")(c.name).drawAt(pos.x + 1, pos.y - 26 * scale, ColorF(0, 0, 0, 0.7));
 				FontAsset(U"menu")(c.name).drawAt(pos.x, pos.y - 25 * scale, ColorF(0.2, 0.2, 0.2));
+
+				// ★ 配置武将の小アイコン
+				if (!c.officers.isEmpty())
+				{
+					Vec2 officerPos(pos.x, pos.y + 35 * scale);
+					OfficerPortrait::DrawSmall(c.officers[0], officerPos, 20 * scale);
+				}
 			}
 
 			// =================================================================
@@ -464,6 +502,42 @@ void WorldMapScene::draw() const
 				Circle(stampPos, 50).drawFrame(4, m_seasonColor.withAlpha(static_cast<uint8>(alpha * 255)));
 				FontAsset(U"title")(m_seasonText).drawAt(stampPos, m_seasonColor.withAlpha(static_cast<uint8>(alpha * 255)));
 			}
+		}
+
+		// =================================================================
+		// 💾 セーブ・ロードボタン
+		// =================================================================
+		{
+			// セーブボタン
+			bool saveHovered = m_btnSave.mouseOver();
+			m_btnSave.draw(saveHovered ? ColorF(0.3, 0.5, 0.3) : ColorF(0.2, 0.3, 0.2));
+			m_btnSave.drawFrame(3, saveHovered ? Palette::Lime : Palette::Green);
+
+			// セーブアイコン（フロッピーディスク風）
+			RectF diskBody(m_btnSave.x + 20, m_btnSave.y + 15, 30, 30);
+			diskBody.draw(Palette::Darkgray);
+			RectF diskLabel(m_btnSave.x + 20, m_btnSave.y + 15, 30, 10);
+			diskLabel.draw(Palette::Lightgray);
+			RectF diskShutter(m_btnSave.x + 32, m_btnSave.y + 30, 6, 10);
+			diskShutter.draw(Palette::Black);
+
+			FontAsset(U"menu")(U"セーブ").draw(m_btnSave.x + 60, m_btnSave.y + 20, Palette::White);
+
+			// ロードボタン
+			bool loadHovered = m_btnLoad.mouseOver();
+			m_btnLoad.draw(loadHovered ? ColorF(0.3, 0.3, 0.5) : ColorF(0.2, 0.2, 0.3));
+			m_btnLoad.drawFrame(3, loadHovered ? Palette::Cyan : Palette::Skyblue);
+
+			// ロードアイコン（フォルダ風）
+			RectF folderBody(m_btnLoad.x + 20, m_btnLoad.y + 20, 30, 25);
+			folderBody.draw(Palette::Goldenrod);
+			Triangle(
+				Vec2(m_btnLoad.x + 20, m_btnLoad.y + 20),
+				Vec2(m_btnLoad.x + 35, m_btnLoad.y + 20),
+				Vec2(m_btnLoad.x + 30, m_btnLoad.y + 15)
+			).draw(Palette::Gold);
+
+			FontAsset(U"menu")(U"ロード").draw(m_btnLoad.x + 60, m_btnLoad.y + 20, Palette::White);
 		}
 	}
 }

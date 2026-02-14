@@ -21,13 +21,13 @@ private:
 	int m_hovered;
 	int m_selectedIndex;
 
-	double m_cutInTimer;
+	// カットイン演出用の変数
+	double m_cutInTimer = 0.0;
 	String m_cutInText;
 	String m_seasonText;
-	ColorF m_seasonColor;
+	Color m_seasonColor;
 
-	// ★ 紙テクスチャをキャッシュ（draw() が const のため mutable & Optional を使用）
-	mutable Optional<RenderTexture> m_paperTexture;
-	mutable uint32 m_lastMapWidth = 0;
-	mutable uint32 m_lastMapHeight = 0;
+	// ★ セーブ・ロードボタン
+	Rect m_btnSave;
+	Rect m_btnLoad;
 };
