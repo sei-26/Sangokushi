@@ -6,87 +6,127 @@ CityScene::CityScene(GameManager* gm, CityData& city)
 {
 	m_message = U"ようこそ " + m_cityData->name + U" へ。\n指示をください、殿。";
 
-	// ★ 画面サイズに応じたボタン配置
+	// ★ 画面サイズに応じたボタン配置（中央寄りに）
 	int screenW = Scene::Width();
 	int screenH = Scene::Height();
 
 	// ボタンサイズを画面サイズに合わせる
-	int btnW = static_cast<int>(screenW * 0.175);  // 画面幅の17.5%
-	int btnH = static_cast<int>(screenH * 0.072);  // 画面高さの7.2%
-	int startX = static_cast<int>(screenW * 0.0375);
-	int startY = static_cast<int>(screenH * 0.311);
-	int gap = static_cast<int>(screenH * 0.094);
+	int btnW = static_cast<int>(Min(screenW * 0.15, 280.0));
+	int btnH = static_cast<int>(Min(screenH * 0.065, 65.0));
+	int startX = static_cast<int>(screenW * 0.08);  // 左端から8%
+	int startY = static_cast<int>(screenH * 0.35);   // 上から35%
+	int gap = static_cast<int>(Min(screenH * 0.085, 85.0));
 
 	m_btnAgr = Rect(startX, startY + gap * 0, btnW, btnH);
 	m_btnCom = Rect(startX, startY + gap * 1, btnW, btnH);
 	m_btnTrain = Rect(startX, startY + gap * 2, btnW, btnH);
 	m_btnOrder = Rect(startX, startY + gap * 3, btnW, btnH);
 
-	// 出陣ボタンは右下に大きく
-	m_btnAttack = Rect(screenW - static_cast<int>(screenW * 0.219),
-					   screenH - static_cast<int>(screenH * 0.2),
-					   static_cast<int>(screenW * 0.188),
-					   static_cast<int>(screenH * 0.133));
+	// 出陣ボタンは右下に
+	int attackBtnW = static_cast<int>(Min(screenW * 0.175, 300.0));
+	int attackBtnH = static_cast<int>(Min(screenH * 0.12, 120.0));
+	m_btnAttack = Rect(screenW - attackBtnW - static_cast<int>(screenW * 0.05),
+					   screenH - attackBtnH - static_cast<int>(screenH * 0.08),
+					   attackBtnW,
+					   attackBtnH);
 
 	// 戻るボタン
-	m_btnBack = Rect(static_cast<int>(screenW * 0.031),
-					 screenH - static_cast<int>(screenH * 0.111),
-					 static_cast<int>(screenW * 0.125),
-					 static_cast<int>(screenH * 0.078));
+	int backBtnW = static_cast<int>(Min(screenW * 0.12, 200.0));
+	int backBtnH = static_cast<int>(Min(screenH * 0.07, 70.0));
+	m_btnBack = Rect(static_cast<int>(screenW * 0.05),
+					 screenH - backBtnH - static_cast<int>(screenH * 0.05),
+					 backBtnW,
+					 backBtnH);
 }
 
 void CityScene::update()
 {
-	// 農業
+	// ========================================
+	// 武将ボーナス計算
+	// ========================================
+	int administrationBonus = 0;
+	if (!m_cityData->officers.isEmpty())
+	{
+		// 最初の武将の能力を使用
+		const Officer& officer = m_cityData->officers[0];
+		administrationBonus = officer.GetAdministrationPower() / 10;
+	}
+
+	// ========================================
+	// 農業（武将の能力でボーナス）
+	// ========================================
 	if (m_btnAgr.leftClicked())
 	{
 		if (m_cityData->gold >= 100)
 		{
 			m_cityData->gold -= 100;
-			m_cityData->agriculture += 10;
-			m_message = U"農業開発を行いました。\n農業値が 10 上昇！\n来年の収穫が楽しみですな。";
+			int bonus = 10 + administrationBonus;
+			m_cityData->agriculture += bonus;
+			m_message = U"農業開発を行いました。\n農業値が " + Format(bonus) + U" 上昇！";
+			if (administrationBonus > 0)
+			{
+				m_message += U"\n（武将ボーナス: +" + Format(administrationBonus) + U"）";
+			}
 		}
-		else m_message = U"金が足りません！\n商業を発展させましょう。";
+		else m_message = U"金が足りません！";
 	}
 
-	// 商業
+	// ========================================
+	// 商業（武将の能力でボーナス）
+	// ========================================
 	if (m_btnCom.leftClicked())
 	{
 		if (m_cityData->gold >= 100)
 		{
 			m_cityData->gold -= 100;
-			m_cityData->commerce += 10;
-			m_message = U"商業投資を行いました。\n商業値が 10 上昇！\n市場が賑わっております。";
+			int bonus = 10 + administrationBonus;
+			m_cityData->commerce += bonus;
+			m_message = U"商業投資を行いました。\n商業値が " + Format(bonus) + U" 上昇！";
+			if (administrationBonus > 0)
+			{
+				m_message += U"\n（武将ボーナス: +" + Format(administrationBonus) + U"）";
+			}
 		}
-		else m_message = U"金が足りません！\n交易路を開拓しましょう。";
+		else m_message = U"金が足りません！";
 	}
 
+	// ========================================
 	// 徴兵
+	// ========================================
 	if (m_btnTrain.leftClicked())
 	{
 		if (m_cityData->food >= 100)
 		{
 			m_cityData->food -= 100;
 			m_cityData->troops += 200;
-			m_message = U"徴兵を行いました。\n兵士が 200 増えました！\n我が軍の士気は高まっております。";
+			m_message = U"徴兵を行いました。\n兵士が 200 増えました！";
 		}
-		else m_message = U"兵糧が足りません！\n農地を開拓し、収穫を増やしましょう。";
+		else m_message = U"兵糧が足りません！";
 	}
 
-	// 治安
+	// ========================================
+	// 治安（武将の政治力でボーナス）
+	// ========================================
 	if (m_btnOrder.leftClicked())
 	{
 		if (m_cityData->gold >= 50)
 		{
 			m_cityData->gold -= 50;
-			m_cityData->order += 5;
+			int orderBonus = 5 + (administrationBonus / 2);
+			m_cityData->order += orderBonus;
 			if (m_cityData->order > 100) m_cityData->order = 100;
-			m_message = U"巡回を行いました。\n治安が改善しました。\n民は安心して暮らせます。";
+			m_message = U"巡回を行いました。\n治安が " + Format(orderBonus) + U" 改善！";
+			if (administrationBonus > 0)
+			{
+				m_message += U"\n（武将ボーナス: +" + Format(administrationBonus / 2) + U"）";
+			}
 		}
-		else m_message = U"金が足りません！\n税収を増やしましょう。";
+		else m_message = U"金が足りません！";
 	}
 
+	// ========================================
 	// 出陣
+	// ========================================
 	if (m_btnAttack.leftClicked())
 	{
 		if (m_cityData->troops >= 1000)
@@ -96,17 +136,20 @@ void CityScene::update()
 		}
 		else
 		{
-			m_message = U"兵士が足りません！\n最低でも 1000 人は必要です。\n徴兵を行いましょう。";
+			m_message = U"兵士が足りません！\n最低でも 1000 人は必要です。";
 		}
 	}
 
+	// ========================================
 	// 戻る
+	// ========================================
 	if (m_btnBack.leftClicked())
 	{
 		m_sceneEnd = true;
 		m_nextScene = U"WorldMap";
 	}
 }
+
 
 void CityScene::draw() const
 {
@@ -144,13 +187,16 @@ void CityScene::draw() const
 		}
 	}
 
-	// 🔥 松明の炎エフェクト
+	// 🔥 松明の炎エフェクト（画面内に配置）
 	{
 		ScopedRenderStates2D blend(BlendState::Additive);
-		for (int i = 0; i < 6; ++i)
+
+		// 松明の数と位置を画面サイズに応じて調整
+		int torchCount = Min(6, static_cast<int>(screenW / 300));
+		for (int i = 0; i < torchCount; ++i)
 		{
-			double x = (i % 3) * 600.0 + 200;
-			double y = (i / 3) * 500.0 + 150;
+			double x = (i % 3) * (screenW / 3.0) + screenW / 6.0;
+			double y = (i / 3) * (screenH / 2.0) + screenH / 4.0;
 
 			// 炎の揺らめき
 			for (int flame = 0; flame < 5; ++flame)
@@ -166,30 +212,29 @@ void CityScene::draw() const
 		}
 	}
 
-	// 柱（左右）- より豪華に
+	// 柱（画面端に配置）
 	for (int side = 0; side < 2; ++side)
 	{
-		double x = side == 0 ? 50.0 : Scene::Width() - 80.0;
+		double x = side == 0 ? screenW * 0.03 : screenW - screenW * 0.05;
 
 		// 柱の影
-		RectF(x + 3, 0, 30, Scene::Height()).draw(ColorF(0, 0, 0, 0.3));
+		RectF(x + 3, 0, 30, screenH).draw(ColorF(0, 0, 0, 0.3));
 
-		// 柱本体（グラデーション）
-		RectF(x, 0, 30, Scene::Height())
+		// 柱本体
+		RectF(x, 0, 30, screenH)
 			.draw(Arg::left = ColorF(0.5, 0.4, 0.3), Arg::right = ColorF(0.3, 0.25, 0.2));
 
 		// 🌟 柱の金色装飾
-		for (int i = 0; i < 5; ++i)
+		int decorCount = Max(3, static_cast<int>(screenH / 250));
+		for (int i = 0; i < decorCount; ++i)
 		{
-			double y = i * 200.0 + 100;
+			double y = (i + 1) * (screenH / (decorCount + 1.0));
 
-			// 装飾プレート
-			RectF(x - 10, y, 50, 20).draw(ColorF(0.7, 0.6, 0.4));
-			RectF(x - 10, y, 50, 20).drawFrame(2, ColorF(1.0, 0.9, 0.6));
+			RectF(x - 10, y - 10, 50, 20).draw(ColorF(0.7, 0.6, 0.4));
+			RectF(x - 10, y - 10, 50, 20).drawFrame(2, ColorF(1.0, 0.9, 0.6));
 
-			// 宝石風の装飾
-			Circle(x + 15, y + 10, 6).draw(ColorF(0.8, 0.2, 0.2, 0.7));
-			Circle(x + 15, y + 10, 6).drawFrame(1, ColorF(1.0, 0.5, 0.5));
+			Circle(x + 15, y, 6).draw(ColorF(0.8, 0.2, 0.2, 0.7));
+			Circle(x + 15, y, 6).drawFrame(1, ColorF(1.0, 0.5, 0.5));
 		}
 	}
 
@@ -197,7 +242,7 @@ void CityScene::draw() const
 	// 👑 タイトル（超豪華版）
 	// =================================================================
 	{
-		Vec2 titlePos(screenW / 2.0, screenH * 0.089);
+		Vec2 titlePos(screenW / 2.0, screenH * 0.12);
 
 		// 🌟 タイトル背後の光芒
 		{
@@ -261,7 +306,13 @@ void CityScene::draw() const
 	// 📊 ステータスパネル（宝石のように輝く）
 	// =================================================================
 	{
-		RectF statsPanel(screenW - screenW * 0.344, screenH * 0.222, screenW * 0.313, screenH * 0.5);
+		// ★ 画面サイズに収まるように調整
+		double panelWidth = Min(screenW * 0.28, 500.0);
+		double panelHeight = Min(screenH * 0.45, 450.0);
+		RectF statsPanel(screenW - panelWidth - screenW * 0.03,
+						 screenH * 0.22,
+						 panelWidth,
+						 panelHeight);
 
 		// パネルの輝き
 		{
@@ -346,21 +397,21 @@ void CityScene::draw() const
 	// 🎮 内政ボタン群（超煌びやか）
 	// =================================================================
 
-	auto drawFancyButton = [&](const Rect& btn, String text, String subtext, Color mainColor, bool isHovered)
-	{
+	auto drawFancyButton = [&](const Rect& btn, String text, String subtext, ColorF mainColor, bool isHovered) {
 		// ホバー時の輝き
 		if (isHovered)
 		{
 			ScopedRenderStates2D blend(BlendState::Additive);
-			RectF(btn).stretched(10).draw(mainColor.withAlpha(static_cast<uint8>(80)));
+			// ColorF::withAlpha expects 0.0-1.0, use ~80/255
+			RectF(btn).stretched(10).draw(mainColor.withAlpha(80.0 / 255.0));
 		}
 
 		// ボタンの影
 		btn.movedBy(4, 4).draw(ColorF(0, 0, 0, 0.5));
 
 		// ボタン本体
-		Color topColor = isHovered ? mainColor.lerp(Palette::White, 0.4) : mainColor;
-		Color bottomColor = isHovered ? mainColor : mainColor.lerp(Palette::Black, 0.4);
+		ColorF topColor = isHovered ? mainColor.lerp(ColorF(Palette::White), 0.4) : mainColor;
+		ColorF bottomColor = isHovered ? mainColor : mainColor.lerp(ColorF(Palette::Black), 0.4);
 
 		RectF(btn).draw(Arg::top = topColor, Arg::bottom = bottomColor);
 
@@ -368,9 +419,7 @@ void CityScene::draw() const
 		if (isHovered) RectF(btn).drawFrame(4, ColorF(1, 1, 0.9)); else RectF(btn).drawFrame(4, ColorF(0.8, 0.7, 0.5));
 
 		// 光沢（上部ハイライト）
-		RectF(static_cast<double>(btn.x), static_cast<double>(btn.y),
-			  static_cast<double>(btn.w), static_cast<double>(btn.h) * 0.35);
-			double glowAlpha = isHovered ? 0.3 : 0.2;
+		double glowAlpha = isHovered ? 0.3 : 0.2;
 		RectF(static_cast<double>(btn.x), static_cast<double>(btn.y),
 			  static_cast<double>(btn.w), static_cast<double>(btn.h) * 0.35)
 			.draw(ColorF(1, 1, 1, glowAlpha));

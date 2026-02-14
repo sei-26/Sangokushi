@@ -6,13 +6,9 @@ void Main()
 {
 	// ★ フルスクリーン設定
 	Window::SetTitle(U"三国志風SLG - 官渡の戦い");
-	Window::SetStyle(WindowStyle::Frameless);  // 枠なし
-	Scene::SetResizeMode(ResizeMode::Keep);
 
-	// モニターのサイズを取得してフルスクリーンに
-	const Size monitorSize = System::GetCurrentMonitor().displayRect.size;
-	Scene::Resize(monitorSize);
-	Window::Resize(monitorSize);
+	// フルスクリーンモード（引数なし）
+	Window::SetFullscreen(true);
 
 	// フォント登録
 	FontAsset::Register(U"title", 36, Typeface::Bold);
@@ -24,19 +20,47 @@ void Main()
 	// 📊 CSVからデータを読み込む
 	// =================================================================
 	Array<CityData> cities = CSVDataLoader::LoadCities(U"cities.csv");
-	CSVDataLoader::LoadOfficers(cities, U"officers.csv");
+
+	// ★ 武将データの読み込み（エラーでも続行）
+	if (FileSystem::Exists(U"officers.csv"))
+	{
+		CSVDataLoader::LoadOfficers(cities, U"officers.csv");
+	}
+	else
+	{
+		Print << U"[WARNING] officers.csv が見つかりません。武将なしで開始します。";
+
+		// デフォルト武将を各都市に1人配置
+		for (auto& city : cities)
+		{
+			Officer defaultOfficer;
+			defaultOfficer.name = city.owner;
+			defaultOfficer.leadership = 70;
+			defaultOfficer.power = 70;
+			defaultOfficer.war = 70;
+			defaultOfficer.intelligence = 70;
+			defaultOfficer.politics = 70;
+			city.officers.push_back(defaultOfficer);
+		}
+	}
 
 	// データが読み込めなかった場合の処理
 	if (cities.isEmpty())
 	{
 		Print << U"[ERROR] 都市データが読み込めませんでした";
 		Print << U"cities.csv と officers.csv をプロジェクトフォルダに配置してください";
+		Print << U"";
+		Print << U"配置場所: Main.cpp と同じフォルダ";
+		Print << U"例: C:\\MyProject\\cities.csv";
+		Print << U"   C:\\MyProject\\officers.csv";
 
 		while (System::Update())
 		{
 			FontAsset(U"title")(U"データファイルが見つかりません").draw(50, 50, Palette::Red);
 			FontAsset(U"menu")(U"cities.csv と officers.csv を").draw(50, 150, Palette::White);
 			FontAsset(U"menu")(U"プロジェクトフォルダに配置してください").draw(50, 200, Palette::White);
+			FontAsset(U"menu")(U"").draw(50, 250, Palette::White);
+			FontAsset(U"menu")(U"配置場所: Main.cpp と同じフォルダ").draw(50, 300, Palette::Yellow);
 		}
 		return;
 	}
@@ -115,7 +139,6 @@ void Main()
 								Arg::bottom = ColorF(factionColor).lerp(Palette::Black, 0.4));
 				}
 
-				// 修正点: 三項演算子に ':' を追加し、両辺を ColorF に統一して曖昧性を解消
 				button.drawFrame(3, isSelected ? ColorF(Palette::White) : ColorF(0.5, 0.5, 0.5));
 
 				// テキスト
@@ -190,6 +213,12 @@ void Main()
 	// メインループ
 	while (System::Update())
 	{
+		// F11キーでフルスクリーン切り替え
+		if (KeyF11.down())
+		{
+			Window::SetFullscreen(!Window::GetState().fullscreen);
+		}
+
 		// ESCキーで終了
 		if (KeyEscape.down())
 		{

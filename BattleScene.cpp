@@ -22,7 +22,7 @@ BattleScene::BattleScene(GameManager* gm, CityData& playerCity, CityData& enemyC
 	Officer leader;
 	if (playerCity.officers.isEmpty())
 	{
-		leader = Officer(U"守備隊長", 50, 50, 50);
+		//leader = Officer(U"守備隊長", 50, 50, 50);
 	}
 	else
 	{

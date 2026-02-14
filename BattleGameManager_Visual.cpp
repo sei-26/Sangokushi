@@ -26,15 +26,25 @@ void BattleGameManager::InitializeBattle(
 	int playerMainForce = Max(selectedSoldiers, 100);
 	int playerSubForce = Max(selectedSoldiers / 3, 50);
 
+	// ★ 武将の戦闘力ボーナスを計算
+	int leaderCombatBonus = selectedLeader.GetCombatPower() / 10;
+
+	// プレイヤーユニット作成
 	units.push_back(Unit(selectedLeader.name, Side::Player, Point(1, 4), playerMainForce));
+	units.back().atk += leaderCombatBonus;  // ★ 攻撃力ボーナス付与
+
 	units.push_back(Unit(U"副将", Side::Player, Point(1, 5), playerSubForce));
 
 	int enemySoldiers = Max(enemyCity.troops, 100);
 
 	String enemyLeaderName = U"敵将";
+	int enemyLeaderBonus = 5;  // デフォルトボーナス
+
 	if (!enemyCity.officers.isEmpty())
 	{
-		enemyLeaderName = enemyCity.officers[0].name;
+		const Officer& enemyLeader = enemyCity.officers[0];
+		enemyLeaderName = enemyLeader.name;
+		enemyLeaderBonus = enemyLeader.GetCombatPower() / 10;  // ★ 敵武将のボーナス
 	}
 	else
 	{
@@ -45,10 +55,12 @@ void BattleGameManager::InitializeBattle(
 	int enemySubForce = Max(enemySoldiers / 2, 50);
 
 	units.push_back(Unit(enemyLeaderName, Side::Enemy, Point(12, 4), enemyMainForce));
+	units.back().atk += enemyLeaderBonus;  // ★ 敵の攻撃力ボーナス付与
+
 	units.push_back(Unit(U"敵副将", Side::Enemy, Point(12, 6), enemySubForce));
 
-	Print << U"[戦力配置] プレイヤー=" << playerMainForce << U"+" << playerSubForce
-		<< U", 敵=" << enemyMainForce << U"+" << enemySubForce;
+	Print << U"[戦力配置] " << selectedLeader.name << U"(攻+" << leaderCombatBonus << U") vs "
+		<< enemyLeaderName << U"(攻+" << enemyLeaderBonus << U")";
 
 	phase = TurnPhase::PlayerTurn;
 	actingIndex = 0;
@@ -154,6 +166,13 @@ void BattleGameManager::Draw() const
 {
 	double time = Scene::Time();
 
+	// ★ 画面サイズを取得
+	int screenW = Scene::Width();
+	int screenH = Scene::Height();
+
+	// =================================================================
+	// 🎨 戦場の背景
+	// =================================================================
 	Scene::SetBackground(ColorF{ 0.22, 0.26, 0.20 });
 
 	// 大気の霧
@@ -180,7 +199,13 @@ void BattleGameManager::Draw() const
 		}
 	}
 
-	const Transformer2D t2d{ Mat3x2::Translate(50, 50) };
+	// ★ マップを中央に配置するためのオフセット計算
+	double mapTotalWidth = map.width * map.tileSize;
+	double mapTotalHeight = map.height * map.tileSize;
+	double offsetX = (screenW - mapTotalWidth) / 2.0;
+	double offsetY = (screenH - mapTotalHeight) / 2.0;
+
+	const Transformer2D t2d{ Mat3x2::Translate(offsetX, offsetY) };
 
 	// マップ描画
 	for (int y = 0; y < map.height; ++y)
@@ -262,11 +287,13 @@ void BattleGameManager::Draw() const
 			double layerAlpha = (5 - layer) * 0.08;
 			double layerWidth = (layer + 1) * 15.0;
 
+			ColorF bottomCol = activeUnit.isPlayer
+				? ColorF(0.3, 0.5, 1.0, layerAlpha)
+				: ColorF(0.9, 0.3, 0.3, layerAlpha);
+			ColorF topCol = ColorF(1, 1, 1, 0);
+
 			RectF(centerPos.x - layerWidth / 2, 0, layerWidth, centerPos.y)
-				.draw(Arg::top = ColorF(1, 1, 1, 0),
-	  Arg::bottom = ColorF(activeUnit.isPlayer ? 0.3 : 0.9,
-		  activeUnit.isPlayer ? 0.5 : 0.3,
-		  activeUnit.isPlayer ? 1.0 : 0.3, layerAlpha));
+				.draw(bottomCol);
 		}
 
 		// 足元の魔法陣
@@ -294,9 +321,13 @@ void BattleGameManager::Draw() const
 		if (u.alive) u.draw(map.tileSize);
 	}
 
-	// UI表示
+	// =================================================================
+	// 🎮 UI表示（画面サイズ対応）
+	// =================================================================
 	{
-		RectF turnPanel(Scene::Width() / 2 - 250, 10, 500, 90);
+		double panelWidth = Min(screenW * 0.3, 500.0);
+		double panelHeight = Min(screenH * 0.1, 90.0);
+		RectF turnPanel(screenW / 2 - panelWidth / 2, screenH * 0.02, panelWidth, panelHeight);
 
 		{
 			ScopedRenderStates2D blend(BlendState::Additive);
@@ -306,8 +337,8 @@ void BattleGameManager::Draw() const
 		turnPanel.movedBy(4, 4).draw(ColorF(0, 0, 0, 0.5));
 
 		Color panelColor = (phase == TurnPhase::PlayerTurn) ?
-			ColorF(0.25, 0.45, 0.9) : ColorF(0.9, 0.35, 0.35);
-
+// 			ColorF(0.25, 0.45, 0.9) : ColorF(0.9, 0.35, 0.35);
+ColorF(0.25, 0.45, 0.9) : ColorF(0.9, 0.35, 0.35);
 		if (phase == TurnPhase::BattleEnd)
 		{
 			panelColor = PlayerWon() ? ColorF(0.3, 0.9, 0.4) : ColorF(0.6, 0.6, 0.6);
@@ -344,9 +375,12 @@ void BattleGameManager::Draw() const
 		}
 	}
 
+	// 操作ヒント
 	if (phase == TurnPhase::PlayerTurn && !moveRange.isEmpty())
 	{
-		RectF hintPanel(Scene::Width() / 2 - 300, Scene::Height() - 70, 600, 60);
+		double hintWidth = Min(screenW * 0.4, 600.0);
+		double hintHeight = Min(screenH * 0.07, 60.0);
+		RectF hintPanel(screenW / 2 - hintWidth / 2, screenH - hintHeight - screenH * 0.02, hintWidth, hintHeight);
 		hintPanel.draw(ColorF(0, 0, 0, 0.8));
 		hintPanel.drawFrame(2, ColorF(1, 1, 0.8));
 		FontAsset(U"menu")(U"[左クリック] 移動 ／ 隣接で自動攻撃")
@@ -446,7 +480,14 @@ void BattleGameManager::CalculateMoveRange()
 void BattleGameManager::MoveUnit()
 {
 	if (!MouseL.down()) return;
-	Point click = (Cursor::Pos() - Point(50, 50)) / map.tileSize;
+
+	// ★ マップのオフセットを計算
+	double mapTotalWidth = map.width * map.tileSize;
+	double mapTotalHeight = map.height * map.tileSize;
+	double offsetX = (Scene::Width() - mapTotalWidth) / 2.0;
+	double offsetY = (Scene::Height() - mapTotalHeight) / 2.0;
+
+	Point click = (Cursor::Pos() - Point(static_cast<int>(offsetX), static_cast<int>(offsetY))) / map.tileSize;
 	if (!moveRange.contains(click)) return;
 
 	Unit& u = units[actingIndex];

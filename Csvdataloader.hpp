@@ -25,8 +25,10 @@ public:
 
 		// データ行を読み込む
 		String line;
+		int lineNum = 1;
 		while (reader.readLine(line))
 		{
+			lineNum++;
 			if (line.isEmpty()) continue;
 
 			// CSV解析
@@ -34,7 +36,7 @@ public:
 
 			if (columns.size() < 12)
 			{
-				Print << U"[WARNING] 不正な行をスキップ: " << line;
+				Print << U"[WARNING] 行" << lineNum << U": 列数不足をスキップ";
 				continue;
 			}
 
@@ -42,21 +44,31 @@ public:
 			city.name = columns[0].trimmed();
 			city.owner = columns[1].trimmed();
 
-			// 座標
-			int x = Parse<int>(columns[2].trimmed());
-			int y = Parse<int>(columns[3].trimmed());
-			city.pos = Point(x, y);
+			// ★ 安全な数値解析（Optional使用）
+			if (auto x = ParseOpt<int>(columns[2].trimmed()))
+			{
+				if (auto y = ParseOpt<int>(columns[3].trimmed()))
+				{
+					city.pos = Point(*x, *y);
+				}
+			}
 
-			// パラメータ
-			city.troops = Parse<int>(columns[4].trimmed());
-			city.gold = Parse<int>(columns[5].trimmed());
-			city.food = Parse<int>(columns[6].trimmed());
-			city.agriculture = Parse<int>(columns[7].trimmed());
-			city.commerce = Parse<int>(columns[8].trimmed());
-			city.barracks = Parse<int>(columns[9].trimmed());
-			city.order = Parse<int>(columns[10].trimmed());
+			if (auto troops = ParseOpt<int>(columns[4].trimmed()))
+				city.troops = *troops;
+			if (auto gold = ParseOpt<int>(columns[5].trimmed()))
+				city.gold = *gold;
+			if (auto food = ParseOpt<int>(columns[6].trimmed()))
+				city.food = *food;
+			if (auto agriculture = ParseOpt<int>(columns[7].trimmed()))
+				city.agriculture = *agriculture;
+			if (auto commerce = ParseOpt<int>(columns[8].trimmed()))
+				city.commerce = *commerce;
+			if (auto barracks = ParseOpt<int>(columns[9].trimmed()))
+				city.barracks = *barracks;
+			if (auto order = ParseOpt<int>(columns[10].trimmed()))
+				city.order = *order;
 
-			// 勢力色（RGBを16進数で指定）
+			// 勢力色
 			String colorHex = columns[11].trimmed();
 			city.color = ParseColor(colorHex);
 
@@ -82,29 +94,45 @@ public:
 		reader.readLine(header);
 
 		int officerCount = 0;
+		int lineNum = 1;
 
 		// データ行を読み込む
 		String line;
 		while (reader.readLine(line))
 		{
+			lineNum++;
 			if (line.isEmpty()) continue;
 
 			// CSV解析
 			Array<String> columns = line.split(U',');
 
-			if (columns.size() < 5)
+			if (columns.size() < 7)
 			{
-				Print << U"[WARNING] 不正な行をスキップ: " << line;
+				Print << U"[WARNING] 行" << lineNum << U": 列数不足（" << columns.size() << U"列）";
 				continue;
 			}
 
 			String officerName = columns[0].trimmed();
 			String faction = columns[1].trimmed();
 			String cityName = columns[2].trimmed();
-			int leadership = Parse<int>(columns[3].trimmed());
-			int power = Parse<int>(columns[4].trimmed());
+
+			// ★ ParseOptで安全に解析
+			int leadership = 50;
+			int power = 50;
+			int intelligence = 50;
+			int politics = 50;
+
+			if (auto val = ParseOpt<int>(columns[3].trimmed()))
+				leadership = *val;
+			if (auto val = ParseOpt<int>(columns[4].trimmed()))
+				power = *val;
+			if (auto val = ParseOpt<int>(columns[5].trimmed()))
+				intelligence = *val;
+			if (auto val = ParseOpt<int>(columns[6].trimmed()))
+				politics = *val;
 
 			// 該当する都市を探して武将を追加
+			bool placed = false;
 			for (auto& city : cities)
 			{
 				if (city.name == cityName && city.owner == faction)
@@ -113,11 +141,19 @@ public:
 					officer.name = officerName;
 					officer.leadership = leadership;
 					officer.power = power;
-					officer.war = power;  // 既存コードとの互換性
+					officer.war = power;
+					officer.intelligence = intelligence;
+					officer.politics = politics;
 					city.officers.push_back(officer);
 					officerCount++;
+					placed = true;
 					break;
 				}
+			}
+
+			if (!placed)
+			{
+				Print << U"[WARNING] 武将 " << officerName << U" の配置先が見つかりません（都市:" << cityName << U", 勢力:" << faction << U"）";
 			}
 		}
 
@@ -128,7 +164,7 @@ private:
 	// 16進数カラーコードをColorに変換
 	static Color ParseColor(const String& hexColor)
 	{
-		String hex = hexColor;
+		String hex = hexColor.trimmed();
 
 		// "#" を削除
 		if (hex.starts_with(U'#'))
@@ -136,23 +172,24 @@ private:
 			hex = hex.substr(1);
 		}
 
-		// デフォルト色
+		// 長さチェック
 		if (hex.length() != 6)
 		{
 			return Color(128, 128, 128);
 		}
 
-		try
-		{
-			int r = ParseInt<int>(hex.substr(0, 2), Arg::radix = 16);
-			int g = ParseInt<int>(hex.substr(2, 2), Arg::radix = 16);
-			int b = ParseInt<int>(hex.substr(4, 2), Arg::radix = 16);
+		// ★ 1文字ずつ解析
+		auto parseHexDigit = [](char32 c) -> int {
+			if (c >= U'0' && c <= U'9') return c - U'0';
+			if (c >= U'a' && c <= U'f') return c - U'a' + 10;
+			if (c >= U'A' && c <= U'F') return c - U'A' + 10;
+			return 0;
+			};
 
-			return Color(r, g, b);
-		}
-		catch (...)
-		{
-			return Color(128, 128, 128);
-		}
+		int r = parseHexDigit(hex[0]) * 16 + parseHexDigit(hex[1]);
+		int g = parseHexDigit(hex[2]) * 16 + parseHexDigit(hex[3]);
+		int b = parseHexDigit(hex[4]) * 16 + parseHexDigit(hex[5]);
+
+		return Color(r, g, b);
 	}
 };

@@ -5,26 +5,24 @@
 struct Officer
 {
 	String name = U"無名";
-	int leadership = 50;  // 統率力
-	int power = 50;       // 武力
+	int leadership = 50;  // 統率力（戦闘時の兵士ボーナス）
+	int power = 50;       // 武力（攻撃力）
 	int war = 50;         // 武力（既存コード互換用）
+	int intelligence = 50; // 知力（内政ボーナス）
+	int politics = 50;     // 政治力（収入・治安ボーナス）
 
 	// デフォルトコンストラクタ
 	Officer() = default;
 
-	// 4引数コンストラクタ（名前、統率力、武力、war）
-	Officer(const String& n, int leadership_, int power_, int war_)
-		: name(n)
-		, leadership(leadership_)
-		, power(power_)
-		, war(war_)
-	{}
+	// 戦闘力を計算（統率 + 武力）
+	int GetCombatPower() const
+	{
+		return leadership + power;
+	}
 
-	// 3引数コンストラクタ（war を省略した場合は power と同じ値を設定）
-	Officer(const String& n, int leadership_, int power_)
-		: name(n)
-		, leadership(leadership_)
-		, power(power_)
-		, war(power_)
-	{}
+	// 内政力を計算（知力 + 政治）
+	int GetAdministrationPower() const
+	{
+		return intelligence + politics;
+	}
 };
