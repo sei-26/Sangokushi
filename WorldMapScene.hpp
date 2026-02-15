@@ -30,4 +30,7 @@ private:
 	// ★ セーブ・ロードボタン
 	Rect m_btnSave;
 	Rect m_btnLoad;
+
+	// ★ 外交ボタン
+	Rect m_btnDiplomacy;
 };

@@ -1,6 +1,7 @@
 ﻿#include <Siv3D.hpp>
 #include "GameSceneManager.hpp"
 #include "CSVDataLoader.hpp"
+#include "LoyaltyManager.hpp"
 
 void Main()
 {
@@ -43,6 +44,10 @@ void Main()
 			city.officers.push_back(defaultOfficer);
 		}
 	}
+
+	// ★ 武将の相性と忠誠度を初期化
+	LoyaltyManager::InitializeCompatibility(cities);
+	Print << U"[INFO] 武将の忠誠度を初期化しました";
 
 	// データが読み込めなかった場合の処理
 	if (cities.isEmpty())

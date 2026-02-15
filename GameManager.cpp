@@ -1,6 +1,7 @@
 ﻿#include "GameManager.hpp"
 #include "AIController.hpp"
 #include "SaveLoadManager.hpp"
+#include "LoyaltyManager.hpp"
 
 void GameManager::advanceMonth(Array<CityData>& cities)
 {
@@ -16,6 +17,22 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 	{
 		SaveData autoSaveData = CreateSaveData(cities);
 		SaveLoadManager::AutoSave(autoSaveData);
+	}
+
+	// ★ 外交の月次処理
+	diplomacy.AdvanceMonth();
+
+	// ★ ターンをリセット
+	turnManager.AdvanceMonth();
+
+	// ★ 忠誠度更新
+	LoyaltyManager::UpdateLoyalty(cities);
+
+	// ★ 裏切りチェック
+	auto betrayalLog = LoyaltyManager::CheckBetrayal(cities);
+	for (const auto& log : betrayalLog)
+	{
+		Print << U"[裏切り] " << log;
 	}
 
 	// =================================================================

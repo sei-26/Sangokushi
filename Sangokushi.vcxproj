@@ -348,10 +348,13 @@
     <ClInclude Include="BattleScene.hpp" />
     <ClInclude Include="CityData.hpp" />
     <ClInclude Include="CityScene.hpp" />
+    <ClInclude Include="Diplomacymanager.hpp" />
+    <ClInclude Include="Diplomacyscene.hpp" />
     <ClInclude Include="Faction.hpp" />
     <ClInclude Include="FactionSelectScene.hpp" />
     <ClInclude Include="GameClearScene.hpp" />
     <ClInclude Include="GameManager.hpp" />
+    <ClInclude Include="Loyaltymanager.hpp" />
     <ClInclude Include="Map.hpp" />
     <ClInclude Include="Officer.hpp" />
     <ClInclude Include="OfficerDatabase.hpp" />
@@ -364,6 +367,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TurnEndScene.hpp" />
+    <ClInclude Include="Turnmanager.hpp" />
     <ClInclude Include="Unit.hpp" />
     <ClInclude Include="WorldMapScene.hpp" />
   </ItemGroup>

@@ -17,6 +17,9 @@ WorldMapScene::WorldMapScene(GameManager* gm,
 	// ★ セーブ・ロードボタンの配置
 	m_btnSave = Rect(Scene::Width() - 250, 100, 200, 60);
 	m_btnLoad = Rect(Scene::Width() - 250, 180, 200, 60);
+
+	// ★ 外交ボタンの配置
+	m_btnDiplomacy = Rect(Scene::Width() - 250, 260, 200, 60);
 }
 
 void WorldMapScene::update()
@@ -45,6 +48,13 @@ void WorldMapScene::update()
 			m_gameManager->playerFactionName = loadedData->playerFactionName;
 			Print << U"📂 ロードしました！ " << loadedData->year << U"年" << loadedData->month << U"月";
 		}
+	}
+
+	// ★ 外交ボタン
+	if (m_btnDiplomacy.leftClicked())
+	{
+		m_sceneEnd = true;
+		m_nextScene = U"Diplomacy";
 	}
 
 	if (KeyEnter.down())
@@ -538,6 +548,20 @@ void WorldMapScene::draw() const
 			).draw(Palette::Gold);
 
 			FontAsset(U"menu")(U"ロード").draw(m_btnLoad.x + 60, m_btnLoad.y + 20, Palette::White);
+
+			// 外交ボタン
+			bool dipHovered = m_btnDiplomacy.mouseOver();
+			m_btnDiplomacy.draw(dipHovered ? ColorF(0.4, 0.3, 0.5) : ColorF(0.25, 0.2, 0.3));
+			m_btnDiplomacy.drawFrame(3, dipHovered ? Palette::Magenta : Palette::Purple);
+
+			// 外交アイコン（握手風）
+			Vec2 handPos1(m_btnDiplomacy.x + 25, m_btnDiplomacy.y + 30);
+			Vec2 handPos2(m_btnDiplomacy.x + 45, m_btnDiplomacy.y + 30);
+			Circle(handPos1, 8).draw(Palette::Wheat);
+			Circle(handPos2, 8).draw(Palette::Wheat);
+			Line(handPos1, handPos2).draw(4, Palette::Tan);
+
+			FontAsset(U"menu")(U"外交").draw(m_btnDiplomacy.x + 60, m_btnDiplomacy.y + 20, Palette::White);
 		}
 	}
 }

@@ -878,9 +878,6 @@
     <ClInclude Include="CityData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WorldMapScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FactionSelectScene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -927,6 +924,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Saveloadmanager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Diplomacymanager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Diplomacyscene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldMapScene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Turnmanager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Loyaltymanager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

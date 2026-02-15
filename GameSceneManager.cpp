@@ -2,6 +2,7 @@
 #include "WorldMapScene.hpp"
 #include "CityScene.hpp"
 #include "BattleScene.hpp"
+#include "DiplomacyScene.hpp"
 
 GameSceneManager::GameSceneManager(GameManager* gm, const Faction& playerFaction, const Array<CityData>& cities)
 	: m_currentScene(nullptr)
@@ -130,5 +131,10 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 
 		// シーン遷移
 		m_currentScene = new BattleScene(m_gameManager, *attacker, *defender, true);
+	}
+	else if (nextScene == U"Diplomacy")
+	{
+		// ★ 外交シーンへ遷移
+		m_currentScene = new DiplomacyScene(&m_gameManager->diplomacy, m_playerFaction.name, &m_cities, m_gameManager);
 	}
 }

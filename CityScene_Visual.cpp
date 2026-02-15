@@ -1,5 +1,7 @@
 ﻿#include "CityScene.hpp"
 #include "OfficerPortrait.hpp"
+#include "GameSceneManager.hpp"
+
 
 CityScene::CityScene(GameManager* gm, CityData& city)
 	: m_gameManager(gm)
@@ -58,16 +60,25 @@ void CityScene::update()
 	// ========================================
 	if (m_btnAgr.leftClicked())
 	{
-		if (m_cityData->gold >= 100)
+		// ★ コマンド制限チェック
+		if (!m_gameManager->turnManager.CanExecuteCommand())
+		{
+			m_message = U"今月のコマンドを使い切りました！\n（残り0コマンド）";
+		}
+		else if (m_cityData->gold >= 100)
 		{
 			m_cityData->gold -= 100;
 			int bonus = 10 + administrationBonus;
 			m_cityData->agriculture += bonus;
+			m_gameManager->turnManager.ExecuteCommand();  // ★ コマンド使用
+
+			int remaining = m_gameManager->turnManager.GetRemainingCommands();
 			m_message = U"農業開発を行いました。\n農業値が " + Format(bonus) + U" 上昇！";
 			if (administrationBonus > 0)
 			{
 				m_message += U"\n（武将ボーナス: +" + Format(administrationBonus) + U"）";
 			}
+			m_message += U"\n（残り" + Format(remaining) + U"コマンド）";
 		}
 		else m_message = U"金が足りません！";
 	}
@@ -77,16 +88,25 @@ void CityScene::update()
 	// ========================================
 	if (m_btnCom.leftClicked())
 	{
-		if (m_cityData->gold >= 100)
+		// ★ コマンド制限チェック
+		if (!m_gameManager->turnManager.CanExecuteCommand())
+		{
+			m_message = U"今月のコマンドを使い切りました！\n（残り0コマンド）";
+		}
+		else if (m_cityData->gold >= 100)
 		{
 			m_cityData->gold -= 100;
 			int bonus = 10 + administrationBonus;
 			m_cityData->commerce += bonus;
+			m_gameManager->turnManager.ExecuteCommand();  // ★ コマンド使用
+
+			int remaining = m_gameManager->turnManager.GetRemainingCommands();
 			m_message = U"商業投資を行いました。\n商業値が " + Format(bonus) + U" 上昇！";
 			if (administrationBonus > 0)
 			{
 				m_message += U"\n（武将ボーナス: +" + Format(administrationBonus) + U"）";
 			}
+			m_message += U"\n（残り" + Format(remaining) + U"コマンド）";
 		}
 		else m_message = U"金が足りません！";
 	}
@@ -96,11 +116,20 @@ void CityScene::update()
 	// ========================================
 	if (m_btnTrain.leftClicked())
 	{
-		if (m_cityData->food >= 100)
+		// ★ コマンド制限チェック
+		if (!m_gameManager->turnManager.CanExecuteCommand())
+		{
+			m_message = U"今月のコマンドを使い切りました！\n（残り0コマンド）";
+		}
+		else if (m_cityData->food >= 100)
 		{
 			m_cityData->food -= 100;
 			m_cityData->troops += 200;
+			m_gameManager->turnManager.ExecuteCommand();  // ★ コマンド使用
+
+			int remaining = m_gameManager->turnManager.GetRemainingCommands();
 			m_message = U"徴兵を行いました。\n兵士が 200 増えました！";
+			m_message += U"\n（残り" + Format(remaining) + U"コマンド）";
 		}
 		else m_message = U"兵糧が足りません！";
 	}
@@ -110,17 +139,26 @@ void CityScene::update()
 	// ========================================
 	if (m_btnOrder.leftClicked())
 	{
-		if (m_cityData->gold >= 50)
+		// ★ コマンド制限チェック
+		if (!m_gameManager->turnManager.CanExecuteCommand())
+		{
+			m_message = U"今月のコマンドを使い切りました！\n（残り0コマンド）";
+		}
+		else if (m_cityData->gold >= 50)
 		{
 			m_cityData->gold -= 50;
 			int orderBonus = 5 + (administrationBonus / 2);
 			m_cityData->order += orderBonus;
 			if (m_cityData->order > 100) m_cityData->order = 100;
+			m_gameManager->turnManager.ExecuteCommand();  // ★ コマンド使用
+
+			int remaining = m_gameManager->turnManager.GetRemainingCommands();
 			m_message = U"巡回を行いました。\n治安が " + Format(orderBonus) + U" 改善！";
 			if (administrationBonus > 0)
 			{
 				m_message += U"\n（武将ボーナス: +" + Format(administrationBonus / 2) + U"）";
 			}
+			m_message += U"\n（残り" + Format(remaining) + U"コマンド）";
 		}
 		else m_message = U"金が足りません！";
 	}
@@ -301,6 +339,12 @@ void CityScene::draw() const
 		// サブタイトル
 		FontAsset(U"menu")(U"～ " + m_cityData->owner + U" の治世 ～")
 			.drawAt(titlePos.movedBy(0, screenH * 0.05), ColorF(1.0, 0.9, 0.6));
+
+		// ★ 残りコマンド数表示
+		int remaining = m_gameManager->turnManager.GetRemainingCommands();
+		Color commandColor = (remaining > 0) ? Palette::Lime : Palette::Red;
+		FontAsset(U"menu")(U"残りコマンド: {}/4"_fmt(remaining))
+			.drawAt(titlePos.movedBy(0, screenH * 0.09), commandColor);
 	}
 
 	// =================================================================
@@ -419,7 +463,9 @@ void CityScene::draw() const
 		if (isHovered) RectF(btn).drawFrame(4, ColorF(1, 1, 0.9)); else RectF(btn).drawFrame(4, ColorF(0.8, 0.7, 0.5));
 
 		// 光沢（上部ハイライト）
-		double glowAlpha = isHovered ? 0.3 : 0.2;
+		RectF(static_cast<double>(btn.x), static_cast<double>(btn.y),
+			  static_cast<double>(btn.w), static_cast<double>(btn.h) * 0.35);
+			double glowAlpha = isHovered ? 0.3 : 0.2;
 		RectF(static_cast<double>(btn.x), static_cast<double>(btn.y),
 			  static_cast<double>(btn.w), static_cast<double>(btn.h) * 0.35)
 			.draw(ColorF(1, 1, 1, glowAlpha));
@@ -617,9 +663,16 @@ void CityScene::draw() const
 		double portraitX = screenW * 0.5;
 		double portraitY = screenH * 0.15;
 
+		const Officer& mainOfficer = m_cityData->officers[0];
+
 		// 武将の顔
-		OfficerPortrait::Draw(m_cityData->officers[0], Vec2(portraitX, portraitY), 120);
-		OfficerPortrait::DrawNamePlate(m_cityData->officers[0], Vec2(portraitX, portraitY), 120);
+		OfficerPortrait::Draw(mainOfficer, Vec2(portraitX, portraitY), 120);
+		OfficerPortrait::DrawNamePlate(mainOfficer, Vec2(portraitX, portraitY), 120);
+
+		// ★ 忠誠度表示
+		String loyaltyText = U"忠誠: {}（{}）"_fmt(mainOfficer.loyalty, mainOfficer.GetLoyaltyText());
+		FontAsset(U"menu")(loyaltyText)
+			.drawAt(portraitX, portraitY + 100, mainOfficer.GetLoyaltyColor());
 
 		// 武将が複数いる場合は小さく表示
 		if (m_cityData->officers.size() > 1)
@@ -627,7 +680,7 @@ void CityScene::draw() const
 			for (size_t i = 1; i < Min(size_t(3), m_cityData->officers.size()); ++i)
 			{
 				double smallX = portraitX + (static_cast<double>(i) - 1.5) * 70;
-				double smallY = portraitY + 100;
+				double smallY = portraitY + 140;
 				OfficerPortrait::DrawSmall(m_cityData->officers[i], Vec2(smallX, smallY), 40);
 			}
 		}

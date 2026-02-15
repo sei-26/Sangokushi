@@ -4,7 +4,9 @@
 #include "CityData.hpp"
 #include "Unit.hpp"
 #include "Officer.hpp"
-#include "Saveloadmanager.hpp"
+#include "DiplomacyManager.hpp"
+#include "TurnManager.hpp"
+#include "Saveloadmanager.hpp" // SaveData の完全定義を使うために追加
 
 // 前方宣言
 class Map;
@@ -14,8 +16,14 @@ class GameManager
 public:
 	int year = 184;
 	int month = 1;
-	String playerFactionName;  // ★ プレイヤー勢力名
-	Stopwatch playTimer;  // ★ プレイ時間計測
+	String playerFactionName;
+	Stopwatch playTimer;
+
+	// ★ 外交管理
+	DiplomacyManager diplomacy;
+
+	// ★ ターン管理
+	TurnManager turnManager;
 
 	// 月を進める関数
 	void advanceMonth(Array<CityData>& cities);
@@ -38,7 +46,7 @@ public:
 
 	struct PendingBattle
 	{
-		bool isOccurring = false;
+		bool isOccurring = false	;
 		int atkCityIndex = -1;
 		int defCityIndex = -1;
 	};
