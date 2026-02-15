@@ -563,5 +563,27 @@ void WorldMapScene::draw() const
 
 			FontAsset(U"menu")(U"外交").draw(m_btnDiplomacy.x + 60, m_btnDiplomacy.y + 20, Palette::White);
 		}
+
+		// =================================================================
+		// 📢 イベント通知（画面下部）
+		// =================================================================
+		if (m_gameManager && !m_gameManager->eventLog.isEmpty())
+		{
+			double notifY = Scene::Height() - 200;
+			RectF notifPanel(50, notifY, Scene::Width() - 100, 150);
+
+			// 背景
+			notifPanel.draw(ColorF(0.1, 0.1, 0.15, 0.95));
+			notifPanel.drawFrame(4, Palette::Gold);
+
+			// イベントログを表示
+			int lineY = static_cast<int>(notifY + 15);
+			for (const auto& log : m_gameManager->eventLog)
+			{
+				FontAsset(U"menu")(log).draw(70, lineY, Palette::White);
+				lineY += 25;
+				if (lineY > notifY + 140) break;  // 最大6行
+			}
+		}
 	}
 }

@@ -4,6 +4,7 @@
 #include "Map.hpp"
 #include "CityData.hpp"
 #include "Officer.hpp"
+#include "BattleSystem.hpp" // 追加：Weather 型のためのインクルード
 
 enum class TurnPhase
 {
@@ -39,6 +40,9 @@ public:
 	void ApplyBattleResult(CityData& atkCity, CityData& defCity);
 
 private:
+	// 追加：天候状態を保持するメンバ
+	BattleSystem::Weather m_weather = BattleSystem::Weather::Sunny;
+
 	// 内部処理用
 	void UpdatePlayerTurn();
 	void UpdateEnemyTurn();
@@ -58,5 +62,7 @@ private:
 	Array<Point> FindPath(const Point& start, const Point& goal) const;
 	bool PlayerWon() const;
 	bool PlayerLost() const;
+
+	
 
 };

@@ -1,6 +1,10 @@
 ﻿#include "BattleGameManager.hpp"
 #include "OfficerPortrait.hpp"
+#include "BattleSystem.hpp"
 #include <queue>
+
+// ★ 地形タイプを格納
+Array<Array<BattleSystem::Terrain>> g_terrainMap;
 
 void BattleGameManager::InitializeBattle(
 	const CityData& playerCity,
@@ -21,6 +25,32 @@ void BattleGameManager::InitializeBattle(
 	map = Map(mapWidth, mapHeight, cellSize);
 	map.FitToScreen(screenW, screenH, 0);
 	units.clear();
+
+	// ★ 地形マップを生成
+	g_terrainMap.clear();
+	g_terrainMap.resize(mapHeight);
+	for (int y = 0; y < mapHeight; ++y)
+	{
+		g_terrainMap[y].resize(mapWidth);
+		for (int x = 0; x < mapWidth; ++x)
+		{
+			// ランダムに地形を配置
+			int r = Random(0, 99);
+			if (r < 60)
+				g_terrainMap[y][x] = BattleSystem::Terrain::Plains;
+			else if (r < 75)
+				g_terrainMap[y][x] = BattleSystem::Terrain::Forest;
+			else if (r < 88)
+				g_terrainMap[y][x] = BattleSystem::Terrain::Mountain;
+			else
+				g_terrainMap[y][x] = BattleSystem::Terrain::River;
+		}
+	}
+
+	// ★ 天候をランダム生成
+	m_weather = BattleSystem::GenerateRandomWeather();
+
+	Print << U"[戦闘開始] 天候: " << BattleSystem::GetWeatherName(m_weather);
 
 	isPlayerAttacker = playerIsAtk;
 
@@ -104,14 +134,34 @@ void BattleGameManager::Update()
 void BattleGameManager::UpdatePlayerTurn()
 {
 	bool allActed = true;
-	for (auto& u : units) if (u.isPlayer && u.alive && !u.acted) allActed = false;
+	int alivePlayerCount = 0;
+	int actedPlayerCount = 0;
 
-	if (allActed)
+	for (auto& u : units)
 	{
+		if (u.isPlayer && u.alive)
+		{
+			alivePlayerCount++;
+			if (u.acted) actedPlayerCount++;
+			if (!u.acted) allActed = false;
+		}
+	}
+
+	if (allActed && alivePlayerCount > 0)
+	{
+		Print << U"[味方ターン終了] " << alivePlayerCount << U"体が行動完了";
 		for (auto& u : units) u.acted = false;
 		actingIndex = 0;
 		moveRange.clear();
 		phase = TurnPhase::EnemyTurn;
+		return;
+	}
+
+	// 味方が全滅している場合
+	if (alivePlayerCount == 0)
+	{
+		Print << U"[味方全滅] 敗北";
+		phase = TurnPhase::BattleEnd;
 		return;
 	}
 
@@ -132,19 +182,41 @@ void BattleGameManager::UpdatePlayerTurn()
 
 void BattleGameManager::UpdateEnemyTurn()
 {
-	if (actingIndex >= units.size()) actingIndex = 0;
+	// ★ 敵の行動に間隔を持たせる（0.5秒待機）
+	static double lastActionTime = 0.0;
+	double currentTime = Scene::Time();
 
+	// ★ まず全敵が行動済みかチェック
 	bool allActed = true;
-	for (auto& u : units) if (!u.isPlayer && u.alive && !u.acted) allActed = false;
+	for (auto& u : units)
+	{
+		if (!u.isPlayer && u.alive && !u.acted)
+		{
+			allActed = false;
+			break;
+		}
+	}
 
 	if (allActed)
 	{
+		// 全員行動済み → 味方ターンへ
 		for (auto& u : units) u.acted = false;
 		actingIndex = 0;
 		moveRange.clear();
 		phase = TurnPhase::PlayerTurn;
+		lastActionTime = 0.0;  // リセット
+		Print << U"[ターン終了] 敵ターン → 味方ターン";
 		return;
 	}
+
+	// 待機時間チェック
+	if (currentTime - lastActionTime < 0.5)
+	{
+		return;  // まだ待機時間
+	}
+
+	// 次に行動する敵を探す
+	if (actingIndex >= units.size()) actingIndex = 0;
 
 	while (actingIndex < units.size())
 	{
@@ -153,14 +225,28 @@ void BattleGameManager::UpdateEnemyTurn()
 		actingIndex++;
 	}
 
-	if (actingIndex >= units.size()) { actingIndex = 0; return; }
+	if (actingIndex >= units.size())
+	{
+		// 見つからない場合は最初から探す
+		actingIndex = 0;
+		return;
+	}
 
 	Unit& enemy = units[actingIndex];
+
+	// 行動実行
 	int tgt = FindClosestEnemyIndex(actingIndex);
-	if (tgt >= 0) EnemyAction(tgt);
+	if (tgt >= 0)
+	{
+		EnemyAction(tgt);
+		Print << U"[敵行動] " << enemy.name << U" が行動";
+	}
 
 	enemy.acted = true;
 	actingIndex++;
+
+	// ★ 行動後に時間を記録
+	lastActionTime = currentTime;
 }
 
 void BattleGameManager::Draw() const
@@ -218,30 +304,50 @@ void BattleGameManager::Draw() const
 			Color tileColor = map.tiles[y][x].getColor();
 
 			tile.movedBy(1, 1).draw(ColorF(0, 0, 0, 0.15));
-			tile.draw(Arg::top = tileColor, Arg::bottom = tileColor.lerp(Palette::Black, 0.25));
+
+			// ★ 地形に応じた色
+			Color baseColor = Palette::Green;
+			if (y < g_terrainMap.size() && x < g_terrainMap[y].size())
+			{
+				baseColor = BattleSystem::GetTerrainColor(g_terrainMap[y][x]);
+			}
+
+			// グラデーション描画
+			tile.draw(baseColor.lerp(Palette::Black, 0.25));
 			tile.drawFrame(1, ColorF(0, 0, 0, 0.4));
 
-			int type = map.tiles[y][x].type;
-			if (type == 1) // 森
+			// ★ 地形アイコン表示
+			if (y < g_terrainMap.size() && x < g_terrainMap[y].size())
 			{
-				for (int tree = 0; tree < 3; ++tree)
+				auto terrain = g_terrainMap[y][x];
+
+				if (terrain == BattleSystem::Terrain::Forest) // 森
 				{
-					double treeX = tile.x + (tree + 1) * map.tileSize * 0.25;
-					double treeY = tile.y + map.tileSize * 0.5;
-					Triangle(treeX, treeY - 15, treeX - 8, treeY + 5, treeX + 8, treeY + 5)
-						.draw(ColorF(0.15, 0.35, 0.15, 0.4));
+					for (int tree = 0; tree < 3; ++tree)
+					{
+						double treeX = tile.x + (tree + 1) * map.tileSize * 0.25;
+						double treeY = tile.y + map.tileSize * 0.5;
+						Triangle(treeX, treeY - 15, treeX - 8, treeY + 5, treeX + 8, treeY + 5)
+							.draw(ColorF(0.15, 0.45, 0.15, 0.6));
+					}
 				}
-			}
-			else if (type == 2) // 山
-			{
-				Vec2 peak = tile.center().movedBy(0, -10);
-				Triangle(peak, peak.movedBy(-15, 20), peak.movedBy(15, 20))
-					.draw(ColorF(0.35, 0.30, 0.25, 0.4));
-			}
-			else if (type == 3) // 城
-			{
-				RectF(tile.x + 10, tile.y + 10, map.tileSize - 20, map.tileSize - 20)
-					.draw(ColorF(0.5, 0.5, 0.5, 0.3));
+				else if (terrain == BattleSystem::Terrain::Mountain) // 山
+				{
+					Vec2 peak = tile.center().movedBy(0, -10);
+					Triangle(peak, peak.movedBy(-15, 20), peak.movedBy(15, 20))
+						.draw(ColorF(0.45, 0.35, 0.25, 0.7));
+				}
+				else if (terrain == BattleSystem::Terrain::River) // 川
+				{
+					// 波線
+					for (int wave = 0; wave < 3; ++wave)
+					{
+						double waveY = tile.y + map.tileSize * (0.3 + wave * 0.2);
+						double offset = sin(time * 2 + wave) * 3;
+						Line(tile.x + offset, waveY, tile.x + map.tileSize + offset, waveY)
+							.draw(2, ColorF(0.6, 0.8, 1.0, 0.5));
+					}
+				}
 			}
 		}
 	}
@@ -288,12 +394,10 @@ void BattleGameManager::Draw() const
 			double layerAlpha = (5 - layer) * 0.08;
 			double layerWidth = (layer + 1) * 15.0;
 
-			ColorF glowColor = activeUnit.isPlayer
-				? ColorF(0.3, 0.5, 1.0, layerAlpha)
-				: ColorF(0.9, 0.3, 0.3, layerAlpha);
-
 			RectF(centerPos.x - layerWidth / 2, 0, layerWidth, centerPos.y)
-				.draw(glowColor);
+				.draw(ColorF(activeUnit.isPlayer ? 0.3 : 0.9,
+					activeUnit.isPlayer ? 0.5 : 0.3,
+					activeUnit.isPlayer ? 1.0 : 0.3, layerAlpha * 0.5));
 		}
 
 		// 足元の魔法陣
@@ -344,7 +448,7 @@ void BattleGameManager::Draw() const
 			panelColor = PlayerWon() ? ColorF(0.3, 0.9, 0.4) : ColorF(0.6, 0.6, 0.6);
 		}
 
-		turnPanel.draw(Arg::top = panelColor, Arg::bottom = panelColor.lerp(Palette::Black, 0.5));
+		turnPanel.draw(panelColor.lerp(Palette::Black, 0.3));
 		turnPanel.drawFrame(5, ColorF(1, 1, 0.9));
 
 		for (auto corner : { turnPanel.tl(), turnPanel.tr(), turnPanel.bl(), turnPanel.br() })
@@ -352,6 +456,10 @@ void BattleGameManager::Draw() const
 			Circle(corner, 12).draw(ColorF(1, 0.9, 0.6));
 			Circle(corner, 10).draw(ColorF(1, 1, 0.8, 0.8 + sin(time * 4) * 0.2));
 		}
+
+		// ★ 天候表示
+		String weatherText = BattleSystem::GetWeatherIcon(m_weather) + U" " + BattleSystem::GetWeatherName(m_weather);
+		FontAsset(U"title")(weatherText).drawAt(turnPanel.center().x, turnPanel.y - 40, Palette::White);
 
 		String turnText = (phase == TurnPhase::PlayerTurn) ? U"味方ターン" : U"敵ターン";
 		if (phase == TurnPhase::BattleEnd)
@@ -560,6 +668,10 @@ void BattleGameManager::MoveUnit()
 
 	u.pos = click;
 	moveRange.clear();
+
+	// ★ 移動したら行動済みにする
+	u.acted = true;
+	actingIndex++;
 }
 
 void BattleGameManager::TryAttack()

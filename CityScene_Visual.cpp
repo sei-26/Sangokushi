@@ -1,7 +1,5 @@
 ﻿#include "CityScene.hpp"
 #include "OfficerPortrait.hpp"
-#include "GameSceneManager.hpp"
-
 
 CityScene::CityScene(GameManager* gm, CityData& city)
 	: m_gameManager(gm)
@@ -9,21 +7,26 @@ CityScene::CityScene(GameManager* gm, CityData& city)
 {
 	m_message = U"ようこそ " + m_cityData->name + U" へ。\n指示をください、殿。";
 
-	// ★ 画面サイズに応じたボタン配置（中央寄りに）
+	// ★ ボタンを2列配置でコンパクトに
 	int screenW = Scene::Width();
 	int screenH = Scene::Height();
 
-	// ボタンサイズを画面サイズに合わせる
-	int btnW = static_cast<int>(Min(screenW * 0.15, 280.0));
-	int btnH = static_cast<int>(Min(screenH * 0.065, 65.0));
-	int startX = static_cast<int>(screenW * 0.08);  // 左端から8%
-	int startY = static_cast<int>(screenH * 0.35);   // 上から35%
-	int gap = static_cast<int>(Min(screenH * 0.085, 85.0));
+	// ボタンサイズ（小さく）
+	int btnW = static_cast<int>(Min(screenW * 0.12, 200.0));
+	int btnH = static_cast<int>(Min(screenH * 0.055, 55.0));
+	int startX = static_cast<int>(screenW * 0.05);  // 左端から5%
+	int startY = static_cast<int>(screenH * 0.25);   // 上から25%
+	int gapX = btnW + 15;  // 横の間隔
+	int gapY = static_cast<int>(Min(screenH * 0.07, 70.0));  // 縦の間隔
 
-	m_btnAgr = Rect(startX, startY + gap * 0, btnW, btnH);
-	m_btnCom = Rect(startX, startY + gap * 1, btnW, btnH);
-	m_btnTrain = Rect(startX, startY + gap * 2, btnW, btnH);
-	m_btnOrder = Rect(startX, startY + gap * 3, btnW, btnH);
+	// 左列
+	m_btnAgr = Rect(startX, startY + gapY * 0, btnW, btnH);
+	m_btnCom = Rect(startX, startY + gapY * 1, btnW, btnH);
+	m_btnTrain = Rect(startX, startY + gapY * 2, btnW, btnH);
+
+	// 右列
+	m_btnOrder = Rect(startX + gapX, startY + gapY * 0, btnW, btnH);
+	m_btnOfficer = Rect(startX + gapX, startY + gapY * 1, btnW, btnH);
 
 	// 出陣ボタンは右下に
 	int attackBtnW = static_cast<int>(Min(screenW * 0.175, 300.0));
@@ -164,6 +167,15 @@ void CityScene::update()
 	}
 
 	// ========================================
+	// ★ 人材（武将管理画面へ）
+	// ========================================
+	if (m_btnOfficer.leftClicked())
+	{
+		m_sceneEnd = true;
+		m_nextScene = U"OfficerManagement";
+	}
+
+	// ========================================
 	// 出陣
 	// ========================================
 	if (m_btnAttack.leftClicked())
@@ -278,73 +290,41 @@ void CityScene::draw() const
 	}
 
 	// =================================================================
-	// 👑 タイトル（超豪華版）
+	// 👑 タイトル（コンパクト版）
 	// =================================================================
 	{
-		Vec2 titlePos(screenW / 2.0, screenH * 0.12);
+		Vec2 titlePos(screenW * 0.25, screenH * 0.08);  // 左寄り、上に
 
-		// 🌟 タイトル背後の光芒
-		{
-			ScopedRenderStates2D blend(BlendState::Additive);
-			for (int ray = 0; ray < 12; ++ray)
-			{
-				double angle = (time * 0.3 + ray * Math::TwoPi / 12);
-				double rayLength = screenH * 0.278 + sin(time * 2 + ray) * 30;
-				Vec2 rayEnd = titlePos + Vec2(Cos(angle), Sin(angle)) * rayLength;
-
-				Triangle(
-					titlePos,
-					titlePos + Vec2(Cos(angle - 0.05), Sin(angle - 0.05)) * rayLength,
-					titlePos + Vec2(Cos(angle + 0.05), Sin(angle + 0.05)) * rayLength
-				).draw(ColorF(1.0, 0.9, 0.5, 0.1));
-			}
-		}
-
-		// タイトル背景パネル
-		RectF titlePanel(Arg::center(titlePos), screenW * 0.375, screenH * 0.111);
-
-		// パネルの発光
-		{
-			ScopedRenderStates2D blend(BlendState::Additive);
-			titlePanel.stretched(5).draw(ColorF(1.0, 0.8, 0.3, 0.2));
-		}
+		// タイトル背景パネル（小さく）
+		RectF titlePanel(Arg::center(titlePos), screenW * 0.25, screenH * 0.08);
 
 		titlePanel.draw(Arg::top = ColorF(0.25, 0.20, 0.15, 0.95), Arg::bottom = ColorF(0.18, 0.15, 0.12, 0.95));
-		titlePanel.drawFrame(5, ColorF(1.0, 0.85, 0.5));
+		titlePanel.drawFrame(3, ColorF(1.0, 0.85, 0.5));
 
-		// 装飾的な角（宝石風）
-		for (auto corner : { titlePanel.tl(), titlePanel.tr(), titlePanel.bl(), titlePanel.br() })
-		{
-			Circle(corner, 15).draw(ColorF(0.9, 0.7, 0.4));
-			Circle(corner, 12).draw(ColorF(1.0, 0.9, 0.6));
-			Circle(corner, 8).draw(ColorF(1.0, 1.0, 0.8, 0.8 + sin(time * 3) * 0.2));
-		}
+		// タイトルテキスト
+		FontAsset(U"title")(m_cityData->name).drawAt(titlePos, ColorF(1.0, 0.95, 0.7));
 
-		// タイトルテキスト（多重影で立体感）
-		for (int layer = 5; layer > 0; --layer)
-		{
-			FontAsset(U"huge")(m_cityData->name).drawAt(
-				titlePos.movedBy(layer, layer),
-				ColorF(0, 0, 0, 0.15)
-			);
-		}
-		FontAsset(U"huge")(m_cityData->name).drawAt(titlePos, ColorF(1.0, 0.95, 0.7));
-
-		// ✨ タイトルの輝き
-		{
-			ScopedRenderStates2D blend(BlendState::Additive);
-			FontAsset(U"huge")(m_cityData->name).drawAt(titlePos, ColorF(1.0, 1.0, 0.8, 0.3));
-		}
-
-		// サブタイトル
+		// サブタイトル（所有者）
 		FontAsset(U"menu")(U"～ " + m_cityData->owner + U" の治世 ～")
-			.drawAt(titlePos.movedBy(0, screenH * 0.05), ColorF(1.0, 0.9, 0.6));
+			.drawAt(titlePos.movedBy(0, screenH * 0.04), ColorF(1.0, 0.9, 0.6));
+	}
 
-		// ★ 残りコマンド数表示
+	// =================================================================
+	// ⏰ 残りコマンド数表示（目立つように）
+	// =================================================================
+	{
+		Vec2 commandPos(screenW * 0.25, screenH * 0.15);
 		int remaining = m_gameManager->turnManager.GetRemainingCommands();
 		Color commandColor = (remaining > 0) ? Palette::Lime : Palette::Red;
+
+		// 背景
+		RectF commandPanel(Arg::center(commandPos), 200, 40);
+		commandPanel.draw(ColorF(0.1, 0.1, 0.15, 0.9));
+		commandPanel.drawFrame(2, commandColor);
+
+		// テキスト
 		FontAsset(U"menu")(U"残りコマンド: {}/4"_fmt(remaining))
-			.drawAt(titlePos.movedBy(0, screenH * 0.09), commandColor);
+			.drawAt(commandPos, commandColor);
 	}
 
 	// =================================================================
@@ -495,6 +475,9 @@ void CityScene::draw() const
 	drawFancyButton(m_btnCom, U"商業投資", U"金 100 消費", ColorF(0.4, 0.5, 0.9), m_btnCom.mouseOver());
 	drawFancyButton(m_btnTrain, U"徴兵", U"兵糧 100 消費", ColorF(0.9, 0.4, 0.4), m_btnTrain.mouseOver());
 	drawFancyButton(m_btnOrder, U"治安維持", U"金 50 消費", ColorF(0.6, 0.6, 0.7), m_btnOrder.mouseOver());
+
+	// ★ 人材ボタン
+	drawFancyButton(m_btnOfficer, U"人材", U"武将管理", ColorF(0.8, 0.6, 0.3), m_btnOfficer.mouseOver());
 
 	// =================================================================
 	// ⚔️ 出陣ボタン（究極の豪華さ）
@@ -660,29 +643,35 @@ void CityScene::draw() const
 	// =================================================================
 	if (!m_cityData->officers.isEmpty())
 	{
-		double portraitX = screenW * 0.5;
-		double portraitY = screenH * 0.15;
+		// ★ 武将を左上に配置（都市情報パネルと被らないように）
+		double portraitX = screenW * 0.3;   // 左寄り
+		double portraitY = screenH * 0.35;  // 中段
+		double portraitSize = 90;  // サイズ
 
 		const Officer& mainOfficer = m_cityData->officers[0];
 
 		// 武将の顔
-		OfficerPortrait::Draw(mainOfficer, Vec2(portraitX, portraitY), 120);
-		OfficerPortrait::DrawNamePlate(mainOfficer, Vec2(portraitX, portraitY), 120);
+		OfficerPortrait::Draw(mainOfficer, Vec2(portraitX, portraitY), portraitSize);
+		OfficerPortrait::DrawNamePlate(mainOfficer, Vec2(portraitX, portraitY), portraitSize);
 
-		// ★ 忠誠度表示
-		String loyaltyText = U"忠誠: {}（{}）"_fmt(mainOfficer.loyalty, mainOfficer.GetLoyaltyText());
-		FontAsset(U"menu")(loyaltyText)
-			.drawAt(portraitX, portraitY + 100, mainOfficer.GetLoyaltyColor());
+		// ★ 忠誠度表示（プレイヤー君主以外のみ）
+		if (mainOfficer.name != m_gameManager->playerFactionName)
+		{
+			String loyaltyText = U"忠誠: {}（{}）"_fmt(mainOfficer.loyalty, mainOfficer.GetLoyaltyText());
+			FontAsset(U"menu")(loyaltyText)
+				.drawAt(portraitX, portraitY + portraitSize * 0.9, mainOfficer.GetLoyaltyColor());
+		}
 
-		// 武将が複数いる場合は小さく表示
+		// 武将が複数いる場合は下に小さく表示
 		if (m_cityData->officers.size() > 1)
 		{
 			for (size_t i = 1; i < Min(size_t(3), m_cityData->officers.size()); ++i)
 			{
-				double smallX = portraitX + (static_cast<double>(i) - 1.5) * 70;
-				double smallY = portraitY + 140;
-				OfficerPortrait::DrawSmall(m_cityData->officers[i], Vec2(smallX, smallY), 40);
+				double smallX = portraitX - 80 + static_cast<double>(i) * 80;
+				double smallY = portraitY + portraitSize + 40;
+				OfficerPortrait::DrawSmall(m_cityData->officers[i], Vec2(smallX, smallY), 35);
 			}
 		}
 	}
 }
+

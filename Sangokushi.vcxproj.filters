@@ -144,13 +144,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Map.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Pathfinding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FactionSelectScene.cpp">
@@ -166,9 +160,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameSceneManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TurnEndScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ArmyConfigScene.cpp">
@@ -851,16 +842,10 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Tile.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Unit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pathfinding.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SceneBase.hpp">
@@ -887,12 +872,6 @@
     <ClInclude Include="GameManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Advisor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TurnEndScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ArmyConfigScene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -900,9 +879,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Officer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OfficerDatabase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BattleMapScene.hpp">
@@ -918,9 +894,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Officerportrait.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Saveloadscene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Saveloadmanager.hpp">
@@ -939,6 +912,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Loyaltymanager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OfficerManagementScene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Seasoneventmanager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HistoricalEventManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EconomyManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BattleSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

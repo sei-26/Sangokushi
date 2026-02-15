@@ -1,5 +1,7 @@
 ﻿#include "BattleScene.hpp"
 
+
+
 // ★ 修正：4引数バージョンのコンストラクタ
 BattleScene::BattleScene(GameManager* gm, CityData& playerCity, CityData& enemyCity, bool isPlayerAttacker)
 	: m_gameManager(gm)

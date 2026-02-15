@@ -6,7 +6,9 @@
 #include "Officer.hpp"
 #include "DiplomacyManager.hpp"
 #include "TurnManager.hpp"
-#include "Saveloadmanager.hpp" // SaveData の完全定義を使うために追加
+#include "SeasonEventManager.hpp"
+#include "HistoricalEventManager.hpp"
+#include "Saveloadmanager.hpp"
 
 // 前方宣言
 class Map;
@@ -24,6 +26,13 @@ public:
 
 	// ★ ターン管理
 	TurnManager turnManager;
+
+	// ★ イベント管理
+	SeasonEventManager seasonEvents;
+	HistoricalEventManager historicalEvents;
+
+	// ★ イベントログ（最新のイベント情報を保持）
+	Array<String> eventLog;
 
 	// 月を進める関数
 	void advanceMonth(Array<CityData>& cities);
@@ -46,7 +55,7 @@ public:
 
 	struct PendingBattle
 	{
-		bool isOccurring = false	;
+		bool isOccurring = false;
 		int atkCityIndex = -1;
 		int defCityIndex = -1;
 	};

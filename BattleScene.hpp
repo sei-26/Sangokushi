@@ -21,4 +21,5 @@ private:
 	CityData* m_enemyCityData;   // 敵の都市
 
 	bool m_isPlayerAttacker;     // プレイヤーが攻撃側かどうか
+	BattleSystem::Weather m_weather = BattleSystem::Weather::Sunny;
 };

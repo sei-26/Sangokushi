@@ -8,7 +8,7 @@
       "colorR": 65,
       "commerce": 90,
       "food": 5000,
-      "gold": 1000,
+      "gold": 3000,
       "name": "許昌",
       "officers": [
         {
@@ -464,8 +464,8 @@
     }
   ],
   "month": 1,
-  "playTimeSeconds": 13,
-  "playerFactionName": "曹操",
-  "saveDateTime": "2026-02-15 21:36:22",
+  "playTimeSeconds": 2,
+  "playerFactionName": "劉表",
+  "saveDateTime": "2026-02-16 06:28:47",
   "year": 200
 }

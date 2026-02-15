@@ -21,6 +21,7 @@ private:
 	Rect m_btnCom;    // 商業
 	Rect m_btnTrain;  // 徴兵
 	Rect m_btnOrder;  // 治安
+	Rect m_btnOfficer; // ★ 人材
 	Rect m_btnAttack; // 出陣
 	Rect m_btnBack;   // 戻る
 };

@@ -2,6 +2,7 @@
 #include "AIController.hpp"
 #include "SaveLoadManager.hpp"
 #include "LoyaltyManager.hpp"
+#include "EconomyManager.hpp"
 
 void GameManager::advanceMonth(Array<CityData>& cities)
 {
@@ -35,31 +36,38 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 		Print << U"[裏切り] " << log;
 	}
 
-	// =================================================================
-	// 🌾 各都市の収入・収穫処理
-	// =================================================================
-	for (auto& city : cities)
+	// ★ イベントログをクリア
+	eventLog.clear();
+
+	// ★ 史実イベントチェック
+	if (auto historicalEvent = historicalEvents.CheckEvent(year, month))
 	{
-		// 金の収入（商業値に応じて）
-		int income = city.commerce / 10;
-		city.gold += income;
+		auto* event = historicalEvent.value();
+		historicalEvents.ApplyEvent(event, cities);
 
-		// 兵糧の収穫（農業値に応じて）
-		int harvest = city.agriculture / 10;
-		city.food += harvest;
-
-		// 兵士の維持費（兵糧消費）
-		int upkeep = city.troops / 100;
-		city.food -= upkeep;
-
-		// 兵糧が足りない場合は兵士が減る
-		if (city.food < 0)
-		{
-			int loss = Min(city.troops / 10, -city.food * 10);
-			city.troops -= loss;
-			city.food = 0;
-		}
+		eventLog.push_back(U"[史実] " + event->title);
+		eventLog.push_back(event->description);
+		Print << U"[史実イベント] " << event->title;
 	}
+
+	// ★ 季節イベントチェック
+	if (auto seasonEvent = SeasonEventManager::CheckSeasonEvent(year, month, cities))
+	{
+		auto event = seasonEvent.value();
+		eventLog.push_back(U"[季節] " + event.title);
+		eventLog.push_back(event.description);
+		for (const auto& effect : event.effects)
+		{
+			eventLog.push_back(U"  " + effect);
+		}
+		Print << U"[季節イベント] " << event.title;
+	}
+
+	// ★ 月次収入（商業・農業）
+	EconomyManager::ApplyMonthlyIncome(cities);
+
+	// ★ 兵士維持費
+	EconomyManager::ApplyTroopMaintenance(cities);
 
 	// =================================================================
 	// 🤖 AI勢力の自動内政
