@@ -950,5 +950,8 @@
     <ClInclude Include="EndingScene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TitleScene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

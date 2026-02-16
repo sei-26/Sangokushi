@@ -1,26 +1,31 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
-#include "SceneBase.hpp"
+#include <memory>
 #include "GameManager.hpp"
 #include "Faction.hpp"
 #include "CityData.hpp"
-#include "AudioManager.hpp"
+#include "SceneBase.hpp"
+#include "TitleScene.hpp"
 
 class GameSceneManager
 {
 public:
+	// コンストラクタ（初期シーンをTitleにする）
 	GameSceneManager(GameManager* gm, const Faction& playerFaction, const Array<CityData>& cities, AudioManager* audio);
 	~GameSceneManager();
 
 	void update();
 	void draw();
 
+	void changeScene(const String& sceneName);
+
 private:
-	SceneBase* m_currentScene;
-	GameManager* m_gameManager;
+	SceneBase* m_currentScene = nullptr;
+	GameManager* m_gameManager = nullptr;
 	Faction m_playerFaction;
 	Array<CityData> m_cities;
-	AudioManager* m_audio;
+	AudioManager* m_audio = nullptr;
+
 	int m_selectedCityIndex = -1;
-	String m_currentSceneName = U"WorldMap";
+	String m_currentSceneName = U"Title";
 };

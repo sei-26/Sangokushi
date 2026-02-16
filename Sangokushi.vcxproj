@@ -369,6 +369,7 @@
     <ClInclude Include="GameSceneManager.hpp" />
     <ClInclude Include="Seasoneventmanager.hpp" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TitleScene.hpp" />
     <ClInclude Include="Turnmanager.hpp" />
     <ClInclude Include="Unit.hpp" />
     <ClInclude Include="VictoryCondition.hpp" />

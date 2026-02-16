@@ -9,6 +9,7 @@
 #include "SeasonEventManager.hpp"
 #include "HistoricalEventManager.hpp"
 #include "Saveloadmanager.hpp"
+#include "AudioManager.hpp" // ★追加1：これを忘れない！
 
 // 前方宣言
 class Map;
@@ -20,6 +21,10 @@ public:
 	int month = 1;
 	String playerFactionName;
 	Stopwatch playTimer;
+
+
+	AudioManager* pAudio = nullptr;
+
 
 	// ★ 外交管理
 	DiplomacyManager diplomacy;
