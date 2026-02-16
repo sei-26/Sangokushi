@@ -122,6 +122,7 @@
     <ClCompile Include="BattleScene.cpp" />
     <ClCompile Include="CityScene_Visual.cpp" />
     <ClCompile Include="FactionSelectScene.cpp" />
+    <ClCompile Include="FileName.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GameSceneManager.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -344,10 +345,12 @@
     <ClInclude Include="BattleScene.hpp" />
     <ClInclude Include="BattleSystem.hpp" />
     <ClInclude Include="CityData.hpp" />
+    <ClInclude Include="CityFacility.hpp" />
     <ClInclude Include="CityScene.hpp" />
     <ClInclude Include="Diplomacymanager.hpp" />
     <ClInclude Include="Diplomacyscene.hpp" />
     <ClInclude Include="EconomyManager.hpp" />
+    <ClInclude Include="FacilityScene.hpp" />
     <ClInclude Include="Faction.hpp" />
     <ClInclude Include="FactionSelectScene.hpp" />
     <ClInclude Include="GameClearScene.hpp" />

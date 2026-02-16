@@ -15,7 +15,7 @@ public:
 		return commandsUsed < MAX_COMMANDS_PER_TURN;
 	}
 
-	// コマンド実行
+	// コマンド実行（戻り値: 実行できたら true）
 	bool ExecuteCommand()
 	{
 		if (!CanExecuteCommand())
@@ -25,6 +25,16 @@ public:
 
 		commandsUsed++;
 		return true;
+	}
+
+	// 既存コード互換用: コマンドを消費するラッパー
+	// FacilityScene 等から `UseCommand()` が呼ばれているため、互換性のために追加。
+	// 戻り値をチェックしていない呼び出し箇所があるため void として実装。
+	void UseCommand()
+	{
+		// 成功/失敗は呼び出し元で扱われていないケースが多いので無視する。
+		// 必要なら将来 bool を返すオーバーロードや別名を追加すること。
+		ExecuteCommand();
 	}
 
 	// 残りコマンド数

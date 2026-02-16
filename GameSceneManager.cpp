@@ -4,6 +4,7 @@
 #include "BattleScene.hpp"
 #include "DiplomacyScene.hpp"
 #include "OfficerManagementScene.hpp"
+#include "FacilityScene.hpp"
 
 GameSceneManager::GameSceneManager(GameManager* gm, const Faction& playerFaction, const Array<CityData>& cities)
 	: m_currentScene(nullptr)
@@ -144,6 +145,18 @@ void GameSceneManager::changeScene(String nextScene, bool stackClear)
 		if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
 		{
 			m_currentScene = new OfficerManagementScene(m_gameManager, &m_cities[m_selectedCityIndex]);
+		}
+		else
+		{
+			m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+		}
+	}
+	else if (nextScene == U"Facility")
+	{
+		// ★ 施設建設シーンへ遷移
+		if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
+		{
+			m_currentScene = new FacilityScene(m_gameManager, &m_cities[m_selectedCityIndex], &m_gameManager->turnManager);
 		}
 		else
 		{

@@ -1,44 +1,109 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
-#include "Officer.hpp" // 武将クラスがある場合
+#include "Officer.hpp"
 
+// 前方宣言
+namespace CityFacility { struct Facility; enum class Type; }
+
+// 都市データ
 struct CityData
 {
 	String name;
 	Point pos;
-	String owner;       // 現在の所有勢力
-	String initialOwner; // 初期所有者
-
-	// ---------------------------------------------------
-	// パラメータ
-	// ---------------------------------------------------
+	String owner;
+	int troops = 5000;
 	int gold = 1000;
 	int food = 1000;
-	int troops = 0;
-	int order = 50;
-
-	// ★ エラー修正：ここが足りていませんでした！
-	int agriculture = 200; // 農業値
-	int commerce = 200;    // 商業値
-	int barracks = 200;    // 兵舎/技術値
-
+	int agriculture = 75;
+	int commerce = 80;
+	int barracks = 0;
+	int order = 65;
 	Color color = Palette::White;
 
 	Array<Officer> officers;
 
-	// ---------------------------------------------------
-	// コンストラクタ
-	// ---------------------------------------------------
-	// 名前・座標・所有者だけで作る便利な機能
-	CityData(String n, Point p, String o)
-		: name(n)
-		, pos(p)
-		, owner(o)
-		, initialOwner(o)
-	{
-		// 他の数値は初期値(200など)が自動で入ります
-	}
+	// ★ 施設（5つ）
+	Array<CityFacility::Facility> facilities;
 
 	// デフォルトコンストラクタ
-	CityData() = default;
+	CityData()
+	{
+		// 施設スロットを初期化
+		facilities.clear();
+	}
+
+	// 新しいコンストラクタ：名前・座標・所有者を指定して作成
+	CityData(const String& name_, const Point& pos_, const String& owner_)
+		: name(name_)
+		, pos(pos_)
+		, owner(owner_)
+		, troops(5000)
+		, gold(1000)
+		, food(1000)
+		, agriculture(75)
+		, commerce(80)
+		, barracks(0)
+		, order(65)
+		, color(Palette::White)
+	{
+		// 施設スロットは明示的にクリアしておく（他コードがresize等を行う）
+		facilities.clear();
+	}
+
+	// 施設の効果を取得（CityFacility.hppをincludeした後に実装）
+	int GetFacilityBonus(CityFacility::Type type) const;
+	int GetBuildingCount() const;
+	int GetEmptySlot() const;
+	Array<String> AdvanceFacilities();
 };
+
+// CityFacility.hppをincludeした後に実装
+#include "CityFacility.hpp"
+
+inline int CityData::GetFacilityBonus(CityFacility::Type type) const
+{
+	int total = 0;
+	for (const auto& facility : facilities)
+	{
+		if (facility.type == type && !facility.isBuilding)
+		{
+			total += facility.GetEffect();
+		}
+	}
+	return total;
+}
+
+inline int CityData::GetBuildingCount() const
+{
+	int count = 0;
+	for (const auto& facility : facilities)
+	{
+		if (facility.isBuilding) count++;
+	}
+	return count;
+}
+
+inline int CityData::GetEmptySlot() const
+{
+	for (int i = 0; i < facilities.size(); ++i)
+	{
+		if (facilities[i].type == CityFacility::Type::None)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+inline Array<String> CityData::AdvanceFacilities()
+{
+	Array<String> completed;
+	for (auto& facility : facilities)
+	{
+		if (facility.AdvanceBuild())
+		{
+			completed.push_back(facility.GetName() + U"Lv" + Format(facility.level) + U"が完成");
+		}
+	}
+	return completed;
+}

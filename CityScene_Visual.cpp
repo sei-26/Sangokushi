@@ -27,6 +27,7 @@ CityScene::CityScene(GameManager* gm, CityData& city)
 	// 右列
 	m_btnOrder = Rect(startX + gapX, startY + gapY * 0, btnW, btnH);
 	m_btnOfficer = Rect(startX + gapX, startY + gapY * 1, btnW, btnH);
+	m_btnFacility = Rect(startX + gapX, startY + gapY * 2, btnW, btnH);  // ★ 施設ボタン追加
 
 	// 出陣ボタンは右下に
 	int attackBtnW = static_cast<int>(Min(screenW * 0.175, 300.0));
@@ -173,6 +174,15 @@ void CityScene::update()
 	{
 		m_sceneEnd = true;
 		m_nextScene = U"OfficerManagement";
+	}
+
+	// ========================================
+	// ★ 施設（施設建設画面へ）
+	// ========================================
+	if (m_btnFacility.leftClicked())
+	{
+		m_sceneEnd = true;
+		m_nextScene = U"Facility";
 	}
 
 	// ========================================
@@ -479,6 +489,9 @@ void CityScene::draw() const
 	// ★ 人材ボタン
 	drawFancyButton(m_btnOfficer, U"人材", U"武将管理", ColorF(0.8, 0.6, 0.3), m_btnOfficer.mouseOver());
 
+	// ★ 施設ボタン
+	drawFancyButton(m_btnFacility, U"施設", U"建設管理", ColorF(0.6, 0.5, 0.7), m_btnFacility.mouseOver());
+
 	// =================================================================
 	// ⚔️ 出陣ボタン（究極の豪華さ）
 	// =================================================================
@@ -674,4 +687,3 @@ void CityScene::draw() const
 		}
 	}
 }
-
