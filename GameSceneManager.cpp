@@ -5,15 +5,18 @@
 #include "DiplomacyScene.hpp"
 #include "OfficerManagementScene.hpp"
 #include "FacilityScene.hpp"
+#include "EndingScene.hpp"
+#include "VictoryCondition.hpp"
 
-GameSceneManager::GameSceneManager(GameManager* gm, const Faction& playerFaction, const Array<CityData>& cities)
+GameSceneManager::GameSceneManager(GameManager* gm, const Faction& playerFaction, const Array<CityData>& cities, AudioManager* audio)
 	: m_currentScene(nullptr)
 	, m_gameManager(gm)
 	, m_playerFaction(playerFaction)
 	, m_cities(cities)
+	, m_audio(audio)
 {
-	// 初期シーンはワールドマップ
 	m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+	m_audio->PlayBGM(AudioManager::BGMType::WorldMap, 2.0);
 }
 
 GameSceneManager::~GameSceneManager()
@@ -23,6 +26,36 @@ GameSceneManager::~GameSceneManager()
 
 void GameSceneManager::update()
 {
+	// 勝利判定
+	auto victoryType = VictoryCondition::CheckVictory(m_cities, m_playerFaction.name,
+		m_gameManager->year, m_gameManager->month);
+
+	if (victoryType != VictoryCondition::VictoryType::None)
+	{
+		int playerCities = 0;
+		for (const auto& city : m_cities)
+		{
+			if (city.owner == m_playerFaction.name) playerCities++;
+		}
+
+		int score = VictoryCondition::CalculateScore(m_cities, m_playerFaction.name,
+			m_gameManager->year, m_gameManager->month);
+
+		delete m_currentScene;
+		m_currentScene = new EndingScene(victoryType, score, playerCities,
+			m_gameManager->year, m_gameManager->month);
+
+		if (victoryType == VictoryCondition::VictoryType::Defeat)
+		{
+			m_audio->PlayBGM(AudioManager::BGMType::Defeat, 2.0);
+		}
+		else
+		{
+			m_audio->PlayBGM(AudioManager::BGMType::Victory, 2.0);
+		}
+		return;
+	}
+
 	if (m_currentScene)
 	{
 		m_currentScene->update();
@@ -31,7 +64,6 @@ void GameSceneManager::update()
 		{
 			String next = m_currentScene->getNextScene();
 
-			// マップから都市へ行くとき、選ばれた都市番号を保存
 			if (next == U"City")
 			{
 				auto* mapScene = dynamic_cast<WorldMapScene*>(m_currentScene);
@@ -40,127 +72,108 @@ void GameSceneManager::update()
 					m_selectedCityIndex = mapScene->getSelectedCityIndex();
 				}
 			}
-			changeScene(next);
+
+			delete m_currentScene;
+			m_currentScene = nullptr;
+
+			if (next == U"WorldMap")
+			{
+				m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+				if (m_currentSceneName != U"WorldMap")
+				{
+					m_audio->PlayBGM(AudioManager::BGMType::WorldMap, 2.0);
+					m_currentSceneName = U"WorldMap";
+				}
+			}
+			else if (next == U"City")
+			{
+				if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
+				{
+					m_currentScene = new CityScene(m_gameManager, m_cities[m_selectedCityIndex]);
+					if (m_currentSceneName != U"City")
+					{
+						m_audio->PlayBGM(AudioManager::BGMType::City, 2.0);
+						m_currentSceneName = U"City";
+					}
+				}
+				else
+				{
+					m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+				}
+			}
+			else if (next == U"Battle")
+			{
+				CityData* attacker = nullptr;
+				CityData* defender = nullptr;
+
+				if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
+				{
+					attacker = &m_cities[m_selectedCityIndex];
+				}
+
+				for (auto& city : m_cities)
+				{
+					if (city.owner != m_playerFaction.name)
+					{
+						defender = &city;
+						break;
+					}
+				}
+
+				if (!attacker || !defender)
+				{
+					m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+				}
+				else
+				{
+					Officer selectedLeader;
+					if (!attacker->officers.isEmpty())
+					{
+						selectedLeader = attacker->officers[0];
+					}
+
+					m_currentScene = new BattleScene(m_gameManager, *attacker, *defender, true);
+					if (m_currentSceneName != U"Battle")
+					{
+						m_audio->PlayBGM(AudioManager::BGMType::Battle, 2.0);
+						m_currentSceneName = U"Battle";
+					}
+				}
+			}
+			else if (next == U"Diplomacy")
+			{
+				m_currentScene = new DiplomacyScene(&m_gameManager->diplomacy, m_playerFaction.name, &m_cities, m_gameManager);
+			}
+			else if (next == U"OfficerManagement")
+			{
+				if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
+				{
+					m_currentScene = new OfficerManagementScene(m_gameManager, &m_cities[m_selectedCityIndex]);
+				}
+				else
+				{
+					m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+				}
+			}
+			else if (next == U"Facility")
+			{
+				if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
+				{
+					m_currentScene = new FacilityScene(m_gameManager, &m_cities[m_selectedCityIndex], &m_gameManager->turnManager);
+				}
+				else
+				{
+					m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+				}
+			}
 		}
 	}
 }
 
-void GameSceneManager::draw() const
+void GameSceneManager::draw()
 {
-	if (m_currentScene) m_currentScene->draw();
-}
-
-void GameSceneManager::changeScene(String nextScene, bool stackClear)
-{
-	(void)stackClear;
-
 	if (m_currentScene)
 	{
-		delete m_currentScene;
-		m_currentScene = nullptr;
-	}
-
-	if (nextScene == U"WorldMap")
-	{
-		// プレイヤーの都市が残っているか確認
-		bool isAlive = false;
-		for (const auto& city : m_cities)
-		{
-			if (city.owner == m_playerFaction.name)
-			{
-				isAlive = true;
-				break;
-			}
-		}
-
-		if (!isAlive)
-		{
-			System::MessageBoxOK(U"あなたの勢力は滅亡しました。", MessageBoxStyle::Error);
-			System::Exit();
-			return;
-		}
-
-		m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
-	}
-	else if (nextScene == U"City")
-	{
-		if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
-		{
-			m_currentScene = new CityScene(m_gameManager, m_cities[m_selectedCityIndex]);
-		}
-		else
-		{
-			// エラー回避
-			m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
-		}
-	}
-	else if (nextScene == U"Battle")
-	{
-		if (m_selectedCityIndex < 0 || m_selectedCityIndex >= m_cities.size())
-		{
-			Print << U"[ERROR] 無効な都市インデックス: " << m_selectedCityIndex;
-			m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
-			return;
-		}
-
-		// 攻撃側データ
-		CityData* attacker = &m_cities[m_selectedCityIndex];
-
-		// 防御側データの検索（最初の敵都市）
-		CityData* defender = nullptr;
-		for (auto& city : m_cities)
-		{
-			if (city.owner != m_playerFaction.name)
-			{
-				defender = &city;
-				break;
-			}
-		}
-
-		// 敵がいない場合の保険
-		static CityData dummyEnemy(U"賊軍", Point(0, 0), U"賊");
-		if (defender == nullptr)
-		{
-			defender = &dummyEnemy;
-		}
-
-		// 武将選択（とりあえず最初の武将）
-		Officer selectedOfficer;
-		if (!attacker->officers.isEmpty())
-		{
-			selectedOfficer = attacker->officers[0];
-		}
-
-		// シーン遷移
-		m_currentScene = new BattleScene(m_gameManager, *attacker, *defender, true);
-	}
-	else if (nextScene == U"Diplomacy")
-	{
-		// ★ 外交シーンへ遷移
-		m_currentScene = new DiplomacyScene(&m_gameManager->diplomacy, m_playerFaction.name, &m_cities, m_gameManager);
-	}
-	else if (nextScene == U"OfficerManagement")
-	{
-		// ★ 武将管理シーンへ遷移
-		if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
-		{
-			m_currentScene = new OfficerManagementScene(m_gameManager, &m_cities[m_selectedCityIndex]);
-		}
-		else
-		{
-			m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
-		}
-	}
-	else if (nextScene == U"Facility")
-	{
-		// ★ 施設建設シーンへ遷移
-		if (m_selectedCityIndex >= 0 && m_selectedCityIndex < m_cities.size())
-		{
-			m_currentScene = new FacilityScene(m_gameManager, &m_cities[m_selectedCityIndex], &m_gameManager->turnManager);
-		}
-		else
-		{
-			m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
-		}
+		m_currentScene->draw();
 	}
 }

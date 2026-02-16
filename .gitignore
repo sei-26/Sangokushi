@@ -459,3 +459,5 @@ Intermediate/
 .vs/
 *.VC.db
 *.ipch
+# オーディオファイルはGit管理しない
+App/Audio/

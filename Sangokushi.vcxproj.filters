@@ -938,5 +938,17 @@
     <ClInclude Include="FacilityScene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OfficerSkill.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VictoryCondition.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EndingScene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

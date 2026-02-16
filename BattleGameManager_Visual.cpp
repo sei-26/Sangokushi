@@ -97,6 +97,12 @@ void BattleGameManager::InitializeBattle(
 	actingIndex = 0;
 	moveRange.clear();
 
+	// ★ 全ユニットのactedフラグを初期化
+	for (auto& unit : units)
+	{
+		unit.acted = false;
+	}
+
 	// playerCity使用済み（警告回避）
 	(void)playerCity;
 }
@@ -133,38 +139,46 @@ void BattleGameManager::Update()
 
 void BattleGameManager::UpdatePlayerTurn()
 {
-	bool allActed = true;
-	int alivePlayerCount = 0;
-	int actedPlayerCount = 0;
+	// デバッグ: 全ユニット状態表示
+	static int debugCount = 0;
+	if (debugCount == 0)
+	{
+		Print << U"=== 味方ターン開始 ===";
+		for (int i = 0; i < units.size(); ++i)
+		{
+			auto& u = units[i];
+			Print << U"[" << i << U"] " << u.name
+				<< U" isPlayer=" << u.isPlayer
+				<< U" alive=" << u.alive
+				<< U" acted=" << u.acted;
+		}
+		debugCount++;
+	}
 
+	// 行動可能な味方を探す
+	bool anyPlayerNeedAction = false;
 	for (auto& u : units)
 	{
-		if (u.isPlayer && u.alive)
+		if (u.isPlayer && u.alive && !u.acted)
 		{
-			alivePlayerCount++;
-			if (u.acted) actedPlayerCount++;
-			if (!u.acted) allActed = false;
+			anyPlayerNeedAction = true;
+			break;
 		}
 	}
 
-	if (allActed && alivePlayerCount > 0)
+	if (!anyPlayerNeedAction)
 	{
-		Print << U"[味方ターン終了] " << alivePlayerCount << U"体が行動完了";
+		// 全員行動済み → 敵ターンへ
 		for (auto& u : units) u.acted = false;
 		actingIndex = 0;
 		moveRange.clear();
 		phase = TurnPhase::EnemyTurn;
+		debugCount = 0;  // リセット
+		Print << U"[味方→敵]";
 		return;
 	}
 
-	// 味方が全滅している場合
-	if (alivePlayerCount == 0)
-	{
-		Print << U"[味方全滅] 敗北";
-		phase = TurnPhase::BattleEnd;
-		return;
-	}
-
+	// 次に行動する味方を探す
 	while (actingIndex < units.size())
 	{
 		Unit& u = units[actingIndex];
@@ -182,40 +196,39 @@ void BattleGameManager::UpdatePlayerTurn()
 
 void BattleGameManager::UpdateEnemyTurn()
 {
-	// ★ 敵の行動に間隔を持たせる（0.5秒待機）
 	static double lastActionTime = 0.0;
 	double currentTime = Scene::Time();
 
-	// ★ まず全敵が行動済みかチェック
-	bool allActed = true;
+	// 全敵が行動済みかチェック
+	bool anyEnemyNeedAction = false;
 	for (auto& u : units)
 	{
 		if (!u.isPlayer && u.alive && !u.acted)
 		{
-			allActed = false;
+			anyEnemyNeedAction = true;
 			break;
 		}
 	}
 
-	if (allActed)
+	if (!anyEnemyNeedAction)
 	{
-		// 全員行動済み → 味方ターンへ
+		// 全敵行動済み → 味方ターンへ
 		for (auto& u : units) u.acted = false;
 		actingIndex = 0;
 		moveRange.clear();
 		phase = TurnPhase::PlayerTurn;
-		lastActionTime = 0.0;  // リセット
-		Print << U"[ターン終了] 敵ターン → 味方ターン";
+		lastActionTime = 0.0;
+		Print << U"[敵→味方ターン]";
 		return;
 	}
 
-	// 待機時間チェック
+	// 待機時間
 	if (currentTime - lastActionTime < 0.5)
 	{
-		return;  // まだ待機時間
+		return;
 	}
 
-	// 次に行動する敵を探す
+	// 次の敵を探す
 	if (actingIndex >= units.size()) actingIndex = 0;
 
 	while (actingIndex < units.size())
@@ -227,25 +240,21 @@ void BattleGameManager::UpdateEnemyTurn()
 
 	if (actingIndex >= units.size())
 	{
-		// 見つからない場合は最初から探す
 		actingIndex = 0;
 		return;
 	}
 
 	Unit& enemy = units[actingIndex];
 
-	// 行動実行
 	int tgt = FindClosestEnemyIndex(actingIndex);
 	if (tgt >= 0)
 	{
 		EnemyAction(tgt);
-		Print << U"[敵行動] " << enemy.name << U" が行動";
+		Print << U"[敵行動] " << enemy.name;
 	}
 
 	enemy.acted = true;
 	actingIndex++;
-
-	// ★ 行動後に時間を記録
 	lastActionTime = currentTime;
 }
 

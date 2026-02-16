@@ -340,6 +340,7 @@
     <ClInclude Include="Aicontroller.hpp" />
     <ClInclude Include="ArmyConfigScene.hpp" />
     <ClInclude Include="AttackSelectScene.hpp" />
+    <ClInclude Include="AudioManager.hpp" />
     <ClInclude Include="BattleGameManager.hpp" />
     <ClInclude Include="BattleMapScene.hpp" />
     <ClInclude Include="BattleScene.hpp" />
@@ -350,6 +351,7 @@
     <ClInclude Include="Diplomacymanager.hpp" />
     <ClInclude Include="Diplomacyscene.hpp" />
     <ClInclude Include="EconomyManager.hpp" />
+    <ClInclude Include="EndingScene.hpp" />
     <ClInclude Include="FacilityScene.hpp" />
     <ClInclude Include="Faction.hpp" />
     <ClInclude Include="FactionSelectScene.hpp" />
@@ -361,6 +363,7 @@
     <ClInclude Include="Officer.hpp" />
     <ClInclude Include="OfficerManagementScene.hpp" />
     <ClInclude Include="Officerportrait.hpp" />
+    <ClInclude Include="OfficerSkill.hpp" />
     <ClInclude Include="Saveloadmanager.hpp" />
     <ClInclude Include="SceneBase.hpp" />
     <ClInclude Include="GameSceneManager.hpp" />
@@ -368,6 +371,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Turnmanager.hpp" />
     <ClInclude Include="Unit.hpp" />
+    <ClInclude Include="VictoryCondition.hpp" />
     <ClInclude Include="WorldMapScene.hpp" />
   </ItemGroup>
   <ItemGroup>

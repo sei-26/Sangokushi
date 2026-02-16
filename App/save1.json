@@ -86,14 +86,14 @@
       "troops": 5000
     },
     {
-      "agriculture": 75,
+      "agriculture": 97,
       "barracks": 65,
       "colorB": 225,
       "colorG": 105,
       "colorR": 65,
-      "commerce": 80,
+      "commerce": 102,
       "food": 4000,
-      "gold": 2500,
+      "gold": 2250,
       "name": "洛陽",
       "officers": [
         {
@@ -118,7 +118,7 @@
           "power": 84
         }
       ],
-      "order": 75,
+      "order": 86,
       "owner": "曹操",
       "posX": 380,
       "posY": 420,
@@ -464,8 +464,8 @@
     }
   ],
   "month": 1,
-  "playTimeSeconds": 2,
-  "playerFactionName": "劉表",
-  "saveDateTime": "2026-02-16 06:28:47",
+  "playTimeSeconds": 0,
+  "playerFactionName": "",
+  "saveDateTime": "2026-02-17 02:15:34",
   "year": 200
 }

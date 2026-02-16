@@ -3,6 +3,7 @@
 #include "SaveLoadManager.hpp"
 #include "LoyaltyManager.hpp"
 #include "EconomyManager.hpp"
+#include "AudioManager.hpp"
 
 void GameManager::advanceMonth(Array<CityData>& cities)
 {
@@ -28,6 +29,8 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 
 	// ★ 忠誠度更新
 	LoyaltyManager::UpdateLoyalty(cities);
+
+	AudioManager audio;
 
 	// ★ 裏切りチェック
 	auto betrayalLog = LoyaltyManager::CheckBetrayal(cities);
@@ -68,6 +71,8 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 
 	// ★ 兵士維持費
 	EconomyManager::ApplyTroopMaintenance(cities);
+
+
 
 	// =================================================================
 	// 🤖 AI勢力の自動内政
