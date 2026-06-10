@@ -112,8 +112,43 @@ void GameSceneManager::update()
 			}
 			else if (next == U"Battle")
 			{
-				// ... (既存のBattle遷移ロジック)
-				m_currentScene = new BattleScene(m_gameManager, m_cities[m_selectedCityIndex], m_cities[0], true); // 簡易化
+				// ★ pendingBattle から攻守の情報を取得
+				if (m_gameManager->pendingBattle.isOccurring)
+				{
+					int atkIdx = m_gameManager->pendingBattle.atkCityIndex;
+					int defIdx = m_gameManager->pendingBattle.defCityIndex;
+
+					// 攻撃側と防御側の都市を取得
+					CityData& attackerCity = m_cities[atkIdx];
+					CityData& defenderCity = m_cities[defIdx];
+
+					// プレイヤーが防御側かどうか判定
+					bool isPlayerAttacker = (attackerCity.owner == m_playerFaction.name);
+
+					// BattleSceneを作成（攻撃側/防御側を明示）
+					if (isPlayerAttacker)
+					{
+						// プレイヤーが攻撃側（既存の攻撃戦）
+						m_currentScene = new BattleScene(m_gameManager, attackerCity, defenderCity, true);
+						Print << U"[攻撃戦] " << attackerCity.name << U" → " << defenderCity.name;
+					}
+					else
+					{
+						// プレイヤーが防御側（防衛戦）
+						m_currentScene = new BattleScene(m_gameManager, defenderCity, attackerCity, false);
+						Print << U"[防衛戦] " << defenderCity.name << U" ← " << attackerCity.name;
+					}
+
+					// 戦闘フラグをリセット
+					m_gameManager->pendingBattle.isOccurring = false;
+				}
+				else
+				{
+					// pendingBattleがない場合は従来の処理（エラー回避）
+					Print << U"[WARNING] pendingBattleが設定されていません";
+					m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+				}
+
 				m_audio->PlayBGM(AudioManager::BGMType::Battle, 2.0);
 				m_currentSceneName = U"Battle";
 			}

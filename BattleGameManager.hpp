@@ -51,6 +51,9 @@ private:
 	void MoveUnit();
 	void TryAttack();
 
+	void DrawSkillUI() const;
+	void CheckSkillInput();
+
 	void EnemyAction(int targetIdx);
 	int FindClosestEnemyIndex(int myIdx) const;
 

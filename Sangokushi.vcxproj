@@ -21,13 +21,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -122,7 +122,6 @@
     <ClCompile Include="BattleScene.cpp" />
     <ClCompile Include="CityScene_Visual.cpp" />
     <ClCompile Include="FactionSelectScene.cpp" />
-    <ClCompile Include="FileName.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GameSceneManager.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -317,7 +316,10 @@
     <None Include="App\example\toml\config.toml" />
     <None Include="App\example\toml\test.toml" />
     <None Include="App\example\zip\zip_test.zip" />
+    <None Include="assessment.md" />
     <None Include="Csvdataloader.hpp" />
+    <None Include="plan.md" />
+    <None Include="tasks.md" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="App\example\shot.mp3" />
@@ -367,7 +369,7 @@
     <ClInclude Include="Saveloadmanager.hpp" />
     <ClInclude Include="SceneBase.hpp" />
     <ClInclude Include="GameSceneManager.hpp" />
-    <ClInclude Include="Seasoneventmanager.hpp" />
+    <ClInclude Include="SeasonEventManager.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TitleScene.hpp" />
     <ClInclude Include="Turnmanager.hpp" />

@@ -174,9 +174,6 @@
     <ClCompile Include="BattleGameManager_Visual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileName.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\icon.ico">
@@ -801,6 +798,9 @@
     <None Include="Csvdataloader.hpp">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="assessment.md" />
+    <None Include="tasks.md" />
+    <None Include="plan.md" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="App\example\test.mp3">
@@ -920,7 +920,7 @@
     <ClInclude Include="OfficerManagementScene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Seasoneventmanager.hpp">
+    <ClInclude Include="SeasonEventManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HistoricalEventManager.hpp">

@@ -6,9 +6,9 @@
       "colorB": 225,
       "colorG": 105,
       "colorR": 65,
-      "commerce": 177,
-      "food": 4900,
-      "gold": 2700,
+      "commerce": 90,
+      "food": 5000,
+      "gold": 3000,
       "name": "許昌",
       "officers": [
         {
@@ -44,7 +44,7 @@
       "owner": "曹操",
       "posX": 450,
       "posY": 450,
-      "troops": 8200
+      "troops": 8000
     },
     {
       "agriculture": 70,
@@ -465,7 +465,7 @@
   ],
   "month": 1,
   "playTimeSeconds": 0,
-  "playerFactionName": "",
-  "saveDateTime": "2026-02-17 05:34:24",
-  "year": 200
+  "playerFactionName": "劉備",
+  "saveDateTime": "2026-06-10 19:18:05",
+  "year": 184
 }

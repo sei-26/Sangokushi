@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
+#include "OfficerSkill.hpp"
 
 enum class Side { Player, Enemy };
 
@@ -13,6 +14,17 @@ struct Unit
 	int initialSoldiers;
 	int atk;
 
+	// ★ 新規追加：スキルと士気システム
+	int morale = 100;           // 士気（0〜100）
+	int def = 50;               // 防御力
+	OfficerSkill skill;         // 武将スキル
+	bool hasSkill = false;      // スキルを持っているか
+
+	// バフ・デバフ効果
+	double atkMultiplier = 1.0; // 攻撃力倍率
+	double defMultiplier = 1.0; // 防御力倍率
+	int buffDuration = 0;       // バフ持続ターン数
+
 	bool alive;
 	bool acted;
 	bool isPlayer;
@@ -23,11 +35,24 @@ struct Unit
 	Vec2 drawPos;
 	double attackTimer = 0.0;
 
+	// ★ スキル付きコンストラクタ
 	Unit(String n, Side s, Point p, int count = 1000)
 		: name(n), side(s), pos(p)
 		, soldiers(count), initialSoldiers(count)
 		, atk(100), alive(true), acted(false)
 		, drawPos(p.x, p.y)
+	{
+		isPlayer = (side == Side::Player);
+	}
+
+	// ★ スキル付きコンストラクタ
+	Unit(String n, Side s, Point p, int count, const OfficerSkill& officerSkill)
+		: name(n), side(s), pos(p)
+		, soldiers(count), initialSoldiers(count)
+		, atk(100), alive(true), acted(false)
+		, drawPos(p.x, p.y)
+		, skill(officerSkill)
+		, hasSkill(true)
 	{
 		isPlayer = (side == Side::Player);
 	}
@@ -46,6 +71,97 @@ struct Unit
 		lastDamage = dmg;
 		damageTimer = 1.0;
 		if (soldiers <= 0) alive = false;
+	}
+
+	// ★ 士気を下げる
+	void ReduceMorale(int amount)
+	{
+		morale = Max(0, morale - amount);
+		if (morale < 20 && RandomBool(0.3))
+		{
+			int desertCount = static_cast<int>(soldiers * 0.1);
+			soldiers = Max(0, soldiers - desertCount);
+			if (soldiers <= 0) alive = false;
+		}
+	}
+
+	// ★ 士気を上げる
+	void IncreaseMorale(int amount)
+	{
+		morale = Min(100, morale + amount);
+	}
+
+	// ★ スキル使用
+	bool UseSkill(Array<Unit>& allUnits, int myIndex)
+	{
+		if (!hasSkill || !skill.CanUse()) return false;
+		skill.Use();
+
+		switch (skill.type)
+		{
+		case OfficerSkill::SkillType::Damage:
+			for (int i = 0; i < allUnits.size(); ++i)
+			{
+				if (i == myIndex || allUnits[i].isPlayer == isPlayer || !allUnits[i].alive) continue;
+				int damage = static_cast<int>(atk * skill.damageMultiplier);
+				allUnits[i].ApplyDamage(damage);
+				allUnits[i].ReduceMorale(-skill.effectValue);
+				if (skill.name != U"蛇矛猛撃" && skill.name != U"赤壁の炎") break;
+			}
+			break;
+		case OfficerSkill::SkillType::Buff:
+			for (auto& unit : allUnits)
+			{
+				if (unit.isPlayer == isPlayer && unit.alive)
+				{
+					unit.atkMultiplier += skill.effectValue / 100.0;
+					unit.defMultiplier += skill.effectValue / 100.0;
+					unit.buffDuration = skill.effectDuration;
+					unit.IncreaseMorale(skill.effectValue / 2);
+				}
+			}
+			break;
+		case OfficerSkill::SkillType::Debuff:
+			for (auto& unit : allUnits)
+			{
+				if (unit.isPlayer != isPlayer && unit.alive)
+				{
+					unit.atkMultiplier -= abs(skill.effectValue) / 100.0;
+					unit.ReduceMorale(abs(skill.effectValue));
+				}
+			}
+			break;
+		default:
+			break;
+		}
+		return true;
+	}
+
+	// ★ バフ更新
+	void UpdateBuffs()
+	{
+		if (buffDuration > 0)
+		{
+			buffDuration--;
+			if (buffDuration == 0)
+			{
+				atkMultiplier = 1.0;
+				defMultiplier = 1.0;
+			}
+		}
+		if (hasSkill) skill.AdvanceCooldown();
+	}
+
+	// ★ 実効攻撃力
+	int GetEffectiveAtk() const
+	{
+		return static_cast<int>(atk * atkMultiplier * (morale / 100.0));
+	}
+
+	// ★ 実効防御力
+	int GetEffectiveDef() const
+	{
+		return static_cast<int>(def * defMultiplier * (morale / 100.0));
 	}
 
 	void draw(int cellSize, Point offset = Point(0, 0)) const
@@ -146,6 +262,44 @@ struct Unit
 			FontAsset(U"small")(soldiers).drawAt(barPos.movedBy(barWidth * 0.5, barHeight * 0.5), Palette::White);
 		}
 
+		// ★ 士気バー
+		{
+			double moraleRate = morale / 100.0;
+			double barWidth = cellSize - 10.0;
+			double barHeight = 6.0;
+			Vec2 barPos = basePos.movedBy(5, cellSize - barHeight - 2);
+
+			RectF(barPos, barWidth, barHeight).draw(ColorF(0.1, 0.1, 0.1));
+
+			Color moraleColor = ColorF(1.0, 0.8, 0.2);
+			if (moraleRate < 0.5) moraleColor = ColorF(0.9, 0.5, 0.2);
+			if (moraleRate < 0.3) moraleColor = ColorF(0.9, 0.2, 0.2);
+
+			RectF(barPos, barWidth * moraleRate, barHeight).draw(moraleColor);
+			RectF(barPos, barWidth, barHeight).drawFrame(1, ColorF(0.3, 0.3, 0.3));
+		}
+
+		// ★ スキルアイコン
+		if (hasSkill)
+		{
+			Vec2 iconPos = basePos.movedBy(cellSize - 25, 5);
+			double iconSize = 20;
+
+			Circle(iconPos.movedBy(iconSize * 0.5, iconSize * 0.5), iconSize * 0.5)
+				.draw(skill.CanUse() ? ColorF(0.2, 0.6, 0.9) : ColorF(0.3, 0.3, 0.3));
+
+			String icon = U"⚔";
+			if (skill.type == OfficerSkill::SkillType::Buff) icon = U"↑";
+			if (skill.type == OfficerSkill::SkillType::Debuff) icon = U"↓";
+
+			FontAsset(U"small")(icon).drawAt(iconPos.movedBy(iconSize * 0.5, iconSize * 0.5), Palette::White);
+
+			if (!skill.CanUse())
+			{
+				FontAsset(U"small")(skill.currentCooldown)
+					.drawAt(iconPos.movedBy(iconSize * 0.5, iconSize * 0.5), ColorF(1, 0.3, 0.3));
+			}
+		}
 		// ダメージ表示
 		if (damageTimer > 0)
 		{

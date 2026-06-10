@@ -2,6 +2,30 @@
 #include "SceneBase.hpp"
 #include "GameManager.hpp"
 #include "BattleGameManager.hpp"
+#include "OfficerSkill.hpp"
+
+enum class BattlePhase {
+    Planning,      // 作戦フェーズ（陣形・計略選択）
+    Combat,        // 戦闘フェーズ（リアルタイム進行）
+    SpecialSkill,  // 武将スキル発動
+    Result         // 結果表示
+};
+
+// 武将の特殊スキル追加
+struct BattleOfficerSkill {	
+    String name;           // 例：「関羽の一騎当千」
+    int cooldown;          // クールダウン
+    double damageMultiplier; // ダメージ倍率
+    String effect;         // 追加効果（士気低下など）
+};
+
+// 戦況の動的変化
+struct BattleState {
+    int playerMorale = 100;  // 士気（逃亡率に影響）
+    int enemyMorale = 100;
+    Array<String> eventLog;  // 戦闘ログ
+    bool canRetreat = true;  // 撤退可能か
+};
 
 class BattleScene : public SceneBase
 {

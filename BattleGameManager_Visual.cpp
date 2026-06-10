@@ -58,11 +58,16 @@ void BattleGameManager::InitializeBattle(
 	int playerSubForce = Max(selectedSoldiers / 3, 50);
 
 	// ★ 武将の戦闘力ボーナスを計算
+	// ★ 武将の戦闘力ボーナスを計算
 	int leaderCombatBonus = selectedLeader.GetCombatPower() / 10;
 
-	// プレイヤーユニット作成
-	units.push_back(Unit(selectedLeader.name, Side::Player, Point(1, 4), playerMainForce));
-	units.back().atk += leaderCombatBonus;  // ★ 攻撃力ボーナス付与
+	// ★ プレイヤーユニット作成（スキル付き）
+	// ★ プレイヤーユニット作成（スキル付き）
+	auto playerSkill = OfficerSkill::GetSkillForOfficer(selectedLeader.name);
+	Unit playerLeaderUnit(selectedLeader.name, Side::Player, Point(1, 4), playerMainForce, playerSkill);
+	units.push_back(playerLeaderUnit);
+	units.back().atk += leaderCombatBonus;
+	units.back().def = selectedLeader.intelligence / 2;
 
 	units.push_back(Unit(U"副将", Side::Player, Point(1, 5), playerSubForce));
 
@@ -85,8 +90,16 @@ void BattleGameManager::InitializeBattle(
 	int enemyMainForce = enemySoldiers;
 	int enemySubForce = Max(enemySoldiers / 2, 50);
 
-	units.push_back(Unit(enemyLeaderName, Side::Enemy, Point(12, 4), enemyMainForce));
-	units.back().atk += enemyLeaderBonus;  // ★ 敵の攻撃力ボーナス付与
+	// ★ 敵ユニット作成（スキル付き）
+	// ★ 敵ユニット作成（スキル付き）
+	auto enemySkill = OfficerSkill::GetSkillForOfficer(enemyLeaderName);
+	Unit enemyLeaderUnit(enemyLeaderName, Side::Enemy, Point(12, 4), enemyMainForce, enemySkill);
+	units.push_back(enemyLeaderUnit);
+	units.back().atk += enemyLeaderBonus;
+	if (!enemyCity.officers.isEmpty())
+	{
+		units.back().def = enemyCity.officers[0].intelligence / 2;
+	}
 
 	units.push_back(Unit(U"敵副将", Side::Enemy, Point(12, 6), enemySubForce));
 
@@ -168,12 +181,17 @@ void BattleGameManager::UpdatePlayerTurn()
 
 	if (!anyPlayerNeedAction)
 	{
-		// 全員行動済み → 敵ターンへ
-		for (auto& u : units) u.acted = false;
+		// ★ 全員行動済み → バフ更新とスキルクールダウン
+		for (auto& u : units)
+		{
+			u.acted = false;
+			u.UpdateBuffs();  // バフ効果とクールダウンを更新
+		}
+
 		actingIndex = 0;
 		moveRange.clear();
 		phase = TurnPhase::EnemyTurn;
-		debugCount = 0;  // リセット
+		debugCount = 0;
 		Print << U"[味方→敵]";
 		return;
 	}
@@ -189,6 +207,9 @@ void BattleGameManager::UpdatePlayerTurn()
 	if (actingIndex >= units.size()) return;
 
 	if (moveRange.isEmpty()) CalculateMoveRange();
+
+	// ★ スキル使用チェック
+	CheckSkillInput();
 
 	MoveUnit();
 	TryAttack();
@@ -212,8 +233,13 @@ void BattleGameManager::UpdateEnemyTurn()
 
 	if (!anyEnemyNeedAction)
 	{
-		// 全敵行動済み → 味方ターンへ
-		for (auto& u : units) u.acted = false;
+		// ★ 全敵行動済み → バフ更新とスキルクールダウン
+		for (auto& u : units)
+		{
+			u.acted = false;
+			u.UpdateBuffs();  // バフ効果とクールダウンを更新
+		}
+
 		actingIndex = 0;
 		moveRange.clear();
 		phase = TurnPhase::PlayerTurn;
@@ -245,6 +271,16 @@ void BattleGameManager::UpdateEnemyTurn()
 	}
 
 	Unit& enemy = units[actingIndex];
+
+	// ★ 敵AIのスキル判断（30%の確率で使用）
+	if (enemy.hasSkill && enemy.skill.CanUse() && RandomBool(0.3))
+	{
+		bool skillUsed = enemy.UseSkill(units, actingIndex);
+		if (skillUsed)
+		{
+			Print << U"[敵スキル] " << enemy.name << U" - " << enemy.skill.name;
+		}
+	}
 
 	int tgt = FindClosestEnemyIndex(actingIndex);
 	if (tgt >= 0)
@@ -433,6 +469,8 @@ void BattleGameManager::Draw() const
 	{
 		if (u.alive) u.draw(map.tileSize);
 	}
+	// スキルUI描画
+	DrawSkillUI();
 
 	// =================================================================
 	// 🎮 UI表示（画面サイズ対応）
@@ -623,6 +661,65 @@ void BattleGameManager::Draw() const
 			Line(x, y, x - 2, y + 15).draw(1, ColorF(0.7, 0.7, 0.8, 0.3));
 		}
 	}
+	// ★ 戦闘情報UI
+	{
+		// ターン表示
+		String turnText = (phase == TurnPhase::PlayerTurn) ? U"【味方ターン】" : U"【敵ターン】";
+		Color turnColor = (phase == TurnPhase::PlayerTurn) ? Palette::Cyan : Palette::Orange;
+
+		RectF turnBg(screenW / 2 - 100, 10, 200, 40);
+		turnBg.draw(ColorF(0, 0, 0, 0.7));
+		turnBg.drawFrame(2, turnColor);
+		FontAsset(U"button")(turnText).drawAt(turnBg.center(), turnColor);
+
+		// 天候表示
+		String weatherText = U"天候: " + BattleSystem::GetWeatherName(m_weather) + U" " + BattleSystem::GetWeatherIcon(m_weather);
+		RectF weatherBg(10, 10, 200, 35);
+		weatherBg.draw(ColorF(0, 0, 0, 0.6));
+		weatherBg.drawFrame(1, Palette::White);
+		FontAsset(U"small")(weatherText).draw(weatherBg.pos.movedBy(10, 8), Palette::White);
+
+		// 行動中ユニットの情報
+		if (actingIndex < units.size() && units[actingIndex].alive)
+		{
+			const Unit& activeUnit = units[actingIndex];
+
+			RectF infoBg(screenW - 320, 60, 310, 150);
+			infoBg.draw(ColorF(0, 0, 0, 0.8));
+			infoBg.drawFrame(3, activeUnit.isPlayer ? Palette::Cyan : Palette::Orange);
+
+			int infoY = static_cast<int>(infoBg.y) + 10;
+			int infoX = static_cast<int>(infoBg.x) + 10;
+
+			FontAsset(U"button")(activeUnit.name).draw(infoX, infoY, Palette::White);
+			infoY += 30;
+
+			FontAsset(U"small")(U"兵力: " + Format(activeUnit.soldiers)).draw(infoX, infoY, Palette::White);
+			infoY += 25;
+
+			// 士気バー
+			FontAsset(U"small")(U"士気: " + Format(activeUnit.morale)).draw(infoX, infoY, Palette::White);
+			infoY += 20;
+			RectF moraleBar(infoX, infoY, 200, 10);
+			moraleBar.draw(ColorF(0.2, 0.2, 0.2));
+			double moraleRate = activeUnit.morale / 100.0;
+			Color moraleColor = moraleRate > 0.5 ? Palette::Lime : (moraleRate > 0.3 ? Palette::Yellow : Palette::Red);
+			RectF(moraleBar.pos, moraleBar.w * moraleRate, moraleBar.h).draw(moraleColor);
+			moraleBar.drawFrame(1, Palette::White);
+			infoY += 20;
+
+			// スキル情報
+			if (activeUnit.hasSkill)
+			{
+				FontAsset(U"small")(U"スキル: " + activeUnit.skill.name).draw(infoX, infoY, Palette::Gold);
+				infoY += 20;
+
+				String cooldownText = activeUnit.skill.CanUse() ? U"[使用可能]" : U"[CT: " + Format(activeUnit.skill.currentCooldown) + U"]";
+				Color cooldownColor = activeUnit.skill.CanUse() ? Palette::Lime : Palette::Gray;
+				FontAsset(U"small")(cooldownText).draw(infoX, infoY, cooldownColor);
+			}
+		}
+	}
 }
 
 void BattleGameManager::CalculateMoveRange()
@@ -702,6 +799,106 @@ void BattleGameManager::TryAttack()
 	}
 }
 
+// ★ スキル使用の処理
+void BattleGameManager::DrawSkillUI() const
+{
+	if (phase != TurnPhase::PlayerTurn) return;
+	if (units.isEmpty()) return;  // ← 追加
+	if (actingIndex >= units.size()) return;
+
+	const Unit& activeUnit = units[actingIndex];
+	if (!activeUnit.isPlayer || !activeUnit.alive || activeUnit.acted) return;
+	if (!activeUnit.hasSkill) return;
+
+	int screenW = Scene::Width();
+	int screenH = Scene::Height();
+
+	// スキルボタンの表示
+	Rect skillButton(screenW - 280, screenH - 120, 240, 80);
+
+	bool canUse = activeUnit.skill.CanUse();
+	bool isHovered = skillButton.mouseOver();
+
+	// ボタン背景
+	ColorF btnColor;
+	if (!canUse)
+	{
+		btnColor = ColorF(0.3, 0.3, 0.3, 0.6); // クールダウン中は灰色
+	}
+	else if (isHovered)
+	{
+		btnColor = ColorF(0.4, 0.8, 1.0, 0.9); // ホバー時
+	}
+	else
+	{
+		btnColor = ColorF(0.2, 0.6, 0.9, 0.8); // 通常時
+	}
+
+	// ボタン描画
+	skillButton.movedBy(4, 4).draw(ColorF(0, 0, 0, 0.5)); // 影
+	skillButton.draw(btnColor);
+	skillButton.drawFrame(3, canUse ? ColorF(Palette::Yellow) : ColorF(Palette::Gray));
+
+	// スキル名
+	FontAsset(U"button")(activeUnit.skill.name)
+		.drawAt(skillButton.center().movedBy(0, -15), canUse ? ColorF(Palette::White) : ColorF(0.7, 0.7, 0.7));
+
+	// クールダウン表示 or ショートカット表示
+	if (!canUse)
+	{
+		String cooldownText = U"CT: " + Format(activeUnit.skill.currentCooldown);
+		FontAsset(U"default")(cooldownText)
+			.drawAt(skillButton.center().movedBy(0, 15), ColorF(0.9, 0.4, 0.4));
+	}
+	else
+	{
+		FontAsset(U"default")(U"[S]キー")
+			.drawAt(skillButton.center().movedBy(0, 15), ColorF(0.8, 0.8, 1.0));
+	}
+
+	// スキル説明（ホバー時）
+	if (isHovered)
+	{
+		RectF descBox(skillButton.x, skillButton.y - 80, 240, 70);
+		descBox.draw(ColorF(0, 0, 0, 0.85));
+		descBox.drawFrame(2, ColorF(0.5, 0.7, 1.0));
+
+		FontAsset(U"default")(activeUnit.skill.description)
+			.draw(descBox.stretched(-8), Palette::White);
+	}
+}
+
+// ★ スキル使用の入力判定（UpdatePlayerTurn内から呼ぶ）
+void BattleGameManager::CheckSkillInput()
+{
+	if (units.isEmpty()) return;  
+	if (actingIndex >= units.size()) return;
+
+	Unit& activeUnit = units[actingIndex];
+
+	if (!activeUnit.hasSkill || !activeUnit.skill.CanUse()) return;
+
+	int screenW = Scene::Width();
+	int screenH = Scene::Height();
+	Rect skillButton(screenW - 280, screenH - 120, 240, 80);
+
+	// マウスクリック or Sキーでスキル発動
+	bool skillTriggered = skillButton.leftClicked() || KeyS.down();
+
+	if (skillTriggered)
+	{
+		bool skillUsed = activeUnit.UseSkill(units, actingIndex);
+
+		if (skillUsed)
+		{
+			Print << U"[スキル発動] " << activeUnit.name << U" - " << activeUnit.skill.name;
+			activeUnit.acted = true;
+			moveRange.clear();
+			actingIndex++;
+		}
+	}
+}
+
 void BattleGameManager::EnemyAction(int targetIdx)
 {
 	Unit& enemy = units[actingIndex];
@@ -727,10 +924,23 @@ void BattleGameManager::ResolveCombat(Unit& attacker, Unit& defender)
 {
 	attacker.StartAttackAnimation();
 
+	// ★ 実効攻撃力・防御力を使用（士気とバフを考慮）
+	int effectiveAtk = attacker.GetEffectiveAtk();
+	int effectiveDef = defender.GetEffectiveDef();
+
 	double defBonus = map.At(defender.pos.x, defender.pos.y).defenseBonus();
-	int baseDmg = attacker.atk * 2 + Random(0, 20);
-	int finalDmg = static_cast<int>(baseDmg / defBonus);
-	defender.ApplyDamage(Max(5, finalDmg));
+	int baseDmg = effectiveAtk * 2 + Random(0, 20);
+	int reducedDmg = baseDmg - effectiveDef;
+	int finalDmg = static_cast<int>(Max(5, reducedDmg) / defBonus);
+
+	defender.ApplyDamage(finalDmg);
+
+	// ★ 攻撃を受けたら士気が下がる
+	int moraleLoss = finalDmg / 50;
+	defender.ReduceMorale(moraleLoss);
+
+	// ★ 攻撃側も少し士気上昇
+	attacker.IncreaseMorale(2);
 }
 
 int BattleGameManager::FindClosestEnemyIndex(int i) const

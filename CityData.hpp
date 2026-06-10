@@ -25,6 +25,9 @@ struct CityData
 	// ★ 施設（5つ）
 	Array<CityFacility::Facility> facilities;
 
+	// ★ 追加：攻撃クールダウン
+	int lastAttackMonth = -99;  // 最後に攻撃した月（初期値は-99）
+	
 	// デフォルトコンストラクタ
 	CityData()
 	{
@@ -55,6 +58,14 @@ struct CityData
 	int GetBuildingCount() const;
 	int GetEmptySlot() const;
 	Array<String> AdvanceFacilities();
+
+	// 攻撃可能かチェック（6ヶ月以上経過している必要）
+	bool CanAttack(int currentYear, int currentMonth) const
+	{
+		int currentTotalMonths = currentYear * 12 + currentMonth;
+		int lastAttackTotalMonths = lastAttackMonth;
+		return (currentTotalMonths - lastAttackTotalMonths) >= 6;
+	}
 };
 
 // CityFacility.hppをincludeした後に実装

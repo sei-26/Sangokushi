@@ -54,11 +54,15 @@ void ArmyConfigScene::draw() const
 	}
 	else
 	{
-		const Officer& off = m_fromCity->officers[m_selectedOfficerIndex];
-		FontAsset(U"medium")(U"主将: {}"_fmt(off.name))
-			.draw(20, 200, Palette::Yellow);
-		FontAsset(U"small")(U"武力:{}  統率:{}"_fmt(off.war, off.leadership))
-			.draw(20, 240);
+		// インデックスの範囲チェックを追加
+		if (m_selectedOfficerIndex >= 0 && m_selectedOfficerIndex < m_fromCity->officers.size())
+		{
+			const Officer& off = m_fromCity->officers[m_selectedOfficerIndex];
+			FontAsset(U"medium")(U"主将: {}"_fmt(off.name))
+				.draw(20, 200, Palette::Yellow);
+			FontAsset(U"small")(U"武力:{}  統率:{}"_fmt(off.war, off.leadership))
+				.draw(20, 240);
+		}
 	}
 
 	// 兵数
@@ -75,7 +79,10 @@ void ArmyConfigScene::draw() const
 
 Officer ArmyConfigScene::getSelectedOfficer() const
 {
-	if (m_fromCity->officers.isEmpty())
+	// 範囲チェックを追加
+	if (m_fromCity->officers.isEmpty() || 
+	    m_selectedOfficerIndex < 0 || 
+	    m_selectedOfficerIndex >= m_fromCity->officers.size())
 	{
 		Officer d;
 		d.name = U"名無し";

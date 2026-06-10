@@ -112,22 +112,41 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 		{
 			CityData& targetCity = cities[targetIndex];
 
-			Print << U"[AI戦争] " << aiCity.owner << U"(" << aiCity.name << U") が "
-				<< targetCity.owner << U"(" << targetCity.name << U") を攻撃！";
-
-			// 戦闘シミュレート
-			bool attackerWins = AIController::SimulateBattle(aiCity, targetCity);
-
-			if (attackerWins)
+			// ★★★ 重要：プレイヤー都市への攻撃は pendingBattle にセットして防衛戦へ ★★★
+			if (targetCity.owner == playerFactionName)
 			{
-				Print << U"  → " << aiCity.owner << U" の勝利！ "
-					<< targetCity.name << U" を占領！";
-				battleLog.push_back(aiCity.owner + U" が " + targetCity.name + U" を占領！");
+				Print << U"[防衛戦] " << aiCity.owner << U"(" << aiCity.name << U") が "
+					<< targetCity.name << U" に侵攻してきた！";
+
+				// 防衛戦をセット
+				pendingBattle.isOccurring = true;
+				pendingBattle.atkCityIndex = i;           // 攻撃側 = AI都市
+				pendingBattle.defCityIndex = targetIndex; // 防御側 = プレイヤー都市
+				
+				eventLog.push_back(U"⚠️ " + aiCity.owner + U" が " + targetCity.name + U" に侵攻！");
+				
+				// 防衛戦は1つずつ処理するため、ここで終了
+				break;
 			}
 			else
 			{
-				Print << U"  → " << targetCity.owner << U" が防衛成功！";
-				battleLog.push_back(targetCity.owner + U" が " + aiCity.owner + U" の攻撃を撃退！");
+				// AI同士の戦闘は従来通りシミュレート
+				Print << U"[AI戦争] " << aiCity.owner << U"(" << aiCity.name << U") が "
+					<< targetCity.owner << U"(" << targetCity.name << U") を攻撃！";
+
+				bool attackerWins = AIController::SimulateBattle(aiCity, targetCity);
+
+				if (attackerWins)
+				{
+					Print << U"  → " << aiCity.owner << U" の勝利！ "
+						<< targetCity.name << U" を占領！";
+					battleLog.push_back(aiCity.owner + U" が " + targetCity.name + U" を占領！");
+				}
+				else
+				{
+					Print << U"  → " << targetCity.owner << U" が防衛成功！";
+					battleLog.push_back(targetCity.owner + U" が " + aiCity.owner + U" の攻撃を撃退！");
+				}
 			}
 		}
 	}

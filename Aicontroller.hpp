@@ -69,8 +69,20 @@ public:
 	{
 		const CityData& aiCity = allCities[aiCityIndex];
 
-		// 兵力が少なすぎる場合は攻撃しない
-		if (aiCity.troops < 2000)
+		// ★ 改善1：兵力が十分にある場合のみ攻撃（より慎重に）
+		if (aiCity.troops < 3500)  // 2000 → 3500 に引き上げ
+		{
+			return -1;
+		}
+
+		// ★ 改善2：金が少ない場合は内政優先（戦争回避）
+		if (aiCity.gold < 800)
+		{
+			return -1;
+		}
+
+		// ★ 改善3：治安が低い場合は攻撃しない（内政優先）
+		if (aiCity.order < 40)
 		{
 			return -1;
 		}
@@ -89,8 +101,8 @@ public:
 			// 距離計算（簡易版：座標の距離）
 			double distance = aiCity.pos.distanceFrom(targetCity.pos);
 
-			// 近い都市のみ対象
-			if (distance < 300)
+			// ★ 改善4：攻撃範囲を狭める（より近い都市のみ）
+			if (distance < 220)  // 300 → 220 に縮小
 			{
 				enemyCityIndices.push_back(i);
 			}
@@ -112,18 +124,38 @@ public:
 			// 兵力比を計算
 			double ratio = static_cast<double>(aiCity.troops) / Max(targetCity.troops, 1);
 
-			// 兵力が1.5倍以上なら攻撃候補
-			if (ratio >= 1.5 && ratio > bestRatio)
+			// ★ 改善5：より大きな兵力差が必要（1.5倍 → 2.0倍）
+			if (ratio >= 2.0 && ratio > bestRatio)
 			{
 				bestRatio = ratio;
 				bestTarget = targetIndex;
 			}
 		}
 
-		// 70%の確率で攻撃
-		if (bestTarget >= 0 && RandomBool(0.7))
+		// ★ 改善6：攻撃確率を大幅に下げる（70% → 25%）
+		// さらに、プレイヤーへの攻撃はより慎重に（15%）
+		double attackChance = 0.25;
+		
+		if (bestTarget >= 0)
 		{
-			return bestTarget;
+			const CityData& targetCity = allCities[bestTarget];
+			
+			// プレイヤーへの攻撃はより慎重に
+			if (targetCity.owner == playerFaction.name)
+			{
+				attackChance = 0.15;  // プレイヤーへは15%の確率
+				
+				// さらに、兵力比が2.5倍以上ないと攻めない
+				if (bestRatio < 2.5)
+				{
+					return -1;
+				}
+			}
+			
+			if (RandomBool(attackChance))
+			{
+				return bestTarget;
+			}
 		}
 
 		return -1;

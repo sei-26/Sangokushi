@@ -48,6 +48,16 @@ CityScene::CityScene(GameManager* gm, CityData& city)
 
 void CityScene::update()
 {
+	// ★ 重要：都市の所有者が変わっていたら強制的にWorldMapに戻す
+	if (m_cityData->owner != m_gameManager->playerFactionName)
+	{
+		m_message = U"⚠️ この都市は敵に奪われました！";
+		Print << U"[警告] " << m_cityData->name << U" は " << m_cityData->owner << U" に占領されました";
+		m_sceneEnd = true;
+		m_nextScene = U"WorldMap";
+		return;
+	}
+
 	// ========================================
 	// 武将ボーナス計算
 	// ========================================

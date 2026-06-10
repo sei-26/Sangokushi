@@ -33,4 +33,7 @@ private:
 
 	// ★ 外交ボタン
 	Rect m_btnDiplomacy;
+
+	// パフォーマンス最適化: 都市間接続のキャッシュ（各都市の最近接2都市のインデックス）
+	Array<Array<int>> m_cityConnections;
 };
