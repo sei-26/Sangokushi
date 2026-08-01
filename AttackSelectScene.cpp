@@ -68,4 +68,4 @@ void AttackSelectScene::draw() const
 		FontAsset(U"small")(U"Enterで決定")
 			.draw(40, 540, Palette::Gray);
 	}
-}
+};

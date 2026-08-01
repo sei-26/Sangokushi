@@ -198,12 +198,14 @@ void CityScene::update()
 	// ========================================
 	// 出陣
 	// ========================================
+	// ========================================
+	// 202-208行目を以下に変更
 	if (m_btnAttack.leftClicked())
 	{
 		if (m_cityData->troops >= 1000)
 		{
 			m_sceneEnd = true;
-			m_nextScene = U"Battle";
+			m_nextScene = U"AttackSelectScene";  // ← BattleMapSceneではなくAttackSelectSceneへ
 		}
 		else
 		{

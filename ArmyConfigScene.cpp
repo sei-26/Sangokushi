@@ -5,6 +5,21 @@ ArmyConfigScene::ArmyConfigScene(int fromIndex, int targetIndex, Array<CityData>
 	, m_targetIndex(targetIndex)
 	, m_allCities(allCities)
 {
+	// ★ 範囲チェックを追加
+	Print << U"[DEBUG] ArmyConfigScene コンストラクタ: from=" << fromIndex << U" target=" << targetIndex << U" cities.size()=" << allCities->size();
+	
+	if (fromIndex < 0 || fromIndex >= (int)allCities->size())
+	{
+		Print << U"[ERROR] fromIndex が範囲外: " << fromIndex;
+		return;
+	}
+	
+	if (targetIndex < 0 || targetIndex >= (int)allCities->size())
+	{
+		Print << U"[ERROR] targetIndex が範囲外: " << targetIndex;
+		return;
+	}
+	
 	m_fromCity = &((*allCities)[fromIndex]);
 	m_targetCity = &((*allCities)[targetIndex]);
 }

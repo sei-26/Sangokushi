@@ -28,4 +28,9 @@ private:
 
 	int m_selectedCityIndex = -1;
 	String m_currentSceneName = U"Title";
+
+	int m_attackFromIndex = -1;
+	int m_attackTargetIndex = -1;
+	Officer m_selectedLeader;
+	int m_selectedSoldiers = 0;
 };

@@ -9,7 +9,9 @@
 #include "FacilityScene.hpp"
 #include "EndingScene.hpp"
 #include "VictoryCondition.hpp"
-
+#include "AttackSelectScene.hpp"
+#include "ArmyConfigScene.hpp"
+#include "BattleMapScene.hpp"
 GameSceneManager::GameSceneManager(GameManager* gm, const Faction& playerFaction, const Array<CityData>& cities, AudioManager* audio)
 	: m_currentScene(nullptr)
 	, m_gameManager(gm)
@@ -62,7 +64,34 @@ void GameSceneManager::update()
 				auto* mapScene = dynamic_cast<WorldMapScene*>(m_currentScene);
 				if (mapScene) m_selectedCityIndex = mapScene->getSelectedCityIndex();
 			}
+			// ★ AttackSelectScene からのデータ取得を追加
+			if (next == U"ArmyConfigScene")
+			{
+				auto* attackScene = dynamic_cast<AttackSelectScene*>(m_currentScene);
+				if (attackScene)
+				{
+					m_attackFromIndex = attackScene->getFromIndex();
+					m_attackTargetIndex = attackScene->getTargetIndex();
+					Print << U"[DEBUG] AttackSelectScene データ取得: from=" << m_attackFromIndex << U" target=" << m_attackTargetIndex << U" cities.size()=" << m_cities.size();
+				}
+				else
+				{
+					Print << U"[ERROR] AttackSelectScene の dynamic_cast 失敗";
+				}
+			}
 
+			// ★ ArmyConfigScene からのデータ取得を追加
+			if (next == U"BattleMapScene")
+			{
+				auto* armyScene = dynamic_cast<ArmyConfigScene*>(m_currentScene);
+				if (armyScene)
+				{
+					m_attackFromIndex = armyScene->getFromIndex();
+					m_attackTargetIndex = armyScene->getTargetIndex();
+					m_selectedLeader = armyScene->getSelectedOfficer();
+					m_selectedSoldiers = armyScene->getSoldierAllocation();
+				}
+			}
 			// ★勢力選択シーンが終わった時、選ばれた勢力を反映させる
 			if (m_currentSceneName == U"FactionSelect")
 			{
@@ -167,11 +196,68 @@ void GameSceneManager::update()
 				m_currentScene = new FacilityScene(m_gameManager, &m_cities[m_selectedCityIndex], &m_gameManager->turnManager);
 				m_currentSceneName = U"Facility";
 			}
+			else if (next == U"AttackSelectScene")
+			{
+				if (m_selectedCityIndex >= 0 && m_selectedCityIndex < (int)m_cities.size())
+				{
+					m_currentScene = new AttackSelectScene(m_selectedCityIndex, &m_cities);
+					m_currentSceneName = U"AttackSelectScene";
+				}
+				else
+				{
+					Print << U"[ERROR] AttackSelectScene への遷移に失敗";
+					m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+				}
+			}
+			else if (next == U"ArmyConfigScene")
+			{
+				// データは既に68-76行目で取得済み
+				Print << U"[DEBUG] ArmyConfigScene 遷移チェック: from=" << m_attackFromIndex << U" target=" << m_attackTargetIndex << U" cities.size()=" << m_cities.size();
+
+				if (m_attackFromIndex >= 0 && m_attackFromIndex < (int)m_cities.size() &&
+					m_attackTargetIndex >= 0 && m_attackTargetIndex < (int)m_cities.size())
+				{
+					m_currentScene = new ArmyConfigScene(m_attackFromIndex, m_attackTargetIndex, &m_cities);
+					m_currentSceneName = U"ArmyConfigScene";
+					Print << U"[INFO] ArmyConfigScene へ遷移成功";
+				}
+				else
+				{
+					Print << U"[ERROR] ArmyConfigScene への遷移に失敗: インデックスが範囲外";
+					m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+
+				}
+
+			}
+			else if (next == U"BattleMapScene")
+			{
+				// データは既に84-94行目で取得済み
+				Print << U"[DEBUG] BattleMapScene 遷移チェック: from=" << m_attackFromIndex << U" target=" << m_attackTargetIndex << U" soldiers=" << m_selectedSoldiers;
+				
+				if (m_attackFromIndex >= 0 && m_attackFromIndex < (int)m_cities.size() &&
+					m_attackTargetIndex >= 0 && m_attackTargetIndex < (int)m_cities.size())
+				{
+					m_currentScene = new BattleMapScene(m_attackFromIndex, m_attackTargetIndex, &m_cities, m_selectedLeader, m_selectedSoldiers);
+					m_currentSceneName = U"BattleMapScene";
+					m_audio->PlayBGM(AudioManager::BGMType::Battle, 2.0);
+					Print << U"[INFO] BattleMapScene へ遷移成功";
+				}
+				else
+				{
+					Print << U"[ERROR] BattleMapScene への遷移に失敗: インデックスが範囲外";
+					m_currentScene = new WorldMapScene(m_gameManager, m_playerFaction, &m_cities);
+				}
+			}
+
 		}
+
 	}
 }
 
 void GameSceneManager::draw()
 {
-	if (m_currentScene) m_currentScene->draw();
+    if (m_currentScene)
+    {
+        m_currentScene->draw();
+    }
 }
