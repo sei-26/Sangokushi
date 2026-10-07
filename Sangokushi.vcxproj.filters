@@ -1,12 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClInclude Include="NewGame\StoryBook.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="NewGame\StoryPresentation.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="NewGame\HeroStory.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="NewGame\StorySave.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="NewGame\HeroStoryScene.hpp"><Filter>Header Files</Filter></ClInclude>
     <ClCompile Include="NewGame\CampaignScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClInclude Include="NewGame\OfficerTraits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NewGame\OfficerCore.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="NewGame\WorldLayout.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="NewGame\MapCamera.hpp"><Filter>Header Files</Filter></ClInclude>
     <ClInclude Include="NewGame\Campaign.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -14,12 +22,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NewGame\CampaignScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClCompile Include="WorldMapTerritory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="TerritoryMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <Filter Include="Source Files">
@@ -88,36 +90,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FactionSelectScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WorldMapScene_Visual.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CityScene_Visual.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BattleScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSceneManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ArmyConfigScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AttackSelectScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BattleMapScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BattleGameManager_Visual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -402,124 +374,58 @@
     <None Include="App\engine\shader\glsl\quad_warp.frag">
       <Filter>Resource Files\engine\shader\glsl</Filter>
     </None>
-    <None Include="Csvdataloader.hpp">
-      <Filter>Header Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Map.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Unit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSceneManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CityScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BattleScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CityData.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FactionSelectScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Faction.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ArmyConfigScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AttackSelectScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Officer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BattleMapScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BattleGameManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Aicontroller.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Officerportrait.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Saveloadmanager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Diplomacymanager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Diplomacyscene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WorldMapScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Turnmanager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Loyaltymanager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OfficerManagementScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SeasonEventManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HistoricalEventManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EconomyManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BattleSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CityFacility.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FacilityScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OfficerSkill.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VictoryCondition.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EndingScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TitleScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CareerScene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerCareer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NewGame\Campaign.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignAI.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignCombat.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignDailyCombat.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignDiplomacy.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignEconomy.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignOfficers.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignOrders.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSave.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneCamera.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneCouncil.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneInput.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneLayout.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneMap.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneMenu.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignScenePanel.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignScenePreview.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSupply.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignTurn.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClInclude Include="NewGame\CampaignTypes.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClCompile Include="NewGame\CampaignUI.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClInclude Include="NewGame\CampaignUI.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClCompile Include="NewGame\HeroStory.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStoryBattle.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStoryProgression.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStoryRelationships.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStoryScene.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneBattle.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneCivil.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneDialogue.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneDraw.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneInput.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneMenu.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneNotes.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStoryScenePreview.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\HeroStorySkills.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\StoryPresentation.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\StoryPresentationAudio.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\StoryPresentationDraw.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\StorySave.cpp"><Filter>Source Files</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NewGame\CampaignLoad.cpp"><Filter>Source Files</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NewGame\StoryLoad.cpp"><Filter>Source Files</Filter></ClCompile>
   </ItemGroup>
 </Project>

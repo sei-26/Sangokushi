@@ -1,8 +1,11 @@
 ﻿#include "../NewGame/Campaign.hpp"
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <set>
 
+#undef assert
+#define assert(expr) do { if(!(expr)){std::cerr << "Assertion failed at line " << __LINE__ << ": " << #expr << "\n";std::exit(1);} } while(false)
 using namespace frontline;
 Campaign Empty()
 {
@@ -20,7 +23,7 @@ Army Force(int faction, int general, int tile, Arm arm = Arm::Spear)
 int main()
 {
 	Campaign game; game.Reset(0);
-	assert(game.cities.size() == 9 && game.generals.size() == 24);
+	assert(game.cities.size() == 30 && game.generals.size() == 24);
 	// Preparation takes time; a working officer cannot simultaneously lead an army.
 	game.BeginTurn(); assert(game.armies.empty());
 	assert(game.Develop(0,19,Duty::Commerce));
@@ -91,7 +94,7 @@ int main()
 	const int deployed = game.Deploy(0,0,3000,Arm::Spear);
 	assert(deployed == 0 && game.commands == 2 && game.cities[0].troops == 7000 && game.cities[0].gold == 2700);
 	assert(game.Deploy(0,0,3000,Arm::Spear) == -1);
-	assert(!game.Order(0,Campaign::At(35,0)));
+	assert(!game.Order(0,Campaign::At(95,0)));
 	assert(game.Order(0,game.cities[3].tile));
 	int previous = game.armies[0].tile;
 	for (int p : game.armies[0].path) { assert(Campaign::Distance(previous,p) == 1); previous = p; }
@@ -139,6 +142,20 @@ int main()
 	assert(game.armies[0].troops == 0 && game.generals[0].home == 1 && game.cities[1].troops > 0);
 
 	// A longer AI campaign must retain ownership, resources and commander uniqueness.
+	// Assigning a guardian vs a breakthrough officer changes actual battle outcomes.
+	Campaign attackTeam=Empty();attackTeam.generals[0].name=U"劉備";attackTeam.generals[2].name=U"張飛";
+	attackTeam.armies={Force(0,0,Campaign::At(5,5)),Force(0,2,Campaign::At(4,4)),Force(1,1,Campaign::At(6,5))};attackTeam.ChangeBond(0,2,60);
+	Campaign guardTeam=attackTeam;guardTeam.generals[2].name=U"趙雲";
+	attackTeam.AdvanceDay();guardTeam.AdvanceDay();assert(guardTeam.armies[0].troops>attackTeam.armies[0].troops&&attackTeam.armies[2].troops<guardTeam.armies[2].troops);
+	Campaign scattered=guardTeam;scattered.armies[1].tile=Campaign::At(1,8);assert(scattered.Formation(0).defense==0);
+	guardTeam.armies[1].retreat=true;assert(guardTeam.Formation(0).defense==0);
+	// Administration feeds deployment. Extra provisions must come from city stores.
+	Campaign prepared;prepared.Reset(0);Campaign neglected=prepared;neglected.cities[0].order=30;neglected.cities[0].logistics=0;
+	prepared.cities[0].order=100;prepared.cities[0].logistics=100;
+	const int provisionStore=prepared.cities[0].food;assert(prepared.Deploy(0,0,3000,Arm::Spear)==0&&neglected.Deploy(0,0,3000,Arm::Spear)==0);
+	assert(prepared.armies[0].morale>neglected.armies[0].morale&&prepared.armies[0].food>neglected.armies[0].food&&prepared.cities[0].food+prepared.armies[0].food==provisionStore);
+	Campaign supplyTeam=Empty();supplyTeam.generals[2].name=U"徐晃";supplyTeam.armies={Force(0,0,Campaign::At(5,5)),Force(0,2,Campaign::At(4,4))};supplyTeam.ChangeBond(0,2,60);
+	Campaign separatedSupply=supplyTeam;separatedSupply.armies[1].tile=Campaign::At(1,8);supplyTeam.AdvanceDay();separatedSupply.AdvanceDay();assert(supplyTeam.armies[0].food>separatedSupply.armies[0].food);
 	game.Reset(0);
 	for (int day = 0; day < 300 && game.result == 0; ++day)
 	{

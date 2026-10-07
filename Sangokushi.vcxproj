@@ -116,23 +116,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ArmyConfigScene.cpp" />
-    <ClCompile Include="AttackSelectScene.cpp" />
-    <ClCompile Include="BattleGameManager_Visual.cpp" />
-    <ClCompile Include="BattleMapScene.cpp" />
-    <ClCompile Include="BattleScene.cpp" />
-    <ClCompile Include="CityScene_Visual.cpp" />
-    <ClCompile Include="FactionSelectScene.cpp" />
-    <ClCompile Include="GameManager.cpp" />
-    <ClCompile Include="GameSceneManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="NewGame\CampaignScene.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="WorldMapScene_Visual.cpp" />
-    <ClCompile Include="WorldMapTerritory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\engine\texture\box-shadow\128.png" />
@@ -233,54 +222,71 @@
     <None Include="App\engine\shader\glsl\square_dot.frag" />
     <None Include="App\engine\shader\glsl\texture.frag" />
     <None Include="App\engine\soundfont\GMGSx.sf2.zstdcmp" />
-    <None Include="Csvdataloader.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Aicontroller.hpp" />
+    <ClInclude Include="NewGame\WorldLayout.hpp" />
+    <ClInclude Include="NewGame\MapCamera.hpp" />
     <ClInclude Include="NewGame\Campaign.hpp" />
     <ClInclude Include="NewGame\OfficerTraits.hpp" />
+    <ClInclude Include="NewGame\OfficerCore.hpp" />
     <ClInclude Include="NewGame\CampaignSave.hpp" />
+    <ClInclude Include="NewGame\StoryBook.hpp" />
+    <ClInclude Include="NewGame\StoryPresentation.hpp" />
+    <ClInclude Include="NewGame\HeroStory.hpp" />
+    <ClInclude Include="NewGame\StorySave.hpp" />
+    <ClInclude Include="NewGame\HeroStoryScene.hpp" />
     <ClInclude Include="NewGame\CampaignScene.hpp" />
-    <ClInclude Include="TerritoryMap.hpp" />
-    <ClInclude Include="CareerScene.hpp" />
-    <ClInclude Include="PlayerCareer.hpp" />
-    <ClInclude Include="ArmyConfigScene.hpp" />
-    <ClInclude Include="AttackSelectScene.hpp" />
-    <ClInclude Include="AudioManager.hpp" />
-    <ClInclude Include="BattleGameManager.hpp" />
-    <ClInclude Include="BattleMapScene.hpp" />
-    <ClInclude Include="BattleScene.hpp" />
-    <ClInclude Include="BattleSystem.hpp" />
-    <ClInclude Include="CityData.hpp" />
-    <ClInclude Include="CityFacility.hpp" />
-    <ClInclude Include="CityScene.hpp" />
-    <ClInclude Include="Diplomacymanager.hpp" />
-    <ClInclude Include="Diplomacyscene.hpp" />
-    <ClInclude Include="EconomyManager.hpp" />
-    <ClInclude Include="EndingScene.hpp" />
-    <ClInclude Include="FacilityScene.hpp" />
-    <ClInclude Include="Faction.hpp" />
-    <ClInclude Include="FactionSelectScene.hpp" />
-    <ClInclude Include="GameManager.hpp" />
-    <ClInclude Include="HistoricalEventManager.hpp" />
-    <ClInclude Include="Loyaltymanager.hpp" />
-    <ClInclude Include="Map.hpp" />
-    <ClInclude Include="Officer.hpp" />
-    <ClInclude Include="OfficerManagementScene.hpp" />
-    <ClInclude Include="Officerportrait.hpp" />
-    <ClInclude Include="OfficerSkill.hpp" />
-    <ClInclude Include="Saveloadmanager.hpp" />
-    <ClInclude Include="SceneBase.hpp" />
-    <ClInclude Include="GameSceneManager.hpp" />
-    <ClInclude Include="SeasonEventManager.hpp" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="TitleScene.hpp" />
-    <ClInclude Include="Turnmanager.hpp" />
-    <ClInclude Include="Unit.hpp" />
-    <ClInclude Include="VictoryCondition.hpp" />
-    <ClInclude Include="WorldMapScene.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="NewGame\Campaign.cpp" />
+    <ClCompile Include="NewGame\CampaignAI.cpp" />
+    <ClCompile Include="NewGame\CampaignCombat.cpp" />
+    <ClCompile Include="NewGame\CampaignDailyCombat.cpp" />
+    <ClCompile Include="NewGame\CampaignDiplomacy.cpp" />
+    <ClCompile Include="NewGame\CampaignEconomy.cpp" />
+    <ClCompile Include="NewGame\CampaignOfficers.cpp" />
+    <ClCompile Include="NewGame\CampaignOrders.cpp" />
+    <ClCompile Include="NewGame\CampaignSave.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneCamera.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneCouncil.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneInput.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneLayout.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneMap.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneMenu.cpp" />
+    <ClCompile Include="NewGame\CampaignScenePanel.cpp" />
+    <ClCompile Include="NewGame\CampaignScenePreview.cpp" />
+    <ClCompile Include="NewGame\CampaignSupply.cpp" />
+    <ClCompile Include="NewGame\CampaignTurn.cpp" />
+    <ClInclude Include="NewGame\CampaignTypes.hpp" />
+    <ClCompile Include="NewGame\CampaignUI.cpp" />
+    <ClInclude Include="NewGame\CampaignUI.hpp" />
+    <ClCompile Include="NewGame\HeroStory.cpp" />
+    <ClCompile Include="NewGame\HeroStoryBattle.cpp" />
+    <ClCompile Include="NewGame\HeroStoryProgression.cpp" />
+    <ClCompile Include="NewGame\HeroStoryRelationships.cpp" />
+    <ClCompile Include="NewGame\HeroStoryScene.cpp" />
+    <ClCompile Include="NewGame\HeroStorySceneBattle.cpp" />
+    <ClCompile Include="NewGame\HeroStorySceneCivil.cpp" />
+    <ClCompile Include="NewGame\HeroStorySceneDialogue.cpp" />
+    <ClCompile Include="NewGame\HeroStorySceneDraw.cpp" />
+    <ClCompile Include="NewGame\HeroStorySceneInput.cpp" />
+    <ClCompile Include="NewGame\HeroStorySceneMenu.cpp" />
+    <ClCompile Include="NewGame\HeroStorySceneNotes.cpp" />
+    <ClCompile Include="NewGame\HeroStoryScenePreview.cpp" />
+    <ClCompile Include="NewGame\HeroStorySkills.cpp" />
+    <ClCompile Include="NewGame\StoryPresentation.cpp" />
+    <ClCompile Include="NewGame\StoryPresentationAudio.cpp" />
+    <ClCompile Include="NewGame\StoryPresentationDraw.cpp" />
+    <ClCompile Include="NewGame\StorySave.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NewGame\CampaignLoad.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NewGame\StoryLoad.cpp" />
+  </ItemGroup>
 </Project>

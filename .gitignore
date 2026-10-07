@@ -457,3 +457,4 @@ Intermediate/
 # オーディオファイルはGit管理しない
 App/Audio/
 App/frontline-save.json
+/App/hero-story-save.json

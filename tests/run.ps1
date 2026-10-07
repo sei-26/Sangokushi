@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path $PSScriptRoot -Parent
 $taskSdk = $env:SIV3D_0_6_16
 if (-not $taskSdk -or -not (Test-Path -LiteralPath "$taskSdk/include/Siv3D.hpp")) {
@@ -11,13 +11,43 @@ $taskVcVars = Join-Path $taskVs 'VC/Auxiliary/Build/vcvars64.bat'
 Push-Location $taskRoot
 try {
     New-Item -ItemType Directory -Path 'Intermediate' -Force | Out-Null
-    $taskCore = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 tests\TerritoryMapTests.cpp /Fe:Intermediate\TerritoryMapTests.exe /Fo:Intermediate\TerritoryMapTests.obj && Intermediate\TerritoryMapTests.exe"
-    & cmd /c $taskCore
-    if ($LASTEXITCODE -ne 0) { throw 'Territory tests failed.' }
-    $taskCampaign = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 tests\CampaignTests.cpp /Fe:Intermediate\CampaignTests.exe /Fo:Intermediate\CampaignTests.obj && Intermediate\CampaignTests.exe"
+    New-Item -ItemType Directory -Path 'Intermediate/tests/core','Intermediate/tests/save' -Force | Out-Null
+    $taskCampaignFiles = @(
+        'NewGame\Campaign.cpp',
+        'NewGame\CampaignAI.cpp',
+        'NewGame\CampaignCombat.cpp',
+        'NewGame\CampaignDailyCombat.cpp',
+        'NewGame\CampaignDiplomacy.cpp',
+        'NewGame\CampaignEconomy.cpp',
+        'NewGame\CampaignOfficers.cpp',
+        'NewGame\CampaignOrders.cpp',
+        'NewGame\CampaignSupply.cpp',
+        'NewGame\CampaignTurn.cpp'
+    )
+    $taskCampaignSources = $taskCampaignFiles -join ' '
+    $taskCampaignObjects = ($taskCampaignFiles | ForEach-Object { 'Intermediate\tests\core\' + [IO.Path]::GetFileNameWithoutExtension($_) + '.obj' }) -join ' '
+    $taskStoryFiles = @(
+        'NewGame\HeroStory.cpp',
+        'NewGame\HeroStoryBattle.cpp',
+        'NewGame\HeroStoryProgression.cpp',
+        'NewGame\HeroStoryRelationships.cpp',
+        'NewGame\HeroStorySkills.cpp'
+    )
+    $taskStorySources = $taskStoryFiles -join ' '
+    $taskStoryObjects = ($taskStoryFiles | ForEach-Object { 'Intermediate\tests\core\' + [IO.Path]::GetFileNameWithoutExtension($_) + '.obj' }) -join ' '
+    $taskBuildCore = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 /c $taskCampaignSources $taskStorySources /Fo:Intermediate\tests\core\ && lib /nologo /OUT:Intermediate\tests\CampaignCore.lib $taskCampaignObjects && lib /nologo /OUT:Intermediate\tests\StoryCore.lib $taskStoryObjects"
+    & cmd /c $taskBuildCore
+    if ($LASTEXITCODE -ne 0) { throw 'Simulation library compilation failed.' }
+    $taskCampaign = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\CampaignTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\CampaignTests.exe /Fo:Intermediate\CampaignTests.obj /link /STACK:8388608 && Intermediate\CampaignTests.exe"
     & cmd /c $taskCampaign
     if ($LASTEXITCODE -ne 0) { throw 'Campaign tests failed.' }
-    $taskSave = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++latest /MT /D_ENABLE_EXTENDED_ALIGNED_STORAGE /I `"$taskSdk\include`" /I `"$taskSdk\include\ThirdParty`" tests\SaveDataTests.cpp /Fe:Intermediate\SaveDataTests.exe /Fo:Intermediate\SaveDataTests.obj /link /LIBPATH:`"$taskSdk\lib\Windows`" advapi32.lib shell32.lib gdi32.lib user32.lib ole32.lib winmm.lib && Intermediate\SaveDataTests.exe"
+    $taskWorld = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\WorldMapTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\WorldMapTests.exe /Fo:Intermediate\WorldMapTests.obj && Intermediate\WorldMapTests.exe"
+    & cmd /c $taskWorld
+    if ($LASTEXITCODE -ne 0) { throw 'World map tests failed.' }
+    $taskStory = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\StoryTests.cpp Intermediate\tests\StoryCore.lib /Fe:Intermediate\StoryTests.exe /Fo:Intermediate\StoryTests.obj && Intermediate\StoryTests.exe"
+    & cmd /c $taskStory
+    if ($LASTEXITCODE -ne 0) { throw 'Story tests failed.' }
+    $taskSave = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++latest /MT /utf-8 /D_ENABLE_EXTENDED_ALIGNED_STORAGE /I `"$taskSdk\include`" /I `"$taskSdk\include\ThirdParty`" tests\SaveDataTests.cpp NewGame\CampaignSave.cpp NewGame\CampaignLoad.cpp NewGame\StorySave.cpp NewGame\StoryLoad.cpp Intermediate\tests\CampaignCore.lib Intermediate\tests\StoryCore.lib /Fe:Intermediate\SaveDataTests.exe /Fo:Intermediate\tests\save\ /link /LIBPATH:`"$taskSdk\lib\Windows`" advapi32.lib shell32.lib gdi32.lib user32.lib ole32.lib winmm.lib && Intermediate\SaveDataTests.exe"
     & cmd /c $taskSave
     if ($LASTEXITCODE -ne 0) { throw 'Save tests failed.' }
 }
