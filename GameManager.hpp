@@ -17,6 +17,17 @@ class Map;
 class GameManager
 {
 public:
+	PlayerCareer career;
+	TerritoryMap territory;
+	bool territoryReady = false;
+	void EnsureTerritory(const Array<CityData>& cities)
+	{
+		if (territoryReady) return;
+		std::vector<TerritoryMap::CityPosition> positions;
+		for (const auto& city : cities) positions.push_back({static_cast<double>(city.pos.x), static_cast<double>(city.pos.y)});
+		territory.Initialize(positions);
+		territoryReady = true;
+	}
 	int year = 184;
 	int month = 1;
 	String playerFactionName;
@@ -53,6 +64,10 @@ public:
 		data.month = month;
 		data.playerFactionName = playerFactionName;
 		data.cities = cities;
+		data.career = career;
+		data.commandsUsed = turnManager.commandsUsed;
+		data.territory = territory;
+		data.territoryReady = territoryReady;
 		data.saveDateTime = DateTime::Now();
 		data.playTimeSeconds = static_cast<int>(playTimer.sF());
 		return data;

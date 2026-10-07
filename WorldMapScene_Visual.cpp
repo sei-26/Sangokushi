@@ -14,6 +14,7 @@ WorldMapScene::WorldMapScene(GameManager* gm,
 	, m_cutInTimer(0.0)
 	, m_seasonColor(Palette::White)
 {
+	if (m_allCities) m_gameManager->EnsureTerritory(*m_allCities);
 	// ★ セーブ・ロードボタンの配置
 	m_btnSave = Rect(Scene::Width() - 250, 100, 200, 60);
 	m_btnLoad = Rect(Scene::Width() - 250, 180, 200, 60);
@@ -55,6 +56,13 @@ WorldMapScene::WorldMapScene(GameManager* gm,
 
 void WorldMapScene::update()
 {
+	UpdateTerritory();
+	if (m_gameManager->career.officerMode && Rect(Scene::Width() - 250, 340, 200, 60).leftClicked())
+	{
+		m_sceneEnd = true;
+		m_nextScene = U"Career";
+		return;
+	}
 	// ★ セーブボタン
 	if (m_btnSave.leftClicked())
 	{
@@ -77,12 +85,21 @@ void WorldMapScene::update()
 			m_gameManager->year = loadedData->year;
 			m_gameManager->month = loadedData->month;
 			m_gameManager->playerFactionName = loadedData->playerFactionName;
+			m_gameManager->career = loadedData->career;
+			m_gameManager->territory = loadedData->territory;
+			m_gameManager->territoryReady = loadedData->territoryReady;
+			m_gameManager->turnManager.commandsUsed = loadedData->commandsUsed;
+			m_gameManager->pendingBattle = GameManager::PendingBattle{};
+			m_playerFaction.name = loadedData->playerFactionName;
+			m_sceneEnd = true;
+			m_nextScene = U"WorldMap";
+			return;
 			Print << U"📂 ロードしました！ " << loadedData->year << U"年" << loadedData->month << U"月";
 		}
 	}
 
 	// ★ 外交ボタン
-	if (m_btnDiplomacy.leftClicked())
+	if (m_btnDiplomacy.leftClicked() && !m_gameManager->career.officerMode)
 	{
 		m_sceneEnd = true;
 		m_nextScene = U"Diplomacy";
@@ -93,6 +110,7 @@ void WorldMapScene::update()
 		if (m_gameManager && m_allCities)
 		{
 			m_gameManager->advanceMonth(*m_allCities);
+			m_playerFaction.name = m_gameManager->playerFactionName;
 
 			int m = m_gameManager->month;
 
@@ -174,7 +192,7 @@ void WorldMapScene::update()
 				if (Circle(scaledPos, baseSize * 2).mouseOver())  // 城の2倍の範囲で判定
 				{
 					m_hovered = i;
-					if (MouseL.down() && c.owner == m_playerFaction.name)
+					if (MouseL.down() && c.owner == m_playerFaction.name && m_gameManager->career.CanManageCity(c.name))
 					{
 						m_selectedIndex = i;
 						m_sceneEnd = true;
@@ -236,54 +254,42 @@ void WorldMapScene::draw() const
 		double offsetY = mapArea.y + (mapArea.h - 820.0 * scale) / 2;
 
 		// =================================================================
-		// 🌏 領土の塗り分け（ボロノイ図 - 濃い色で塗りつぶし）
+		// 支配済み領地と未開拓地をグリッドで表示
 		// =================================================================
+		for (int i = 0; i < TerritoryMap::Count; ++i)
 		{
-			// ★ 解像度を上げる（6px → 2px）
-			for (int y = 0; y < static_cast<int>(mapArea.h); y += 2)
-			{
-				for (int x = 0; x < static_cast<int>(mapArea.w); x += 2)
-				{
-					Point pixel(static_cast<int>(mapArea.x) + x, static_cast<int>(mapArea.y) + y);
-
-					int closestIdx = -1;
-					double closestDist = 99999.0;
-
-					for (int i = 0; i < m_allCities->size(); ++i)
-					{
-						Vec2 scaledPos((*m_allCities)[i].pos.x * scale + offsetX,
-									   (*m_allCities)[i].pos.y * scale + offsetY);
-						Point cityPos(static_cast<int>(scaledPos.x), static_cast<int>(scaledPos.y));
-
-						double dist = pixel.distanceFrom(cityPos);
-						if (dist < closestDist)
-						{
-							closestDist = dist;
-							closestIdx = i;
-						}
-					}
-
-					if (closestIdx >= 0 && closestDist < 350 * scale)
-					{
-						const CityData& c = (*m_allCities)[closestIdx];
-						Color territoryColor = (c.owner == m_playerFaction.name) ? m_playerFaction.color : c.color;
-
-						double gradientFactor = 1.0 - (closestDist / (350 * scale));
-						double alpha = 0.5 + 0.2 * gradientFactor;
-
-						RectF(static_cast<double>(pixel.x), static_cast<double>(pixel.y), 2.0, 2.0)
-							.draw(ColorF(territoryColor, alpha));
-					}
-				}
-			}
+			const auto& cell = m_gameManager->territory.cells[i];
+			if (cell.city < 0 || cell.city >= static_cast<int>(m_allCities->size())) continue;
+			const auto& city = (*m_allCities)[cell.city];
+			const Color color = city.owner == m_playerFaction.name ? m_playerFaction.color : city.color;
+			const RectF tile(offsetX + (i % TerritoryMap::Columns) * TerritoryMap::CellWidth * scale,
+				offsetY + (i / TerritoryMap::Columns) * TerritoryMap::CellHeight * scale,
+				TerritoryMap::CellWidth * scale, TerritoryMap::CellHeight * scale);
+			tile.draw(cell.level > 0 ? ColorF(color, 0.3 + cell.level * 0.12) : ColorF(0.25, 0.23, 0.19, 0.5));
+			tile.drawFrame(0.5, ColorF(0.8, 0.75, 0.6, 0.15));
+			if (i == m_selectedTerritory) tile.drawFrame(2, Palette::Gold);
+		}
+		const auto territoryOwner = [&](int index) -> String
+		{
+			const auto& cell = m_gameManager->territory.cells[index];
+			return cell.level > 0 && cell.city >= 0 && cell.city < static_cast<int>(m_allCities->size())
+				? (*m_allCities)[cell.city].owner : U"";
+		};
+		for (int i = 0; i < TerritoryMap::Count; ++i)
+		{
+			const double x = offsetX + (i % TerritoryMap::Columns) * TerritoryMap::CellWidth * scale;
+			const double y = offsetY + (i / TerritoryMap::Columns) * TerritoryMap::CellHeight * scale;
+			const double w = TerritoryMap::CellWidth * scale, h = TerritoryMap::CellHeight * scale;
+			if (i % TerritoryMap::Columns + 1 < TerritoryMap::Columns && territoryOwner(i) != territoryOwner(i + 1))
+				Line(x + w, y, x + w, y + h).draw(1.5, ColorF(0.95, 0.9, 0.75, 0.75));
+			if (i / TerritoryMap::Columns + 1 < TerritoryMap::Rows && territoryOwner(i) != territoryOwner(i + TerritoryMap::Columns))
+				Line(x, y + h, x + w, y + h).draw(1.5, ColorF(0.95, 0.9, 0.75, 0.75));
 		}
 
 		// =================================================================
-		// 🔲 勢力境界線（太い白線）
+		// 都市間の連絡路
 		// =================================================================
 		{
-			HashSet<std::pair<int, int>> drawnBorders;  // 重複描画を防ぐ
-
 			for (int i = 0; i < m_allCities->size(); ++i)
 			{
 				const CityData& cityA = (*m_allCities)[i];
@@ -300,8 +306,7 @@ void WorldMapScene::draw() const
 					if (cityA.owner != cityB.owner)
 					{
 						// 太い白線（境界）
-						Line(posA, posB).draw(6, ColorF(0, 0, 0, 0.4));  // 影
-						Line(posA, posB).draw(4, ColorF(0.95, 0.93, 0.88));  // 白線
+						Line(posA, posB).draw(1, ColorF(0.9, 0.85, 0.7, 0.25));
 					}
 					else
 					{
@@ -606,13 +611,20 @@ void WorldMapScene::draw() const
 		FontAsset(U"menu")(U"外交").draw(m_btnDiplomacy.x + 60, m_btnDiplomacy.y + 20, Palette::White);
 	}
 
+	if (m_gameManager->career.officerMode)
+	{
+		Rect(Scene::Width() - 250, 340, 200, 60).draw(ColorF(0.25, 0.35, 0.4));
+		FontAsset(U"menu")(U"任務・身分").drawAt(Scene::Width() - 150, 370);
+		FontAsset(U"small")(m_gameManager->career.RoleName() + U" / 功績 " + Format(m_gameManager->career.merit)).draw(Scene::Width() - 250, 410);
+		FontAsset(U"small")(U"外交は君主が担当します").draw(Scene::Width() - 250, 445);
+	}
 	// =================================================================
 	// 📢 イベント通知（画面下部）
 	// =================================================================
 	if (m_gameManager && !m_gameManager->eventLog.isEmpty())
 	{
 		double notifY = Scene::Height() - 200;
-		RectF notifPanel(50, notifY, Scene::Width() - 100, 150);
+		RectF notifPanel(50, notifY, Scene::Width() - 500, 150);
 
 		// 背景
 		notifPanel.draw(ColorF(0.1, 0.1, 0.15, 0.95));
@@ -627,5 +639,6 @@ void WorldMapScene::draw() const
 			if (lineY > notifY + 140) break;  // 最大6行
 		}
 	}
+	DrawTerritoryPanel();
 }
 

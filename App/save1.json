@@ -1,4 +1,13 @@
 ﻿{
+  "career": {
+    "cityName": "",
+    "completedMonth": -1,
+    "governor": false,
+    "merit": 0,
+    "officerMode": false,
+    "officerName": "",
+    "report": "今月の任務を選んでください。"
+  },
   "cities": [
     {
       "agriculture": 80,
@@ -274,14 +283,14 @@
       "troops": 4000
     },
     {
-      "agriculture": 60,
+      "agriculture": 78,
       "barracks": 50,
       "colorB": 50,
       "colorG": 205,
       "colorR": 50,
       "commerce": 55,
       "food": 2500,
-      "gold": 1200,
+      "gold": 1100,
       "name": "下邳",
       "officers": [
         {
@@ -312,8 +321,8 @@
       "colorG": 205,
       "colorR": 50,
       "commerce": 50,
-      "food": 2000,
-      "gold": 1000,
+      "food": 1900,
+      "gold": 650,
       "name": "小沛",
       "officers": [
         {
@@ -324,11 +333,11 @@
           "power": 68
         }
       ],
-      "order": 60,
+      "order": 73,
       "owner": "劉備",
       "posX": 600,
       "posY": 500,
-      "troops": 2500
+      "troops": 2700
     },
     {
       "agriculture": 70,
@@ -463,9 +472,3052 @@
       "troops": 3000
     }
   ],
+  "commandsUsed": 4,
   "month": 1,
   "playTimeSeconds": 0,
   "playerFactionName": "劉備",
-  "saveDateTime": "2026-06-10 19:18:05",
+  "saveDateTime": "2026-10-07 15:37:24",
+  "territory": [
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 1
+    },
+    {
+      "city": 3,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 1
+    },
+    {
+      "city": 3,
+      "level": 1
+    },
+    {
+      "city": 3,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 0
+    },
+    {
+      "city": 3,
+      "level": 1
+    },
+    {
+      "city": 3,
+      "level": 1
+    },
+    {
+      "city": 3,
+      "level": 1
+    },
+    {
+      "city": 4,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 13,
+      "level": 1
+    },
+    {
+      "city": 13,
+      "level": 1
+    },
+    {
+      "city": 13,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 5,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 13,
+      "level": 1
+    },
+    {
+      "city": 13,
+      "level": 1
+    },
+    {
+      "city": 13,
+      "level": 1
+    },
+    {
+      "city": 13,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 5,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 0,
+      "level": 1
+    },
+    {
+      "city": 0,
+      "level": 1
+    },
+    {
+      "city": 0,
+      "level": 1
+    },
+    {
+      "city": 13,
+      "level": 1
+    },
+    {
+      "city": 8,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 9,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 0
+    },
+    {
+      "city": 2,
+      "level": 1
+    },
+    {
+      "city": 1,
+      "level": 1
+    },
+    {
+      "city": 1,
+      "level": 1
+    },
+    {
+      "city": 0,
+      "level": 1
+    },
+    {
+      "city": 0,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 1
+    },
+    {
+      "city": 8,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 9,
+      "level": 0
+    },
+    {
+      "city": 9,
+      "level": 0
+    },
+    {
+      "city": 9,
+      "level": 1
+    },
+    {
+      "city": 9,
+      "level": 1
+    },
+    {
+      "city": 1,
+      "level": 1
+    },
+    {
+      "city": 1,
+      "level": 1
+    },
+    {
+      "city": 1,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 1
+    },
+    {
+      "city": 8,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 1
+    },
+    {
+      "city": 9,
+      "level": 1
+    },
+    {
+      "city": 9,
+      "level": 1
+    },
+    {
+      "city": 9,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 1
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 1
+    },
+    {
+      "city": 10,
+      "level": 1
+    },
+    {
+      "city": 9,
+      "level": 1
+    },
+    {
+      "city": 9,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 1
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 1
+    },
+    {
+      "city": 10,
+      "level": 1
+    },
+    {
+      "city": 10,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 1
+    },
+    {
+      "city": 10,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 1
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": 7,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 10,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 11,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 12,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": 6,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    },
+    {
+      "city": -1,
+      "level": 0
+    }
+  ],
   "year": 184
 }

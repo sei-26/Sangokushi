@@ -1028,6 +1028,7 @@ void BattleGameManager::ApplyBattleResult(CityData& atkCity, CityData& defCity)
 		{
 			atkCity.troops = playerSurvivors;
 			defCity.owner = atkCity.owner;
+			defCity.color = atkCity.color;
 			defCity.troops = 500;
 			defCity.order = Max(0, defCity.order - 50);
 		}
@@ -1049,6 +1050,7 @@ void BattleGameManager::ApplyBattleResult(CityData& atkCity, CityData& defCity)
 			atkCity.troops = enemySurvivors;
 			defCity.troops = 500;
 			defCity.owner = atkCity.owner;
+			defCity.color = atkCity.color;
 			defCity.order = Max(0, defCity.order - 50);
 		}
 	}

@@ -14,6 +14,10 @@ public:
 	int getSelectedCityIndex() const { return m_selectedIndex; }
 
 private:
+	int m_selectedTerritory = -1;
+	String m_territoryMessage = U"地図を右クリックして領地を選択";
+	void UpdateTerritory();
+	void DrawTerritoryPanel() const;
 	GameManager* m_gameManager;
 	Faction m_playerFaction;
 	Array<CityData>* m_allCities;

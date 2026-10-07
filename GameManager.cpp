@@ -7,18 +7,12 @@
 
 void GameManager::advanceMonth(Array<CityData>& cities)
 {
+	EnsureTerritory(cities);
 	month++;
 	if (month > 12)
 	{
 		month = 1;
 		year++;
-	}
-
-	// ★ オートセーブ（3ヶ月ごと）
-	if (month % 3 == 1)
-	{
-		SaveData autoSaveData = CreateSaveData(cities);
-		SaveLoadManager::AutoSave(autoSaveData);
 	}
 
 	// ★ 外交の月次処理
@@ -30,10 +24,8 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 	// ★ 忠誠度更新
 	LoyaltyManager::UpdateLoyalty(cities);
 
-	AudioManager audio;
-
 	// ★ 裏切りチェック
-	auto betrayalLog = LoyaltyManager::CheckBetrayal(cities);
+	auto betrayalLog = LoyaltyManager::CheckBetrayal(cities, career.officerMode ? career.officerName : U"");
 	for (const auto& log : betrayalLog)
 	{
 		Print << U"[裏切り] " << log;
@@ -68,6 +60,11 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 
 	// ★ 月次収入（商業・農業）
 	EconomyManager::ApplyMonthlyIncome(cities);
+	for (int i = 0; i < static_cast<int>(cities.size()); ++i)
+	{
+		cities[i].gold += territory.CityGold(i);
+		cities[i].food += territory.CityFood(i);
+	}
 
 	// ★ 兵士維持費
 	EconomyManager::ApplyTroopMaintenance(cities);
@@ -80,12 +77,20 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 	for (auto& city : cities)
 	{
 		// ★ プレイヤー勢力の都市はスキップ
-		if (city.owner == playerFactionName)
+		if (city.owner == playerFactionName && career.CanManageCity(city.name))
 		{
 			continue;
 		}
 
 		AIController::ExecuteAdministration(city);
+		const int cityIndex = static_cast<int>(&city - cities.data());
+		for (int i = 0; i < TerritoryMap::Count; ++i)
+			if (territory.cells[i].city == cityIndex && territory.CanClaim(i) && city.gold >= 100)
+			{
+				territory.Claim(i);
+				city.gold -= 100;
+				break;
+			}
 	}
 
 	// =================================================================
@@ -98,7 +103,7 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 		CityData& aiCity = cities[i];
 
 		// ★ プレイヤー勢力の都市はスキップ（手動で戦争）
-		if (aiCity.owner == playerFactionName)
+		if (aiCity.owner == playerFactionName && career.CanManageCity(aiCity.name))
 		{
 			continue;
 		}
@@ -113,7 +118,7 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 			CityData& targetCity = cities[targetIndex];
 
 			// ★★★ 重要：プレイヤー都市への攻撃は pendingBattle にセットして防衛戦へ ★★★
-			if (targetCity.owner == playerFactionName)
+			if (targetCity.owner == playerFactionName && (!career.officerMode || targetCity.name == career.cityName))
 			{
 				Print << U"[防衛戦] " << aiCity.owner << U"(" << aiCity.name << U") が "
 					<< targetCity.name << U" に侵攻してきた！";
@@ -163,4 +168,21 @@ void GameManager::advanceMonth(Array<CityData>& cities)
 			Print << U"  " << log;
 		}
 	}
+	// Follow the protagonist if transferred or if their city changes hands.
+	if (career.officerMode && !career.officerName.isEmpty())
+	{
+		for (const auto& city : cities)
+			for (const auto& officer : city.officers)
+				if (officer.name == career.officerName)
+				{
+					if (city.owner != playerFactionName || city.name != career.cityName)
+					{
+						career.governor = false;
+						career.report = U"所属または配置が変わり、一般武将として再出発します。";
+					}
+					playerFactionName = city.owner;
+					career.cityName = city.name;
+				}
+	}
+	if (month % 3 == 1) SaveLoadManager::AutoSave(CreateSaveData(cities));
 }

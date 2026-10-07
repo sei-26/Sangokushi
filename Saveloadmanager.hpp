@@ -2,10 +2,16 @@
 #include <Siv3D.hpp>
 #include "CityData.hpp"
 #include "Faction.hpp"
+#include "PlayerCareer.hpp"
+#include "TerritoryMap.hpp"
 
 // セーブデータ構造
 struct SaveData
 {
+	PlayerCareer career;
+	TerritoryMap territory;
+	bool territoryReady = false;
+	int commandsUsed = 0;
 	int year = 200;
 	int month = 1;
 	String playerFactionName;
@@ -18,6 +24,20 @@ struct SaveData
 	{
 		JSON json;
 		json[U"year"] = year;
+		json[U"career"] = career.toJSON();
+		json[U"commandsUsed"] = commandsUsed;
+		if (territoryReady)
+		{
+			Array<JSON> cells;
+			for (const auto& cell : territory.cells)
+			{
+				JSON j;
+				j[U"city"] = cell.city;
+				j[U"level"] = cell.level;
+				cells.push_back(j);
+			}
+			json[U"territory"] = cells;
+		}
 		json[U"month"] = month;
 		json[U"playerFactionName"] = playerFactionName;
 		json[U"saveDateTime"] = saveDateTime.format(U"yyyy-MM-dd HH:mm:ss");
@@ -75,6 +95,8 @@ struct SaveData
 		}
 
 		data.year = json[U"year"].get<int>();
+		if (json.hasElement(U"career")) data.career = PlayerCareer::fromJSON(json[U"career"]);
+		if (json.hasElement(U"commandsUsed")) data.commandsUsed = Clamp(json[U"commandsUsed"].get<int>(), 0, 4);
 		data.month = json[U"month"].get<int>();
 		data.playerFactionName = json[U"playerFactionName"].getString();
 		data.playTimeSeconds = json[U"playTimeSeconds"].get<int>();
@@ -121,6 +143,20 @@ struct SaveData
 			data.cities.push_back(city);
 		}
 
+		if (json.hasElement(U"territory"))
+		{
+			const auto savedCells = json[U"territory"].arrayView();
+			int index = 0;
+			for (const auto& j : savedCells)
+			{
+				if (index >= TerritoryMap::Count) return none;
+				const int city = j[U"city"].get<int>(), level = j[U"level"].get<int>();
+				if (city < -1 || city >= static_cast<int>(data.cities.size()) || level < 0 || level > 3 || (city == -1 && level != 0)) return none;
+				data.territory.cells[index++] = {city, level};
+			}
+			if (index != TerritoryMap::Count) return none;
+			data.territoryReady = true;
+		}
 		return data;
 	}
 };

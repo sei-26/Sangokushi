@@ -36,4 +36,5 @@ private:
 	Array<CityData>& m_cities;
 	Array<Faction> m_factions;
 	int m_selectedIndex = -1;
+	bool m_officerMode = false;
 };

@@ -46,7 +46,7 @@ public:
 	}
 
 	// 裏切りチェック
-	static Array<String> CheckBetrayal(Array<CityData>& cities)
+	static Array<String> CheckBetrayal(Array<CityData>& cities, const String& protectedOfficer = U"")
 	{
 		Array<String> betrayalLog;
 
@@ -56,7 +56,7 @@ public:
 
 			for (auto& officer : city.officers)
 			{
-				if (officer.MayBetray() && RandomBool(0.3))  // 30%の確率で裏切り
+				if (officer.name != protectedOfficer && officer.MayBetray() && RandomBool(0.3))
 				{
 					betrayalLog.push_back(officer.name + U" が " + city.owner + U" を裏切りました！");
 

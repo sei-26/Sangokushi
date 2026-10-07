@@ -12,6 +12,7 @@
 #include "AttackSelectScene.hpp"
 #include "ArmyConfigScene.hpp"
 #include "BattleMapScene.hpp"
+#include "CareerScene.hpp"
 GameSceneManager::GameSceneManager(GameManager* gm, const Faction& playerFaction, const Array<CityData>& cities, AudioManager* audio)
 	: m_currentScene(nullptr)
 	, m_gameManager(gm)
@@ -31,6 +32,8 @@ GameSceneManager::~GameSceneManager()
 
 void GameSceneManager::update()
 {
+	if (m_currentSceneName != U"Title" && m_currentSceneName != U"FactionSelect")
+		m_playerFaction.name = m_gameManager->playerFactionName;
 	// 勝利判定（タイトル・勢力選択中はスキップ）
 	if (m_currentSceneName != U"Title" && m_currentSceneName != U"FactionSelect")
 	{
@@ -116,6 +119,11 @@ void GameSceneManager::update()
 				// ここで m_gameManager と m_cities を渡す
 				m_currentScene = new FactionSelectScene(m_gameManager, m_cities);
 				m_currentSceneName = U"FactionSelect";
+			}
+			else if (next == U"Career")
+			{
+				m_currentScene = new CareerScene(m_gameManager, &m_cities);
+				m_currentSceneName = U"Career";
 			}
 			else if (next == U"WorldMap")
 			{

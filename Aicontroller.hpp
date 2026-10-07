@@ -192,6 +192,7 @@ public:
 
 			// 都市を奪取
 			defender.owner = attacker.owner;
+			defender.color = attacker.color;
 			defender.troops = attacker.troops / 2;  // 守備隊を残す
 			attacker.troops -= defender.troops;
 
