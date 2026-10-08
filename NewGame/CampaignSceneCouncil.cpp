@@ -7,6 +7,18 @@ using namespace campaignui;
 
 void CampaignScene::updateCouncil()
 {
+	if (m_councilMode == 3)
+	{
+		updateAssignments();
+		return;
+	}
+	if (Rect(330, 114, 200, 30).leftClicked() && m_councilMode == 1)
+	{
+		m_councilMode = 3;
+		m_rosterFaction = m_game.player;
+		m_inspect = m_game.player * 6;
+		return;
+	}
 	if (button(19).leftClicked() || KeyEscape.down())
 	{
 		m_councilMode = 0;
@@ -88,12 +100,19 @@ void CampaignScene::updateCouncil()
 
 void CampaignScene::drawCouncil() const
 {
+	if (m_councilMode == 3)
+	{
+		drawAssignments();
+		return;
+	}
 	Scene::Rect().draw(ColorF(0.02, 0.04, 0.06, 0.82));
 	Rect(60, 102, Scene::Width() - 120, Scene::Height() - 176)
 	    .rounded(8)
 	    .draw(ColorF(0.09, 0.14, 0.17))
 	    .drawFrame(2, ColorF(0.49, 0.60, 0.55));
 	DrawButton(button(19), U"閉じる");
+	if (m_councilMode == 1)
+		DrawButton(Rect(330, 114, 200, 30), U"武将配置へ");
 	const auto label = [&](const String& value, int x, int y) {
 		FontAsset(U"campaignBody")(value).draw(x, y, ColorF(0.87, 0.90, 0.84));
 	};
@@ -119,7 +138,7 @@ void CampaignScene::drawCouncil() const
 		      390, Scene::Height() - 118);
 		return;
 	}
-	label(U"武将・評定 — 個性と人のつながりを活かす", 80, 115);
+	label(U"武将・評定", 80, 115);
 	DrawButton(button(20), text(Campaign::FactionName(m_rosterFaction)) + U"軍の武将 / 切替");
 	int row = 0;
 	for (int member = 0; member < static_cast<int>(m_game.generals.size()); ++member)

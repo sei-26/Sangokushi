@@ -69,6 +69,12 @@ void StoryPresentation::Board(const hero::Story& s, int selected, const RectF& r
 					Triangle(p + Vec2(0, -z * .18), p + Vec2(-z * .12, z * .08), p + Vec2(z * .12, z * .08))
 					    .draw(ColorF(.10, .23, .14));
 				}
+			if (s.ObjectiveTile() == tile)
+			{
+				c.draw(ColorF(.94, .69, .22, .22)).drawFrame(3, ColorF(.97, .77, .33));
+				FontAsset(U"campaignSmall")(s.objectiveProgress >= 2 ? U"確保" : U"拠点")
+				    .drawAt(c.center(), ColorF(.99, .88, .61));
+			}
 			if (s.chapter == 3 && x == 10 && y == 3)
 			{
 				c.draw(ColorF(.83, .64, .23, .22)).drawFrame(3, ColorF(.96, .78, .34));
@@ -78,11 +84,22 @@ void StoryPresentation::Board(const hero::Story& s, int selected, const RectF& r
 			{
 				const auto& a = s.units[selected];
 				int d = std::abs(x - a.x) + std::abs(y - a.y), u = s.At(x, y);
+				if (s.deepRules && a.hp > 0 && !a.acted && terrain != 2)
+					for (const auto& e : s.units)
+						if (e.enemy && e.hp > 0 && !e.stunned &&
+						    std::abs(e.x - x) + std::abs(e.y - y) <= e.range &&
+						    battle::ClearRay(e.x, e.y, x, y, [&](int xx, int yy) {
+							    return s.terrain[yy * hero::W + xx] == 1 || s.terrain[yy * hero::W + xx] == 2;
+						    }))
+						{
+							c.drawFrame(1.8, ColorF(.94, .34, .19, .65));
+							break;
+						}
 				if (a.hp > 0 && !a.acted && terrain != 2)
 				{
-					if (d == 1 && u < 0)
+					if (d == 1 && u < 0 && (!s.deepRules || !a.moved))
 						c.draw(ColorF(.48, .75, .56, .18));
-					if (u >= 0 && s.units[u].enemy && d <= a.range)
+					if (u >= 0 && s.units[u].enemy && s.CanAttack(selected, u))
 						c.draw(ColorF(.95, .25, .13, .25));
 				}
 			}
@@ -117,6 +134,8 @@ void StoryPresentation::Board(const hero::Story& s, int selected, const RectF& r
 		RectF(p.x - z * .34, p.y + z * .34, z * .68, 4).draw(ColorF(.06));
 		RectF(p.x - z * .34, p.y + z * .34, z * .68 * u.hp / u.maxHp, 4)
 		    .draw(u.hp <= u.maxHp / 3 ? ColorF(.90, .27, .15) : ColorF(.72, .83, .42));
+		if (u.guarding)
+			FontAsset(U"campaignSmall")(U"守").drawAt(p.movedBy(z * .32, -z * .32), ColorF(.6, .88, .92));
 		if (u.stunned > 0)
 			FontAsset(U"campaignSmall")(U"足止").drawAt(p.movedBy(0, z * .17), ColorF(.95, .84, .45));
 	}

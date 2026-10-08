@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "StoryBook.hpp"
 #include "OfficerCore.hpp"
+#include "BattleCore.hpp"
 #include <algorithm>
 #include <queue>
 #include <vector>
@@ -14,6 +15,11 @@ namespace hero
 		int hero = -1, x = 0, y = 0, hp = 8, maxHp = 8, attack = 2, range = 1;
 		bool enemy = false, civilian = false, acted = false, skillUsed = false;
 		int stunned = 0;
+		bool moved = false, guarding = false;
+	};
+	struct EnemyIntent
+	{
+		int target = -1, next = -1;
 	};
 	class Story
 	{
@@ -23,6 +29,10 @@ namespace hero
 		bool failed = false, fireUsed = false;
 		int spirit = 20, battleEvent = 0, eventMask = 0, rallies = 0;
 		int planner = 1;
+		bool deepRules = true;
+		int objectiveProgress = 0;
+		std::array<int, 3> civilActions{};
+		std::array<int, 6> outcomes{};
 		std::vector<officer::Bond> relationships{{1, 2, 40}};
 		std::vector<int> battleDecisions;
 		std::array<int, 6> bonds{{50, 40, 40, 30, 20, 20}};
@@ -57,9 +67,19 @@ namespace hero
 		int StepToward(int index, int targetX, int targetY) const;
 		void CheckBattle();
 		bool Act(int index, int x, int y);
+		bool Guard(int index);
+		bool CanAttack(int index, int target) const;
+		int ObjectiveTile() const;
+		bool VowRequired() const;
+		bool ObjectiveMet() const;
+		std::u32string ObjectiveName() const;
+		std::u32string ObjectiveHelp() const;
+		std::u32string ChoiceImpact(int choice) const;
+		void AdvanceObjective();
 		bool Skill(int index);
 		bool FireSignal();
 		void EndTurn();
+		EnemyIntent PlanEnemy(int index) const;
 		std::u32string Ending() const;
 	};
 } // namespace hero

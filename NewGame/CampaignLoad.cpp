@@ -7,7 +7,7 @@ namespace frontline
 		try
 		{
 			const int version = json[U"version"].get<int>();
-			if (version < 1 || version > 4)
+			if (version < 1 || version > 8)
 				return false;
 			const int player = json[U"player"].get<int>(), day = json[U"day"].get<int>(),
 			          commands = json[U"commands"].get<int>();
@@ -33,6 +33,29 @@ namespace frontline
 				loaded.Reset(player);
 			loaded.day = day;
 			loaded.commands = commands;
+			if (version >= 8)
+			{
+				int count = 0;
+				for (const auto& v : json[U"aiPlannedDay"].arrayView())
+				{
+					int d = v.get<int>();
+					if (count >= 3 || d < -1 || d > day)
+						return false;
+					loaded.aiPlannedDay[count++] = d;
+				}
+				if (count != 3)
+					return false;
+				count = 0;
+				for (const auto& v : json[U"aiCommands"].arrayView())
+				{
+					int c = v.get<int>();
+					if (count >= 3 || c < 0 || c > 3)
+						return false;
+					loaded.aiCommands[count++] = c;
+				}
+				if (count != 3)
+					return false;
+			}
 			const auto tileIndex = [&](int p) {
 				if (!oldGrid)
 					return p;
@@ -239,6 +262,8 @@ namespace frontline
 				a.tile = tileIndex(a.tile);
 				a.target = tileIndex(a.target);
 				a.food = j[U"food"].get<int>();
+				if (version >= 6)
+					a.cargoFood = j[U"cargoFood"].get<int>();
 				a.morale = j[U"morale"].get<int>();
 				a.movement = j[U"movement"].get<int>();
 				const int arm = j[U"arm"].get<int>();
@@ -248,11 +273,19 @@ namespace frontline
 				    a.general >= static_cast<int>(loaded.generals.size()) || !Campaign::Valid(a.tile) ||
 				    !Campaign::Valid(a.target) || a.troops < 0 || a.troops > 1000000 || a.food < 0 ||
 				    a.food > 1000000 || a.morale < 0 || a.morale > 100 || a.movement < 0 || a.movement > 12 ||
-				    arm < 0 || arm > 3)
+				    arm < 0 || arm > (version >= 6 ? 4 : 3) || a.cargoFood < 0 || a.cargoFood > 20000 ||
+				    (arm != 4 && a.cargoFood != 0) || (a.troops == 0 && a.cargoFood != 0))
 					return false;
 				if (version == 1 && a.general >= 18)
 					return false;
 				a.arm = static_cast<Arm>(arm);
+				if (version >= 7)
+				{
+					const int stance = j[U"stance"].get<int>();
+					if (stance < 0 || stance > 2 || (a.arm == Arm::Transport && stance != 0))
+						return false;
+					a.stance = static_cast<battle::Stance>(stance);
+				}
 				if (version >= 3)
 				{
 					a.tacticLeft = j[U"tacticLeft"].get<int>();
@@ -263,6 +296,9 @@ namespace frontline
 					    (a.tacticQueued && (a.troops <= 0 || a.tacticReadyDay > day || a.morale < 30)))
 						return false;
 				}
+				if (a.arm == Arm::Transport && (a.tacticQueued || a.tacticLeft != 0 ||
+				                                (a.target != a.tile && loaded.CityAt(a.target) < 0)))
+					return false;
 				if (loaded.Cost(a.tile, a.arm) >= 100000 || loaded.Cost(a.target, a.arm) >= 100000 ||
 				    a.faction != loaded.generals[a.general].faction)
 					return false;
@@ -274,9 +310,30 @@ namespace frontline
 				}
 				loaded.armies.push_back(a);
 				if (a.troops > 0 &&
-				    !loaded.Order(static_cast<int>(loaded.armies.size()) - 1, a.target, a.retreat))
+				    !loaded.Order(static_cast<int>(loaded.armies.size()) - 1, a.target, a.retreat) &&
+				    a.arm != Arm::Transport)
 					return false;
 			}
+			if (version >= 5)
+				for (const auto& j : json[U"assignments"].arrayView())
+				{
+					Assignment move{j[U"general"].get<int>(), j[U"from"].get<int>(), j[U"to"].get<int>(),
+					                j[U"faction"].get<int>(), j[U"left"].get<int>()};
+					if (loaded.assignments.size() >= loaded.generals.size() || move.general < 0 ||
+					    move.general >= static_cast<int>(loaded.generals.size()) || move.from < 0 ||
+					    move.to < 0 || move.from >= static_cast<int>(loaded.cities.size()) ||
+					    move.to >= static_cast<int>(loaded.cities.size()) || move.from == move.to ||
+					    move.faction < 0 || move.faction > 2 || move.left < 1 || move.left > 180)
+						return false;
+					const auto& officer = loaded.generals[move.general];
+					if (assigned[move.general] || officer.faction != move.faction ||
+					    officer.home != move.from || officer.readyDay > day ||
+					    loaded.cities[move.from].owner != move.faction ||
+					    loaded.cities[move.to].owner != move.faction)
+						return false;
+					assigned[move.general] = true;
+					loaded.assignments.push_back(move);
+				}
 			bool all = true, any = false;
 			for (const auto& c : loaded.cities)
 			{

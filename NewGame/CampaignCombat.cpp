@@ -7,8 +7,8 @@ namespace frontline
 		if (index < 0 || index >= static_cast<int>(armies.size()))
 			return false;
 		auto& a = armies[index];
-		if (a.troops <= 0 || (!ai && a.faction != player) || a.tacticQueued || a.tacticReadyDay > day ||
-		    a.morale < 30)
+		if (a.arm == Arm::Transport || a.troops <= 0 || (!ai && a.faction != player) || a.tacticQueued ||
+		    a.tacticReadyDay > day || a.morale < 30)
 			return false;
 		const auto t = generals[a.general].tactic;
 		if (t == Tactic::Volley && a.arm != Arm::Bow)
@@ -39,7 +39,7 @@ namespace frontline
 		int count = 0;
 		for (int n : Neighbors(tile))
 			if (std::any_of(armies.begin(), armies.end(), [&](const Army& a) {
-				    return a.troops > 0 && a.faction == faction && a.tile == n;
+				    return a.arm != Arm::Transport && a.troops > 0 && a.faction == faction && a.tile == n;
 			    }))
 				++count;
 		return count;

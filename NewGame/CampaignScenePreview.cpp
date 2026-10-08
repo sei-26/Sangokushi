@@ -7,10 +7,58 @@ using namespace campaignui;
 
 void CampaignScene::preview(int mode)
 {
+	if (mode == 20)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_camera.Fit(Width, Height);
+		m_camera.zoom = 3.5;
+		m_camera.x = 49;
+		m_camera.y = 34;
+		m_army = m_game.Deploy(2, 4, 3000, Arm::Bow);
+		m_game.SetStance(m_army, battle::Stance::Guard);
+		m_game.Order(m_army, m_game.cities[3].tile);
+		m_city = -1;
+		m_message = U"固守する弓兵と、攻勢の突破役。林・山に遮られない射線を選ぼう。";
+		return;
+	}
+	if (mode == 16)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_camera.Fit(Width, Height);
+		m_councilMode = 3;
+		m_inspect = 19;
+		m_assignmentTarget = 9;
+		m_game.AssignOfficer(19, 9);
+		return;
+	}
 	if (mode == 11)
 	{
 		m_started = false;
 		m_storyActive = false;
+		return;
+	}
+	if (mode == 17 || mode == 18)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_camera.Fit(Width, Height);
+		m_camera.zoom = 4;
+		m_camera.x = 22;
+		m_camera.y = 40;
+		m_city = 0;
+		m_tab = 2;
+		m_transportTarget = 9;
+		m_generalChoice = 2;
+		m_message = U"後方の蓄えを街道で運び、前線を支えよう。";
+		if (mode == 17)
+		{
+			m_army = m_game.DispatchTransport(0, 19, 9, 10000);
+			m_city = -1;
+			for (int d = 0; d < 5; ++d)
+				m_game.AdvanceDay();
+		}
 		return;
 	}
 	if (mode == 14 || mode == 15)

@@ -32,15 +32,15 @@ Rect CampaignScene::button(int index) const
 	case 8:
 		return Rect(x + 12, 260, 282, 34);
 	case 9:
-		return Rect(x + 12, 302, 282, 34);
+		return Rect(x + 12, 302, 134, 34);
 	case 10:
 		return Rect(x + 12, Scene::Height() - 182, 134, 34);
 	case 11:
 		return Rect(x + 158, Scene::Height() - 182, 136, 34);
 	case 13:
-		return Rect(x + 12, 242, 134, 30);
+		return Rect(x + 12, 242, 90, 30);
 	case 14:
-		return Rect(x + 158, 242, 136, 30);
+		return Rect(x + 108, 242, 90, 30);
 	case 15:
 		return Rect(225, 65, 170, 24);
 	case 16:
@@ -73,6 +73,16 @@ Rect CampaignScene::button(int index) const
 		return Rect(80, Scene::Height() - 120, 134, 30);
 	case 30:
 		return Rect(228, Scene::Height() - 120, 134, 30);
+	case 44:
+		return Rect(x + 158, 302, 136, 34);
+	case 43:
+		return Rect(x + 12, 386, 282, 34);
+	case 40:
+		return Rect(x + 204, 242, 90, 30);
+	case 41:
+		return Rect(x + 12, 370, 282, 34);
+	case 42:
+		return Rect(x + 12, 458, 282, 34);
 	case 39:
 		return Rect(x + 12, 344, 282, 34);
 	default:

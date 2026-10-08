@@ -34,6 +34,8 @@ namespace frontline
 
 	std::u32string Campaign::ArmName(Arm a)
 	{
+		if (a == Arm::Transport)
+			return U"輸送隊";
 		return a == Arm::Spear ? U"槍兵" : a == Arm::Bow ? U"弓兵" : a == Arm::Siege ? U"攻城隊" : U"騎兵";
 	}
 
@@ -66,6 +68,9 @@ namespace frontline
 		generals.clear();
 		bonds.clear();
 		missions.clear();
+		assignments.clear();
+		aiPlannedDay.fill(-1);
+		aiCommands.fill(3);
 		chronicle.clear();
 		truceUntil = {};
 		randomState = 89173;

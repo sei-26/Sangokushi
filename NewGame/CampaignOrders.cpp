@@ -9,9 +9,9 @@ namespace frontline
 		switch (tiles[tile].terrain)
 		{
 		case Terrain::Mountain:
-			return arm == Arm::Siege ? 9 : 6;
+			return (arm == Arm::Siege || arm == Arm::Transport) ? 9 : 6;
 		case Terrain::Forest:
-			return arm == Arm::Cavalry || arm == Arm::Siege ? 6 : 4;
+			return arm == Arm::Cavalry || arm == Arm::Siege || arm == Arm::Transport ? 6 : 4;
 		case Terrain::River:
 			return 9;
 		default:
@@ -40,6 +40,11 @@ namespace frontline
 				break;
 			for (int n : Neighbors(p))
 			{
+				if (arm == Arm::Transport && (tiles[n].owner != faction ||
+				                              std::any_of(armies.begin(), armies.end(), [&](const Army& a) {
+					                              return a.troops > 0 && a.faction != faction && a.tile == n;
+				                              })))
+					continue;
 				const int city = CityAt(n);
 				if (faction >= 0 && city >= 0 && cities[city].owner != faction && n != to)
 					continue;
@@ -66,7 +71,11 @@ namespace frontline
 		if (index < 0 || index >= static_cast<int>(armies.size()) || armies[index].troops <= 0 ||
 		    !Valid(target))
 			return false;
+		const auto& unit = armies[index];
 		const int city = CityAt(target);
+		if (unit.arm == Arm::Transport && target != unit.tile &&
+		    (city < 0 || cities[city].owner != unit.faction))
+			return false;
 		if (city >= 0 && cities[city].owner != armies[index].faction &&
 		    !Hostile(armies[index].faction, cities[city].owner))
 			return false;
@@ -82,6 +91,8 @@ namespace frontline
 
 	int Campaign::Deploy(int city, int general, int soldiers, Arm arm, bool ai)
 	{
+		if (arm < Arm::Spear || arm > Arm::Cavalry)
+			return -1;
 		if (city < 0 || city >= static_cast<int>(cities.size()) || general < 0 ||
 		    general >= static_cast<int>(generals.size()) || soldiers < 1000 || soldiers > 6000)
 			return -1;
@@ -127,11 +138,19 @@ namespace frontline
 
 	void Campaign::Return(Army& a, int city)
 	{
+		if (a.troops <= 0 || cities[city].owner != a.faction)
+			return;
 		cities[city].troops += a.troops;
-		cities[city].food += a.food;
+		cities[city].food += a.food + a.cargoFood;
+		if (a.arm == Arm::Transport)
+			Note(generals[a.general].name + U"が" + cities[city].name + U"へ兵糧を届けた。");
+		a.cargoFood = 0;
 		generals[a.general].home = city;
 		Note(generals[a.general].name + U"が" + cities[city].name + U"に帰還。");
 		a.troops = 0;
+		a.path.clear();
+		a.tacticQueued = false;
+		a.tacticLeft = 0;
 	}
 } // namespace frontline
 
@@ -145,12 +164,49 @@ namespace frontline
 			auto& a = armies[i];
 			if (a.troops <= 0)
 				continue;
-			if (!a.retreat && fighting[i])
+			if (a.arm == Arm::Transport)
+			{
+				const int destination = CityAt(a.target);
+				if (destination >= 0 && cities[destination].owner != a.faction)
+				{
+					a.target = a.tile;
+					a.path.clear();
+					for (int c = 0; c < static_cast<int>(cities.size()); ++c)
+						if (cities[c].owner == a.faction && Order(i, cities[c].tile, true))
+							break;
+					Note(generals[a.general].name + U"の輸送先が陥落。安全な帰還路を探す。");
+				}
+				if (a.tile == a.target && CityAt(a.tile) >= 0 && cities[CityAt(a.tile)].owner == a.faction)
+				{
+					Return(a, CityAt(a.tile));
+					continue;
+				}
+				if (a.tile != a.target && day % 5 == 0 &&
+				    (a.path.empty() || tiles[a.path.front()].owner != a.faction ||
+				     std::any_of(armies.begin(), armies.end(), [&](const Army& b) {
+					     return b.troops > 0 && b.faction != a.faction && b.tile == a.path.front();
+				     })))
+					a.path = Route(a.tile, a.target, a.arm, a.faction);
+			}
+			if (a.arm != Arm::Transport && !a.retreat && fighting[i])
 				continue;
-			a.movement = std::min(12, a.movement + (a.arm == Arm::Cavalry ? 4 : a.arm == Arm::Siege ? 2 : 3));
+			a.movement =
+			    std::min(12, a.movement + (a.stance == battle::Stance::Guard
+			                                   ? 2
+			                                   : (a.arm == Arm::Cavalry                              ? 4
+			                                      : (a.arm == Arm::Siege || a.arm == Arm::Transport) ? 2
+			                                                                                         : 3)));
 			if (a.path.empty())
+			{
+				const int currentCity = CityAt(a.tile);
+				if (a.retreat && a.target == a.tile && currentCity >= 0 &&
+				    cities[currentCity].owner == a.faction)
+					Return(a, currentCity);
 				continue;
+			}
 			const int next = a.path.front(), city = CityAt(next);
+			if (a.arm == Arm::Transport && tiles[next].owner != a.faction)
+				continue;
 			if (a.movement < Cost(next, a.arm) || (city >= 0 && cities[city].owner != a.faction))
 				continue;
 			bool blocked = false;

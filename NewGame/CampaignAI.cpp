@@ -1,5 +1,4 @@
 ﻿#include "Campaign.hpp"
-
 namespace frontline
 {
 	void Campaign::BeginTurn()
@@ -8,52 +7,71 @@ namespace frontline
 			return;
 		for (int f = 0; f < 3; ++f)
 		{
-			if (f == player)
+			if (f == player || aiPlannedDay[f] == day)
 				continue;
-			for (int c = 0; c < static_cast<int>(cities.size()); ++c)
+			if (aiPlannedDay[f] < 0 || aiPlannedDay[f] / 10 != day / 10)
+				aiCommands[f] = 3;
+			aiPlannedDay[f] = day;
+			// Re-evaluate after each successful action: officers and stores may now be reserved.
+			while (aiCommands[f] > 0)
 			{
-				if (cities[c].owner == f && cities[c].worker < 0)
-				{
-					const auto staff = Available(c);
-					const auto duty = static_cast<Duty>((day / 30 + c) % 4);
-					if (!staff.empty())
+				const auto plan = AIPlan(f);
+				bool acted = false;
+				for (const auto& order : plan)
+					if (ExecuteAI(f, order))
 					{
-						const int g = *std::max_element(staff.begin(), staff.end(), [&](int a, int b) {
-							return WorkGain(a, duty) * 10 - generals[a].leadership / 3 <
-							       WorkGain(b, duty) * 10 - generals[b].leadership / 3;
-						});
-						Develop(c, g, duty, true);
+						--aiCommands[f];
+						acted = true;
+						break;
 					}
-				}
-				if (cities[c].owner == f && day >= 60 && day % 60 == 0)
-				{
-					const auto staff = Available(c);
-					const int enemy = NearestCity(cities[c].tile, f, true);
-					int agent = -1;
-					for (int g : staff)
-						if ((generals[g].trait == Trait::Strategist || generals[g].trait == Trait::Raider) &&
-						    (agent < 0 || generals[g].intelligence > generals[agent].intelligence))
-							agent = g;
-					if (agent >= 0 && enemy >= 0)
-						SendMission(c, agent, enemy, MissionKind::Sabotage, -1, true);
-				}
-				if (day < 60 || day % 30 != 0)
-					continue;
-				if (cities[c].owner == f && cities[c].troops < 7000)
-					Recruit(c, true);
-				if (cities[c].owner != f || ArmyCount(f) >= 3 || cities[c].troops < 7000)
-					continue;
-				const auto available = Available(c);
-				if (available.empty())
-					continue;
-				const int enemy = NearestCity(cities[c].tile, f, true);
-				if (enemy < 0)
-					continue;
-				const int a =
-				    Deploy(c, available.front(), 4000, (day / 10 + c) % 2 ? Arm::Spear : Arm::Siege, true);
-				if (a >= 0)
-					Order(a, cities[enemy].tile);
+				if (!acted)
+					break;
 			}
 		}
+	}
+	bool Campaign::ExecuteAI(int faction, const AIOrder& o)
+	{
+		bool success = false;
+		switch (o.kind)
+		{
+		case AIKind::Develop:
+			success = Develop(o.city, o.general, o.duty, true);
+			break;
+		case AIKind::Recruit:
+			success = Recruit(o.city, true);
+			break;
+		case AIKind::Deploy: {
+			auto path = Route(cities[o.city].tile, o.target, o.arm, faction);
+			if (path.empty() && cities[o.city].tile != o.target)
+				break;
+			const int a = Deploy(o.city, o.general, o.amount, o.arm, true);
+			if (a >= 0)
+			{
+				armies[a].target = o.target;
+				armies[a].path = std::move(path);
+				success = true;
+			}
+			break;
+		}
+		case AIKind::Transport:
+			success = DispatchTransport(o.city, o.general, o.target, o.amount, true) >= 0;
+			break;
+		case AIKind::Mission:
+			success = SendMission(o.city, o.general, o.target, o.mission, -1, true);
+			break;
+		case AIKind::Transfer: {
+			const auto before = assignments.size();
+			RedistributeOfficers(faction);
+			success = assignments.size() > before;
+			break;
+		}
+		case AIKind::Stance:
+			success = SetStance(o.general, static_cast<battle::Stance>(o.amount), true);
+			break;
+		}
+		if (success)
+			Note(FactionName(faction) + U"軍の判断：" + (o.city >= 0 ? cities[o.city].name + U"：" : U"") +
+			     o.reason);
+		return success;
 	}
 } // namespace frontline

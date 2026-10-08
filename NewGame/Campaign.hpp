@@ -24,12 +24,14 @@ namespace frontline
 		std::vector<std::u32string> log;
 		std::vector<Bond> bonds;
 		std::vector<Mission> missions;
+		std::vector<Assignment> assignments;
 		std::vector<Chronicle> chronicle;
 		std::array<std::array<int, 3>, 3> truceUntil{}, regard{};
 		unsigned randomState = 89173;
 		int player = 0, day = 0, commands = 3, result = 0;
 		unsigned revision = 0;
 		bool legacyLayout = false;
+		std::array<int, 3> aiPlannedDay{{-1, -1, -1}}, aiCommands{{3, 3, 3}};
 		int MapWidth() const;
 		int MapHeight() const;
 		static constexpr int MaxArmies = 6;
@@ -62,21 +64,58 @@ namespace frontline
 		int SupportBond(int army) const;
 		officer::Link Formation(int army) const;
 		bool ActivateTactic(int index, bool ai = false);
+		bool SetStance(int index, battle::Stance stance, bool ai = false);
+		int AttackRange(int index) const;
+		bool CanStrike(int index, int tile) const;
 		int Cost(int tile, Arm arm) const;
 		std::vector<int> Route(int from, int to, Arm arm, int faction = -1) const;
 		bool Order(int index, int target, bool retreat = false);
 		int Deploy(int city, int general, int soldiers, Arm arm, bool ai = false);
+		int DispatchTransport(int city, int general, int targetCity, int cargo, bool ai = false);
+		int TransportDays(int from, int to, int faction) const;
 		bool Recruit(int city, bool ai = false);
 		int NearestCity(int tile, int faction, bool enemy) const;
 		void BeginTurn();
 		std::array<int, TileCount> Supply(int faction) const;
 		void Return(Army& a, int city);
+		bool ReturnToCity(int army, int city);
 		int Fronts(int tile, int faction) const;
 		void AdvanceDay();
+		int AssignmentDays(int from, int to) const;
+		bool AssignOfficer(int general, int target, bool ai = false);
 
 	private:
+		enum class AIKind
+		{
+			Develop,
+			Recruit,
+			Deploy,
+			Transport,
+			Mission,
+			Transfer,
+			Stance
+		};
+		struct AIOrder
+		{
+			AIKind kind;
+			int priority = 0, city = -1, general = -1, target = -1, amount = 0;
+			Arm arm = Arm::Spear;
+			Duty duty = Duty::Farming;
+			MissionKind mission = MissionKind::Sabotage;
+			const char32_t* reason = U"";
+		};
+		int AIThreat(int city) const;
+		int AIEnemyCity(int from, int faction, Arm arm, int troops) const;
+		std::vector<AIOrder> AIPlan(int faction) const;
+		bool ExecuteAI(int faction, const AIOrder& order);
+		void AdvanceAIArmies();
+		int AITargetArmy(int index) const;
+		bool AIUseTactic(int index, const SupplyGrid& supply) const;
 		// Daily phases are called only by AdvanceDay(), in the order shown there.
 		void AdvanceCityWork();
+		void AdvanceAssignments();
+		void RedistributeOfficers(int faction);
+		void CancelInvalidAssignments();
 		void ConsumeDailySupply(const SupplyGrid& supply);
 		std::vector<bool> ResolveDailyCombat(const SupplyGrid& supply);
 		void MoveArmies(const std::vector<bool>& fighting);

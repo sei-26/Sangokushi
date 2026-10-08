@@ -1,28 +1,45 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version='1.0' encoding='utf-8'?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
-    <ClInclude Include="NewGame\StoryBook.hpp"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="NewGame\StoryPresentation.hpp"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="NewGame\HeroStory.hpp"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="NewGame\StorySave.hpp"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="NewGame\HeroStoryScene.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="NewGame\StoryBook.hpp">
+      <Filter>Header Files\英雄譚\ルール</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\StoryPresentation.hpp">
+      <Filter>Header Files\英雄譚\演出</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\HeroStory.hpp">
+      <Filter>Header Files\英雄譚\ルール</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\StorySave.hpp">
+      <Filter>Header Files\英雄譚\保存</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\HeroStoryScene.hpp">
+      <Filter>Header Files\英雄譚\画面</Filter>
+    </ClInclude>
     <ClCompile Include="NewGame\CampaignScene.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
     <ClInclude Include="NewGame\OfficerTraits.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\共通</Filter>
     </ClInclude>
-    <ClInclude Include="NewGame\OfficerCore.hpp"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="NewGame\WorldLayout.hpp"><Filter>Header Files</Filter></ClInclude>
-    <ClInclude Include="NewGame\MapCamera.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="NewGame\OfficerCore.hpp">
+    <ClInclude Include="NewGame\BattleCore.hpp">
+      <Filter>Header Files\共通</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\WorldLayout.hpp">
+      <Filter>Header Files\共通</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\MapCamera.hpp">
+      <Filter>Header Files\共通</Filter>
+    </ClInclude>
     <ClInclude Include="NewGame\Campaign.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\自由戦略\ルール</Filter>
     </ClInclude>
     <ClInclude Include="NewGame\CampaignSave.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\自由戦略\保存</Filter>
     </ClInclude>
     <ClInclude Include="NewGame\CampaignScene.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\自由戦略\画面</Filter>
     </ClInclude>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
@@ -381,51 +398,211 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NewGame\Campaign.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignAI.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignCombat.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignDailyCombat.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignDiplomacy.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignEconomy.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignOfficers.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignOrders.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignSave.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignSceneCamera.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignSceneCouncil.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignSceneInput.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignSceneLayout.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignSceneMap.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignSceneMenu.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignScenePanel.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignScenePreview.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignSupply.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\CampaignTurn.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClInclude Include="NewGame\CampaignTypes.hpp"><Filter>Header Files</Filter></ClInclude>
-    <ClCompile Include="NewGame\CampaignUI.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClInclude Include="NewGame\CampaignUI.hpp"><Filter>Header Files</Filter></ClInclude>
-    <ClCompile Include="NewGame\HeroStory.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStoryBattle.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStoryProgression.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStoryRelationships.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStoryScene.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStorySceneBattle.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStorySceneCivil.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStorySceneDialogue.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStorySceneDraw.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStorySceneInput.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStorySceneMenu.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStorySceneNotes.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStoryScenePreview.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\HeroStorySkills.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\StoryPresentation.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\StoryPresentationAudio.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\StoryPresentationDraw.cpp"><Filter>Source Files</Filter></ClCompile>
-    <ClCompile Include="NewGame\StorySave.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\Campaign.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignAI.cpp">
+    <ClCompile Include="NewGame\CampaignAIArmies.cpp">
+    <ClCompile Include="NewGame\CampaignAIPlanning.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignCombat.cpp">
+    <ClCompile Include="NewGame\CampaignBattleRules.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignDailyCombat.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignDiplomacy.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignEconomy.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignOfficers.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignOrders.cpp">
+    <ClCompile Include="NewGame\CampaignReturn.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSave.cpp">
+      <Filter>Source Files\自由戦略\保存</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneCamera.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneCouncil.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneInput.cpp">
+    <ClCompile Include="NewGame\CampaignSceneArmyOrders.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneLayout.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneMap.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneMenu.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignScenePanel.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignScenePreview.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSupply.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignTurn.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClInclude Include="NewGame\CampaignTypes.hpp">
+      <Filter>Header Files\自由戦略\ルール</Filter>
+    </ClInclude>
+    <ClCompile Include="NewGame\CampaignUI.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClInclude Include="NewGame\CampaignUI.hpp">
+      <Filter>Header Files\自由戦略\画面</Filter>
+    </ClInclude>
+    <ClCompile Include="NewGame\HeroStory.cpp">
+      <Filter>Source Files\英雄譚\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStoryBattle.cpp">
+    <ClCompile Include="NewGame\HeroStoryAI.cpp">
+      <Filter>Source Files\英雄譚\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStoryProgression.cpp">
+      <Filter>Source Files\英雄譚\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStoryRelationships.cpp">
+      <Filter>Source Files\英雄譚\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStoryScene.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneBattle.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneCivil.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneDialogue.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneDraw.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneInput.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneMenu.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneNotes.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStoryScenePreview.cpp">
+      <Filter>Source Files\英雄譚\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySkills.cpp">
+    <ClCompile Include="NewGame\HeroStoryObjectives.cpp">
+      <Filter>Source Files\英雄譚\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\StoryPresentation.cpp">
+      <Filter>Source Files\英雄譚\演出</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\StoryPresentationAudio.cpp">
+      <Filter>Source Files\英雄譚\演出</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\StoryPresentationDraw.cpp">
+      <Filter>Source Files\英雄譚\演出</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\StorySave.cpp">
+      <Filter>Source Files\英雄譚\保存</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NewGame\CampaignLoad.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignLoad.cpp">
+      <Filter>Source Files\自由戦略\保存</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NewGame\StoryLoad.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\StoryLoad.cpp">
+      <Filter>Source Files\英雄譚\保存</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files\共通">
+      <UniqueIdentifier>{5492EFF4-EB67-5907-82BC-6E6D84C30059}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\自由戦略">
+      <UniqueIdentifier>{F7867166-466A-5AC1-A304-52C9ABA08C06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\自由戦略\ルール">
+      <UniqueIdentifier>{4E433249-6501-5A9B-86A9-C1CD754AEEEB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\自由戦略\保存">
+      <UniqueIdentifier>{5922FA66-2FF1-59EB-8D23-1B08339DBB68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\自由戦略\画面">
+      <UniqueIdentifier>{61B6FE21-94FF-539E-900A-565605806AC6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\英雄譚">
+      <UniqueIdentifier>{3B86284E-87DF-58CC-97F6-F96785BEC160}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\英雄譚\ルール">
+      <UniqueIdentifier>{0F000B42-369A-562D-8718-750C13B3EB36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\英雄譚\保存">
+      <UniqueIdentifier>{9B075548-6AB9-5056-80AA-33FB55326444}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\英雄譚\演出">
+      <UniqueIdentifier>{D3D5ED11-B900-5C42-B4FF-F59215FE4E05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\英雄譚\画面">
+      <UniqueIdentifier>{CC1D460E-A2FC-50B7-8C7E-BA493A618624}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\自由戦略">
+      <UniqueIdentifier>{E9BEE089-B12A-55DA-9164-4EE4BC8F2A86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\自由戦略\ルール">
+      <UniqueIdentifier>{DFBEF562-E594-54D5-83DA-A4885711C56E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\自由戦略\保存">
+      <UniqueIdentifier>{250053A6-E563-53AE-9C42-CE7DE0590DE8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\自由戦略\画面">
+      <UniqueIdentifier>{07F5E3C8-A83D-5D08-B17D-8B99764508B8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\英雄譚">
+      <UniqueIdentifier>{BAA044A2-18EA-5DEC-8692-996EF00650F0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\英雄譚\ルール">
+      <UniqueIdentifier>{475BD11B-D5AD-5DBE-9DAA-6294B93C954E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\英雄譚\保存">
+      <UniqueIdentifier>{93ACB254-C61B-53A6-8C5E-B6CC85930BEA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\英雄譚\演出">
+      <UniqueIdentifier>{2BD8F732-444C-56E9-AF3D-238EA875A94E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\英雄譚\画面">
+      <UniqueIdentifier>{E5DE375D-22F8-590B-8A23-2D54021E3B12}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CODE_GUIDE.md" />
+    <None Include=".clang-format" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NewGame\CampaignAssignments.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignLogistics.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneAssignments.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneLogistics.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
   </ItemGroup>
 </Project>

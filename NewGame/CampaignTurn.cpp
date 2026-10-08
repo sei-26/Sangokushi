@@ -7,14 +7,17 @@ namespace frontline
 		if (result != 0)
 			return;
 		++day;
-		// The phase order is part of the rules. Resolve combat before moving armies.
+		// 1日の処理順。損害をまとめて反映してから部隊を移動させる。
 		ResolveMissions();
+		AdvanceAssignments();
 		AdvanceCityWork();
 		SupplyGrid supply;
 		for (int faction = 0; faction < 3; ++faction)
 			supply[faction] = Supply(faction);
 		ConsumeDailySupply(supply);
+		AdvanceAIArmies();
 		const auto fighting = ResolveDailyCombat(supply);
+		CancelInvalidAssignments();
 		MoveArmies(fighting);
 		FinishDay();
 	}

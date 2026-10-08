@@ -20,6 +20,8 @@
 |---|---|
 | Campaign.cpp | 初期配置、名称、座標、記録、旧形式の地図の初期化 |
 | CampaignEconomy.cpp | 内政、募兵、事業の完了、月末収入、勝敗判定 |
+| CampaignLogistics.cpp | 兵糧輸送の出発条件、積荷の支払い、到着日数の見積もり |
+| CampaignAssignments.cpp | 武将の都市間異動、移動日数、到着と陥落時の中止 |
 | CampaignOfficers.cpp | 武将の空き状況、親密度、役割による部隊連携 |
 | CampaignDiplomacy.cpp | 停戦、使者、謀略、任務の結果 |
 | CampaignOrders.cpp | 出陣、進路探索、撤退、移動、帰還 |
@@ -44,6 +46,8 @@
 | CampaignSceneMap.cpp | 地形、都市、部隊、進路、ミニマップの描画 |
 | CampaignScenePanel.cpp | 右側の都市・部隊の情報と命令ボタン |
 | CampaignSceneMenu.cpp | スタート画面 |
+| CampaignSceneLogistics.cpp | 輸送先・積荷・到着目安と輸送命令 |
+| CampaignSceneAssignments.cpp | 武将の送り先・到着日・異動中の表示 |
 | CampaignSceneCouncil.cpp | 武将評定・親密度・任務と、群雄の記録 |
 | CampaignScenePreview.cpp | 開発用の画面プレビュー |
 | CampaignUI.cpp | 共通のボタンと勢力の色 |
@@ -88,8 +92,24 @@
 
 ## 編集後の確認
 
-Sangokushi.slnには分割した.cppを登録済み。Visual Studioのソリューションエクスプローラーから開ける。NewGame/でファイル名がCampaignで始まるものが自由戦略、HeroStoryまたはStoryで始まるものが英雄譚。
+Sangokushi.slnには分割した.cppを登録済み。Visual Studioのソリューションエクスプローラーでは「Source Files → 自由戦略／英雄譚 → ルール・画面・保存・演出」に分類している。対応するヘッダーも同じ分類で探せる。NewGame/でファイル名がCampaignで始まるものが自由戦略、HeroStoryまたはStoryで始まるものが英雄譚。
 
 tests/run.ps1はシミュレーションの.cppをライブラリへまとめ、実際の実装を使って戦闘・補給・内政・物語・保存を検証する。新しい.cppを増やす場合は、Visual Studioのビルド対象と、このスクリプトの対象リストへ追加する。
 
-.clang-formatと.editorconfigで4桁のタブ幅・UTF-8 BOM・改行などの書式を揃えている。セーブ形式、ゲーム内の文章、数値、ルールは今回の整理で変更していない。
+.clang-formatと.editorconfigでタブ幅4・UTF-8 BOM・改行などの書式を揃えている。セーブ形式、ゲーム内の文章、数値、ルールは今回の整理で変更していない。
+
+ファイル分割時にはDebug・Releaseビルド、既存テスト、5画面の起動で確認済み。分割前の実装と同条件で自由戦略180日・英雄譚全6章を進め、途中の保存データが一致することも確認した。
+
+新しい戦闘の判断は CampaignBattleRules.cpp（構え・射程・射線）、HeroStoryObjectives.cpp（章の約束・拠点・守備）を入口に読む。両方の射線判定は BattleCore.hpp の ClearRay を使う。
+
+CampaignReturn.cpp は指定した味方都市への帰還・即時入城、CampaignSceneArmyOrders.cpp は帰還先選択と帰還ボタンの入力を扱う。
+
+## 敵AIを読む順番
+
+- CampaignAI.cpp：命令の回数管理と実行。10日3命令・同日の再実行防止。
+- CampaignAIPlanning.cpp：危機、兵糧、武将、到達できる目標を評価し、優先順位つきの候補を作る。
+- CampaignAIArmies.cpp：日々の撤退、近くの城の救援、輸送隊護衛、攻撃対象、戦法の発動判断。
+- HeroStoryAI.cpp：地形・占有・射線・損害・守備から、敵の攻撃対象と移動先を選ぶ。
+- tests/AITests.cpp：状況別の判断と、3勢力の長期シミュレーション。
+
+命令を1つ実行するたびに候補を作り直す。武将や都市資源が使用済みになるため、実行前の候補を続けて流用しない。判断の理由は群雄の記録へ残す。

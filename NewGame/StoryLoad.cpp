@@ -7,7 +7,7 @@ namespace hero
 		try
 		{
 			const int version = j[U"version"].get<int>();
-			if (version < 1 || version > 3)
+			if (version < 1 || version > 4)
 				return false;
 			s3d::Array<int> a;
 			for (const auto& v : j[U"state"].arrayView())
@@ -29,6 +29,7 @@ namespace hero
 			if (a[14] && a[1] != 2)
 				return false;
 			Story s;
+			s.deepRules = version >= 4 ? j[U"deepRules"].get<bool>() : false;
 			s.chapter = a[0];
 			s.phase = a[1];
 			s.virtue = a[2];
@@ -84,7 +85,7 @@ namespace hero
 				s3d::Array<int> v;
 				for (const auto& x : item[U"values"].arrayView())
 					v.push_back(x.get<int>());
-				if (v.size() != 12 || n >= static_cast<int>(s.units.size()))
+				if (v.size() != (version >= 4 ? 14 : 12) || n >= static_cast<int>(s.units.size()))
 					return false;
 				auto& u = s.units[n++];
 				if (v[0] != u.hero || v[7] != static_cast<int>(u.enemy) ||
@@ -107,6 +108,14 @@ namespace hero
 				u.acted = v[9] != 0;
 				u.skillUsed = v[10] != 0;
 				u.stunned = v[11];
+				if (version >= 4)
+				{
+					if (v[12] < 0 || v[12] > 1 || v[13] < 0 || v[13] > 1 ||
+					    (v[13] && (u.hero < 0 || u.hp == 0)))
+						return false;
+					u.moved = v[12] != 0;
+					u.guarding = v[13] != 0;
+				}
 			}
 			if (n != static_cast<int>(s.units.size()))
 				return false;
@@ -150,6 +159,32 @@ namespace hero
 					seen[x * 6 + y] = true;
 					s.relationships.push_back({x, y, v});
 				}
+			}
+			if (version >= 4)
+			{
+				s.objectiveProgress = j[U"objectiveProgress"].get<int>();
+				if (s.objectiveProgress < 0 || s.objectiveProgress > 2)
+					return false;
+				int n = 0;
+				for (const auto& v : j[U"outcomes"].arrayView())
+				{
+					const int x = v.get<int>();
+					if (n >= 6 || x < 0 || x > 2)
+						return false;
+					s.outcomes[n++] = x;
+				}
+				if (n != 6)
+					return false;
+				n = 0;
+				for (const auto& v : j[U"civilActions"].arrayView())
+				{
+					const int x = v.get<int>();
+					if (n >= 3 || x < 0 || x > 1000)
+						return false;
+					s.civilActions[n++] = x;
+				}
+				if (n != 3)
+					return false;
 			}
 			output = std::move(s);
 			return true;

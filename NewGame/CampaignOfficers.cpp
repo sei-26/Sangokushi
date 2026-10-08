@@ -36,6 +36,9 @@ namespace frontline
 		for (const auto& c : cities)
 			if (c.worker == general || (c.worker >= 0 && c.helper == general))
 				return true;
+		for (const auto& transfer : assignments)
+			if (transfer.general == general)
+				return true;
 		for (const auto& m : missions)
 			if (m.general == general || m.helper == general)
 				return true;
@@ -79,8 +82,8 @@ namespace frontline
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
 		{
 			const auto& b = armies[i];
-			if (i == army || b.troops <= 0 || b.faction != a.faction || b.retreat || b.morale < 30 ||
-			    (!b.supplied && b.food <= 0) || Distance(a.tile, b.tile) > 2)
+			if (i == army || b.arm == Arm::Transport || b.troops <= 0 || b.faction != a.faction ||
+			    b.retreat || b.morale < 30 || (!b.supplied && b.food <= 0) || Distance(a.tile, b.tile) > 2)
 				continue;
 			officer::Merge(effect, officer::Contribution(officer::RoleOf(generals[a.general].name),
 			                                             officer::RoleOf(generals[b.general].name),

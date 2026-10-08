@@ -5,7 +5,9 @@ namespace frontline
 	s3d::JSON SaveJSON(const Campaign& game)
 	{
 		s3d::JSON json;
-		json[U"version"] = 4;
+		json[U"version"] = 8;
+		json[U"aiPlannedDay"] = s3d::Array<int>(game.aiPlannedDay.begin(), game.aiPlannedDay.end());
+		json[U"aiCommands"] = s3d::Array<int>(game.aiCommands.begin(), game.aiCommands.end());
 		json[U"legacyLayout"] = game.legacyLayout;
 		json[U"gridWidth"] = Width;
 		json[U"gridHeight"] = Height;
@@ -51,6 +53,8 @@ namespace frontline
 			j[U"target"] = a.target;
 			j[U"troops"] = a.troops;
 			j[U"food"] = a.food;
+			j[U"cargoFood"] = a.cargoFood;
+			j[U"stance"] = static_cast<int>(a.stance);
 			j[U"morale"] = a.morale;
 			j[U"movement"] = a.movement;
 			j[U"arm"] = static_cast<int>(a.arm);
@@ -107,6 +111,18 @@ namespace frontline
 		json[U"truces"] = truces;
 		json[U"regard"] = regard;
 		json[U"randomState"] = game.randomState;
+		s3d::Array<s3d::JSON> assignments;
+		for (const auto& move : game.assignments)
+		{
+			s3d::JSON j;
+			j[U"general"] = move.general;
+			j[U"from"] = move.from;
+			j[U"to"] = move.to;
+			j[U"faction"] = move.faction;
+			j[U"left"] = move.left;
+			assignments.push_back(j);
+		}
+		json[U"assignments"] = assignments;
 		return json;
 	}
 

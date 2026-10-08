@@ -44,11 +44,25 @@ private:
 	int mouseTile() const;
 	Rect button(int index) const;
 	void deploy(frontline::Arm arm);
+	int returnTarget() const;
+	void updateReturnOrders();
+	int m_returnCity = -1, m_returnArmy = -1;
 	void drawMap() const;
 	void drawPanel() const;
+	void updateTransport();
+	void drawTransport() const;
+	int transportTarget() const;
+	mutable int m_transportEstimateFrom = -1, m_transportEstimateTo = -1, m_transportEstimateDay = -1,
+	            m_transportEstimate = -1;
+	mutable unsigned m_transportEstimateRevision = 0;
+	int m_transportTarget = -1, m_cargo = 5000;
 	void drawMenu() const;
 	void updateCouncil();
 	void drawCouncil() const;
+	void updateAssignments();
+	void drawAssignments() const;
+	int m_assignmentTarget = -1;
+	int m_assignmentPage = 0;
 	static String text(const std::u32string& s)
 	{
 		return String(s.c_str());

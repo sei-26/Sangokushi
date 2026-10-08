@@ -80,9 +80,17 @@ namespace hero
 				t.hp = std::min(t.maxHp, t.hp + (u.hero == 0 ? 4 : 5));
 				effect = true;
 			}
-			if ((u.hero == 1 || u.hero == 5) && t.enemy && Distance(u, t) <= (u.hero == 1 ? 1 : 3))
+			if ((u.hero == 1 || u.hero == 5) && t.enemy && Distance(u, t) <= (u.hero == 1 ? 1 : 3) &&
+			    (!deepRules || battle::ClearRay(u.x, u.y, t.x, t.y, [&](int x, int y) {
+				    return terrain[y * W + x] == 1 || terrain[y * W + x] == 2;
+			    })))
 			{
-				t.hp = std::max(0, t.hp - (u.hero == 1 ? 7 : 6));
+				t.hp = std::max(0, t.hp - (u.hero == 1
+				                               ? 7
+				                               : 6 + (deepRules && chapter == 5 && objectiveProgress >= 2 &&
+				                                              std::abs(u.x - 6) + std::abs(u.y - 3) <= 2
+				                                          ? 2
+				                                          : 0)));
 				effect = true;
 				break;
 			}
@@ -113,7 +121,8 @@ namespace hero
 			return false;
 		food -= 15;
 		fireUsed = true;
-		const bool cooperative = std::find(decisions.begin(), decisions.end(), 40) != decisions.end();
+		const bool cooperative = std::find(decisions.begin(), decisions.end(), 40) != decisions.end() &&
+		                         (!deepRules || objectiveProgress >= 2);
 		for (auto& u : units)
 			if (u.enemy && u.hp > 0 && u.y < 3)
 				u.hp = std::max(0, u.hp - (cooperative ? 6 : 4));

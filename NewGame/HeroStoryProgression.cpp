@@ -76,6 +76,21 @@ namespace hero
 		spirit = 20;
 		battleEvent = eventMask = rallies = 0;
 		units.clear();
+		objectiveProgress = 0;
+		civilActions = {};
+		if (deepRules)
+		{
+			if (chapter == 1 && outcomes[0] == 2)
+			{
+				order += 8;
+				Record(U"初陣で村を守った評判が届く。徐州の開始民心+8。");
+			}
+			if (chapter >= 3 && outcomes[2] == 2)
+			{
+				spirit += 10;
+				Record(U"隆中で仲間と交わした対話が初動を支える。開始闘志+10。");
+			}
+		}
 		terrain.fill(0);
 		if (!Tactical())
 		{
@@ -96,7 +111,11 @@ namespace hero
 			if (terrain[p] == 0)
 				terrain[p] = 1;
 		const int count = chapter == 0 ? 3 : chapter == 3 || chapter == 4 ? 5 : 6;
-		const int hp = 10 + virtue / 30 + (preparation == 0 ? 2 + PlanPower(0) / 2 : 0),
+		const int legacyBonus = deepRules ? (outcomes[1] == 2 ? 1 : 0) +
+		                                        (chapter == 4 && outcomes[3] == 2 ? 1 : 0) +
+		                                        (chapter == 5 && outcomes[4] == 2 ? 1 : 0)
+		                                  : 0;
+		const int hp = legacyBonus + 10 + virtue / 30 + (preparation == 0 ? 2 + PlanPower(0) / 2 : 0),
 		          attack = 3 + resolve / 50 + preparation + (preparation == 1 && PlanPower(1) == 3 ? 1 : 0);
 		for (int g = 0; g < count; ++g)
 		{
@@ -151,6 +170,12 @@ namespace hero
 			failed = true;
 			Record(U"任務で退却。仲間を立て直して再挑戦できる。");
 			return;
+		}
+		if (deepRules)
+		{
+			outcomes[chapter] = ObjectiveMet() ? 2 : 1;
+			Record(ObjectiveMet() ? U"約束を果たした。今回の成果は次の章にも残る。"
+			                      : U"戦場は勝ち抜いた。任意の約束は果たせず、その成果は持ち越せない。");
 		}
 		phase = 3;
 		battleEvent = 0;
@@ -212,11 +237,12 @@ namespace hero
 				resolve += 4;
 				Record(U"関羽と守備隊を訓練。民の負担にも目を向けたい。");
 			}
+			++civilActions[action];
 			++tasks;
 			++turn;
 			order = std::clamp(order, 0, 100);
 			Clamp();
-			if (tasks >= 3 && order >= 60)
+			if (tasks >= 3 && order >= 60 && (!deepRules || ObjectiveMet()))
 				Finish(true);
 			else if (tasks >= 6)
 				Finish(false);
@@ -225,7 +251,7 @@ namespace hero
 		{
 			if (action == 0)
 			{
-				if (food < 20)
+				if (food < 20 || (deepRules && civilActions[2] < visits))
 					return false;
 				food -= 20;
 				++visits;
@@ -242,12 +268,14 @@ namespace hero
 			}
 			if (action == 2)
 			{
+				ChangeBond(1, 2, 4);
 				bonds[1] += 4;
 				bonds[2] += 4;
 				resolve += 2;
 				food += 5;
 				Record(U"関羽・張飛に人材を求める理由を伝え、理解を深めた。");
 			}
+			++civilActions[action];
 			++turn;
 			Clamp();
 			if (visits == 3)

@@ -53,13 +53,14 @@ namespace hero
 			}
 		if (chapter == 3)
 		{
-			if (escaped >= 3)
+			if (escaped >= (VowRequired() ? 4 : 3))
 				Finish(true);
-			else if (lost >= 3)
+			else if (lost >= (VowRequired() ? 2 : 3))
 				Finish(false);
 		}
 		else if (std::none_of(units.begin(), units.end(), [](const Unit& u) { return u.enemy && u.hp > 0; }))
-			Finish(true);
+			if (!VowRequired() || ObjectiveTile() < 0 || ObjectiveMet())
+				Finish(true);
 	}
 
 	bool Story::Act(int index, int x, int y)
@@ -70,10 +71,14 @@ namespace hero
 		if (u.hp <= 0 || u.enemy || u.civilian || u.acted)
 			return false;
 		const int target = At(x, y), dist = std::abs(x - u.x) + std::abs(y - u.y);
-		if (target >= 0 && units[target].enemy && dist <= u.range)
+		if (target >= 0 && units[target].enemy && CanAttack(index, target))
 		{
 			const auto link = Formation(index);
-			const int bonus = officer::StoryAttack(link);
+			const int bonus = officer::StoryAttack(link) + (deepRules && chapter == 5 &&
+			                                                        objectiveProgress >= 2 && u.range > 1 &&
+			                                                        std::abs(u.x - 6) + std::abs(u.y - 3) <= 2
+			                                                    ? 1
+			                                                    : 0);
 			units[target].hp = std::max(
 			    0, units[target].hp - std::max(1, u.attack + bonus - (terrain[y * W + x] == 1 ? 1 : 0)));
 			GainSpirit(8 + bonus * 4 + link.morale + (units[target].hp == 0 ? 10 : 0));
@@ -82,10 +87,15 @@ namespace hero
 			else if (bonus > 0)
 				Record(Name(u.hero) + U"「仲間となら、押し切れる！」 信頼による連携攻撃。");
 		}
-		else if (target < 0 && dist == 1 && terrain[y * W + x] != 2)
+		else if (target < 0 && dist == 1 && terrain[y * W + x] != 2 && (!deepRules || !u.moved))
 		{
 			u.x = x;
 			u.y = y;
+			if (deepRules)
+			{
+				u.moved = true;
+				return true;
+			}
 		}
 		else
 			return false;
@@ -115,14 +125,23 @@ namespace hero
 					target = j;
 					distance = Distance(e, units[j]);
 				}
+			EnemyIntent intent;
+			if (deepRules)
+			{
+				intent = PlanEnemy(i);
+				target = intent.target;
+			}
 			if (target < 0)
 				continue;
-			if (distance <= e.range)
+			if (CanAttack(i, target))
 			{
 				auto& victim = units[target];
 				victim.hp = std::max(
 				    0, victim.hp - std::max(1, e.attack - (terrain[victim.y * W + victim.x] == 1 ? 1 : 0) -
-				                                   officer::StoryDefense(Formation(target))));
+				                                   officer::StoryDefense(Formation(target)) -
+				                                   (victim.guarding ? 2 : 0)));
+				if (victim.guarding && victim.hp > 0 && Distance(e, victim) == 1)
+					e.hp = std::max(0, e.hp - 1);
 				if (victim.hp == 0 && victim.civilian)
 					++lost;
 				GainSpirit(4);
@@ -131,7 +150,7 @@ namespace hero
 			}
 			else
 			{
-				const int next = StepToward(i, units[target].x, units[target].y);
+				const int next = deepRules ? intent.next : StepToward(i, units[target].x, units[target].y);
 				if (next >= 0 && At(next % W, next / W) < 0)
 				{
 					e.x = next % W;
@@ -160,9 +179,14 @@ namespace hero
 					    U"民「ありがとう……皆様も、どうかご無事で！」 避難する人々が渡し場へ到着。闘志+20。");
 				}
 			}
+		AdvanceObjective();
 		++turn;
 		for (auto& u : units)
+		{
 			u.acted = false;
+			u.moved = false;
+			u.guarding = false;
+		}
 		CheckBattle();
 		if (phase == 2 && turn > TurnLimit())
 			Finish(false);

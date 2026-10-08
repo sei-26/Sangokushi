@@ -63,6 +63,7 @@ void CampaignScene::update()
 			if (LoadJSON(JSON::Load(U"frontline-save.json"), loaded))
 			{
 				m_game = std::move(loaded);
+				m_transportEstimateDay = -1;
 				m_camera.Fit(m_game.MapWidth(), m_game.MapHeight());
 				m_started = true;
 				m_city = -1;
@@ -115,6 +116,8 @@ void CampaignScene::update()
 		m_tab = 0;
 	if (m_city >= 0 && button(14).leftClicked())
 		m_tab = 1;
+	if (m_city >= 0 && button(40).leftClicked())
+		m_tab = 2;
 	if (m_daysLeft > 0 && !m_paused)
 	{
 		m_timer += Scene::DeltaTime();
@@ -167,6 +170,7 @@ void CampaignScene::update()
 			if (LoadJSON(JSON::Load(U"frontline-save.json"), loaded))
 			{
 				m_game = std::move(loaded);
+				m_transportEstimateDay = -1;
 				m_camera.Fit(m_game.MapWidth(), m_game.MapHeight());
 				m_city = -1;
 				m_army = -1;
@@ -213,18 +217,21 @@ void CampaignScene::update()
 				if (MouseR.down() && Campaign::Valid(tile))
 					m_message = m_game.Order(m_army, tile) ? U"進路を更新。進行開始で全勢力が同時に動きます。"
 					                                       : U"その場所へは到達できません。";
-				if (button(8).leftClicked())
-				{
-					const int home = m_game.NearestCity(m_game.armies[m_army].tile, m_game.player, false);
-					m_message = home >= 0 && m_game.Order(m_army, m_game.cities[home].tile, true)
-					                ? U"撤退命令。味方都市へ帰還します。"
-					                : U"帰還できる都市がありません。";
-				}
+				updateReturnOrders();
 				if (button(9).leftClicked())
 				{
 					m_game.Order(m_army, m_game.armies[m_army].tile);
-					m_message = U"現在地を守備します。近くの敵には自動で応戦。";
+					m_message = m_game.armies[m_army].arm == Arm::Transport
+					                ? U"輸送を停止。右クリックで味方都市へ配送先を変更できます。"
+					                : U"現在地を守備します。近くの敵には自動で応戦。";
 				}
+				if (button(43).leftClicked() && m_game.armies[m_army].arm != Arm::Transport)
+					m_message = m_game.SetStance(
+					                m_army, static_cast<battle::Stance>(
+					                            (static_cast<int>(m_game.armies[m_army].stance) + 1) % 3))
+					                ? U"構えを変更。命令1を使用。攻勢は高火力・高損耗、固守は低火力・低損耗・"
+					                  U"低速です。"
+					                : U"構えの変更には命令1が必要です。";
 				if (button(39).leftClicked())
 					m_message = m_game.ActivateTactic(m_army)
 					                ? U"戦法を予約。次の1日に発動します。"
@@ -234,7 +241,9 @@ void CampaignScene::update()
 			{
 				if (button(1).leftClicked())
 					++m_generalChoice;
-				if (m_tab == 1)
+				if (m_tab == 2)
+					updateTransport();
+				else if (m_tab == 1)
 				{
 					const auto available = m_game.Available(m_city);
 					for (int d = 0; d < 4; ++d)

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "OfficerTraits.hpp"
+#include "BattleCore.hpp"
 #include "WorldLayout.hpp"
 
 namespace frontline
@@ -15,7 +16,8 @@ namespace frontline
 		Spear,
 		Bow,
 		Siege,
-		Cavalry
+		Cavalry,
+		Transport
 	};
 	enum class Duty
 	{
@@ -50,8 +52,10 @@ namespace frontline
 	struct Army
 	{
 		int faction = 0, general = 0, tile = 0, target = 0, troops = 0;
+		int cargoFood = 0; // Cargo is separate from escort provisions.
 		int food = 1800, morale = 100, movement = 0;
 		Arm arm = Arm::Spear;
+		battle::Stance stance = battle::Stance::Balanced;
 		bool supplied = true, retreat = false;
 		std::vector<int> path;
 		int tacticLeft = 0, tacticReadyDay = 0;
@@ -70,6 +74,10 @@ namespace frontline
 	{
 		int general = 0, helper = -1, city = 0, target = 0, faction = 0, targetFaction = 0, left = 20;
 		MissionKind kind = MissionKind::Diplomacy;
+	};
+	struct Assignment
+	{
+		int general = 0, from = 0, to = 0, faction = 0, left = 3;
 	};
 	struct Chronicle
 	{

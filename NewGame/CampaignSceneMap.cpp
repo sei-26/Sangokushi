@@ -132,7 +132,8 @@ void CampaignScene::drawMap() const
 			    .drawFrame(1.5, ColorF(0.96, 0.93, 0.8));
 			if (i == m_army)
 				Circle(center, cell * 0.47).drawFrame(2, ColorF(0.98, 0.82, 0.4));
-			const String icon = army.arm == Arm::Siege     ? U"城"
+			const String icon = army.arm == Arm::Transport ? U"糧"
+			                    : army.arm == Arm::Siege   ? U"城"
 			                    : army.arm == Arm::Bow     ? U"弓"
 			                    : army.arm == Arm::Cavalry ? U"騎"
 			                                               : U"槍";
@@ -160,16 +161,9 @@ void CampaignScene::drawMap() const
 			{
 				const auto& a = m_game.armies[i];
 				const auto& b = m_game.armies[j];
-				const int rangeA =
-				    a.arm == Arm::Bow
-				        ? (a.tacticLeft > 0 && m_game.generals[a.general].tactic == Tactic::Volley ? 3 : 2)
-				        : 1;
-				const int rangeB =
-				    b.arm == Arm::Bow
-				        ? (b.tacticLeft > 0 && m_game.generals[b.general].tactic == Tactic::Volley ? 3 : 2)
-				        : 1;
+
 				if (a.troops <= 0 || b.troops <= 0 || !m_game.Hostile(a.faction, b.faction) ||
-				    Campaign::Distance(a.tile, b.tile) > Max(rangeA, rangeB))
+				    (!m_game.CanStrike(i, b.tile) && !m_game.CanStrike(j, a.tile)))
 					continue;
 				const Vec2 center = (tileCenter(a.tile) + tileCenter(b.tile)) / 2;
 				Line(center.movedBy(-4, -5), center.movedBy(4, 5)).draw(2, ColorF(1.0, 0.72, 0.35));

@@ -2,13 +2,13 @@
 
 void HeroStoryScene::drawNotes() const
 {
-	const auto& c = hero::Book()[s.chapter];
+	const auto& c = hero::Book()[m_story.chapter];
 
-	Button(B(6), notePage == 0   ? U"仲間の人物像へ"
-	             : notePage == 1 ? U"選択の記録へ"
-	             : notePage == 2 ? U"仲間同士の関係へ"
-	                             : U"この章の史話へ");
-	if (notePage == 0)
+	drawButton(buttonRect(6), m_notePage == 0   ? U"仲間の人物像へ"
+	                          : m_notePage == 1 ? U"選択の記録へ"
+	                          : m_notePage == 2 ? U"仲間同士の関係へ"
+	                                            : U"この章の史話へ");
+	if (m_notePage == 0)
 	{
 		(void)FontAsset(U"campaignBody")(String(c.history))
 		    .draw(RectF(285, 200, Scene::Width() - 630, 110), ColorF(.92, .86, .70));
@@ -21,7 +21,7 @@ void HeroStoryScene::drawNotes() const
 		                                 U"の視点から仲間と連携する、創作の英雄譚として描いています。")
 		    .draw(RectF(285, 455, Scene::Width() - 630, 170), ColorF(.83, .85, .75));
 	}
-	else if (notePage == 1)
+	else if (m_notePage == 1)
 	{
 		const Array<String> bio{U"人を迎え、仲間と民をつなぐ。信望は兵の耐久に反映。",
 		                        U"張飛とともに早くから劉備に仕える。近接の切り札。",
@@ -31,9 +31,10 @@ void HeroStoryScene::drawNotes() const
 		                        U"定軍山で夏侯淵を討つ。遠方へ一射を放つ。"};
 		for (int i = 0; i < 6; ++i)
 		{
-			FontAsset(U"campaignBody")(
-			    U"{}　{} {}　{}"_fmt(String(hero::Name(i)), i == 0 ? U"信望" : U"劉備への親密",
-			                         i == 0 ? s.virtue : s.Affinity(0, i), String(hero::SkillName(i))))
+			FontAsset(U"campaignBody")(U"{}　{} {}　{}"_fmt(String(hero::Name(i)),
+			                                                i == 0 ? U"信望" : U"劉備への親密",
+			                                                i == 0 ? m_story.virtue : m_story.Affinity(0, i),
+			                                                String(hero::SkillName(i))))
 			    .draw(285, 200 + i * 78, ColorF(.94, .84, .61));
 			(void)FontAsset(U"campaignSmall")(bio[i]).draw(RectF(285, 233 + i * 78, Scene::Width() - 635, 44),
 			                                               ColorF(.72, .82, .72));
@@ -41,13 +42,13 @@ void HeroStoryScene::drawNotes() const
 		FontAsset(U"campaignSmall")(U"人物像の参照：三国志 巻32・35・36 / 戦法の効果は創作")
 		    .draw(285, Scene::Height() - 95, ColorF(.65, .74, .65));
 	}
-	else if (notePage == 2)
+	else if (m_notePage == 2)
 	{
 		FontAsset(U"campaignBody")(U"あなたと仲間が歩んだ道（最近の記録）")
 		    .draw(285, 200, ColorF(.94, .84, .61));
-		int first = Max(0, static_cast<int>(s.journal.size()) - 8);
-		for (int i = first; i < static_cast<int>(s.journal.size()); ++i)
-			(void)FontAsset(U"campaignSmall")(T(s.journal[i]))
+		int first = Max(0, static_cast<int>(m_story.journal.size()) - 8);
+		for (int i = first; i < static_cast<int>(m_story.journal.size()); ++i)
+			(void)FontAsset(U"campaignSmall")(text(m_story.journal[i]))
 			    .draw(RectF(285, 245 + (i - first) * 54, Scene::Width() - 635, 50), ColorF(.77, .85, .74));
 	}
 	else
@@ -60,11 +61,11 @@ void HeroStoryScene::drawNotes() const
 		    U"志を支える。\n同じ役割の連携は半減。各効果の最大値を使い、人数だけでは重ならない。")
 		    .draw(RectF(285, 240, Scene::Width() - 635, 80), ColorF(.72, .82, .72));
 		int row = 0;
-		for (int a = 0; a < s.Unlocked(); ++a)
-			for (int b = a + 1; b < s.Unlocked(); ++b)
+		for (int a = 0; a < m_story.Unlocked(); ++a)
+			for (int b = a + 1; b < m_story.Unlocked(); ++b)
 			{
 				FontAsset(U"campaignSmall")(
-				    U"{} × {}　親密 {}"_fmt(T(hero::Name(a)), T(hero::Name(b)), s.Affinity(a, b)))
+				    U"{} × {}　親密 {}"_fmt(text(hero::Name(a)), text(hero::Name(b)), m_story.Affinity(a, b)))
 				    .draw(285, 340 + row * 23, ColorF(.86, .81, .63));
 				++row;
 			}

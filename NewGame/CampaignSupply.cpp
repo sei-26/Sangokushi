@@ -65,7 +65,11 @@ namespace frontline
 			{
 				a.food = 0;
 				a.morale = std::max(0, a.morale - 8);
+				const int previousTroops = a.troops;
 				a.troops = std::max(0, a.troops - std::max(20, a.troops / 30));
+				if (a.arm == Arm::Transport)
+					a.cargoFood =
+					    static_cast<int>(static_cast<long long>(a.cargoFood) * a.troops / previousTroops);
 			}
 			if (a.troops <= 0)
 			{

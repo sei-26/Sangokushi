@@ -6,11 +6,17 @@ void Play(hero::Story& s) {
   if(s.battleEvent)assert(s.ResolveBattleEvent(0));
   for(int i=0;i<static_cast<int>(s.units.size())&&s.phase==2;++i){
    const auto u=s.units[i];if(u.hero<0||u.hp<=0||u.acted)continue;
+   const int objective=s.ObjectiveTile();
+   if(s.deepRules && objective>=0 && s.objectiveProgress<2 && u.hero==2) {
+    if(u.x==objective%hero::W && u.y==objective/hero::W) {s.Guard(i);continue;}
+    int next=s.StepToward(i,objective%hero::W,objective/hero::W);if(next>=0)s.Act(i,next%hero::W,next/hero::W);
+   }
+   const auto current=s.units[i];
    if((u.hero==0||u.hero==3||u.hero==2)&&s.Skill(i))continue;
    int target=-1,distance=100;
-   for(int j=0;j<static_cast<int>(s.units.size());++j)if(s.units[j].enemy&&s.units[j].hp>0&&hero::Story::Distance(u,s.units[j])<distance){target=j;distance=hero::Story::Distance(u,s.units[j]);}
-   if(target>=0){auto t=s.units[target];if(distance<=u.range){if(!s.Skill(i))s.Act(i,t.x,t.y);}else{int next=s.StepToward(i,t.x,t.y);if(next>=0)s.Act(i,next%hero::W,next/hero::W);}}
-   else if(s.chapter==3){int next=s.StepToward(i,9,u.hero==3?5:u.hero==4?6:u.hero);if(next>=0)s.Act(i,next%hero::W,next/hero::W);}
+   for(int j=0;j<static_cast<int>(s.units.size());++j)if(s.units[j].enemy&&s.units[j].hp>0&&hero::Story::Distance(current,s.units[j])<distance){target=j;distance=hero::Story::Distance(current,s.units[j]);}
+   if(target>=0){auto t=s.units[target];if(s.CanAttack(i,target)){if(!s.Skill(i))s.Act(i,t.x,t.y);}else{int next=s.StepToward(i,t.x,t.y);if(next>=0)s.Act(i,next%hero::W,next/hero::W);}}
+   else if(s.chapter==3){const int px[]={6,7,8,9,9},py[]={6,0,0,5,6};int next=s.StepToward(i,px[u.hero],py[u.hero]);if(next>=0)s.Act(i,next%hero::W,next/hero::W);}
   }
   if(s.chapter==4)s.FireSignal();s.EndTurn();
  }
@@ -20,7 +26,7 @@ int main(){
  for(int chapter=0;chapter<6;++chapter){
   assert(s.chapter==chapter&&s.phase==0);assert(s.Choose(0)&&s.Choose(0));
   if(chapter==1){assert(s.CivilAction(0)&&s.CivilAction(1)&&s.CivilAction(0));}
-  else if(chapter==2){for(int i=0;i<3;++i){if(s.food<20)s.CivilAction(1);assert(s.CivilAction(0));}}
+  else if(chapter==2){for(int i=0;i<3;++i){if(s.food<20)s.CivilAction(1);assert(s.CivilAction(0));if(i<2)assert(s.CivilAction(2));}}
   else Play(s);
   std::cerr<<"Chapter "<<chapter<<" turn "<<s.turn<<" phase "<<s.phase<<" escaped "<<s.escaped<<" lost "<<s.lost<<"\n";
   if(s.failed)for(const auto& u:s.units)std::cerr<<u.hero<<" civ "<<u.civilian<<" hp "<<u.hp<<" @"<<u.x<<","<<u.y<<"\n";assert(s.phase==3&&!s.failed);assert(s.Choose(0));
@@ -48,4 +54,30 @@ int main(){
  support.Choose(0);warrior.Choose(0);assert(support.units[0].maxHp>warrior.units[0].maxHp&&support.units[3].acted&&!support.units[0].acted);support.EndTurn();assert(!support.units[3].acted);
  hero::Story training;training.chapter=3;training.phase=1;training.AssignPlanner(1);hero::Story guardTraining=training;guardTraining.AssignPlanner(3);training.Choose(1);guardTraining.Choose(1);assert(training.units[0].attack>guardTraining.units[0].attack);
  std::cout<<"Shared role, pair relationship and preparation tradeoff tests passed\n";
+
+ hero::Story vow;vow.Choose(0);vow.Choose(0);
+ for(auto& u:vow.units)if(u.enemy)u.hp=0;
+ vow.CheckBattle();assert(vow.phase==2);
+ const int tile=vow.ObjectiveTile();vow.units[2].x=tile%hero::W;vow.units[2].y=tile/hero::W;
+ vow.EndTurn();assert(vow.objectiveProgress==1);vow.EndTurn();assert(vow.phase==3 && vow.outcomes[0]==2);
+ assert(vow.Choose(0)&&vow.Choose(0)&&vow.Choose(0) && vow.chapter==1 && vow.order==58);
+ hero::Story force;force.Choose(1);force.Choose(1);for(auto& u:force.units)if(u.enemy)u.hp=0;force.CheckBattle();assert(force.phase==3 && force.outcomes[0]==1);
+ hero::Story position;position.phase=2;position.StartMission();
+ position.units[0].x=4;position.units[0].y=5;position.AdvanceObjective();assert(position.objectiveProgress==1);
+ position.units[0].x=3;position.AdvanceObjective();assert(position.objectiveProgress==0);
+ position.units[0].x=4;position.units[3].x=5;position.units[3].y=5;position.AdvanceObjective();assert(position.objectiveProgress==0);
+ hero::Story duel;duel.phase=2;duel.StartMission();duel.units.resize(2);
+ duel.units[0].acted=false;duel.units[0].x=4;duel.units[0].y=3;
+ duel.units[1].hero=-1;duel.units[1].enemy=true;duel.units[1].x=5;duel.units[1].y=3;duel.units[1].attack=4;duel.units[1].hp=duel.units[1].maxHp=12;
+ hero::Story open=duel;const int hp=duel.units[0].hp;
+ assert(duel.Guard(0) && !duel.Guard(0));duel.EndTurn();open.EndTurn();
+ assert(duel.units[0].hp>open.units[0].hp && duel.units[1].hp==11 && !duel.units[0].guarding);
+ hero::Story advancing=duel;advancing.units[0].x=3;advancing.units[0].y=3;advancing.units[1].x=5;
+ assert(advancing.Act(0,4,3) && advancing.units[0].moved && !advancing.units[0].acted);
+ assert(advancing.Act(0,5,3) && advancing.units[0].acted);
+ hero::Story interview;interview.chapter=2;interview.phase=2;interview.StartMission();
+ assert(interview.CivilAction(0) && !interview.CivilAction(0) && interview.CivilAction(2) && interview.CivilAction(0));
+ hero::Story shots=duel;shots.units[0].range=3;shots.units[0].x=3;shots.units[1].x=6;shots.terrain[3*hero::W+4]=1;
+ assert(!shots.CanAttack(0,1));shots.terrain[3*hero::W+4]=0;assert(shots.CanAttack(0,1));
+ std::cout<<"Story vows, consequences, position, guard and move-attack passed"<<std::endl;
 }

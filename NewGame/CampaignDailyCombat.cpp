@@ -11,22 +11,12 @@ namespace frontline
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
 		{
 			auto& a = armies[i];
-			if (a.troops <= 0)
+			if (a.troops <= 0 || a.arm == Arm::Transport)
 				continue;
 			if (a.tacticLeft > 0)
 				--a.tacticLeft;
-			if (a.faction != player && !a.tacticQueued)
-			{
-				bool nearby = false;
-				for (const auto& b : armies)
-					if (b.troops > 0 && Hostile(a.faction, b.faction) && Distance(a.tile, b.tile) <= 2)
-						nearby = true;
-				const int c = CityAt(a.target);
-				if (c >= 0 && Hostile(a.faction, cities[c].owner) && Distance(a.tile, a.target) <= 1)
-					nearby = true;
-				if (nearby)
-					ActivateTactic(i, true);
-			}
+			if (a.faction != player && AIUseTactic(i, supply))
+				ActivateTactic(i, true);
 			if (!a.tacticQueued)
 				continue;
 			a.tacticQueued = false;
@@ -89,27 +79,31 @@ namespace frontline
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
 		{
 			const auto& a = armies[i];
-			if (a.troops <= 0)
+			if (a.troops <= 0 || a.arm == Arm::Transport)
 				continue;
 			const auto& officer = generals[a.general];
-			const int range =
-			    a.arm == Arm::Bow ? (a.tacticLeft > 0 && officer.tactic == Tactic::Volley ? 3 : 2) : 1;
+
 			int target = -1, distance = 100000;
 			for (int j = 0; j < static_cast<int>(armies.size()); ++j)
 				if (armies[j].troops > 0 && Hostile(armies[j].faction, a.faction) &&
-				    Distance(a.tile, armies[j].tile) <= range && Distance(a.tile, armies[j].tile) < distance)
+				    CanStrike(i, armies[j].tile) && Distance(a.tile, armies[j].tile) < distance)
 				{
 					target = j;
 					distance = Distance(a.tile, armies[j].tile);
 				}
+			if (a.faction != player)
+			{
+				target = AITargetArmy(i);
+				distance = target >= 0 ? Distance(a.tile, armies[target].tile) : 100000;
+			}
 			const double morale = 0.3 + a.morale / 140.0;
 			const double coordination = 1 + formations[i].attack / 100.0;
 			const double tactic = a.tacticLeft > 0 ? (officer.tactic == Tactic::Charge   ? 1.35
 			                                          : officer.tactic == Tactic::Volley ? 1.2
 			                                                                             : 1.0)
 			                                       : 1.0;
-			const double power =
-			    (a.troops / 22.0 + officer.leadership * 1.3) * morale * 0.55 * coordination * tactic;
+			const double power = (a.troops / 22.0 + officer.leadership * 1.3) * morale * 0.55 * coordination *
+			                     tactic * battle::AttackPercent(a.stance) / 100.0;
 			if (target >= 0)
 			{
 				const auto& b = armies[target];
@@ -165,7 +159,12 @@ namespace frontline
 			if (a.tacticLeft > 0 && officer.tactic == Tactic::Fortify)
 				losses[i] = static_cast<int>(losses[i] * 0.7);
 			losses[i] = losses[i] * (100 - formations[i].defense) / 100;
+			losses[i] = losses[i] * battle::DamagePercent(a.stance) / 100;
+			const int previousTroops = a.troops;
 			a.troops = std::max(0, a.troops - losses[i]);
+			if (a.arm == Arm::Transport && losses[i] > 0)
+				a.cargoFood =
+				    static_cast<int>(static_cast<long long>(a.cargoFood) * a.troops / previousTroops);
 			if (losses[i] > 0)
 				a.morale = std::max(0, a.morale - 2);
 			if (a.troops == 0)
@@ -182,8 +181,8 @@ namespace frontline
 				continue;
 			int winner = -1;
 			for (int i = 0; i < static_cast<int>(armies.size()); ++i)
-				if (armies[i].troops > 0 && !armies[i].retreat && armies[i].target == cities[c].tile &&
-				    Hostile(armies[i].faction, cities[c].owner) &&
+				if (armies[i].arm != Arm::Transport && armies[i].troops > 0 && !armies[i].retreat &&
+				    armies[i].target == cities[c].tile && Hostile(armies[i].faction, cities[c].owner) &&
 				    Distance(armies[i].tile, cities[c].tile) <= 1 &&
 				    (winner < 0 || armies[i].troops > armies[winner].troops))
 					winner = i;

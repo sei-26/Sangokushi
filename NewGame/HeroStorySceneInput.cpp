@@ -2,173 +2,178 @@
 
 void HeroStoryScene::update()
 {
-	fx.Tick(!landing && !notes && s.phase == 2 && s.Tactical() && !s.failed);
+	m_presentation.Tick(!m_landing && !m_showNotes && m_story.phase == 2 && m_story.Tactical() &&
+	                    !m_story.failed);
 	if (Rect(Scene::Width() - 180, 26, 148, 38).leftClicked())
 	{
-		fx.Stop();
-		back = true;
+		m_presentation.Stop();
+		m_backRequested = true;
 		return;
 	}
 	if (Rect(Scene::Width() - 310, 26, 115, 38).leftClicked())
 	{
-		fx.ToggleSound();
+		m_presentation.ToggleSound();
 		return;
 	}
-	if (landing)
+	if (m_landing)
 	{
-		if (B(3).leftClicked())
+		if (buttonRect(3).leftClicked())
 		{
-			s.Reset();
-			landing = false;
-			Save();
+			m_story.Reset();
+			m_landing = false;
+			save();
 		}
-		if (B(4).leftClicked())
+		if (buttonRect(4).leftClicked())
 		{
 			hero::Story loaded;
 			if (hero::LoadJSON(JSON::Load(U"hero-story-save.json"), loaded))
 			{
-				s = std::move(loaded);
-				landing = false;
-				selected = 0;
+				m_story = std::move(loaded);
+				m_landing = false;
+				m_selectedUnit = 0;
 			}
 			else
-				message = U"読み込める英雄譚の保存がありません。";
+				m_message = U"読み込める英雄譚の保存がありません。";
 		}
 		return;
 	}
-	if (B(7).leftClicked())
+	if (buttonRect(7).leftClicked())
 	{
-		notes = !notes;
+		m_showNotes = !m_showNotes;
 		return;
 	}
-	if (B(8).leftClicked())
+	if (buttonRect(8).leftClicked())
 	{
-		Save();
+		save();
 		return;
 	}
-	if (notes)
+	if (m_showNotes)
 	{
-		if (B(6).leftClicked())
-			notePage = (notePage + 1) % 4;
+		if (buttonRect(6).leftClicked())
+			m_notePage = (m_notePage + 1) % 4;
 		return;
 	}
-	if (fx.Busy())
+	if (m_presentation.Busy())
 		return;
 	if (!MouseL.down())
 		return;
-	const hero::Story before = s;
+	const hero::Story before = m_story;
 	bool changed = false;
-	if (s.phase == 1 && B(0).leftClicked())
+	if (m_story.phase == 1 && buttonRect(0).leftClicked())
 	{
-		s.AssignPlanner((s.planner + 1) % s.Unlocked());
-		Save();
+		m_story.AssignPlanner((m_story.planner + 1) % m_story.Unlocked());
+		save();
 		return;
 	}
-	if (s.battleEvent && s.phase == 2 && !s.failed)
+	if (m_story.battleEvent && m_story.phase == 2 && !m_story.failed)
 	{
 		for (int i = 0; i < 2; ++i)
-			if (BattleChoice(i).leftClicked())
+			if (battleChoiceRect(i).leftClicked())
 			{
-				changed = s.ResolveBattleEvent(i);
-				fx.Moment(s.chapter == 3 ? (i == 0 ? 2 : 3) : 0,
-				          i == 0 ? U"仲間と、踏みとどまる" : U"誰も、見捨てない",
-				          s.chapter == 3 ? StoryPresentation::Quote(i == 0 ? 2 : 3)
-				                         : StoryPresentation::Quote(0));
+				changed = m_story.ResolveBattleEvent(i);
+				m_presentation.Moment(m_story.chapter == 3 ? (i == 0 ? 2 : 3) : 0,
+				                      i == 0 ? U"仲間と、踏みとどまる" : U"誰も、見捨てない",
+				                      m_story.chapter == 3 ? StoryPresentation::Quote(i == 0 ? 2 : 3)
+				                                           : StoryPresentation::Quote(0));
 			}
 		if (changed)
 		{
-			fx.Capture(before, s);
-			Save();
+			m_presentation.Capture(before, m_story);
+			save();
 		}
 		return;
 	}
-	if (s.phase == 0 || s.phase == 1 || s.phase == 3)
+	if (m_story.phase == 0 || m_story.phase == 1 || m_story.phase == 3)
 	{
 		for (int i = 0; i < 2; ++i)
-			if (Choice(i).leftClicked())
+			if (choiceRect(i).leftClicked())
 			{
-				changed = s.Choose(i);
-				selected = 0;
+				changed = m_story.Choose(i);
+				m_selectedUnit = 0;
 			}
 	}
-	else if (s.phase == 4)
+	else if (m_story.phase == 4)
 	{
-		if (B(3).leftClicked())
+		if (buttonRect(3).leftClicked())
 		{
-			landing = true;
+			m_landing = true;
 			return;
 		}
 	}
-	else if (s.failed)
+	else if (m_story.failed)
 	{
-		if (B(3).leftClicked())
+		if (buttonRect(3).leftClicked())
 		{
-			s.Retry();
-			selected = 0;
+			m_story.Retry();
+			m_selectedUnit = 0;
 			changed = true;
 		}
 	}
-	else if (!s.Tactical())
+	else if (!m_story.Tactical())
 	{
 		for (int i = 0; i < 3; ++i)
-			if (B(i).leftClicked())
-				changed = s.CivilAction(i);
+			if (buttonRect(i).leftClicked())
+				changed = m_story.CivilAction(i);
 	}
 	else
 	{
 		int row = 0;
-		for (int i = 0; i < static_cast<int>(s.units.size()); ++i)
-			if (s.units[i].hero >= 0)
+		for (int i = 0; i < static_cast<int>(m_story.units.size()); ++i)
+			if (m_story.units[i].hero >= 0)
 			{
 				if (Rect(38, 164 + row * 78, 205, 70).leftClicked())
-					selected = i;
+					m_selectedUnit = i;
 				++row;
 			}
-		auto r = Map();
+		auto r = mapRect();
 		if (r.mouseOver() && MouseL.down())
 		{
 			auto p = Cursor::PosF() - r.pos;
 			int x = static_cast<int>(p.x / (r.w / hero::W)), y = static_cast<int>(p.y / (r.h / hero::H));
-			int u = s.At(x, y);
-			if (u >= 0 && !s.units[u].enemy && !s.units[u].civilian)
-				selected = u;
+			int u = m_story.At(x, y);
+			if (u >= 0 && !m_story.units[u].enemy && !m_story.units[u].civilian)
+				m_selectedUnit = u;
 			else
-				changed = s.Act(selected, x, y);
+				changed = m_story.Act(m_selectedUnit, x, y);
 		}
-		if (B(0).leftClicked())
+		if (buttonRect(0).leftClicked())
 		{
-			changed = s.Skill(selected);
+			changed = m_story.Skill(m_selectedUnit);
 			if (changed)
-				fx.Moment(s.units[selected].hero, T(hero::SkillName(s.units[selected].hero)),
-				          StoryPresentation::Quote(s.units[selected].hero));
+				m_presentation.Moment(m_story.units[m_selectedUnit].hero,
+				                      text(hero::SkillName(m_story.units[m_selectedUnit].hero)),
+				                      StoryPresentation::Quote(m_story.units[m_selectedUnit].hero));
 			else
-				message = U"射程内に対象がいません。移動や負傷した味方の位置を確認してください。";
+				m_message = U"射程内に対象がいません。移動や負傷した味方の位置を確認してください。";
 		}
-		if (B(1).leftClicked())
+		if (buttonRect(1).leftClicked())
 		{
-			s.EndTurn();
+			m_story.EndTurn();
 			changed = true;
 		}
-		if (s.chapter == 4 && B(2).leftClicked())
+		if (m_story.chapter == 4 && buttonRect(2).leftClicked())
 		{
-			changed = s.FireSignal();
+			changed = m_story.FireSignal();
 			if (changed)
-				fx.Moment(4, U"江上、紅蓮に染まる", U"周瑜の火攻めが始まった。今こそ、連合軍の力を一つに！");
+				m_presentation.Moment(4, U"江上、紅蓮に染まる",
+				                      U"周瑜の火攻めが始まった。今こそ、連合軍の力を一つに！");
 		}
-		if (B(4).leftClicked())
+		if (buttonRect(9).leftClicked())
+			changed = m_story.Guard(m_selectedUnit);
+		if (buttonRect(4).leftClicked())
 		{
-			changed = s.Rally();
+			changed = m_story.Rally();
 			if (changed)
-				fx.Moment(0, U"絆の号令", StoryPresentation::Quote(0));
+				m_presentation.Moment(0, U"絆の号令", StoryPresentation::Quote(0));
 		}
 	}
 	if (changed)
 	{
-		fx.Capture(before, s);
-		if (before.phase == 1 && s.phase == 2 && s.Tactical())
-			fx.Moment(s.chapter == 3 ? 2 : s.Companion(),
-			          U"{} ― 開戦"_fmt(String(hero::Book()[s.chapter].place)),
-			          StoryPresentation::Quote(s.chapter == 3 ? 2 : s.Companion()));
-		Save();
+		m_presentation.Capture(before, m_story);
+		if (before.phase == 1 && m_story.phase == 2 && m_story.Tactical())
+			m_presentation.Moment(m_story.chapter == 3 ? 2 : m_story.Companion(),
+			                      U"{} ― 開戦"_fmt(String(hero::Book()[m_story.chapter].place)),
+			                      StoryPresentation::Quote(m_story.chapter == 3 ? 2 : m_story.Companion()));
+		save();
 	}
 }

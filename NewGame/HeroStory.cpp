@@ -15,7 +15,7 @@ namespace hero
 
 	int Story::TurnLimit() const
 	{
-		return chapter == 3 ? 40 : 24;
+		return chapter == 3 ? (VowRequired() ? 52 : 40) : 24;
 	}
 
 	bool Story::Valid(int x, int y)

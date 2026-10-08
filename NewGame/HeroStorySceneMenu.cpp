@@ -11,9 +11,9 @@ void HeroStoryScene::drawLanding() const
 	    .draw(RectF(90, 303, 540, 100), ColorF(.89, .88, .78));
 	for (int i = 0; i < 6; ++i)
 	{
-		fx.Portrait(i, RectF(90 + i * 86, 421, 74, 80));
+		m_presentation.Portrait(i, RectF(90 + i * 86, 421, 74, 80));
 		RectF(90 + i * 86, 421, 74, 80).drawFrame(1, ColorF(.77, .62, .35));
-		FontAsset(U"campaignSmall")(T(hero::Name(i))).drawAt(127 + i * 86, 516, ColorF(.93, .84, .63));
+		FontAsset(U"campaignSmall")(text(hero::Name(i))).drawAt(127 + i * 86, 516, ColorF(.93, .84, .63));
 	}
 	const int cw = (Scene::Width() - 180) / 3;
 	for (int i = 0; i < 6; ++i)
@@ -25,8 +25,8 @@ void HeroStoryScene::drawLanding() const
 		FontAsset(U"campaignBody")(String(hero::Book()[i].title))
 		    .draw(card.x + 16, card.y + 32, ColorF(.94, .84, .63));
 	}
-	Button(B(3), U"新しく英雄譚を始める");
-	Button(B(4), U"英雄譚の続きから");
+	drawButton(buttonRect(3), U"新しく英雄譚を始める");
+	drawButton(buttonRect(4), U"英雄譚の続きから");
 	FontAsset(U"campaignSmall")(U"手動ターン制 / 自動保存 / 会話・分岐・戦場は創作")
 	    .draw(90, Scene::Height() - 38, ColorF(.70, .77, .69));
 }

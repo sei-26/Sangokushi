@@ -5,45 +5,71 @@ void HeroStoryScene::Preview(int mode)
 	Open();
 	if (mode != 4)
 	{
-		landing = false;
-		s.Reset();
+		m_landing = false;
+		m_story.Reset();
+		if (mode == 21)
+		{
+			m_story.chapter = 3;
+		}
+		if (mode == 19)
+		{
+			m_story.chapter = 5;
+			m_story.Choose(0);
+			m_story.Choose(0);
+			m_story.units[0].x = 4;
+			m_story.units[0].y = 3;
+			m_story.units[1].x = 4;
+			m_story.units[1].y = 2;
+			m_story.units[2].x = 6;
+			m_story.units[2].y = 3;
+			m_story.units[3].x = 3;
+			m_story.units[3].y = 4;
+			m_story.units[4].x = 4;
+			m_story.units[4].y = 4;
+			m_story.units[5].x = 6;
+			m_story.units[5].y = 2;
+			m_story.AdvanceObjective();
+			m_story.AdvanceObjective();
+			m_story.Guard(2);
+			m_selectedUnit = 5;
+		}
 		if (mode == 6 || mode == 9 || mode == 10)
 		{
-			s.chapter = 3;
-			s.phase = 2;
-			s.StartMission();
-			s.spirit = 72;
+			m_story.chapter = 3;
+			m_story.phase = 2;
+			m_story.StartMission();
+			m_story.spirit = 72;
 			if (mode == 9)
 			{
-				s.turn = 4;
-				s.battleEvent = 1;
-				s.eventMask = 1;
+				m_story.turn = 4;
+				m_story.battleEvent = 1;
+				m_story.eventMask = 1;
 			}
 			if (mode == 10)
-				fx.Moment(2, U"後衛の構え", StoryPresentation::Quote(2));
+				m_presentation.Moment(2, U"後衛の構え", StoryPresentation::Quote(2));
 		}
 		if (mode == 7)
 		{
-			s.chapter = 1;
-			s.phase = 2;
-			s.StartMission();
+			m_story.chapter = 1;
+			m_story.phase = 2;
+			m_story.StartMission();
 		}
 		if (mode == 8)
 		{
-			s.chapter = 5;
-			s.phase = 4;
+			m_story.chapter = 5;
+			m_story.phase = 4;
 		}
 		if (mode == 12)
 		{
-			s.chapter = 3;
-			s.phase = 1;
-			s.planner = 3;
+			m_story.chapter = 3;
+			m_story.phase = 1;
+			m_story.planner = 3;
 		}
 		if (mode == 13)
 		{
-			s.chapter = 5;
-			notes = true;
-			notePage = 3;
+			m_story.chapter = 5;
+			m_showNotes = true;
+			m_notePage = 3;
 		}
 	}
 }

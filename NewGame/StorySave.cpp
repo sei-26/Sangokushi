@@ -5,7 +5,11 @@ namespace hero
 	s3d::JSON SaveJSON(const Story& s)
 	{
 		s3d::JSON j;
-		j[U"version"] = 3;
+		j[U"version"] = 4;
+		j[U"deepRules"] = s.deepRules;
+		j[U"objectiveProgress"] = s.objectiveProgress;
+		j[U"outcomes"] = s3d::Array<int>(s.outcomes.begin(), s.outcomes.end());
+		j[U"civilActions"] = s3d::Array<int>(s.civilActions.begin(), s.civilActions.end());
 		j[U"planner"] = s.planner;
 		s3d::Array<s3d::JSON> relations;
 		for (const auto& r : s.relationships)
@@ -65,7 +69,9 @@ namespace hero
 			                               static_cast<int>(u.civilian),
 			                               static_cast<int>(u.acted),
 			                               static_cast<int>(u.skillUsed),
-			                               u.stunned};
+			                               u.stunned,
+			                               static_cast<int>(u.moved),
+			                               static_cast<int>(u.guarding)};
 			units.push_back(a);
 		}
 		j[U"units"] = units;
