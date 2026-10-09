@@ -14,7 +14,7 @@ int main(){
   const auto path=game.Route(game.cities[0].tile,city.tile,Arm::Spear);
   assert(!path.empty() && path.back()==city.tile);
   int previous=game.cities[0].tile;
-  for(int p:path){assert(Campaign::Distance(previous,p)==1 && game.Cost(p,Arm::Spear)<100000);previous=p;}
+  for(int p:path){assert(game.MapDistance(previous,p)==1 && game.Cost(p,Arm::Spear)<100000);previous=p;}
  }
  assert(game.Route(game.cities[0].tile,game.cities[6].tile,Arm::Spear).size()>50);
  world::MapCamera camera;camera.Fit(96,64);

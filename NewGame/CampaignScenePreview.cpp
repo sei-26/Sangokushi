@@ -7,14 +7,74 @@ using namespace campaignui;
 
 void CampaignScene::preview(int mode)
 {
+	if (mode == 26)
+	{
+		preview(14);
+		return;
+	}
+	if (mode == 24)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_camera.Fit(Width, Height, m_game.hexMap, true);
+		m_region = 1;
+		m_city = m_army = -1;
+		const auto p =
+		    hexgrid::Center(m_game.regions[m_region].tile % Width, m_game.regions[m_region].tile / Width);
+		m_camera.x = p.first;
+		m_camera.y = p.second;
+		m_camera.zoom = 4;
+		m_message = U"周辺の府を押さえ、都市圏の収入と進軍の足場を広げよう。";
+		return;
+	}
+	if (mode == 23)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_camera.Fit(Width, Height, m_game.hexMap, true);
+		m_camera.zoom = 4;
+		m_camera.x = 49;
+		m_camera.y = 34 * hexgrid::Row + hexgrid::Radius;
+		m_supplyView = true;
+		m_army = m_game.Deploy(2, 4, 3000, Arm::Spear);
+		const int left = m_game.Deploy(3, 6, 3000, Arm::Spear, true);
+		const int right = m_game.Deploy(3, 7, 3000, Arm::Spear, true);
+		for (int x = 47; x <= 51; ++x)
+			for (int y = 32; y <= 36; ++y)
+				m_game.tiles[Campaign::At(x, y)] = {Terrain::Plain, 0};
+		m_game.armies[m_army].tile = m_game.armies[m_army].target = Campaign::At(49, 34);
+		m_game.armies[left].tile = Campaign::At(48, 34);
+		m_game.armies[right].tile = Campaign::At(50, 34);
+		m_game.armies[left].target = m_game.armies[right].target = Campaign::At(49, 34);
+		m_game.AdvanceDay();
+		m_city = -1;
+		m_message = U"二方向から包囲されると被害と士気損失が増える。固守、援軍、退路で戦列を立て直そう。";
+		return;
+	}
+	if (mode == 22)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_camera.Fit(Width, Height, m_game.hexMap, true);
+		m_camera.zoom = 3.5;
+		m_camera.x = m_game.cities[3].tile % Width;
+		m_camera.y = hexgrid::Center(0, m_game.cities[3].tile / Width).second;
+		m_army = m_game.Deploy(3, 6, 3000, Arm::Siege, true);
+		m_game.Order(m_army, m_game.cities[2].tile);
+		for (int d = 0; d < 3; ++d)
+			m_game.AdvanceDay();
+		m_city = -1;
+		m_message = U"敵の攻城隊は支援の集結を待っている。補給を断つか、援軍を分断するか。";
+		return;
+	}
 	if (mode == 20)
 	{
 		m_started = true;
 		m_game.Reset(0);
-		m_camera.Fit(Width, Height);
+		m_camera.Fit(Width, Height, m_game.hexMap, true);
 		m_camera.zoom = 3.5;
 		m_camera.x = 49;
-		m_camera.y = 34;
+		m_camera.y = 34 * hexgrid::Row + hexgrid::Radius;
 		m_army = m_game.Deploy(2, 4, 3000, Arm::Bow);
 		m_game.SetStance(m_army, battle::Stance::Guard);
 		m_game.Order(m_army, m_game.cities[3].tile);
@@ -26,7 +86,7 @@ void CampaignScene::preview(int mode)
 	{
 		m_started = true;
 		m_game.Reset(0);
-		m_camera.Fit(Width, Height);
+		m_camera.Fit(Width, Height, m_game.hexMap, true);
 		m_councilMode = 3;
 		m_inspect = 19;
 		m_assignmentTarget = 9;
@@ -43,10 +103,10 @@ void CampaignScene::preview(int mode)
 	{
 		m_started = true;
 		m_game.Reset(0);
-		m_camera.Fit(Width, Height);
+		m_camera.Fit(Width, Height, m_game.hexMap, true);
 		m_camera.zoom = 4;
 		m_camera.x = 22;
-		m_camera.y = 40;
+		m_camera.y = 40 * hexgrid::Row + hexgrid::Radius;
 		m_city = 0;
 		m_tab = 2;
 		m_transportTarget = 9;
@@ -65,13 +125,14 @@ void CampaignScene::preview(int mode)
 	{
 		m_started = true;
 		m_game.Reset(0);
-		m_camera.Fit(Width, Height);
-		m_city = 2;
+		m_camera.Fit(Width, Height, m_game.hexMap, true);
+		m_city = -1;
+		m_camera.zoom = 1.8;
 		if (mode == 15)
 		{
 			m_camera.zoom = 3.5;
 			m_camera.x = 49;
-			m_camera.y = 34;
+			m_camera.y = 34 * hexgrid::Row + hexgrid::Radius;
 			m_supplyView = true;
 			const int a = m_game.Deploy(2, 4, 3000, Arm::Spear);
 			m_game.Order(a, m_game.cities[3].tile);

@@ -176,6 +176,25 @@ int main()
  JSON badAI=frontline::SaveJSON(aiSave);badAI[U"aiCommands"]=Array<int>{3,4,3};assert(!frontline::LoadJSON(badAI,aiLoaded));
  badAI=frontline::SaveJSON(aiSave);badAI[U"aiPlannedDay"]=Array<int>{0,aiSave.day+1,0};assert(!frontline::LoadJSON(badAI,aiLoaded));
  badAI=frontline::SaveJSON(aiSave);badAI[U"version"]=7;assert(frontline::LoadJSON(badAI,aiLoaded) && aiLoaded.aiPlannedDay[1]==-1 && aiLoaded.aiCommands[1]==3);
+ // Preserve an offensive assembly timer, including the exact day of cancellation.
+ frontline::Campaign assembly;assembly.Reset(0);assembly.day=1;
+ int staged=assembly.Deploy(3,6,3000,frontline::Arm::Siege,true);assert(staged>=0);
+ assert(assembly.Order(staged,assembly.cities[0].tile));assembly.armies[staged].aiAssemblyDays=12;
+ assert(frontline::LoadJSON(frontline::SaveJSON(assembly),aiLoaded) && aiLoaded.armies[staged].aiAssemblyDays==12);
+ JSON assemblyJSON=frontline::SaveJSON(assembly);assemblyJSON[U"armies"][staged][U"aiAssemblyDays"]=21;assert(!frontline::LoadJSON(assemblyJSON,aiLoaded));
+ assemblyJSON=frontline::SaveJSON(assembly);assemblyJSON[U"version"]=8;assert(frontline::LoadJSON(assemblyJSON,aiLoaded) && aiLoaded.armies[staged].aiAssemblyDays==0);
+ assert(frontline::LoadJSON(frontline::SaveJSON(assembly),aiLoaded));
+ for(int d=0;d<8;++d){assembly.AdvanceDay();aiLoaded.AdvanceDay();}
+ assert(aiLoaded.armies[staged].troops==assembly.armies[staged].troops && aiLoaded.armies[staged].aiAssemblyDays==assembly.armies[staged].aiAssemblyDays && aiLoaded.armies[staged].retreat==assembly.armies[staged].retreat);
+ std::cout << "AI assembly saves and version 8 compatibility passed" << std::endl;
+ frontline::Campaign hexSaved;hexSaved.Reset(0);int hexUnit=hexSaved.Deploy(0,0,3000,frontline::Arm::Spear);assert(hexUnit>=0 && hexSaved.Order(hexUnit,hexSaved.cities[3].tile));
+ assert(frontline::LoadJSON(frontline::SaveJSON(hexSaved),aiLoaded) && aiLoaded.hexMap && aiLoaded.armies[hexUnit].path==hexSaved.armies[hexUnit].path);
+ assert(aiLoaded.regions.size()==hexSaved.regions.size() && aiLoaded.tileRegion==hexSaved.tileRegion);
+ JSON regionBad=frontline::SaveJSON(hexSaved);regionBad[U"regions"][0][U"owner"]=2;assert(!frontline::LoadJSON(regionBad,aiLoaded));
+ JSON oldHex=frontline::SaveJSON(hexSaved);oldHex[U"version"]=10;assert(frontline::LoadJSON(oldHex,aiLoaded) && aiLoaded.hexMap && aiLoaded.regions.empty());
+ JSON squareOld=frontline::SaveJSON(hexSaved);squareOld[U"version"]=9;assert(frontline::LoadJSON(squareOld,aiLoaded) && !aiLoaded.hexMap);
+ int squareStep=aiLoaded.armies[hexUnit].tile;for(int p:aiLoaded.armies[hexUnit].path){assert(aiLoaded.MapDistance(squareStep,p)==1);squareStep=p;}
+ std::cout << "Hex saves and version 9 square-map migration passed" << std::endl;
  std::cout << "AI budget persistence and deterministic continuation passed" << std::endl;
  std::cout << "Personnel save state and version 4 compatibility passed" << std::endl;
  std::cout << "Campaign save tests passed; old world migration and new world round trips passed\n";

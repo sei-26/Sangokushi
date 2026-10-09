@@ -11,7 +11,7 @@ namespace frontline
 			if (b.troops <= 0 || !Hostile(a.faction, b.faction) || !CanStrike(index, b.tile))
 				continue;
 			const int value =
-			    500 - b.troops / 30 + (b.arm == Arm::Transport ? 220 : 0) - Distance(a.tile, b.tile) * 25;
+			    500 - b.troops / 30 + (b.arm == Arm::Transport ? 220 : 0) - MapDistance(a.tile, b.tile) * 25;
 			if (value > score)
 			{
 				score = value;
@@ -36,17 +36,18 @@ namespace frontline
 		{
 			int hurt = 0;
 			for (const auto& b : armies)
-				if (b.troops > 0 && b.faction == a.faction && Distance(a.tile, b.tile) <= 2 && b.morale < 70)
+				if (b.troops > 0 && b.faction == a.faction && MapDistance(a.tile, b.tile) <= 2 &&
+				    b.morale < 70)
 					++hurt;
 			return hurt >= 2;
 		}
 		int nearby = 0;
 		for (const auto& b : armies)
-			if (b.troops > 0 && Hostile(a.faction, b.faction) && Distance(a.tile, b.tile) <= 2)
+			if (b.troops > 0 && Hostile(a.faction, b.faction) && MapDistance(a.tile, b.tile) <= 2)
 				nearby += b.troops;
 		const int city = CityAt(a.target);
 		const bool siege =
-		    city >= 0 && Hostile(a.faction, cities[city].owner) && Distance(a.tile, a.target) <= 1;
+		    city >= 0 && Hostile(a.faction, cities[city].owner) && MapDistance(a.tile, a.target) <= 1;
 		if (tactic == Tactic::Fortify)
 			return nearby >= a.troops / 2 || siege;
 		if (tactic == Tactic::Volley)
@@ -54,12 +55,8 @@ namespace frontline
 			if (a.arm != Arm::Bow)
 				return false;
 			for (const auto& b : armies)
-				if (b.troops > 0 && Hostile(a.faction, b.faction) && Distance(a.tile, b.tile) <= 3 &&
-				    battle::ClearRay(a.tile % Width, a.tile / Width, b.tile % Width, b.tile / Width,
-				                     [&](int x, int y) {
-					                     return tiles[At(x, y)].terrain == Terrain::Mountain ||
-					                            tiles[At(x, y)].terrain == Terrain::Forest;
-				                     }))
+				if (b.troops > 0 && Hostile(a.faction, b.faction) && MapDistance(a.tile, b.tile) <= 3 &&
+				    ClearShot(a.tile, b.tile))
 					return true;
 			return false;
 		}
@@ -78,8 +75,9 @@ namespace frontline
 			const bool invalid = targetCity >= 0 && cities[targetCity].owner != a.faction &&
 			                     !Hostile(a.faction, cities[targetCity].owner);
 			const bool returnHome = a.retreat || a.troops < 1200 || a.morale < 30 ||
-			                        (!a.supplied && a.food < 120) || invalid ||
-			                        (targetCity >= 0 && cities[targetCity].owner == a.faction);
+			                        (!a.supplied && a.food < 120) ||
+			                        (PressureDirections(i) >= 3 && (a.troops < 2500 || a.morale < 50)) ||
+			                        invalid || (targetCity >= 0 && cities[targetCity].owner == a.faction);
 			if (returnHome)
 			{
 				const int here = CityAt(a.tile);
@@ -99,7 +97,7 @@ namespace frontline
 					if (cities[c].owner == a.faction && AIThreat(c) < cities[c].troops + 2000)
 						homes.push_back(c);
 				std::stable_sort(homes.begin(), homes.end(), [&](int x, int y) {
-					return Distance(a.tile, cities[x].tile) < Distance(a.tile, cities[y].tile);
+					return MapDistance(a.tile, cities[x].tile) < MapDistance(a.tile, cities[y].tile);
 				});
 				bool routed = false;
 				for (int home : homes)
@@ -127,7 +125,7 @@ namespace frontline
 			// Respond with nearby forces. Distant armies keep their campaign objective.
 			int defend = -1;
 			for (int c = 0; c < static_cast<int>(cities.size()); ++c)
-				if (cities[c].owner == a.faction && Distance(a.tile, cities[c].tile) <= 10 &&
+				if (cities[c].owner == a.faction && MapDistance(a.tile, cities[c].tile) <= 10 &&
 				    AIThreat(c) > std::max(2000, cities[c].troops / 2))
 				{
 					defend = c;
@@ -138,7 +136,7 @@ namespace frontline
 				int enemy = -1;
 				for (int j = 0; j < static_cast<int>(armies.size()); ++j)
 					if (armies[j].troops > 0 && Hostile(a.faction, armies[j].faction) &&
-					    Distance(armies[j].tile, cities[defend].tile) <= 6 &&
+					    MapDistance(armies[j].tile, cities[defend].tile) <= 6 &&
 					    (enemy < 0 || armies[j].troops > armies[enemy].troops))
 						enemy = j;
 				if (enemy >= 0 && a.target != armies[enemy].tile && Order(i, armies[enemy].tile))
@@ -152,15 +150,15 @@ namespace frontline
 				{
 					const auto& convoy = armies[cargo];
 					if (convoy.troops <= 0 || convoy.arm != Arm::Transport || convoy.faction != a.faction ||
-					    Distance(a.tile, convoy.tile) > 6)
+					    MapDistance(a.tile, convoy.tile) > 6)
 						continue;
 					int enemy = -1;
 					for (int j = 0; j < static_cast<int>(armies.size()); ++j)
 						if (armies[j].troops > 0 && armies[j].arm != Arm::Transport &&
 						    Hostile(a.faction, armies[j].faction) &&
-						    Distance(armies[j].tile, convoy.tile) <= 5 &&
-						    (enemy < 0 || Distance(armies[j].tile, convoy.tile) <
-						                      Distance(armies[enemy].tile, convoy.tile)))
+						    MapDistance(armies[j].tile, convoy.tile) <= 5 &&
+						    (enemy < 0 || MapDistance(armies[j].tile, convoy.tile) <
+						                      MapDistance(armies[enemy].tile, convoy.tile)))
 							enemy = j;
 					if (enemy < 0)
 						continue;
@@ -169,10 +167,10 @@ namespace frontline
 						if (armies[j].troops > 0 && armies[j].faction == a.faction &&
 						    armies[j].arm != Arm::Transport && armies[j].arm != Arm::Siege &&
 						    !armies[j].retreat &&
-						    (Distance(armies[j].tile, convoy.tile) <
-						         Distance(armies[nearest].tile, convoy.tile) ||
-						     (Distance(armies[j].tile, convoy.tile) ==
-						          Distance(armies[nearest].tile, convoy.tile) &&
+						    (MapDistance(armies[j].tile, convoy.tile) <
+						         MapDistance(armies[nearest].tile, convoy.tile) ||
+						     (MapDistance(armies[j].tile, convoy.tile) ==
+						          MapDistance(armies[nearest].tile, convoy.tile) &&
 						      j < nearest)))
 							nearest = j;
 					if (nearest != i)
@@ -183,6 +181,31 @@ namespace frontline
 				}
 			if (escorting)
 				continue;
+			// Field forces take reachable regional hubs; siege groups retain their city objective.
+			if (hexMap && !regions.empty() && a.arm != Arm::Siege && (targetCity < 0 || a.path.empty()))
+			{
+				const int current = RegionAt(a.tile);
+				if (current >= 0 && a.tile == regions[current].tile && regions[current].owner == a.faction &&
+				    RegionCoverage(current) < 80 && a.path.empty())
+					continue;
+				std::vector<int> targets;
+				for (int r = 0; r < static_cast<int>(regions.size()); ++r)
+					if (CityAt(regions[r].tile) < 0 && Hostile(a.faction, regions[r].owner) &&
+					    MapDistance(a.tile, regions[r].tile) <= 12)
+						targets.push_back(r);
+				std::stable_sort(targets.begin(), targets.end(), [&](int x, int y) {
+					return MapDistance(a.tile, regions[x].tile) < MapDistance(a.tile, regions[y].tile);
+				});
+				bool ordered = false;
+				for (int r : targets)
+					if (Order(i, regions[r].tile))
+					{
+						ordered = true;
+						break;
+					}
+				if (ordered)
+					continue;
+			}
 			bool blocked = !a.path.empty() && CityAt(a.path.front()) >= 0 &&
 			               cities[CityAt(a.path.front())].owner != a.faction && a.path.front() != a.target;
 			if (a.path.empty() || blocked ||

@@ -39,6 +39,11 @@ namespace frontline
 		int worker = -1, work = 0, workLeft = 0;
 		int helper = -1;
 	};
+	struct Region
+	{
+		std::u32string name;
+		int tile = 0, city = -1, owner = -1;
+	};
 	struct General
 	{
 		std::u32string name;
@@ -54,6 +59,7 @@ namespace frontline
 		int faction = 0, general = 0, tile = 0, target = 0, troops = 0;
 		int cargoFood = 0; // Cargo is separate from escort provisions.
 		int food = 1800, morale = 100, movement = 0;
+		int aiAssemblyDays = 0; // Consecutive days waiting for the same offensive group.
 		Arm arm = Arm::Spear;
 		battle::Stance stance = battle::Stance::Balanced;
 		bool supplied = true, retreat = false;

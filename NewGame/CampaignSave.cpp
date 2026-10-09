@@ -5,7 +5,18 @@ namespace frontline
 	s3d::JSON SaveJSON(const Campaign& game)
 	{
 		s3d::JSON json;
-		json[U"version"] = 8;
+		json[U"version"] = 11;
+		s3d::Array<s3d::JSON> regions;
+		if (game.hexMap)
+			for (const auto& r : game.regions)
+			{
+				s3d::JSON j;
+				j[U"owner"] = r.owner;
+				j[U"city"] = r.city;
+				regions.push_back(j);
+			}
+		json[U"regions"] = regions;
+		json[U"hexMap"] = game.hexMap;
 		json[U"aiPlannedDay"] = s3d::Array<int>(game.aiPlannedDay.begin(), game.aiPlannedDay.end());
 		json[U"aiCommands"] = s3d::Array<int>(game.aiCommands.begin(), game.aiCommands.end());
 		json[U"legacyLayout"] = game.legacyLayout;
@@ -57,6 +68,7 @@ namespace frontline
 			j[U"stance"] = static_cast<int>(a.stance);
 			j[U"morale"] = a.morale;
 			j[U"movement"] = a.movement;
+			j[U"aiAssemblyDays"] = a.aiAssemblyDays;
 			j[U"arm"] = static_cast<int>(a.arm);
 			j[U"supplied"] = a.supplied;
 			j[U"retreat"] = a.retreat;

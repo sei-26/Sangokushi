@@ -66,7 +66,7 @@ namespace frontline
 		int best = 0;
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
 			if (i != army && armies[i].troops > 0 && armies[i].faction == a.faction &&
-			    Distance(a.tile, armies[i].tile) <= 2)
+			    MapDistance(a.tile, armies[i].tile) <= 2)
 				best = std::max(best, Affinity(a.general, armies[i].general));
 		return best;
 	}
@@ -83,7 +83,7 @@ namespace frontline
 		{
 			const auto& b = armies[i];
 			if (i == army || b.arm == Arm::Transport || b.troops <= 0 || b.faction != a.faction ||
-			    b.retreat || b.morale < 30 || (!b.supplied && b.food <= 0) || Distance(a.tile, b.tile) > 2)
+			    b.retreat || b.morale < 30 || (!b.supplied && b.food <= 0) || MapDistance(a.tile, b.tile) > 2)
 				continue;
 			officer::Merge(effect, officer::Contribution(officer::RoleOf(generals[a.general].name),
 			                                             officer::RoleOf(generals[b.general].name),

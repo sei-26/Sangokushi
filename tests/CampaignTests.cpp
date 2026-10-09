@@ -9,7 +9,7 @@
 using namespace frontline;
 Campaign Empty()
 {
-	Campaign game; game.Reset(0);
+	Campaign game; game.Reset(0); game.hexMap=false;
 	for (auto& tile : game.tiles) tile = Tile{};
 	game.cities = {{U"Base",Campaign::At(1,1),0}};
 	game.tiles[game.cities[0].tile].owner = 0;
@@ -97,7 +97,7 @@ int main()
 	assert(!game.Order(0,Campaign::At(95,0)));
 	assert(game.Order(0,game.cities[3].tile));
 	int previous = game.armies[0].tile;
-	for (int p : game.armies[0].path) { assert(Campaign::Distance(previous,p) == 1); previous = p; }
+	for (int p : game.armies[0].path) { assert(game.MapDistance(previous,p) == 1); previous = p; }
 	assert(previous == game.cities[3].tile);
 
 	// A cut in a one-cell corridor removes the rear army's supply.
@@ -166,7 +166,7 @@ int main()
 		{
 			assert(a.morale >= 0 && a.morale <= 100 && a.food >= 0 && game.Cost(a.tile,a.arm) < 100000);
 			assert(commanders.insert(a.general).second && game.generals[a.general].faction == a.faction);
-			if (!a.path.empty()) assert(Campaign::Distance(a.tile,a.path.front()) == 1);
+			if (!a.path.empty()) assert(game.MapDistance(a.tile,a.path.front()) == 1);
 		}
 	}
 	Campaign allocation;allocation.Reset(0);

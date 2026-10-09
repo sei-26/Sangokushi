@@ -12,7 +12,7 @@ void CampaignScene::drawMenu() const
 	Scene::Rect().draw(ColorF(0.02, 0.06, 0.08, 0.58));
 	FontAsset(U"campaignTitle")(U"群 雄 戦 線")
 	    .drawAt(Scene::Center().x, Scene::Center().y - 240, ColorF(0.95, 0.86, 0.61));
-	FontAsset(U"campaignBody")(U"天下を争い、英雄の歩みをたどる。")
+	FontAsset(U"campaignBody")(U"一枚の大陸を制し、天下を統一する。")
 	    .drawAt(Scene::Center().x, Scene::Center().y - 190, ColorF(0.76, 0.85, 0.81));
 	const Rect story(Scene::Center().x - 465, Scene::Center().y - 145, 930, 86);
 	story.rounded(8)
@@ -20,11 +20,11 @@ void CampaignScene::drawMenu() const
 	    .drawFrame(2, ColorF(.78, .65, .36));
 	m_story.DrawBackdrop(story, .48);
 	story.draw(ColorF(.02, .05, .04, .45));
-	FontAsset(U"campaignTitle")(U"ストーリーモード　英雄譚 ― 劉備の旗")
+	FontAsset(U"campaignTitle")(U"新戦略　六角マスの領土と兵站")
 	    .draw(story.x + 24, story.y + 9, ColorF(.96, .85, .59));
-	FontAsset(U"campaignSmall")(U"全6章 / 内政・出会い・選択・護衛戦　　英雄の物語を始める →")
+	FontAsset(U"campaignSmall")(U"HEXの一枚マップ / 六方向の進軍・包囲・補給　　下の勢力を選択")
 	    .draw(story.x + 28, story.y + 57, ColorF(.81, .88, .76));
-	FontAsset(U"campaignSmall")(U"自由戦略 ― 勢力を選んで天下を争う")
+	FontAsset(U"campaignSmall")(U"君主を選んで大陸統一を目指す")
 	    .drawAt(Scene::Center().x, Scene::Center().y - 39, ColorF(.72, .81, .74));
 	const Array<String> notes{U"西方から進む。山と隘路を味方に。", U"中央を押さえる。多方面への備えを。",
 	                          U"江南を守る。渡河点をめぐる戦い。"};

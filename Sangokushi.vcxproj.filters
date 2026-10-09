@@ -23,7 +23,12 @@
       <Filter>Header Files\共通</Filter>
     </ClInclude>
     <ClInclude Include="NewGame\OfficerCore.hpp">
+      <Filter>Header Files\共通</Filter>
+    </ClInclude>
     <ClInclude Include="NewGame\BattleCore.hpp">
+      <Filter>Header Files\共通</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\HexGrid.hpp">
       <Filter>Header Files\共通</Filter>
     </ClInclude>
     <ClInclude Include="NewGame\WorldLayout.hpp">
@@ -401,12 +406,27 @@
     <ClCompile Include="NewGame\Campaign.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\CampaignRegions.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\CampaignAI.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignAIOperations.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\CampaignAIArmies.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\CampaignAIPlanning.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\CampaignCombat.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignBattlefield.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\CampaignBattleRules.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
@@ -423,6 +443,8 @@
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\CampaignOrders.cpp">
+      <Filter>Source Files\自由戦略\ルール</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\CampaignReturn.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
@@ -436,6 +458,8 @@
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\CampaignSceneInput.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\CampaignSceneArmyOrders.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
@@ -451,6 +475,9 @@
     <ClCompile Include="NewGame\CampaignScenePanel.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneRegions.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\CampaignScenePreview.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
@@ -463,6 +490,24 @@
     <ClInclude Include="NewGame\CampaignTypes.hpp">
       <Filter>Header Files\自由戦略\ルール</Filter>
     </ClInclude>
+    <ClCompile Include="NewGame\CampaignTerrainDraw.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignMapArt.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignLandscapeDraw.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignMarkerDraw.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClInclude Include="NewGame\CampaignVisuals.hpp">
+      <Filter>Header Files\自由戦略\画面</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\CampaignMapArt.hpp">
+      <Filter>Header Files\自由戦略\画面</Filter>
+    </ClInclude>
     <ClCompile Include="NewGame\CampaignUI.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
@@ -473,6 +518,8 @@
       <Filter>Source Files\英雄譚\ルール</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\HeroStoryBattle.cpp">
+      <Filter>Source Files\英雄譚\ルール</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\HeroStoryAI.cpp">
       <Filter>Source Files\英雄譚\ルール</Filter>
     </ClCompile>
@@ -510,6 +557,8 @@
       <Filter>Source Files\英雄譚\画面</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\HeroStorySkills.cpp">
+      <Filter>Source Files\英雄譚\ルール</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\HeroStoryObjectives.cpp">
       <Filter>Source Files\英雄譚\ルール</Filter>
     </ClCompile>

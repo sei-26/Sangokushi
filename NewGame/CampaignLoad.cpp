@@ -7,7 +7,7 @@ namespace frontline
 		try
 		{
 			const int version = json[U"version"].get<int>();
-			if (version < 1 || version > 8)
+			if (version < 1 || version > 11)
 				return false;
 			const int player = json[U"player"].get<int>(), day = json[U"day"].get<int>(),
 			          commands = json[U"commands"].get<int>();
@@ -31,6 +31,9 @@ namespace frontline
 				loaded.ResetLegacy(player);
 			else
 				loaded.Reset(player);
+			loaded.hexMap = version >= 10 ? json[U"hexMap"].get<bool>() : false;
+			if (loaded.hexMap && loaded.legacyLayout)
+				return false;
 			loaded.day = day;
 			loaded.commands = commands;
 			if (version >= 8)
@@ -266,6 +269,12 @@ namespace frontline
 					a.cargoFood = j[U"cargoFood"].get<int>();
 				a.morale = j[U"morale"].get<int>();
 				a.movement = j[U"movement"].get<int>();
+				if (version >= 9)
+				{
+					a.aiAssemblyDays = j[U"aiAssemblyDays"].get<int>();
+					if (a.aiAssemblyDays < 0 || a.aiAssemblyDays > 20)
+						return false;
+				}
 				const int arm = j[U"arm"].get<int>();
 				a.supplied = j[U"supplied"].get<bool>();
 				a.retreat = j[U"retreat"].get<bool>();
@@ -334,6 +343,38 @@ namespace frontline
 					assigned[move.general] = true;
 					loaded.assignments.push_back(move);
 				}
+			if (version >= 11)
+			{
+				size_t count = 0;
+				for (const auto& j : json[U"regions"].arrayView())
+				{
+					if (!loaded.hexMap || count >= loaded.regions.size())
+						return false;
+					auto& r = loaded.regions[count++];
+					r.owner = j[U"owner"].get<int>();
+					r.city = j[U"city"].get<int>();
+					if (r.owner < 0 || r.owner > 2 || r.city < -1 ||
+					    r.city >= static_cast<int>(loaded.cities.size()))
+						return false;
+					if (r.city >= 0 && loaded.cities[r.city].owner != r.owner)
+						return false;
+					const int center = loaded.CityAt(r.tile);
+					if (center >= 0 && (r.city != center || r.owner != loaded.cities[center].owner))
+						return false;
+				}
+				if (count == 0)
+				{
+					loaded.regions.clear();
+					loaded.tileRegion.fill(-1);
+				}
+				else if (count != loaded.regions.size())
+					return false;
+			}
+			else
+			{
+				loaded.regions.clear();
+				loaded.tileRegion.fill(-1);
+			}
 			bool all = true, any = false;
 			for (const auto& c : loaded.cities)
 			{

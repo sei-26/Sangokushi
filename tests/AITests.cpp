@@ -29,7 +29,7 @@ void Invariants(const Campaign& g)
     for(const auto& a:g.armies)if(a.troops>0) {
         CHECK(reserved.insert(a.general).second && a.faction==g.generals[a.general].faction);
         CHECK(a.food>=0 && a.cargoFood>=0 && a.morale>=0 && a.morale<=100 && g.Cost(a.tile,a.arm)<100000);
-        if(!a.path.empty())CHECK(Campaign::Distance(a.tile,a.path.front())==1);
+        if(!a.path.empty())CHECK(g.MapDistance(a.tile,a.path.front())==1);
     }
     for(int f=0;f<3;++f)CHECK(g.ArmyCount(f)<=Campaign::MaxArmies && g.aiCommands[f]>=0 && g.aiCommands[f]<=3);
 }
@@ -58,6 +58,31 @@ int main()
     for(int x=0;x<Width;++x)disconnected.tiles[Campaign::At(x,10)].terrain=Terrain::Sea;
     disconnected.truceUntil[1][2]=disconnected.truceUntil[2][1]=120;disconnected.BeginTurn();CHECK(disconnected.ArmyCount(1)==0);
     Campaign idle=Small();idle.armies={Unit(1,6,Campaign::At(5,12))};idle.generals[6].tactic=Tactic::Charge;idle.day=4;idle.AdvanceDay();CHECK(!idle.armies[0].tacticQueued && idle.armies[0].tacticReadyDay==0);
+    // Siege forces wait for a viable escort; waiting cannot accumulate movement credit.
+    Campaign lone=Small();lone.armies={Unit(1,6,lone.cities[3].tile)};
+    lone.armies[0].arm=Arm::Siege;CHECK(lone.Order(0,lone.cities[0].tile));
+    const int staging=lone.armies[0].tile;const int stores=lone.cities[3].food;
+    for(int d=0;d<19;++d)lone.AdvanceDay();
+    CHECK(lone.armies[0].tile==staging && lone.armies[0].aiAssemblyDays==19 && lone.armies[0].movement==0 && lone.cities[3].food<stores);
+    lone.AdvanceDay();CHECK(lone.armies[0].troops==0 && lone.armies[0].aiAssemblyDays==0 && !lone.Busy(6));
+    Campaign joined=Small();joined.armies={Unit(1,6,Campaign::At(4,14)),Unit(1,7,Campaign::At(4,17))};
+    joined.armies[0].arm=Arm::Siege;
+    CHECK(joined.Order(0,joined.cities[0].tile) && joined.Order(1,joined.cities[0].tile));
+    joined.AdvanceDay();joined.AdvanceDay();CHECK(joined.armies[0].tile!=Campaign::At(4,14) && joined.armies[0].aiAssemblyDays==0);
+    Campaign ahead=Small();ahead.armies={Unit(1,6,Campaign::At(4,18)),Unit(1,7,Campaign::At(4,12))};
+    ahead.armies[0].arm=Arm::Siege;ahead.armies[1].arm=Arm::Cavalry;
+    CHECK(ahead.Order(0,ahead.cities[0].tile) && ahead.Order(1,ahead.cities[0].tile));
+    ahead.AdvanceDay();CHECK(ahead.armies[0].tile==Campaign::At(4,18) && ahead.armies[1].tile==Campaign::At(4,12) && ahead.armies[1].aiAssemblyDays==1);
+    // The rear siege closes the gap while the leading cavalry holds position.
+    for(int d=0;d<4;++d)ahead.AdvanceDay();CHECK(ahead.armies[0].tile!=Campaign::At(4,18));
+    Campaign reinforcement=Small();reinforcement.day=60;reinforcement.armies={Unit(1,6,Campaign::At(4,14))};
+    reinforcement.armies[0].arm=Arm::Siege;CHECK(reinforcement.Order(0,reinforcement.cities[0].tile));reinforcement.BeginTurn();
+    bool reinforced=false;
+    for(size_t i=1;i<reinforcement.armies.size();++i)if(reinforcement.armies[i].faction==1 && reinforcement.armies[i].arm!=Arm::Siege && reinforcement.armies[i].target==reinforcement.cities[0].tile)reinforced=true;
+    CHECK(reinforced);
+    Campaign playerSiege=Small();playerSiege.armies={Unit(0,0,Campaign::At(4,5))};playerSiege.armies[0].arm=Arm::Siege;
+    CHECK(playerSiege.Order(0,playerSiege.cities[3].tile));playerSiege.AdvanceDay();playerSiege.AdvanceDay();CHECK(playerSiege.armies[0].tile!=Campaign::At(4,5) && playerSiege.armies[0].aiAssemblyDays==0);
+    std::cout<<"AI siege assembly, support deployment, bounded waiting and player control passed"<<std::endl;
     hero::Story story;story.chapter=5;story.phase=2;story.StartMission();story.units.resize(3);
     story.units[0].hero=0;story.units[0].x=4;story.units[0].y=3;story.units[0].enemy=false;
     story.units[1].hero=1;story.units[1].x=7;story.units[1].y=5;story.units[1].enemy=false;

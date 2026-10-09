@@ -36,18 +36,13 @@ void CampaignScene::update()
 	}
 	if (!m_started)
 	{
-		if (Rect(Scene::Center().x - 465, Scene::Center().y - 145, 930, 86).leftClicked())
-		{
-			m_story.Open();
-			m_storyActive = true;
-			return;
-		}
 		const int start = Scene::Center().x - 465;
 		for (int f = 0; f < 3; ++f)
 			if (Rect(start + f * 320, Scene::Center().y - 20, 290, 155).leftClicked())
 			{
 				m_game.Reset(f);
-				m_camera.Fit(m_game.MapWidth(), m_game.MapHeight());
+				m_region = -1;
+				fitMap();
 				m_mapTexture = RenderTexture{};
 				m_started = true;
 				m_city = f * 3;
@@ -63,8 +58,9 @@ void CampaignScene::update()
 			if (LoadJSON(JSON::Load(U"frontline-save.json"), loaded))
 			{
 				m_game = std::move(loaded);
+				m_region = -1;
 				m_transportEstimateDay = -1;
-				m_camera.Fit(m_game.MapWidth(), m_game.MapHeight());
+				fitMap();
 				m_started = true;
 				m_city = -1;
 				m_army = -1;
@@ -88,8 +84,10 @@ void CampaignScene::update()
 		updateCouncil();
 		return;
 	}
+	if (KeyV.down() || button(49).leftClicked())
+		m_panelHidden = !m_panelHidden;
 	updateCamera();
-	if (button(17).leftClicked() || button(18).leftClicked())
+	if ((button(17).leftClicked() && (!m_game.hexMap || m_daysLeft == 0)) || button(18).leftClicked())
 	{
 		m_councilMode = button(17).leftClicked() ? 1 : 2;
 		m_paused = m_daysLeft > 0;
@@ -99,7 +97,8 @@ void CampaignScene::update()
 		m_historyPage = 0;
 		if (m_army >= 0 && m_game.armies[m_army].faction == m_game.player)
 			m_inspect = m_game.armies[m_army].general;
-		else if (m_city >= 0 && m_game.cities[m_city].owner == m_game.player)
+		else if ((!m_game.hexMap || m_daysLeft == 0) && m_city >= 0 &&
+		         m_game.cities[m_city].owner == m_game.player)
 			for (int g = 0; g < static_cast<int>(m_game.generals.size()); ++g)
 				if (m_game.generals[g].home == m_city && m_game.generals[g].faction == m_game.player)
 				{
@@ -170,8 +169,9 @@ void CampaignScene::update()
 			if (LoadJSON(JSON::Load(U"frontline-save.json"), loaded))
 			{
 				m_game = std::move(loaded);
+				m_region = -1;
 				m_transportEstimateDay = -1;
-				m_camera.Fit(m_game.MapWidth(), m_game.MapHeight());
+				fitMap();
 				m_city = -1;
 				m_army = -1;
 				m_positions.clear();
@@ -188,6 +188,8 @@ void CampaignScene::update()
 			const int tile = mouseTile();
 			if (MouseL.down() && Campaign::Valid(tile))
 			{
+				m_panelHidden = false;
+				m_region = -1;
 				const int city = m_game.CityAt(tile);
 				std::vector<int> units;
 				for (int i = 0; i < static_cast<int>(m_game.armies.size()); ++i)
@@ -207,12 +209,14 @@ void CampaignScene::update()
 				}
 				else
 				{
+					m_region = m_game.RegionAt(tile);
 					m_city = -1;
 					m_army = -1;
 				}
 			}
-			if (m_army >= 0 && m_army < static_cast<int>(m_game.armies.size()) &&
-			    m_game.armies[m_army].troops > 0 && m_game.armies[m_army].faction == m_game.player)
+			if ((!m_game.hexMap || m_daysLeft == 0) && m_army >= 0 &&
+			    m_army < static_cast<int>(m_game.armies.size()) && m_game.armies[m_army].troops > 0 &&
+			    m_game.armies[m_army].faction == m_game.player)
 			{
 				if (MouseR.down() && Campaign::Valid(tile))
 					m_message = m_game.Order(m_army, tile) ? U"進路を更新。進行開始で全勢力が同時に動きます。"
@@ -237,7 +241,8 @@ void CampaignScene::update()
 					                ? U"戦法を予約。次の1日に発動します。"
 					                : U"士気30以上・再使用待ちの終了・対象や適正兵科が必要です。";
 			}
-			else if (m_city >= 0 && m_game.cities[m_city].owner == m_game.player)
+			else if ((!m_game.hexMap || m_daysLeft == 0) && m_city >= 0 &&
+			         m_game.cities[m_city].owner == m_game.player)
 			{
 				if (button(1).leftClicked())
 					++m_generalChoice;
@@ -281,7 +286,7 @@ void CampaignScene::update()
 			if (m_daysLeft == 0 && (button(0).leftClicked() || KeyEnter.down() || button(16).leftClicked()))
 			{
 				m_game.BeginTurn();
-				m_daysLeft = button(16).leftClicked() ? 1 : 10 - m_game.day % 10;
+				m_daysLeft = (!m_game.hexMap && button(16).leftClicked()) ? 1 : 10 - m_game.day % 10;
 				m_timer = 0;
 				m_paused = false;
 				m_message = U"進行中。Spaceで一時停止し、作戦を見直せます。";

@@ -27,6 +27,33 @@ namespace frontline
 		return std::abs(a % Width - b % Width) + std::abs(a / Width - b / Width);
 	}
 
+	int Campaign::MapDistance(int a, int b) const
+	{
+		return hexMap ? hexgrid::Distance(a % Width, a / Width, b % Width, b / Width) : Distance(a, b);
+	}
+	std::vector<int> Campaign::MapNeighbors(int p) const
+	{
+		if (!hexMap)
+			return Neighbors(p);
+		std::vector<int> out;
+		for (const auto& n : hexgrid::Neighbors(p % Width, p / Width))
+		{
+			const int tile = At(n.first, n.second);
+			if (Valid(tile))
+				out.push_back(tile);
+		}
+		return out;
+	}
+	bool Campaign::ClearShot(int from, int to) const
+	{
+		const auto blocked = [&](int x, int y) {
+			const int tile = At(x, y);
+			return !Valid(tile) || tiles[tile].terrain == Terrain::Mountain ||
+			       tiles[tile].terrain == Terrain::Forest;
+		};
+		return hexMap ? hexgrid::ClearRay(from % Width, from / Width, to % Width, to / Width, blocked)
+		              : battle::ClearRay(from % Width, from / Width, to % Width, to / Width, blocked);
+	}
 	std::u32string Campaign::FactionName(int f)
 	{
 		return f == 0 ? U"劉備" : f == 1 ? U"曹操" : U"孫権";
@@ -77,6 +104,7 @@ namespace frontline
 		for (auto& row : regard)
 			row.fill(30);
 		legacyLayout = false;
+		hexMap = true;
 		const auto ground = world::Ground();
 		for (int i = 0; i < TileCount; ++i)
 			tiles[i] = {ground[i], -1};
@@ -89,9 +117,9 @@ namespace frontline
 				continue;
 			int near = -1, dist = 100000;
 			for (int c = 0; c < static_cast<int>(cities.size()); ++c)
-				if (Distance(i, cities[c].tile) < dist)
+				if (MapDistance(i, cities[c].tile) < dist)
 				{
-					dist = Distance(i, cities[c].tile);
+					dist = MapDistance(i, cities[c].tile);
 					near = c;
 				}
 			if (near >= 0)
@@ -154,6 +182,7 @@ namespace frontline
 		ChangeBond(4, 5, 25);
 		ChangeBond(6, 11, 35);
 		ChangeBond(12, 14, 30);
+		BuildRegions();
 		Note(U"進路を描き、補給路を守り、複数部隊で城を包囲せよ。");
 		++revision;
 	}
@@ -162,6 +191,9 @@ namespace frontline
 	{
 		Reset(faction);
 		legacyLayout = true;
+		hexMap = false;
+		regions.clear();
+		tileRegion.fill(-1);
 		for (auto& t : tiles)
 			t = {Terrain::Sea, -1};
 		for (int y = 0; y < 22; ++y)
@@ -194,9 +226,9 @@ namespace frontline
 					continue;
 				int near = -1, dist = 5;
 				for (int c = 0; c < 9; ++c)
-					if (Distance(At(x, y), cities[c].tile) < dist)
+					if (MapDistance(At(x, y), cities[c].tile) < dist)
 					{
-						dist = Distance(At(x, y), cities[c].tile);
+						dist = MapDistance(At(x, y), cities[c].tile);
 						near = c;
 					}
 				if (near >= 0)

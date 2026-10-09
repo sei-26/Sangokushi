@@ -24,6 +24,9 @@ namespace frontline
 		if (!Valid(from) || !Valid(to) || Cost(to, arm) >= 100000)
 			return {};
 		std::array<int, TileCount> dist, parent;
+		std::array<bool, TileCount> blockade{};
+		if (arm == Arm::Transport && faction >= 0)
+			blockade = SupplyBlockade(faction);
 		dist.fill(1000000);
 		parent.fill(-1);
 		using Entry = std::pair<int, int>;
@@ -38,9 +41,9 @@ namespace frontline
 				continue;
 			if (p == to)
 				break;
-			for (int n : Neighbors(p))
+			for (int n : MapNeighbors(p))
 			{
-				if (arm == Arm::Transport && (tiles[n].owner != faction ||
+				if (arm == Arm::Transport && (blockade[n] || tiles[n].owner != faction ||
 				                              std::any_of(armies.begin(), armies.end(), [&](const Army& a) {
 					                              return a.troops > 0 && a.faction != faction && a.tile == n;
 				                              })))
@@ -83,6 +86,10 @@ namespace frontline
 		if (path.empty() && armies[index].tile != target)
 			return false;
 		auto& a = armies[index];
+		if (a.retreat != retreat)
+			++revision;
+		if (a.target != target || retreat)
+			a.aiAssemblyDays = 0;
 		a.target = target;
 		a.path = std::move(path);
 		a.retreat = retreat;
@@ -117,6 +124,7 @@ namespace frontline
 		a.food = pack;
 		a.morale = officer::StartingMorale(c.order);
 		armies.push_back(a);
+		++revision;
 		if (!ai)
 			--commands;
 		Note(generals[general].name + U"が出陣。都市の治安が士気を、兵站が携行糧を支える。");
@@ -128,9 +136,9 @@ namespace frontline
 		int best = -1, distance = 100000;
 		for (int i = 0; i < static_cast<int>(cities.size()); ++i)
 			if ((enemy ? Hostile(cities[i].owner, faction) : cities[i].owner == faction) &&
-			    Distance(tile, cities[i].tile) < distance)
+			    MapDistance(tile, cities[i].tile) < distance)
 			{
-				distance = Distance(tile, cities[i].tile);
+				distance = MapDistance(tile, cities[i].tile);
 				best = i;
 			}
 		return best;
@@ -148,6 +156,8 @@ namespace frontline
 		generals[a.general].home = city;
 		Note(generals[a.general].name + U"が" + cities[city].name + U"に帰還。");
 		a.troops = 0;
+		++revision;
+		a.aiAssemblyDays = 0;
 		a.path.clear();
 		a.tacticQueued = false;
 		a.tacticLeft = 0;
@@ -183,6 +193,7 @@ namespace frontline
 				}
 				if (a.tile != a.target && day % 5 == 0 &&
 				    (a.path.empty() || tiles[a.path.front()].owner != a.faction ||
+				     SupplyBlockade(a.faction)[a.path.front()] ||
 				     std::any_of(armies.begin(), armies.end(), [&](const Army& b) {
 					     return b.troops > 0 && b.faction != a.faction && b.tile == a.path.front();
 				     })))
@@ -205,7 +216,8 @@ namespace frontline
 				continue;
 			}
 			const int next = a.path.front(), city = CityAt(next);
-			if (a.arm == Arm::Transport && tiles[next].owner != a.faction)
+			if (a.arm == Arm::Transport &&
+			    (tiles[next].owner != a.faction || SupplyBlockade(a.faction)[next]))
 				continue;
 			if (a.movement < Cost(next, a.arm) || (city >= 0 && cities[city].owner != a.faction))
 				continue;
@@ -218,7 +230,7 @@ namespace frontline
 			a.movement -= Cost(next, a.arm);
 			a.tile = next;
 			a.path.erase(a.path.begin());
-			if (tiles[next].owner != a.faction &&
+			if ((!hexMap || (!a.retreat && a.arm != Arm::Transport)) && tiles[next].owner != a.faction &&
 			    (tiles[next].owner < 0 || Hostile(tiles[next].owner, a.faction)))
 			{
 				tiles[next].owner = a.faction;

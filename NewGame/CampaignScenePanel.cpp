@@ -1,6 +1,7 @@
 ﻿#include "CampaignScene.hpp"
 #include "CampaignSave.hpp"
 #include "CampaignUI.hpp"
+#include "CampaignVisuals.hpp"
 
 using namespace frontline;
 using namespace campaignui;
@@ -9,25 +10,31 @@ void CampaignScene::drawPanel() const
 {
 	const int x = Scene::Width() - 330;
 	Rect(x, 86, 306, Scene::Height() - 106)
-	    .rounded(7)
-	    .draw(ColorF(0.10, 0.14, 0.16))
-	    .drawFrame(1, ColorF(0.30, 0.40, 0.40));
+	    .rounded(3)
+	    .draw(ColorF(.075, .12, .10))
+	    .drawFrame(1, ColorF(.57, .49, .31));
 	const auto line = [&](const String& label, int y, ColorF color = ColorF(0.87, 0.90, 0.86)) {
 		FontAsset(U"campaignBody")(label).draw(x + 14, y, color);
 	};
-	const bool orders = (m_daysLeft == 0 || m_paused) && m_game.result == 0;
+	const bool orders = (m_daysLeft == 0 || (!m_game.hexMap && m_paused)) && m_game.result == 0;
 	if (m_army >= 0 && m_army < static_cast<int>(m_game.armies.size()) && m_game.armies[m_army].troops > 0)
 	{
 		const auto& army = m_game.armies[m_army];
-		line(text(m_game.generals[army.general].name) + U"隊 / " + text(Campaign::ArmName(army.arm)), 105,
-		     FactionColor(army.faction));
-		line(U"兵力 {}　士気 {}"_fmt(army.troops, army.morale), 143);
+		campaignvisual::OfficerCard(RectF(x + 14, 102, 56, 66), m_game.generals[army.general],
+		                            m_campaignFaces);
+		(void)FontAsset(U"campaignBody")(text(m_game.generals[army.general].name) + U"隊 / " +
+		                                 text(Campaign::ArmName(army.arm)))
+		    .draw(RectF(x + 82, 105, 210, 30), ColorF(.94, .86, .65));
+		FontAsset(U"campaignSmall")(U"兵力 {}　士気 {}"_fmt(army.troops, army.morale))
+		    .draw(x + 82, 145, ColorF(.8, .86, .75));
 		line(army.arm == Arm::Transport ? U"積荷 {} / 携行糧 {}"_fmt(army.cargoFood, army.food)
 		                                : U"携行兵糧 {}"_fmt(army.food),
 		     178);
 		line(army.supplied ? U"補給：都市と接続" : U"補給：途絶（携行糧を消費）", 211,
 		     army.supplied ? ColorF(0.5, 0.88, 0.65) : ColorF(1.0, 0.62, 0.36));
-		FontAsset(U"campaignSmall")(U"進路：残り{}マス"_fmt(army.path.size()))
+		FontAsset(U"campaignSmall")(army.aiAssemblyDays > 0
+		                                ? U"作戦：集結待ち {}/20日"_fmt(army.aiAssemblyDays)
+		                                : U"進路：残り{}マス"_fmt(army.path.size()))
 		    .draw(x + 14, 239, ColorF(.87, .8, .57));
 		const bool own = army.faction == m_game.player;
 		const int home = returnTarget();
@@ -62,12 +69,18 @@ void CampaignScene::drawPanel() const
 			           own && orders && m_game.commands > 0);
 			const auto link = m_game.Formation(m_army);
 			(void)FontAsset(U"campaignSmall")(
-			    U"構え：攻撃 {}% / 被害 {}%\n射程 {} / 林と山の背後には射撃不可\n固守は移動力2 / 山上の弓は射程+1\n連携：攻撃+{}% / 被害-{}%\n兵糧消費-{}% / 士気+{}/日\n役割：{} / 個性：{}\n戦法：士気15消費・再使用30日"_fmt(
+			    U"構え：攻撃 {}% / 被害 {}%\n射程 {} / 林と山の背後には射撃不可\n包囲 {}方向 / 被害+{}%・士気-{}/日\n連携：攻撃+{}% / 被害-{}%\n兵糧消費-{}% / 士気+{}/日\n役割：{} / 個性：{}\n戦法：士気15消費・再使用30日"_fmt(
 			        battle::AttackPercent(army.stance), battle::DamagePercent(army.stance),
-			        m_game.AttackRange(m_army), link.attack, link.defense, link.supply, link.morale / 2,
+			        m_game.AttackRange(m_army), m_game.PressureDirections(m_army),
+			        m_game.PressureDamagePercent(m_army), m_game.PressureMoraleLoss(m_army), link.attack,
+			        link.defense, link.supply, link.morale / 2,
 			        text(officer::RoleName(officer::RoleOf(g.name))), text(TraitName(g.trait))))
 			    .draw(RectF(x + 14, 434, 280, 174), ColorF(.74, .81, .76));
 		}
+	}
+	else if (m_region >= 0 && m_region < static_cast<int>(m_game.regions.size()))
+	{
+		drawRegionPanel();
 	}
 	else if (m_city >= 0)
 	{

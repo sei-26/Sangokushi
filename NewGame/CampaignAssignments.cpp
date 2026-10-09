@@ -27,7 +27,7 @@ namespace frontline
 				continue;
 			if (tile == goal)
 				return std::clamp((cost + 5) / 6, 3, 180);
-			for (int next : Neighbors(tile))
+			for (int next : MapNeighbors(tile))
 			{
 				if (tiles[next].owner != faction || blocked[next] || Cost(next, Arm::Spear) >= 100000)
 					continue;
@@ -133,9 +133,9 @@ namespace frontline
 				const auto score = [&](int city) {
 					const int enemy = NearestCity(cities[city].tile, faction, true);
 					return AIThreat(city) / 50 +
-					       (enemy >= 0 ? std::max(0, 24 - Distance(cities[city].tile, cities[enemy].tile)) * 4
+					       (enemy >= 0 ? std::max(0, 24 - MapDistance(cities[city].tile, cities[enemy].tile)) * 4
 					                   : 0) -
-					       Distance(cities[from].tile, cities[city].tile);
+					       MapDistance(cities[from].tile, cities[city].tile);
 				};
 				return score(a) > score(b);
 			});

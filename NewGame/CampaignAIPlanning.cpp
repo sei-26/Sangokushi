@@ -6,22 +6,22 @@ namespace frontline
 		int threat = 0;
 		for (const auto& a : armies)
 			if (a.troops > 0 && a.arm != Arm::Transport && Hostile(a.faction, cities[city].owner) &&
-			    Distance(a.tile, cities[city].tile) <= 6)
-				threat += a.troops * (7 - Distance(a.tile, cities[city].tile)) / 7;
+			    MapDistance(a.tile, cities[city].tile) <= 6)
+				threat += a.troops * (7 - MapDistance(a.tile, cities[city].tile)) / 7;
 		return threat;
 	}
 	int Campaign::AIEnemyCity(int from, int faction, Arm arm, int troops) const
 	{
 		std::vector<std::pair<int, int>> candidates;
 		for (int c = 0; c < static_cast<int>(cities.size()); ++c)
-			if (Hostile(faction, cities[c].owner) && Distance(from, cities[c].tile) <= 32 &&
+			if (Hostile(faction, cities[c].owner) && MapDistance(from, cities[c].tile) <= 32 &&
 			    cities[c].troops <= troops * 3)
 			{
 				int committed = 0;
 				for (const auto& a : armies)
 					if (a.troops > 0 && a.faction == faction && !a.retreat && a.target == cities[c].tile)
 						committed += a.troops;
-				candidates.push_back({2000 - Distance(from, cities[c].tile) * 35 - cities[c].troops / 20 +
+				candidates.push_back({2000 - MapDistance(from, cities[c].tile) * 35 - cities[c].troops / 20 +
 				                          std::min(450, committed / 20),
 				                      c});
 			}
@@ -49,9 +49,10 @@ namespace frontline
 			if (a.troops <= 0 || a.faction != faction || a.arm == Arm::Transport)
 				continue;
 			const int city = CityAt(a.target);
-			const auto stance = a.morale < 45 || a.troops < 2200 || !a.supplied ? battle::Stance::Guard
+			const auto stance = a.morale < 45 || a.troops < 2200 || !a.supplied || PressureDirections(i) >= 2
+			                        ? battle::Stance::Guard
 			                    : a.arm == Arm::Siege && city >= 0 && Hostile(faction, cities[city].owner) &&
-			                            Distance(a.tile, a.target) <= 2
+			                            MapDistance(a.tile, a.target) <= 2
 			                        ? battle::Stance::Assault
 			                        : battle::Stance::Balanced;
 			if (a.stance != stance)
@@ -94,14 +95,14 @@ namespace frontline
 				int enemy = -1;
 				for (int a = 0; a < static_cast<int>(armies.size()); ++a)
 					if (armies[a].troops > 0 && Hostile(faction, armies[a].faction) &&
-					    Distance(armies[a].tile, city.tile) <= 6 &&
+					    MapDistance(armies[a].tile, city.tile) <= 6 &&
 					    (enemy < 0 ||
-					     Distance(armies[a].tile, city.tile) < Distance(armies[enemy].tile, city.tile)))
+					     MapDistance(armies[a].tile, city.tile) < MapDistance(armies[enemy].tile, city.tile)))
 						enemy = a;
 				int defenders = 0;
 				for (const auto& a : armies)
 					if (a.troops > 0 && a.faction == faction && a.arm != Arm::Transport &&
-					    Distance(a.tile, city.tile) <= 4)
+					    MapDistance(a.tile, city.tile) <= 4)
 						defenders += a.troops;
 				if (enemy >= 0 && defenders < threat)
 				{
@@ -152,9 +153,24 @@ namespace frontline
 				plan.push_back(o);
 			}
 			if (day >= 60 && commander >= 0 && ArmyCount(faction) < MaxArmies - 1 && threat == 0 &&
-			    city.troops >= 7000 && city.food >= 7000 && city.gold >= 400)
+			    city.troops >= 6000 && city.food >= 7000 && city.gold >= 400)
 			{
-				const int target = AIEnemyCity(city.tile, faction, Arm::Spear, 4000);
+				int target = -1;
+				int nearest = 33;
+				for (const auto& a : armies)
+				{
+					const int goal = CityAt(a.target);
+					if (a.troops >= 1200 && a.faction == faction && a.arm == Arm::Siege && !a.retreat &&
+					    goal >= 0 && Hostile(faction, cities[goal].owner) &&
+					    MapDistance(city.tile, a.tile) < nearest &&
+					    !Route(city.tile, a.target, Arm::Spear, faction).empty())
+					{
+						target = goal;
+						nearest = MapDistance(city.tile, a.tile);
+					}
+				}
+				if (target < 0)
+					target = AIEnemyCity(city.tile, faction, Arm::Spear, 4000);
 				if (target >= 0)
 				{
 					int siege = 0;
@@ -162,7 +178,7 @@ namespace frontline
 						if (a.troops > 0 && a.faction == faction && a.target == cities[target].tile &&
 						    a.arm == Arm::Siege)
 							++siege;
-					AIOrder o{AIKind::Deploy, 90};
+					AIOrder o{AIKind::Deploy, siege > 0 ? 105 : 90};
 					o.city = c;
 					o.general = commander;
 					o.amount = std::min(4000, city.troops - 3000);
@@ -171,8 +187,10 @@ namespace frontline
 					        : siege == 0                                 ? Arm::Siege
 					        : generals[commander].leadership >= 90       ? Arm::Cavalry
 					                                                     : Arm::Spear;
-					o.reason = U"到達可能な敵城へ攻城隊と支援部隊を集める";
-					plan.push_back(o);
+					o.reason = siege > 0 ? U"進軍中の攻城隊と同じ城を狙う支援部隊を優先する"
+					                     : U"到達可能な敵城へ攻城隊と支援部隊を集める";
+					if (siege > 0 || city.troops >= 7000)
+						plan.push_back(o);
 				}
 			}
 			if (city.worker < 0 && administrator >= 0 && city.gold >= 500 &&
@@ -196,6 +214,35 @@ namespace frontline
 					o.general = administrator;
 					o.duty = duty;
 					o.reason = U"指揮官を確保し、都市の不足に合った内政を任せる";
+					plan.push_back(o);
+				}
+			}
+			if (day >= 60 && hexMap && commander >= 0 && threat == 0 && city.troops >= 6000 &&
+			    city.food >= 5000 && ArmyCount(faction) < MaxArmies)
+			{
+				int target = -1;
+				for (int r = 0; r < static_cast<int>(regions.size()); ++r)
+				{
+					if (CityAt(regions[r].tile) >= 0 || !Hostile(faction, regions[r].owner) ||
+					    MapDistance(city.tile, regions[r].tile) > 12)
+						continue;
+					bool reserved = false;
+					for (const auto& a : armies)
+						if (a.troops > 0 && a.faction == faction && a.target == regions[r].tile)
+							reserved = true;
+					if (!reserved && (target < 0 || MapDistance(city.tile, regions[r].tile) <
+					                                    MapDistance(city.tile, regions[target].tile)))
+						target = r;
+				}
+				if (target >= 0)
+				{
+					AIOrder o{AIKind::Deploy, 95};
+					o.city = c;
+					o.general = commander;
+					o.amount = 3000;
+					o.arm = Arm::Spear;
+					o.target = regions[target].tile;
+					o.reason = U"周辺の府を奪い、敵の収入を削って進軍の足場を作る";
 					plan.push_back(o);
 				}
 			}

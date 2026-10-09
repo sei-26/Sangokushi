@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Siv3D.hpp>
 #include "Campaign.hpp"
+#include "CampaignMapArt.hpp"
 #include "MapCamera.hpp"
 #include "HeroStoryScene.hpp"
 
@@ -20,6 +21,7 @@ private:
 	HeroStoryScene m_story;
 	bool m_storyActive = false;
 	bool m_started = false, m_supplyView = false;
+	int m_region = -1;
 	int m_city = -1, m_army = -1, m_generalChoice = 0, m_soldiers = 3000, m_daysLeft = 0;
 	double m_timer = 0;
 	int m_tab = 0, m_speed = 0;
@@ -35,10 +37,16 @@ private:
 		double time;
 	};
 	Array<Hit> m_hits;
+	Texture m_campaignFaces{U"StoryArt/heroes.png"};
+	campaignvisual::MapArt m_mapArt;
 	mutable RenderTexture m_mapTexture;
 	mutable unsigned m_mapRevision = 0;
 	mutable int m_mapDay = -1;
 	mutable bool m_mapSupply = false;
+	bool m_panelHidden = false;
+	bool panelVisible() const;
+	bool overMapUI() const;
+	void fitMap();
 	RectF mapRect() const;
 	Vec2 tileCenter(int tile) const;
 	int mouseTile() const;
@@ -49,6 +57,8 @@ private:
 	int m_returnCity = -1, m_returnArmy = -1;
 	void drawMap() const;
 	void drawPanel() const;
+	void drawRegions(double cell) const;
+	void drawRegionPanel() const;
 	void updateTransport();
 	void drawTransport() const;
 	int transportTarget() const;

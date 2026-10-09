@@ -16,9 +16,13 @@ namespace frontline
 			supply[faction] = Supply(faction);
 		ConsumeDailySupply(supply);
 		AdvanceAIArmies();
-		const auto fighting = ResolveDailyCombat(supply);
+		const auto assembly = AdvanceAIOperations();
+		auto fighting = ResolveDailyCombat(supply);
+		for (size_t i = 0; i < fighting.size(); ++i)
+			fighting[i] = fighting[i] || assembly[i];
 		CancelInvalidAssignments();
 		MoveArmies(fighting);
+		AdvanceRegions();
 		FinishDay();
 	}
 } // namespace frontline

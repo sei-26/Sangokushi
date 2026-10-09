@@ -135,6 +135,7 @@ namespace frontline
 				c.food = std::min(100000000, c.food + (800 + c.farming * 80) * c.order / 100);
 				c.order = std::max(0, c.order - (ArmyCount(c.owner) > 0 ? 3 : 1));
 			}
+			RegionIncome();
 			Note(U"月末収入。農政・商業・治安が収穫と税収を左右します。");
 		}
 		bool all = true, hasCity = false;

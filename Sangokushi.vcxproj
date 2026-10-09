@@ -224,6 +224,7 @@
     <None Include="App\engine\soundfont\GMGSx.sf2.zstdcmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="NewGame\HexGrid.hpp" />
     <ClInclude Include="NewGame\WorldLayout.hpp" />
     <ClInclude Include="NewGame\MapCamera.hpp" />
     <ClInclude Include="NewGame\Campaign.hpp" />
@@ -244,11 +245,14 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="NewGame\Campaign.cpp" />
+    <ClCompile Include="NewGame\CampaignRegions.cpp" />
     <ClCompile Include="NewGame\CampaignAI.cpp" />
     <ClCompile Include="NewGame\CampaignAIArmies.cpp" />
+    <ClCompile Include="NewGame\CampaignAIOperations.cpp" />
     <ClCompile Include="NewGame\CampaignAIPlanning.cpp" />
     <ClCompile Include="NewGame\CampaignCombat.cpp" />
     <ClCompile Include="NewGame\CampaignBattleRules.cpp" />
+    <ClCompile Include="NewGame\CampaignBattlefield.cpp" />
     <ClCompile Include="NewGame\CampaignDailyCombat.cpp" />
     <ClCompile Include="NewGame\CampaignDiplomacy.cpp" />
     <ClCompile Include="NewGame\CampaignEconomy.cpp" />
@@ -264,10 +268,17 @@
     <ClCompile Include="NewGame\CampaignSceneMap.cpp" />
     <ClCompile Include="NewGame\CampaignSceneMenu.cpp" />
     <ClCompile Include="NewGame\CampaignScenePanel.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneRegions.cpp" />
     <ClCompile Include="NewGame\CampaignScenePreview.cpp" />
     <ClCompile Include="NewGame\CampaignSupply.cpp" />
     <ClCompile Include="NewGame\CampaignTurn.cpp" />
     <ClInclude Include="NewGame\CampaignTypes.hpp" />
+    <ClCompile Include="NewGame\CampaignTerrainDraw.cpp" />
+    <ClCompile Include="NewGame\CampaignMapArt.cpp" />
+    <ClCompile Include="NewGame\CampaignLandscapeDraw.cpp" />
+    <ClCompile Include="NewGame\CampaignMarkerDraw.cpp" />
+    <ClInclude Include="NewGame\CampaignVisuals.hpp" />
+    <ClInclude Include="NewGame\CampaignMapArt.hpp" />
     <ClCompile Include="NewGame\CampaignUI.cpp" />
     <ClInclude Include="NewGame\CampaignUI.hpp" />
     <ClCompile Include="NewGame\HeroStory.cpp" />

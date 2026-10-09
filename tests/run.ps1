@@ -14,13 +14,16 @@ try {
     New-Item -ItemType Directory -Path 'Intermediate/tests/core','Intermediate/tests/save' -Force | Out-Null
     $taskCampaignFiles = @(
         'NewGame\Campaign.cpp',
+        'NewGame\CampaignRegions.cpp',
         'NewGame\CampaignAI.cpp',
         'NewGame\CampaignAIPlanning.cpp',
         'NewGame\CampaignAIArmies.cpp',
+        'NewGame\CampaignAIOperations.cpp',
         'NewGame\CampaignAssignments.cpp',
         'NewGame\CampaignLogistics.cpp',
         'NewGame\CampaignCombat.cpp',
         'NewGame\CampaignBattleRules.cpp',
+        'NewGame\CampaignBattlefield.cpp',
         'NewGame\CampaignDailyCombat.cpp',
         'NewGame\CampaignDiplomacy.cpp',
         'NewGame\CampaignEconomy.cpp',
@@ -49,6 +52,15 @@ try {
     $taskCampaign = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\CampaignTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\CampaignTests.exe /Fo:Intermediate\CampaignTests.obj /link /STACK:8388608 && Intermediate\CampaignTests.exe"
     & cmd /c $taskCampaign
     if ($LASTEXITCODE -ne 0) { throw 'Campaign tests failed.' }
+    $taskHex = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\HexTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\HexTests.exe /Fo:Intermediate\HexTests.obj /link /STACK:8388608 && Intermediate\HexTests.exe"
+    & cmd /c $taskHex
+    if ($LASTEXITCODE -ne 0) { throw 'Hex tests failed.' }
+    $taskRegions = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\RegionTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\RegionTests.exe /Fo:Intermediate\RegionTests.obj /link /STACK:8388608 && Intermediate\RegionTests.exe"
+    & cmd /c $taskRegions
+    if ($LASTEXITCODE -ne 0) { throw 'Region tests failed.' }
+    $taskBattlefield = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\BattlefieldTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\BattlefieldTests.exe /Fo:Intermediate\BattlefieldTests.obj /link /STACK:8388608 && Intermediate\BattlefieldTests.exe"
+    & cmd /c $taskBattlefield
+    if ($LASTEXITCODE -ne 0) { throw 'Battlefield tests failed.' }
     $taskAI = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\AITests.cpp Intermediate\tests\CampaignCore.lib Intermediate\tests\StoryCore.lib /Fe:Intermediate\AITests.exe /Fo:Intermediate\AITests.obj /link /STACK:8388608 && Intermediate\AITests.exe"
     & cmd /c $taskAI
     if ($LASTEXITCODE -ne 0) { throw 'AI tests failed.' }

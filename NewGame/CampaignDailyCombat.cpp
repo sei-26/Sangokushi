@@ -8,6 +8,12 @@ namespace frontline
 		std::vector<int> losses(armies.size()), cityLoss(cities.size());
 		std::vector<bool> fighting(armies.size());
 		std::vector<int> moraleGain(armies.size());
+		std::vector<int> pressureDamage, pressureMorale;
+		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
+		{
+			pressureDamage.push_back(PressureDamagePercent(i));
+			pressureMorale.push_back(PressureMoraleLoss(i));
+		}
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
 		{
 			auto& a = armies[i];
@@ -26,7 +32,7 @@ namespace frontline
 			{
 				for (int j = 0; j < static_cast<int>(armies.size()); ++j)
 					if (armies[j].troops > 0 && armies[j].faction == a.faction &&
-					    Distance(a.tile, armies[j].tile) <= 2)
+					    MapDistance(a.tile, armies[j].tile) <= 2)
 						moraleGain[j] += 20;
 			}
 			else if (g.tactic == Tactic::Fire)
@@ -34,16 +40,16 @@ namespace frontline
 				int victim = -1, nearest = 3;
 				for (int j = 0; j < static_cast<int>(armies.size()); ++j)
 					if (armies[j].troops > 0 && Hostile(a.faction, armies[j].faction) &&
-					    Distance(a.tile, armies[j].tile) < nearest)
+					    MapDistance(a.tile, armies[j].tile) < nearest)
 					{
-						nearest = Distance(a.tile, armies[j].tile);
+						nearest = MapDistance(a.tile, armies[j].tile);
 						victim = j;
 					}
 				const int c = CityAt(a.target);
 				const int damage = 120 + g.intelligence * 2;
 				if (victim >= 0)
 					losses[victim] += damage;
-				else if (c >= 0 && Hostile(a.faction, cities[c].owner) && Distance(a.tile, a.target) <= 1)
+				else if (c >= 0 && Hostile(a.faction, cities[c].owner) && MapDistance(a.tile, a.target) <= 1)
 					cityLoss[c] += damage;
 				else
 					fired = false;
@@ -86,15 +92,15 @@ namespace frontline
 			int target = -1, distance = 100000;
 			for (int j = 0; j < static_cast<int>(armies.size()); ++j)
 				if (armies[j].troops > 0 && Hostile(armies[j].faction, a.faction) &&
-				    CanStrike(i, armies[j].tile) && Distance(a.tile, armies[j].tile) < distance)
+				    CanStrike(i, armies[j].tile) && MapDistance(a.tile, armies[j].tile) < distance)
 				{
 					target = j;
-					distance = Distance(a.tile, armies[j].tile);
+					distance = MapDistance(a.tile, armies[j].tile);
 				}
 			if (a.faction != player)
 			{
 				target = AITargetArmy(i);
-				distance = target >= 0 ? Distance(a.tile, armies[target].tile) : 100000;
+				distance = target >= 0 ? MapDistance(a.tile, armies[target].tile) : 100000;
 			}
 			const double morale = 0.3 + a.morale / 140.0;
 			const double coordination = 1 + formations[i].attack / 100.0;
@@ -107,7 +113,7 @@ namespace frontline
 			if (target >= 0)
 			{
 				const auto& b = armies[target];
-				const int flank = Fronts(b.tile, a.faction);
+				const double flank = 1.0 + pressureDamage[target] / 100.0;
 				double defense = tiles[b.tile].terrain == Terrain::Mountain ? 1.5
 				                 : tiles[b.tile].terrain == Terrain::Forest ? 1.25
 				                                                            : 1.0;
@@ -120,9 +126,7 @@ namespace frontline
 					multiplier *= 1.18;
 				if (a.arm == Arm::Cavalry && tiles[a.tile].terrain == Terrain::Plain)
 					multiplier *= 1.2;
-				losses[target] += std::max(
-				    1, static_cast<int>(power * multiplier *
-				                        (1.0 + std::min(3, std::max(0, flank - 1)) * 0.15) / defense));
+				losses[target] += std::max(1, static_cast<int>(power * multiplier * flank / defense));
 				fighting[i] = true;
 				if (distance == 1)
 					fighting[target] = true;
@@ -130,7 +134,7 @@ namespace frontline
 			else if (!a.retreat)
 			{
 				const int c = CityAt(a.target);
-				if (c >= 0 && Hostile(cities[c].owner, a.faction) && Distance(a.tile, cities[c].tile) <= 1)
+				if (c >= 0 && Hostile(cities[c].owner, a.faction) && MapDistance(a.tile, cities[c].tile) <= 1)
 				{
 					const int siege = Fronts(cities[c].tile, a.faction);
 					cityLoss[c] +=
@@ -146,7 +150,7 @@ namespace frontline
 				for (int j = i + 1; j < static_cast<int>(armies.size()); ++j)
 					if (armies[i].troops > 0 && armies[j].troops > 0 && fighting[i] && fighting[j] &&
 					    armies[i].faction == armies[j].faction &&
-					    Distance(armies[i].tile, armies[j].tile) <= 2)
+					    MapDistance(armies[i].tile, armies[j].tile) <= 2)
 						ChangeBond(armies[i].general, armies[j].general, 2);
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
 		{
@@ -165,8 +169,7 @@ namespace frontline
 			if (a.arm == Arm::Transport && losses[i] > 0)
 				a.cargoFood =
 				    static_cast<int>(static_cast<long long>(a.cargoFood) * a.troops / previousTroops);
-			if (losses[i] > 0)
-				a.morale = std::max(0, a.morale - 2);
+			a.morale = std::max(0, a.morale - (losses[i] > 0 ? 2 : 0) - pressureMorale[i]);
 			if (a.troops == 0)
 			{
 				a.tacticQueued = false;
@@ -183,7 +186,7 @@ namespace frontline
 			for (int i = 0; i < static_cast<int>(armies.size()); ++i)
 				if (armies[i].arm != Arm::Transport && armies[i].troops > 0 && !armies[i].retreat &&
 				    armies[i].target == cities[c].tile && Hostile(armies[i].faction, cities[c].owner) &&
-				    Distance(armies[i].tile, cities[c].tile) <= 1 &&
+				    MapDistance(armies[i].tile, cities[c].tile) <= 1 &&
 				    (winner < 0 || armies[i].troops > armies[winner].troops))
 					winner = i;
 			if (winner >= 0)

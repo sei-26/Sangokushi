@@ -9,6 +9,7 @@
 #include "CampaignTypes.hpp"
 #include "OfficerCore.hpp"
 #include "WorldLayout.hpp"
+#include "HexGrid.hpp"
 
 namespace frontline
 {
@@ -19,6 +20,8 @@ namespace frontline
 	public:
 		std::array<Tile, TileCount> tiles{};
 		std::vector<City> cities;
+		std::vector<Region> regions;
+		std::array<int, TileCount> tileRegion{};
 		std::vector<General> generals;
 		std::vector<Army> armies;
 		std::vector<std::u32string> log;
@@ -30,7 +33,7 @@ namespace frontline
 		unsigned randomState = 89173;
 		int player = 0, day = 0, commands = 3, result = 0;
 		unsigned revision = 0;
-		bool legacyLayout = false;
+		bool legacyLayout = false, hexMap = false;
 		std::array<int, 3> aiPlannedDay{{-1, -1, -1}}, aiCommands{{3, 3, 3}};
 		int MapWidth() const;
 		int MapHeight() const;
@@ -38,10 +41,17 @@ namespace frontline
 		static bool Valid(int p);
 		static int At(int x, int y);
 		static int Distance(int a, int b);
+		int MapDistance(int a, int b) const;
+		std::vector<int> MapNeighbors(int tile) const;
+		bool ClearShot(int from, int to) const;
 		static std::u32string FactionName(int f);
 		static std::u32string ArmName(Arm a);
 		static std::u32string DutyName(Duty d);
 		static std::vector<int> Neighbors(int p);
+		void BuildRegions();
+		int RegionAt(int tile) const;
+		int RegionCoverage(int region) const;
+		bool RegionConnected(int region) const;
 		void Reset(int faction);
 		void ResetLegacy(int faction);
 		void Note(const std::u32string& text);
@@ -77,6 +87,10 @@ namespace frontline
 		int NearestCity(int tile, int faction, bool enemy) const;
 		void BeginTurn();
 		std::array<int, TileCount> Supply(int faction) const;
+		std::array<bool, TileCount> SupplyBlockade(int faction) const;
+		int PressureDirections(int army) const;
+		int PressureDamagePercent(int army) const;
+		int PressureMoraleLoss(int army) const;
 		void Return(Army& a, int city);
 		bool ReturnToCity(int army, int city);
 		int Fronts(int tile, int faction) const;
@@ -109,6 +123,7 @@ namespace frontline
 		std::vector<AIOrder> AIPlan(int faction) const;
 		bool ExecuteAI(int faction, const AIOrder& order);
 		void AdvanceAIArmies();
+		std::vector<bool> AdvanceAIOperations();
 		int AITargetArmy(int index) const;
 		bool AIUseTactic(int index, const SupplyGrid& supply) const;
 		// Daily phases are called only by AdvanceDay(), in the order shown there.
@@ -119,6 +134,8 @@ namespace frontline
 		void ConsumeDailySupply(const SupplyGrid& supply);
 		std::vector<bool> ResolveDailyCombat(const SupplyGrid& supply);
 		void MoveArmies(const std::vector<bool>& fighting);
+		void AdvanceRegions();
+		void RegionIncome();
 		void FinishDay();
 	};
 } // namespace frontline

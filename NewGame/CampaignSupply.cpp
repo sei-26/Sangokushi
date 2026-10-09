@@ -6,10 +6,7 @@ namespace frontline
 	{
 		std::array<int, TileCount> source;
 		source.fill(-1);
-		std::array<bool, TileCount> blocked{};
-		for (const auto& a : armies)
-			if (a.troops > 0 && Hostile(a.faction, faction))
-				blocked[a.tile] = true;
+		const auto blocked = SupplyBlockade(faction);
 		std::queue<int> q;
 		for (int c = 0; c < static_cast<int>(cities.size()); ++c)
 			if (cities[c].owner == faction && cities[c].food > 0 && !blocked[cities[c].tile])
@@ -21,7 +18,7 @@ namespace frontline
 		{
 			const int p = q.front();
 			q.pop();
-			for (int n : Neighbors(p))
+			for (int n : MapNeighbors(p))
 				if (source[n] < 0 && !blocked[n] && tiles[n].owner == faction && Cost(n, Arm::Spear) < 100000)
 				{
 					source[n] = source[p];
@@ -50,7 +47,11 @@ namespace frontline
 			                (generals[a.general].trait == Trait::Quartermaster ? 10 : 0));
 			const int need = std::max(
 			    20, baseNeed * (100 - supplyLinks[static_cast<size_t>(&a - armies.data())].supply) / 100);
+			const bool wasSupplied = a.supplied;
 			a.supplied = source >= 0 && cities[source].food >= need;
+			if (a.supplied != wasSupplied)
+				Note(generals[a.general].name + (a.supplied ? U"隊の補給路が復旧。都市から兵糧が届く。"
+				                                            : U"隊の補給が途絶。携行兵糧で持ちこたえる。"));
 			if (a.supplied)
 			{
 				cities[source].food -= need;

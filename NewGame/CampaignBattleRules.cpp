@@ -33,14 +33,10 @@ namespace frontline
 		if (!Valid(tile) || index < 0 || index >= static_cast<int>(armies.size()))
 			return false;
 		const auto& a = armies[index];
-		if (Distance(a.tile, tile) > AttackRange(index) || AttackRange(index) == 0)
+		if (MapDistance(a.tile, tile) > AttackRange(index) || AttackRange(index) == 0)
 			return false;
-		if (Distance(a.tile, tile) <= 1)
+		if (MapDistance(a.tile, tile) <= 1)
 			return true;
-		return battle::ClearRay(a.tile % Width, a.tile / Width, tile % Width, tile / Width,
-		                        [&](int x, int y) {
-			                        const auto t = tiles[At(x, y)].terrain;
-			                        return t == Terrain::Mountain || t == Terrain::Forest;
-		                        });
+		return ClearShot(a.tile, tile);
 	}
 } // namespace frontline

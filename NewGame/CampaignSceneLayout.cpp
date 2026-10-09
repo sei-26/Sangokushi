@@ -8,11 +8,17 @@ using namespace campaignui;
 Rect CampaignScene::button(int index) const
 {
 	const int x = Scene::Width() - 330;
+	if (m_started && !panelVisible() && index != 0 && index != 10 && index != 11 && index != 12 &&
+	    index != 15 && index != 16 && index != 17 && index != 18 && index != 49 &&
+	    (index < 19 || index >= 39))
+		return Rect(-1000, -1000, 1, 1);
 	const int right = Scene::Width() - 460;
 	if (index >= 31 && index < 39)
 		return Rect(80, 200 + (index - 31) * 42, 218, 36);
 	switch (index)
 	{
+	case 49:
+		return Rect(20, 250, 190, 26);
 	case 0:
 		return Rect(x, 22, 306, 48);
 	case 1:

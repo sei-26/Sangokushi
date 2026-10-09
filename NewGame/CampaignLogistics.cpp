@@ -44,6 +44,7 @@ namespace frontline
 		c.food -= cargo + pack;
 		c.gold -= 100;
 		armies.push_back(a);
+		++revision;
 		if (!ai)
 			--commands;
 		Note(generals[general].name + U"が" + cities[targetCity].name + U"への兵糧輸送を開始。");

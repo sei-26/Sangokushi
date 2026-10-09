@@ -113,3 +113,21 @@ CampaignReturn.cpp は指定した味方都市への帰還・即時入城、Camp
 - tests/AITests.cpp：状況別の判断と、3勢力の長期シミュレーション。
 
 命令を1つ実行するたびに候補を作り直す。武将や都市資源が使用済みになるため、実行前の候補を続けて流用しない。判断の理由は群雄の記録へ残す。
+
+- `NewGame/CampaignAIOperations.cpp`：敵軍の攻城隊と支援隊の足並み、集結待機の期限、攻勢中止。日次移動の停止情報を返し、戦闘停止とは別に判断する。
+
+- `NewGame/CampaignBattlefield.cpp`：敵部隊の補給封鎖範囲、味方護衛と守備兵による保護、方向数に基づく包囲圧力。補給・輸送経路・戦闘・AI・画面が同じ評価関数を使う。
+
+- `NewGame/CampaignTerrainDraw.cpp`：軍略地図の地面・山並み・森林・水面・橋。固定の地形描画は地図テクスチャにキャッシュする。
+- `NewGame/CampaignMarkerDraw.cpp`：城郭、部隊の軍旗と兵力バー、既存の英雄肖像と未収録武将の紋章。
+- `NewGame/CampaignVisuals.hpp`：本編の地図・部隊欄が使う描画関数。ゲームのルールやセーブには依存する状態を追加しない。
+
+- `NewGame/HexGrid.hpp`：本編のHEX座標、六方向隣接、距離、射線。旧セーブは `Campaign::hexMap=false` で従来の四角地図を使う。
+- `SANGOKUSHI14_REBUILD.md`：全面刷新の実装状況と未実装の主要項目。旧コアより現在のユーザー指定を優先する。
+
+- `NewGame/CampaignRegions.cpp`：府・地域の生成、占領、支配拡大、都市への追加収入。
+- `NewGame/CampaignSceneRegions.cpp`：府の地図表示、選択区画、地域情報パネル。
+
+- `NewGame/CampaignLandscapeDraw.cpp`：六角マスの共有辺、川岸・海岸、畑、地図の照明、交戦エフェクト。地形の描画を入力・進行処理と分ける。
+
+- `NewGame/CampaignMapArt.hpp/.cpp`：MapArt画像の読み込み、山・森・都市・府の画像配置、地形マスへの材質UV、画像欠落時の代替。画像本体と生成プロンプトは `App/MapArt/`。
