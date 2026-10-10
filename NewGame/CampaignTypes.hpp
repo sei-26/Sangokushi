@@ -38,6 +38,7 @@ namespace frontline
 		int farming = 40, commerce = 40, order = 65, logistics = 40;
 		int worker = -1, work = 0, workLeft = 0;
 		int helper = -1;
+		int governor = -1;
 	};
 	struct Region
 	{
@@ -66,6 +67,11 @@ namespace frontline
 		std::vector<int> path;
 		int tacticLeft = 0, tacticReadyDay = 0;
 		bool tacticQueued = false;
+	};
+	struct TacticEvent
+	{
+		int general = 0, faction = 0, tile = 0, target = 0;
+		Tactic tactic = Tactic::Rally;
 	};
 	struct Bond
 	{

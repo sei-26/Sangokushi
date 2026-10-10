@@ -7,6 +7,77 @@ using namespace campaignui;
 
 void CampaignScene::preview(int mode)
 {
+	if (mode == 36 || mode == 37)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_governCity = 0;
+		m_game.AppointGovernor(0, 19);
+		m_governChoice = 0;
+		m_councilMode = 4;
+		return;
+	}
+	if (mode >= 30 && mode <= 35)
+	{
+		preview(23);
+		if (mode == 30)
+			openInformation(0, 0);
+		if (mode == 31)
+		{
+			openInformation(1, 24);
+			m_infoSort = 1;
+			const auto rows = informationRows();
+			m_infoPage = static_cast<int>(std::find(rows.begin(), rows.end(), 24) - rows.begin()) /
+			             Max(1, (Scene::Height() - 360) / 38);
+		}
+		if (mode == 32)
+		{
+			openInformation(1, 0);
+			m_infoRelations = true;
+		}
+		if (mode == 33)
+			openInformation(2, 0);
+		if (mode == 34)
+			openInformation(3, m_army);
+		if (mode == 35)
+			openInformation(4);
+		return;
+	}
+	if (mode == 28 || mode == 29)
+	{
+		preview(23);
+		m_presentation.ToggleSound(); // Automated previews are silent.
+		m_game.armies[1].troops = m_game.armies[2].troops = 0;
+		const int general = mode == 28 ? 24 : 5;
+		m_game.armies[m_army].general = general;
+		m_game.armies[m_army].arm = mode == 28 ? Arm::Cavalry : Arm::Spear;
+		m_game.armies[m_army].morale = 85;
+		m_game.armies[m_army].tacticReadyDay = 0;
+		if (mode == 29)
+		{
+			m_game.armies[1].troops = 3000;
+			m_game.armies[1].tile = m_game.armies[1].target = Campaign::At(50, 34);
+			m_game.armies[1].tacticReadyDay = 1000;
+		}
+		m_game.ActivateTactic(m_army);
+		m_game.AdvanceDay();
+		m_presentation.Capture(m_game);
+		m_presentation.Update(mode == 28 ? .62 : 1.12);
+		m_message = U"武将の顔と戦法演出 / クリック・Spaceで次へ / Mで効果音切替";
+		return;
+	}
+	if (mode == 27)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_camera.Fit(Width, Height, m_game.hexMap, true);
+		m_councilMode = 1;
+		m_rosterFaction = 0;
+		m_rosterPage = 1;
+		m_inspect = 24;
+		m_partner = -1;
+		return;
+	}
 	if (mode == 26)
 	{
 		preview(14);

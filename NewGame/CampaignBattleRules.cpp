@@ -1,6 +1,73 @@
 ﻿#include "Campaign.hpp"
 namespace frontline
 {
+	// These percentages are also shown in the army panel, using the current terrain and arm.
+	int Campaign::OfficerAttackPercent(int index, bool siege) const
+	{
+		if (index < 0 || index >= static_cast<int>(armies.size()))
+			return 100;
+		const auto& a = armies[index];
+		if (a.troops <= 0 || a.arm == Arm::Transport)
+			return 100;
+		const auto& g = generals[a.general];
+		const auto terrain = tiles[a.tile].terrain;
+		const bool cover = terrain == Terrain::Forest || terrain == Terrain::Mountain;
+		int value = 100;
+		if (siege)
+		{
+			if (g.trait == Trait::SiegeExpert)
+				value += 25;
+		}
+		else
+		{
+			if (g.trait == Trait::Valiant)
+				value += 12;
+			if (g.trait == Trait::Raider && terrain == Terrain::Forest)
+				value += 18;
+			if (g.trait == Trait::CavalryExpert && a.arm == Arm::Cavalry && terrain == Terrain::Plain)
+				value += 20;
+			if (g.trait == Trait::ArcherExpert && a.arm == Arm::Bow)
+				value += 18;
+			if (g.trait == Trait::TerrainExpert && cover)
+				value += 15;
+		}
+		if (a.tacticLeft > 0)
+		{
+			if (g.tactic == Tactic::Charge)
+				value += 35;
+			if (g.tactic == Tactic::Volley && a.arm == Arm::Bow)
+				value += 20;
+			if (!siege && g.tactic == Tactic::MountedCharge && a.arm == Arm::Cavalry &&
+			    terrain == Terrain::Plain)
+				value += 60;
+			if (!siege && g.tactic == Tactic::Ambush && cover)
+				value += 45;
+			if (siege && g.tactic == Tactic::SiegeStrike && a.arm == Arm::Siege)
+				value += 60;
+		}
+		return value;
+	}
+	int Campaign::OfficerDamagePercent(int index) const
+	{
+		if (index < 0 || index >= static_cast<int>(armies.size()))
+			return 100;
+		const auto& a = armies[index];
+		if (a.troops <= 0 || a.arm == Arm::Transport)
+			return 100;
+		const auto& g = generals[a.general];
+		const auto terrain = tiles[a.tile].terrain;
+		const bool cover = terrain == Terrain::Forest || terrain == Terrain::Mountain;
+		int value = 100;
+		if (g.trait == Trait::Guardian)
+			value -= 12;
+		if (g.trait == Trait::TerrainExpert && cover)
+			value -= 15;
+		if (a.tacticLeft > 0 && g.tactic == Tactic::Fortify)
+			value -= 30;
+		if (a.tacticLeft > 0 && g.tactic == Tactic::Ambush && cover)
+			value -= 20;
+		return value;
+	}
 	bool Campaign::SetStance(int index, battle::Stance stance, bool ai)
 	{
 		if (result != 0 || index < 0 || index >= static_cast<int>(armies.size()) ||

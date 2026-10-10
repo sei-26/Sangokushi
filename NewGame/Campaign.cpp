@@ -91,6 +91,7 @@ namespace frontline
 		commands = 3;
 		result = 0;
 		armies.clear();
+		tacticEvents.clear();
 		log.clear();
 		generals.clear();
 		bonds.clear();
@@ -175,6 +176,7 @@ namespace frontline
 			generals[i].trait = traits[i];
 			generals[i].tactic = tactics[i];
 		}
+		AddExpandedRoster();
 		// Initial bonds and abilities are sandbox game settings, not historical assertions.
 		ChangeBond(0, 2, 50);
 		ChangeBond(0, 4, 50);
@@ -190,6 +192,7 @@ namespace frontline
 	void Campaign::ResetLegacy(int faction)
 	{
 		Reset(faction);
+		generals.resize(24);
 		legacyLayout = true;
 		hexMap = false;
 		regions.clear();

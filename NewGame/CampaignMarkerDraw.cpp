@@ -47,7 +47,8 @@ namespace campaignvisual
 		Triangle(p + Vec2(z * .15, -z * .94), p + Vec2(z * .44, -z * .85), p + Vec2(z * .15, -z * .76))
 		    .draw(campaignui::FactionColor(faction));
 	}
-	void ArmyIcon(Vec2 p, double cell, const frontline::Army& a, bool selected)
+	void ArmyIcon(Vec2 p, double cell, const frontline::Army& a, bool selected,
+	              const frontline::General& general, const Texture& faces)
 	{
 		const double z = Max(16., cell * .88);
 		if (selected)
@@ -81,33 +82,14 @@ namespace campaignvisual
 		                    : a.arm == frontline::Arm::Bow     ? U"弓"
 		                    : a.arm == frontline::Arm::Cavalry ? U"騎"
 		                                                       : U"槍";
-		FontAsset(U"campaignSmall")(icon).drawAt(p.movedBy(z * .07, -z * .05), ColorF(.99, .96, .83));
+		OfficerCard(RectF(p.x - z * .30, p.y - z * .43, z * .76, z * .75), general, faces);
+		const Vec2 badge = p.movedBy(z * .43, z * .28);
+		Circle(badge, Max(8., z * .16))
+		    .draw(campaignui::FactionColor(a.faction))
+		    .drawFrame(1, ColorF(.96, .84, .53));
+		FontAsset(U"campaignSmall")(icon).drawAt(badge, ColorF(.99, .96, .83));
 		RectF(p.x - z * .30, p.y + z * .36, z * .76, 3).draw(ColorF(.04, .06, .045));
 		RectF(p.x - z * .30, p.y + z * .36, z * .76 * Min(1., a.troops / 6000.), 3)
 		    .draw(a.morale < 40 ? ColorF(.93, .47, .28) : ColorF(.86, .77, .46));
-	}
-	void OfficerCard(const RectF& r, const frontline::General& officer, const Texture& faces)
-	{
-		static const std::array<std::u32string, 6> names{
-		    {U"劉備", U"関羽", U"張飛", U"趙雲", U"諸葛亮", U"黄忠"}};
-		r.draw(ColorF(.07, .115, .095));
-		int who = -1;
-		for (int i = 0; i < 6; ++i)
-			if (officer.name == names[i])
-				who = i;
-		if (who >= 0 && faces)
-		{
-			const int w = faces.width() / 3, h = faces.height() / 2;
-			faces(Rect(w * (who % 3), h * (who / 3), w, h)).resized(r.w, r.h).draw(r.pos);
-		}
-		else
-		{
-			Circle(r.center().movedBy(0, -10), 13).draw(ColorF(.48, .48, .32));
-			Triangle(r.center().movedBy(0, 0), r.bl().movedBy(5, -4), r.br().movedBy(-5, -4))
-			    .draw(campaignui::FactionColor(officer.faction));
-			FontAsset(U"campaignSmall")(String(officer.name.substr(0, 1).c_str()))
-			    .drawAt(r.center().movedBy(0, -10), ColorF(.96, .87, .64));
-		}
-		r.drawFrame(1.5, ColorF(.74, .61, .35));
 	}
 } // namespace campaignvisual

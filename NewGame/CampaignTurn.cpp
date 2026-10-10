@@ -4,6 +4,7 @@ namespace frontline
 {
 	void Campaign::AdvanceDay()
 	{
+		tacticEvents.clear();
 		if (result != 0)
 			return;
 		++day;

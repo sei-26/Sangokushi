@@ -108,9 +108,9 @@ namespace frontline
 		if ((!ai && (c.owner != player || commands <= 0)) ||
 		    std::find(available.begin(), available.end(), general) == available.end() ||
 		    c.troops < soldiers + 1000 || c.gold < soldiers / 10 ||
-		    c.food < officer::SupplyPack(soldiers, c.logistics) || ArmyCount(c.owner) >= MaxArmies)
+		    c.food < officer::SupplyPack(soldiers, CityLogistics(city)) || ArmyCount(c.owner) >= MaxArmies)
 			return -1;
-		const int pack = officer::SupplyPack(soldiers, c.logistics);
+		const int pack = officer::SupplyPack(soldiers, CityLogistics(city));
 		c.troops -= soldiers;
 		c.gold -= soldiers / 10;
 		c.food -= pack;

@@ -14,6 +14,7 @@ try {
     New-Item -ItemType Directory -Path 'Intermediate/tests/core','Intermediate/tests/save' -Force | Out-Null
     $taskCampaignFiles = @(
         'NewGame\Campaign.cpp',
+ 'NewGame\CampaignRoster.cpp',
         'NewGame\CampaignRegions.cpp',
         'NewGame\CampaignAI.cpp',
         'NewGame\CampaignAIPlanning.cpp',
@@ -27,6 +28,7 @@ try {
         'NewGame\CampaignDailyCombat.cpp',
         'NewGame\CampaignDiplomacy.cpp',
         'NewGame\CampaignEconomy.cpp',
+        'NewGame\CampaignGovernance.cpp',
         'NewGame\CampaignOfficers.cpp',
         'NewGame\CampaignOrders.cpp',
         'NewGame\CampaignReturn.cpp',
@@ -67,6 +69,12 @@ try {
     $taskWorld = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\WorldMapTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\WorldMapTests.exe /Fo:Intermediate\WorldMapTests.obj && Intermediate\WorldMapTests.exe"
     & cmd /c $taskWorld
     if ($LASTEXITCODE -ne 0) { throw 'World map tests failed.' }
+    $taskGovernance = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\GovernanceTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\GovernanceTests.exe /Fo:Intermediate\GovernanceTests.obj /link /STACK:8388608 && Intermediate\GovernanceTests.exe"
+    & cmd /c $taskGovernance
+    if ($LASTEXITCODE -ne 0) { throw 'Governance tests failed.' }
+    $taskInformation = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\InformationTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\InformationTests.exe /Fo:Intermediate\InformationTests.obj /link /STACK:8388608 && Intermediate\InformationTests.exe"
+    & cmd /c $taskInformation
+    if ($LASTEXITCODE -ne 0) { throw 'Information tests failed.' }
     $taskStory = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\StoryTests.cpp Intermediate\tests\StoryCore.lib /Fe:Intermediate\StoryTests.exe /Fo:Intermediate\StoryTests.obj && Intermediate\StoryTests.exe"
     & cmd /c $taskStory
     if ($LASTEXITCODE -ne 0) { throw 'Story tests failed.' }

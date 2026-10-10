@@ -237,6 +237,8 @@
     <ClInclude Include="NewGame\HeroStory.hpp" />
     <ClInclude Include="NewGame\StorySave.hpp" />
     <ClInclude Include="NewGame\HeroStoryScene.hpp" />
+    <ClInclude Include="NewGame\CampaignInformation.hpp" />
+    <ClInclude Include="NewGame\CampaignInfoLayout.hpp" />
     <ClInclude Include="NewGame\CampaignScene.hpp" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
@@ -245,6 +247,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="NewGame\Campaign.cpp" />
+ <ClCompile Include="NewGame\CampaignRoster.cpp" />
     <ClCompile Include="NewGame\CampaignRegions.cpp" />
     <ClCompile Include="NewGame\CampaignAI.cpp" />
     <ClCompile Include="NewGame\CampaignAIArmies.cpp" />
@@ -255,12 +258,17 @@
     <ClCompile Include="NewGame\CampaignBattlefield.cpp" />
     <ClCompile Include="NewGame\CampaignDailyCombat.cpp" />
     <ClCompile Include="NewGame\CampaignDiplomacy.cpp" />
+    <ClCompile Include="NewGame\CampaignGovernance.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneGovernance.cpp" />
     <ClCompile Include="NewGame\CampaignEconomy.cpp" />
     <ClCompile Include="NewGame\CampaignOfficers.cpp" />
     <ClCompile Include="NewGame\CampaignOrders.cpp" />
     <ClCompile Include="NewGame\CampaignReturn.cpp" />
     <ClCompile Include="NewGame\CampaignSave.cpp" />
     <ClCompile Include="NewGame\CampaignSceneCamera.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneInformation.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneInformationDraw.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneInformationDetail.cpp" />
     <ClCompile Include="NewGame\CampaignSceneCouncil.cpp" />
     <ClCompile Include="NewGame\CampaignSceneInput.cpp" />
     <ClCompile Include="NewGame\CampaignSceneArmyOrders.cpp" />
@@ -272,11 +280,18 @@
     <ClCompile Include="NewGame\CampaignScenePreview.cpp" />
     <ClCompile Include="NewGame\CampaignSupply.cpp" />
     <ClCompile Include="NewGame\CampaignTurn.cpp" />
+    <ClInclude Include="NewGame\CityIdentity.hpp" />
     <ClInclude Include="NewGame\CampaignTypes.hpp" />
     <ClCompile Include="NewGame\CampaignTerrainDraw.cpp" />
     <ClCompile Include="NewGame\CampaignMapArt.cpp" />
     <ClCompile Include="NewGame\CampaignLandscapeDraw.cpp" />
+    <ClCompile Include="NewGame\CampaignPortraitDraw.cpp" />
+    <ClCompile Include="NewGame\CampaignPresentation.cpp" />
+    <ClCompile Include="NewGame\CampaignPresentationDraw.cpp" />
+    <ClCompile Include="NewGame\CampaignPresentationAudio.cpp" />
     <ClCompile Include="NewGame\CampaignMarkerDraw.cpp" />
+    <ClInclude Include="NewGame\CampaignPresentation.hpp" />
+    <ClInclude Include="NewGame\PortraitCatalog.hpp" />
     <ClInclude Include="NewGame\CampaignVisuals.hpp" />
     <ClInclude Include="NewGame\CampaignMapArt.hpp" />
     <ClCompile Include="NewGame\CampaignUI.cpp" />

@@ -73,7 +73,7 @@ namespace frontline
 		if ((!ai && (c.owner != player || commands <= 0)) || c.gold < 300 || c.food < 1000 ||
 		    c.troops > 16000 || c.order < 35)
 			return false;
-		c.troops += 2000;
+		c.troops += Recruitment(city);
 		c.gold -= 300;
 		c.food -= 1000;
 		c.order = std::max(0, c.order - 10);
@@ -93,6 +93,8 @@ namespace frontline
 					Note(FactionName(f) + U"・" + FactionName(other) + U"の停戦期間が終了。");
 		for (auto& c : cities)
 		{
+			if (c.governor >= 0 && Governor(static_cast<int>(&c - cities.data())) < 0)
+				c.governor = -1;
 			if (c.worker < 0)
 				continue;
 			if (generals[c.worker].faction != c.owner)
@@ -107,7 +109,7 @@ namespace frontline
 				             : c.work == 1 ? c.commerce
 				             : c.work == 2 ? c.order
 				                           : c.logistics;
-				level = std::min(100, level + WorkGain(c.worker, static_cast<Duty>(c.work), c.helper));
+				level = std::min(100, level + CityWorkGain(static_cast<int>(&c - cities.data())));
 				if (c.helper >= 0)
 				{
 					ChangeBond(c.worker, c.helper, 8);
@@ -131,12 +133,13 @@ namespace frontline
 		{
 			for (auto& c : cities)
 			{
-				c.gold = std::min(100000000, c.gold + (100 + c.commerce * 15) * c.order / 100);
-				c.food = std::min(100000000, c.food + (800 + c.farming * 80) * c.order / 100);
+				c.gold =
+				    std::min(100000000, c.gold + CityIncome(static_cast<int>(&c - cities.data()), false));
+				c.food = std::min(100000000, c.food + CityIncome(static_cast<int>(&c - cities.data()), true));
 				c.order = std::max(0, c.order - (ArmyCount(c.owner) > 0 ? 3 : 1));
 			}
 			RegionIncome();
-			Note(U"月末収入。農政・商業・治安が収穫と税収を左右します。");
+			Note(U"月末収入。城の特色・太守・農政・商業・治安が収穫と税収を左右します。");
 		}
 		bool all = true, hasCity = false;
 		for (const auto& c : cities)

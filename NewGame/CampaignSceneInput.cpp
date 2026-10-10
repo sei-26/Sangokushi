@@ -34,6 +34,14 @@ void CampaignScene::update()
 			m_storyActive = false;
 		return;
 	}
+	const bool soundClicked = m_started && Rect(Scene::Width() - 155, 73, 130, 20).leftClicked();
+	if (KeyM.down() || soundClicked)
+		m_presentation.ToggleSound();
+	const bool wasPresenting = m_presentation.Busy();
+	m_presentation.Update(Scene::DeltaTime(),
+	                      wasPresenting && (KeySpace.down() || (MouseL.down() && !soundClicked)));
+	if (wasPresenting || m_presentation.Busy())
+		return;
 	if (!m_started)
 	{
 		const int start = Scene::Center().x - 465;
@@ -50,6 +58,7 @@ void CampaignScene::update()
 				m_generalChoice = 0;
 				m_positions.clear();
 				m_hits.clear();
+				m_presentation.Reset();
 				return;
 			}
 		if (Rect(Scene::Center().x - 225, Scene::Center().y + 165, 450, 38).leftClicked())
@@ -66,6 +75,7 @@ void CampaignScene::update()
 				m_army = -1;
 				m_positions.clear();
 				m_hits.clear();
+				m_presentation.Reset();
 				m_mapTexture = RenderTexture{};
 				m_message = U"戦況を復元しました。";
 			}
@@ -74,24 +84,54 @@ void CampaignScene::update()
 		}
 		return;
 	}
-	if (KeyTab.down())
-	{
-		m_supplyView = !m_supplyView;
-		m_mapDay = -1;
-	}
 	if (m_councilMode != 0)
 	{
 		updateCouncil();
 		return;
 	}
+	if (m_infoOpen)
+	{
+		updateInformation();
+		return;
+	}
+	if (KeyI.down() || button(18).leftClicked())
+	{
+		if (m_city >= 0)
+			openInformation(0, m_city);
+		else if (m_army >= 0 && m_army < static_cast<int>(m_game.armies.size()))
+			openInformation(3, m_army);
+		else
+			openInformation(0);
+		return;
+	}
+	if (panelVisible() && m_councilMode == 0)
+	{
+		if (m_army >= 0 && m_army < static_cast<int>(m_game.armies.size()) &&
+		    Rect(Scene::Width() - 316, 102, 56, 66).leftClicked())
+		{
+			openInformation(1, m_game.armies[m_army].general);
+			return;
+		}
+		if (m_city >= 0 && Rect(Scene::Width() - 316, 102, 282, 34).leftClicked())
+		{
+			openInformation(0, m_city);
+			return;
+		}
+	}
+	if (KeyTab.down())
+	{
+		m_supplyView = !m_supplyView;
+		m_mapDay = -1;
+	}
 	if (KeyV.down() || button(49).leftClicked())
 		m_panelHidden = !m_panelHidden;
 	updateCamera();
-	if ((button(17).leftClicked() && (!m_game.hexMap || m_daysLeft == 0)) || button(18).leftClicked())
+	if (button(17).leftClicked() && (!m_game.hexMap || m_daysLeft == 0))
 	{
-		m_councilMode = button(17).leftClicked() ? 1 : 2;
+		m_councilMode = 1;
 		m_paused = m_daysLeft > 0;
 		m_rosterFaction = m_game.player;
+		m_rosterPage = 0;
 		m_inspect = m_game.player * 6;
 		m_partner = -1;
 		m_historyPage = 0;
@@ -105,6 +145,11 @@ void CampaignScene::update()
 					m_inspect = g;
 					break;
 				}
+		int rosterRow = 0;
+		for (int g = 0; g < m_inspect; ++g)
+			if (m_game.generals[g].faction == m_rosterFaction)
+				++rosterRow;
+		m_rosterPage = rosterRow / 8;
 		return;
 	}
 	if (button(15).leftClicked())
@@ -128,11 +173,14 @@ void CampaignScene::update()
 			for (const auto& army : m_game.armies)
 				troops.push_back(army.troops);
 			m_game.AdvanceDay();
+			m_presentation.Capture(m_game);
+			if (m_presentation.Busy())
+				m_timer = 0;
 			--m_daysLeft;
 			for (int i = 0; i < static_cast<int>(m_game.armies.size()); ++i)
 			{
 				const auto& army = m_game.armies[i];
-				if (troops[i] > army.troops &&
+				if (i < static_cast<int>(troops.size()) && troops[i] > army.troops &&
 				    (army.troops > 0 || m_game.generals[army.general].readyDay == m_game.day + 20))
 					m_hits.push_back({tileCenter(army.tile), troops[i] - army.troops, 0.75});
 			}
@@ -176,6 +224,7 @@ void CampaignScene::update()
 				m_army = -1;
 				m_positions.clear();
 				m_hits.clear();
+				m_presentation.Reset();
 				m_mapDay = -1;
 				m_mapTexture = RenderTexture{};
 				m_message = U"戦況を復元しました。";

@@ -43,6 +43,12 @@
     <ClInclude Include="NewGame\CampaignSave.hpp">
       <Filter>Header Files\自由戦略\保存</Filter>
     </ClInclude>
+    <ClInclude Include="NewGame\CampaignInformation.hpp">
+      <Filter>Header Files\自由戦略\画面</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\CampaignInfoLayout.hpp">
+      <Filter>Header Files\自由戦略\画面</Filter>
+    </ClInclude>
     <ClInclude Include="NewGame\CampaignScene.hpp">
       <Filter>Header Files\自由戦略\画面</Filter>
     </ClInclude>
@@ -403,7 +409,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NewGame\Campaign.cpp">
+    <ClCompile Include="NewGame\CampaignRoster.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+ <ClCompile Include="NewGame\Campaign.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\CampaignRegions.cpp">
@@ -436,6 +443,8 @@
     <ClCompile Include="NewGame\CampaignDiplomacy.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\CampaignGovernance.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneGovernance.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignEconomy.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
@@ -452,6 +461,15 @@
       <Filter>Source Files\自由戦略\保存</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\CampaignSceneCamera.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneInformation.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneInformationDraw.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneInformationDetail.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\CampaignSceneCouncil.cpp">
@@ -487,6 +505,7 @@
     <ClCompile Include="NewGame\CampaignTurn.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
+    <ClInclude Include="NewGame\CityIdentity.hpp"><Filter>Header Files\自由戦略\ルール</Filter></ClInclude>
     <ClInclude Include="NewGame\CampaignTypes.hpp">
       <Filter>Header Files\自由戦略\ルール</Filter>
     </ClInclude>
@@ -499,9 +518,27 @@
     <ClCompile Include="NewGame\CampaignLandscapeDraw.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\CampaignPortraitDraw.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignPresentation.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignPresentationDraw.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
+    <ClCompile Include="NewGame\CampaignPresentationAudio.cpp">
+      <Filter>Source Files\自由戦略\画面</Filter>
+    </ClCompile>
     <ClCompile Include="NewGame\CampaignMarkerDraw.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
+    <ClInclude Include="NewGame\CampaignPresentation.hpp">
+      <Filter>Header Files\自由戦略\画面</Filter>
+    </ClInclude>
+    <ClInclude Include="NewGame\PortraitCatalog.hpp">
+      <Filter>Header Files\自由戦略\画面</Filter>
+    </ClInclude>
     <ClInclude Include="NewGame\CampaignVisuals.hpp">
       <Filter>Header Files\自由戦略\画面</Filter>
     </ClInclude>

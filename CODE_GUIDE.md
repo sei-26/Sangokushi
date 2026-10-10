@@ -131,3 +131,17 @@ CampaignReturn.cpp は指定した味方都市への帰還・即時入城、Camp
 - `NewGame/CampaignLandscapeDraw.cpp`：六角マスの共有辺、川岸・海岸、畑、地図の照明、交戦エフェクト。地形の描画を入力・進行処理と分ける。
 
 - `NewGame/CampaignMapArt.hpp/.cpp`：MapArt画像の読み込み、山・森・都市・府の画像配置、地形マスへの材質UV、画像欠落時の代替。画像本体と生成プロンプトは `App/MapArt/`。
+
+武将の追加データは `NewGame/CampaignRoster.cpp`。既存ID 0〜23を維持し、24〜71を追加します。兵科・地形・戦法の補正は `CampaignBattleRules.cpp` の `OfficerAttackPercent` / `OfficerDamagePercent` に集約し、戦闘計算と情報パネルで共有します。人望の士気支援と不屈の士気軽減は `CampaignDailyCombat.cpp`。
+
+武将肖像の対応表は `PortraitCatalog.hpp`、描画は `CampaignPortraitDraw.cpp`。戦法の成功イベントは `CampaignDailyCombat.cpp` が `tacticEvents` に発行し、次の日の処理でクリアします。演出は `CampaignPresentation.cpp`（順番と時間）、`CampaignPresentationDraw.cpp`（カットイン・戦場効果）、`CampaignPresentationAudio.cpp`（外部素材なしの効果音合成）に分割。演出はゲーム状態を書き換えず、UIが日数進行を待ちます。
+
+情報メニュー：`CampaignInformation.hpp` が閲覧用の一覧、絞り込み、並べ替え、任務状況、親密度、勢力集計を提供します。64bitで資源を集計し、ゲーム状態は変更しません。UIは `CampaignSceneInformation.cpp`（入力・選択・地図への移動）、`CampaignSceneInformationDraw.cpp`（一覧）、`CampaignSceneInformationDetail.cpp`（詳細）、`CampaignInfoLayout.hpp`（共通の座標）に分割しています。`tests/InformationTests.cpp` で一覧と集計を検証します。
+
+## 城の特色と太守
+
+城情報の「都市運営・太守の任命」から、待機中の所属武将を太守へ任命できる。任命は金100・命令1、解任は命令1。太守は他の任務に使用できず、置き換えると前任者は通常任務へ戻る。命令期間のみ実行でき、閲覧中は日数を停止する。
+
+新マップの30都市は穀倉（都市兵糧収入+40%）、商都（金収入+40%）、軍都（募兵+500）、要塞（守備兵被害-15%）、兵站拠点（実効兵站+20）の5種類。分類はゲーム用の設定。旧レイアウトは一般都市。太守の政治で収入、統率で防衛、兵站適性で実効兵站、内政担当との親密度で開発量が変わる。携行糧は都市の実在する蓄えから差し引く。府収入には都市収入補正を重ねない。陥落時は太守を解任し、既存の武将避難処理を使用する。
+
+`CityIdentity.hpp` に特色の定義、`CampaignGovernance.cpp` に任命・効果計算、`CampaignSceneGovernance.cpp` に候補比較と任命画面を分離。敵AIも命令予算を使い、指揮官を残して政治に優れた候補を任命。セーブ形式13は太守を保存し、形式12以前は空席として読み込む。`GovernanceTests.cpp` と保存テストで兼務禁止・資源保存・収入・補給・攻城・避難・旧データ互換性を確認する。

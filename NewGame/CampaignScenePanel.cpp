@@ -69,13 +69,15 @@ void CampaignScene::drawPanel() const
 			           own && orders && m_game.commands > 0);
 			const auto link = m_game.Formation(m_army);
 			(void)FontAsset(U"campaignSmall")(
-			    U"構え：攻撃 {}% / 被害 {}%\n射程 {} / 林と山の背後には射撃不可\n包囲 {}方向 / 被害+{}%・士気-{}/日\n連携：攻撃+{}% / 被害-{}%\n兵糧消費-{}% / 士気+{}/日\n役割：{} / 個性：{}\n戦法：士気15消費・再使用30日"_fmt(
+			    U"構え：攻撃{}% / 被害{}%\n射程{} / 包囲{}方向：+{}%・士気-{}\n連携：攻+{}% / 被害-{}% / 士気+{}\n役割：{} / 糧消費-{}%\n個性：{} / 武将被害{}%\n武将攻撃：野戦{}% / 攻城{}%\n戦法：残り{}日 / 士気15・再用30日"_fmt(
 			        battle::AttackPercent(army.stance), battle::DamagePercent(army.stance),
 			        m_game.AttackRange(m_army), m_game.PressureDirections(m_army),
 			        m_game.PressureDamagePercent(m_army), m_game.PressureMoraleLoss(m_army), link.attack,
-			        link.defense, link.supply, link.morale / 2,
-			        text(officer::RoleName(officer::RoleOf(g.name))), text(TraitName(g.trait))))
-			    .draw(RectF(x + 14, 434, 280, 174), ColorF(.74, .81, .76));
+			        link.defense, link.morale / 2, text(officer::RoleName(officer::RoleOf(g.name))),
+			        link.supply, text(TraitName(g.trait)), m_game.OfficerDamagePercent(m_army),
+			        m_game.OfficerAttackPercent(m_army), m_game.OfficerAttackPercent(m_army, true),
+			        army.tacticLeft))
+			    .draw(RectF(x + 14, 430, 280, 180), ColorF(.74, .81, .76));
 		}
 	}
 	else if (m_region >= 0 && m_region < static_cast<int>(m_game.regions.size()))
@@ -86,8 +88,8 @@ void CampaignScene::drawPanel() const
 	{
 		const auto& city = m_game.cities[m_city];
 		const bool own = city.owner == m_game.player;
-		line(text(city.name) + U" / " + text(Campaign::FactionName(city.owner)), 105,
-		     FactionColor(city.owner));
+		DrawButton(Rect(x + 14, 102, 278, 34),
+		           text(city.name) + U" / " + text(Campaign::FactionName(city.owner)) + U" / 詳細");
 		line(U"守備兵 {}"_fmt(city.troops), 145);
 		line(U"金 {}"_fmt(city.gold), 180);
 		line(U"兵糧 {}"_fmt(city.food), 215);
@@ -107,15 +109,16 @@ void CampaignScene::drawPanel() const
 			                                city.farming, city.commerce, city.order, city.logistics))
 			    .draw(x + 14, 324, ColorF(0.87, 0.90, 0.86));
 			FontAsset(U"campaignSmall")(
-			    U"月収：金 {} / 糧 {}"_fmt((100 + city.commerce * 15) * city.order / 100,
-			                               (800 + city.farming * 80) * city.order / 100))
+			    U"月収：金 {} / 糧 {}"_fmt(m_game.CityIncome(m_city, false), m_game.CityIncome(m_city, true)))
 			    .draw(x + 14, 346, ColorF(0.93, 0.83, 0.57));
 			for (int d = 0; d < 4; ++d)
 			{
 				const auto duty = static_cast<Duty>(d);
-				const int gain = available.empty()
-				                     ? 0
-				                     : m_game.WorkGain(available[m_generalChoice % available.size()], duty);
+				const int gain =
+				    available.empty()
+				        ? 0
+				        : m_game.WorkGain(available[m_generalChoice % available.size()], duty) +
+				              m_game.GovernorWorkBonus(m_city, available[m_generalChoice % available.size()]);
 				DrawButton(button(3 + d), text(Campaign::DutyName(duty)) + U" +{}"_fmt(gain),
 				           own && orders && city.worker < 0 && !available.empty());
 			}
@@ -144,10 +147,10 @@ void CampaignScene::drawPanel() const
 			DrawButton(button(4), U"弓兵で出陣", own && orders);
 			DrawButton(button(5), U"攻城隊で出陣", own && orders);
 			DrawButton(button(6), U"騎兵で出陣", own && orders);
-			DrawButton(button(7), U"募兵 +2000", own && orders);
+			DrawButton(button(7), U"募兵 +{}"_fmt(m_game.Recruitment(m_city)), own && orders);
 			FontAsset(U"campaignSmall")(
 			    U"出陣：金 {} / 携行糧 {}\n出陣士気 {}（治安で変化）\n兵站が高いと多くの糧を携行。\n携行糧は都市から支払います。\n募兵は治安を10消費。"_fmt(
-			        m_soldiers / 10, officer::SupplyPack(m_soldiers, city.logistics),
+			        m_soldiers / 10, officer::SupplyPack(m_soldiers, m_game.CityLogistics(m_city)),
 			        officer::StartingMorale(city.order)))
 			    .draw(x + 14, 503, ColorF(0.68, 0.77, 0.74));
 		}

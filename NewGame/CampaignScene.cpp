@@ -39,7 +39,7 @@ void CampaignScene::draw() const
 	DrawButton(button(16), m_game.hexMap ? U"10日間 同時進行" : U"1日だけ進める",
 	           m_daysLeft == 0 && m_game.result == 0);
 	DrawButton(button(17), U"武将・評定", !m_game.hexMap || m_daysLeft == 0);
-	DrawButton(button(18), U"群雄の記録");
+	DrawButton(button(18), U"情報 / I");
 	if (panelVisible())
 		drawPanel();
 	else
@@ -67,8 +67,18 @@ void CampaignScene::draw() const
 	if (m_game.result != 0 && m_started)
 		FontAsset(U"campaignTitle")(m_game.result == 1 ? U"天下統一 — 群雄を制す" : U"敗北 — 再び旗を掲げよ")
 		    .drawAt(mapRect().center(), ColorF(0.99, 0.85, 0.44));
+	if (m_started)
+	{
+		Rect(Scene::Width() - 155, 73, 130, 20).rounded(3).draw(ColorF(.12, .18, .14));
+		FontAsset(U"campaignSmall")(m_presentation.SoundEnabled() ? U"効果音 ON / M" : U"効果音 OFF / M")
+		    .drawAt(Vec2(Scene::Width() - 90, 83), ColorF(.86, .86, .74));
+	}
 	if (!m_started)
 		drawMenu();
 	else if (m_councilMode != 0)
 		drawCouncil();
+	if (m_infoOpen)
+		drawInformation();
+	if (m_started && m_councilMode == 0 && !m_infoOpen)
+		m_presentation.DrawOverlay(m_campaignFaces);
 }

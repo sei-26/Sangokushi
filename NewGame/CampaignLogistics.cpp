@@ -21,7 +21,7 @@ namespace frontline
 			return -1;
 		auto& c = cities[city];
 		const auto available = Available(city);
-		const int pack = officer::SupplyPack(1000, c.logistics);
+		const int pack = officer::SupplyPack(1000, CityLogistics(city));
 		if ((!ai && (c.owner != player || commands <= 0)) || cities[targetCity].owner != c.owner ||
 		    std::find(available.begin(), available.end(), general) == available.end() || c.troops < 2000 ||
 		    c.gold < 100 || c.food < cargo + pack || ArmyCount(c.owner) >= MaxArmies)

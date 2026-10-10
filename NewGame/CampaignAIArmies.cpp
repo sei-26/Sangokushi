@@ -48,6 +48,14 @@ namespace frontline
 		const int city = CityAt(a.target);
 		const bool siege =
 		    city >= 0 && Hostile(a.faction, cities[city].owner) && MapDistance(a.tile, a.target) <= 1;
+		if (tactic == Tactic::MountedCharge &&
+		    (a.arm != Arm::Cavalry || tiles[a.tile].terrain != Terrain::Plain))
+			return false;
+		if (tactic == Tactic::Ambush && tiles[a.tile].terrain != Terrain::Forest &&
+		    tiles[a.tile].terrain != Terrain::Mountain)
+			return false;
+		if (tactic == Tactic::SiegeStrike)
+			return a.arm == Arm::Siege && siege;
 		if (tactic == Tactic::Fortify)
 			return nearby >= a.troops / 2 || siege;
 		if (tactic == Tactic::Volley)

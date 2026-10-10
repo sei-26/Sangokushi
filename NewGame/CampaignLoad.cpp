@@ -7,7 +7,7 @@ namespace frontline
 		try
 		{
 			const int version = json[U"version"].get<int>();
-			if (version < 1 || version > 11)
+			if (version < 1 || version > 13)
 				return false;
 			const int player = json[U"player"].get<int>(), day = json[U"day"].get<int>(),
 			          commands = json[U"commands"].get<int>();
@@ -31,6 +31,29 @@ namespace frontline
 				loaded.ResetLegacy(player);
 			else
 				loaded.Reset(player);
+			int rosterCount = 0;
+			for (const auto& entry : json[U"generals"].arrayView())
+			{
+				(void)entry;
+				if (++rosterCount > 72)
+					return false;
+			}
+			if (version == 1)
+			{
+				if (rosterCount != 18)
+					return false;
+				loaded.generals.resize(24);
+			}
+			else
+			{
+				if (rosterCount != 24 && rosterCount != 72)
+					return false;
+				if (loaded.legacyLayout && rosterCount != 24)
+					return false;
+				if (version >= 12 && json[U"rosterCount"].get<int>() != rosterCount)
+					return false;
+				loaded.generals.resize(rosterCount);
+			}
 			loaded.hexMap = version >= 10 ? json[U"hexMap"].get<bool>() : false;
 			if (loaded.hexMap && loaded.legacyLayout)
 				return false;
@@ -85,6 +108,12 @@ namespace frontline
 				if (index >= static_cast<int>(loaded.cities.size()))
 					return false;
 				auto& c = loaded.cities[index++];
+				if (version >= 13)
+				{
+					c.governor = json[U"cities"][index - 1][U"governor"].get<int>();
+					if (c.governor < -1 || c.governor >= static_cast<int>(loaded.generals.size()))
+						return false;
+				}
 				c.owner = j[U"owner"].get<int>();
 				c.troops = j[U"troops"].get<int>();
 				c.food = j[U"food"].get<int>();
@@ -134,6 +163,15 @@ namespace frontline
 			if (index != (version == 1 ? 18 : static_cast<int>(loaded.generals.size())))
 				return false;
 			std::vector<bool> assigned(loaded.generals.size());
+			for (int c = 0; c < static_cast<int>(loaded.cities.size()); ++c)
+			{
+				const int g = loaded.cities[c].governor;
+				if (g < 0)
+					continue;
+				if (assigned[g] || loaded.Governor(c) != g)
+					return false;
+				assigned[g] = true;
+			}
 			for (int c = 0; c < static_cast<int>(loaded.cities.size()); ++c)
 			{
 				const int g = loaded.cities[c].worker;

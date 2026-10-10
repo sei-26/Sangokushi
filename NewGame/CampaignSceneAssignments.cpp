@@ -25,11 +25,17 @@ void CampaignScene::updateAssignments()
 		m_councilMode = 1;
 		return;
 	}
+	updateRosterPage(m_game.player);
 	int row = 0;
 	for (int g = 0; g < static_cast<int>(m_game.generals.size()); ++g)
 		if (m_game.generals[g].faction == m_game.player)
 		{
-			if (button(31 + row).leftClicked())
+			if (row < m_rosterPage * 8 || row >= (m_rosterPage + 1) * 8)
+			{
+				++row;
+				continue;
+			}
+			if (button(31 + row % 8).leftClicked())
 				m_inspect = g;
 			++row;
 		}
@@ -84,12 +90,18 @@ void CampaignScene::drawAssignments() const
 	for (int g = 0; g < static_cast<int>(m_game.generals.size()); ++g)
 		if (m_game.generals[g].faction == m_game.player)
 		{
-			DrawButton(button(31 + row),
+			if (row < m_rosterPage * 8 || row >= (m_rosterPage + 1) * 8)
+			{
+				++row;
+				continue;
+			}
+			DrawButton(button(31 + row % 8),
 			           text(m_game.generals[g].name) + (m_game.Busy(g) ? U" / 任務中" : U""));
 			if (g == m_inspect)
-				button(31 + row).drawFrame(2, ColorF(.98, .8, .4));
+				button(31 + row % 8).drawFrame(2, ColorF(.98, .8, .4));
 			++row;
 		}
+	drawRosterPages(m_game.player);
 	const int right = Scene::Width() - 460;
 	const auto& officer = m_game.generals[m_inspect];
 	FontAsset(U"campaignBody")(U"送り先の都市を選択").draw(330, 175, ColorF(.9, .87, .72));

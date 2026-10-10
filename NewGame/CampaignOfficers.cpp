@@ -34,7 +34,7 @@ namespace frontline
 	bool Campaign::Busy(int general) const
 	{
 		for (const auto& c : cities)
-			if (c.worker == general || (c.worker >= 0 && c.helper == general))
+			if (c.governor == general || c.worker == general || (c.worker >= 0 && c.helper == general))
 				return true;
 		for (const auto& transfer : assignments)
 			if (transfer.general == general)

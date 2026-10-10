@@ -13,6 +13,13 @@ namespace frontline
 		const auto t = generals[a.general].tactic;
 		if (t == Tactic::Volley && a.arm != Arm::Bow)
 			return false;
+		if (t == Tactic::MountedCharge && a.arm != Arm::Cavalry)
+			return false;
+		if (t == Tactic::SiegeStrike && a.arm != Arm::Siege)
+			return false;
+		if (t == Tactic::Ambush && tiles[a.tile].terrain != Terrain::Forest &&
+		    tiles[a.tile].terrain != Terrain::Mountain)
+			return false;
 		if (t == Tactic::Fire)
 		{
 			const int city = CityAt(a.target);

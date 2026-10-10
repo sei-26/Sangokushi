@@ -5,7 +5,8 @@ namespace frontline
 	s3d::JSON SaveJSON(const Campaign& game)
 	{
 		s3d::JSON json;
-		json[U"version"] = 11;
+		json[U"version"] = 13;
+		json[U"rosterCount"] = static_cast<int>(game.generals.size());
 		s3d::Array<s3d::JSON> regions;
 		if (game.hexMap)
 			for (const auto& r : game.regions)
@@ -47,6 +48,7 @@ namespace frontline
 			saved[U"work"] = c.work;
 			saved[U"workLeft"] = c.workLeft;
 			saved[U"helper"] = c.helper;
+			saved[U"governor"] = c.governor;
 		}
 		for (const auto& g : game.generals)
 		{

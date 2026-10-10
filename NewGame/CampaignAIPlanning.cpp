@@ -89,6 +89,15 @@ namespace frontline
 					    (administrator < 0 || generals[g].politics > generals[administrator].politics))
 						administrator = g;
 			}
+			if (day >= 30 && Governor(c) < 0 && threat == 0 && staff.size() >= 2 && administrator >= 0 &&
+			    administrator != commander && generals[administrator].politics >= 70 && city.gold >= 100)
+			{
+				AIOrder o{AIKind::Govern, 75};
+				o.city = c;
+				o.general = administrator;
+				o.reason = U"軍を率いる人材を残し、政治に優れた武将を太守へ任命";
+				plan.push_back(o);
+			}
 			if (threat > 1500 && commander >= 0 && city.troops >= 4000 && city.food >= 2000 &&
 			    ArmyCount(faction) < MaxArmies)
 			{
@@ -111,7 +120,11 @@ namespace frontline
 					o.general = commander;
 					o.amount = std::min(4000, city.troops - 2000);
 					o.target = armies[enemy].tile;
-					o.arm = generals[commander].tactic == Tactic::Volley ? Arm::Bow : Arm::Spear;
+					o.arm = generals[commander].tactic == Tactic::SiegeStrike && CityAt(o.target) >= 0
+					            ? Arm::Siege
+					        : generals[commander].tactic == Tactic::MountedCharge ? Arm::Cavalry
+					        : generals[commander].tactic == Tactic::Volley        ? Arm::Bow
+					                                                              : Arm::Spear;
 					o.reason = U"接近する敵に守備隊を出し、城の守備兵も残す";
 					plan.push_back(o);
 				}
@@ -183,10 +196,13 @@ namespace frontline
 					o.general = commander;
 					o.amount = std::min(4000, city.troops - 3000);
 					o.target = cities[target].tile;
-					o.arm = generals[commander].tactic == Tactic::Volley ? Arm::Bow
-					        : siege == 0                                 ? Arm::Siege
-					        : generals[commander].leadership >= 90       ? Arm::Cavalry
-					                                                     : Arm::Spear;
+					o.arm = generals[commander].tactic == Tactic::SiegeStrike && CityAt(o.target) >= 0
+					            ? Arm::Siege
+					        : generals[commander].tactic == Tactic::MountedCharge ? Arm::Cavalry
+					        : generals[commander].tactic == Tactic::Volley        ? Arm::Bow
+					        : siege == 0                                          ? Arm::Siege
+					        : generals[commander].leadership >= 90                ? Arm::Cavalry
+					                                                              : Arm::Spear;
 					o.reason = siege > 0 ? U"進軍中の攻城隊と同じ城を狙う支援部隊を優先する"
 					                     : U"到達可能な敵城へ攻城隊と支援部隊を集める";
 					if (siege > 0 || city.troops >= 7000)

@@ -28,6 +28,7 @@ namespace frontline
 			a.tacticQueued = false;
 			const auto& g = generals[a.general];
 			bool fired = true;
+			int effectTarget = a.tile;
 			if (g.tactic == Tactic::Rally)
 			{
 				for (int j = 0; j < static_cast<int>(armies.size()); ++j)
@@ -48,9 +49,15 @@ namespace frontline
 				const int c = CityAt(a.target);
 				const int damage = 120 + g.intelligence * 2;
 				if (victim >= 0)
+				{
 					losses[victim] += damage;
+					effectTarget = armies[victim].tile;
+				}
 				else if (c >= 0 && Hostile(a.faction, cities[c].owner) && MapDistance(a.tile, a.target) <= 1)
+				{
 					cityLoss[c] += damage;
+					effectTarget = cities[c].tile;
+				}
 				else
 					fired = false;
 			}
@@ -67,15 +74,39 @@ namespace frontline
 					fired = false;
 			}
 			else
-				a.tacticLeft = 5;
+			{
+				const auto terrain = tiles[a.tile].terrain;
+				fired = (g.tactic != Tactic::MountedCharge || a.arm == Arm::Cavalry) &&
+				        (g.tactic != Tactic::SiegeStrike || a.arm == Arm::Siege) &&
+				        (g.tactic != Tactic::Ambush || terrain == Terrain::Forest ||
+				         terrain == Terrain::Mountain);
+				if (fired)
+					a.tacticLeft = 5;
+			}
 			if (fired)
 			{
 				a.morale = std::max(0, a.morale - 15);
 				a.tacticReadyDay = day + 30;
+				tacticEvents.push_back({a.general, a.faction, a.tile, effectTarget, g.tactic});
 				Note(g.name + U"が戦法「" + TacticName(g.tactic) + U"」を発動！");
 			}
 			else
 				Note(g.name + U"の戦法は対象・補給の変化で発動できませんでした。");
+		}
+		// Multiple inspiring commanders do not stack; all auras use the same alive snapshot.
+		for (int j = 0; j < static_cast<int>(armies.size()); ++j)
+		{
+			const auto& receiver = armies[j];
+			if (receiver.troops <= 0 || receiver.arm == Arm::Transport)
+				continue;
+			for (const auto& source : armies)
+				if (source.troops > 0 && source.arm != Arm::Transport && source.faction == receiver.faction &&
+				    generals[source.general].trait == Trait::Inspiring &&
+				    MapDistance(source.tile, receiver.tile) <= 2)
+				{
+					moraleGain[j] += 2;
+					break;
+				}
 		}
 		std::vector<officer::Link> formations;
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
@@ -104,12 +135,9 @@ namespace frontline
 			}
 			const double morale = 0.3 + a.morale / 140.0;
 			const double coordination = 1 + formations[i].attack / 100.0;
-			const double tactic = a.tacticLeft > 0 ? (officer.tactic == Tactic::Charge   ? 1.35
-			                                          : officer.tactic == Tactic::Volley ? 1.2
-			                                                                             : 1.0)
-			                                       : 1.0;
 			const double power = (a.troops / 22.0 + officer.leadership * 1.3) * morale * 0.55 * coordination *
-			                     tactic * battle::AttackPercent(a.stance) / 100.0;
+			                     battle::AttackPercent(a.stance) / 100.0;
+
 			if (target >= 0)
 			{
 				const auto& b = armies[target];
@@ -120,10 +148,7 @@ namespace frontline
 				if (tiles[b.tile].terrain == Terrain::River)
 					defense = 0.8;
 				double multiplier = a.arm == Arm::Siege ? 0.5 : 1.0;
-				if (officer.trait == Trait::Valiant)
-					multiplier *= 1.12;
-				if (officer.trait == Trait::Raider && tiles[a.tile].terrain == Terrain::Forest)
-					multiplier *= 1.18;
+				multiplier *= OfficerAttackPercent(i) / 100.0;
 				if (a.arm == Arm::Cavalry && tiles[a.tile].terrain == Terrain::Plain)
 					multiplier *= 1.2;
 				losses[target] += std::max(1, static_cast<int>(power * multiplier * flank / defense));
@@ -138,7 +163,8 @@ namespace frontline
 				{
 					const int siege = Fronts(cities[c].tile, a.faction);
 					cityLoss[c] +=
-					    std::max(1, static_cast<int>(power * (a.arm == Arm::Siege ? 2.0 : 0.6) *
+					    std::max(1, static_cast<int>(power * OfficerAttackPercent(i, true) / 100.0 *
+					                                 (a.arm == Arm::Siege ? 2.0 : 0.6) *
 					                                 (1 + std::min(3, std::max(0, siege - 1)) * 0.2)));
 					losses[i] += std::min(cities[c].troops / 100 + 15, 70);
 					fighting[i] = true;
@@ -158,10 +184,7 @@ namespace frontline
 			if (a.troops <= 0)
 				continue;
 			const auto& officer = generals[a.general];
-			if (officer.trait == Trait::Guardian)
-				losses[i] = static_cast<int>(losses[i] * 0.88);
-			if (a.tacticLeft > 0 && officer.tactic == Tactic::Fortify)
-				losses[i] = static_cast<int>(losses[i] * 0.7);
+			losses[i] = losses[i] * OfficerDamagePercent(i) / 100;
 			losses[i] = losses[i] * (100 - formations[i].defense) / 100;
 			losses[i] = losses[i] * battle::DamagePercent(a.stance) / 100;
 			const int previousTroops = a.troops;
@@ -169,7 +192,9 @@ namespace frontline
 			if (a.arm == Arm::Transport && losses[i] > 0)
 				a.cargoFood =
 				    static_cast<int>(static_cast<long long>(a.cargoFood) * a.troops / previousTroops);
-			a.morale = std::max(0, a.morale - (losses[i] > 0 ? 2 : 0) - pressureMorale[i]);
+			const int moraleLoss = (losses[i] > 0 ? 2 : 0) + pressureMorale[i];
+			a.morale = std::max(
+			    0, a.morale - (officer.trait == Trait::Resolute ? (moraleLoss + 1) / 2 : moraleLoss));
 			if (a.troops == 0)
 			{
 				a.tacticQueued = false;
@@ -179,6 +204,7 @@ namespace frontline
 		}
 		for (int c = 0; c < static_cast<int>(cities.size()); ++c)
 		{
+			cityLoss[c] = cityLoss[c] > 0 ? std::max(1, cityLoss[c] * CityDamagePercent(c) / 100) : 0;
 			cities[c].troops = std::max(0, cities[c].troops - cityLoss[c]);
 			if (cityLoss[c] == 0 || cities[c].troops > 0)
 				continue;
@@ -195,7 +221,7 @@ namespace frontline
 				auto& a = armies[winner];
 				cities[c].owner = a.faction;
 				tiles[cities[c].tile].owner = a.faction;
-				cities[c].worker = cities[c].helper = -1;
+				cities[c].worker = cities[c].helper = cities[c].governor = -1;
 				cities[c].workLeft = 0;
 				cities[c].order = std::max(20, cities[c].order - 25);
 				const int garrison = std::min(1000, a.troops / 3);

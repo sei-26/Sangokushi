@@ -191,6 +191,14 @@ void CampaignScene::drawMap() const
 			campaignvisual::MapLabel(center.movedBy(0, -Max(29., cell * .94)), text(city.name), city.owner,
 			                         i == m_city);
 		}
+		struct ArmyLabel
+		{
+			Vec2 p;
+			String name;
+			int faction;
+			bool selected;
+		};
+		std::vector<ArmyLabel> labels;
 		for (int i = 0; i < static_cast<int>(m_game.armies.size()); ++i)
 		{
 			const auto& army = m_game.armies[i];
@@ -207,7 +215,8 @@ void CampaignScene::drawMap() const
 				}
 			center.x += (order - (count - 1) * 0.5) * cell * 0.48;
 			center.y += cell * 0.2;
-			campaignvisual::ArmyIcon(center, cell, army, i == m_army);
+			campaignvisual::ArmyIcon(center, cell, army, i == m_army, m_game.generals[army.general],
+			                         m_campaignFaces);
 			bool nearby = false;
 			for (int j = 0; j < static_cast<int>(m_game.armies.size()); ++j)
 				if (j != i && m_game.armies[j].troops > 0 &&
@@ -220,9 +229,8 @@ void CampaignScene::drawMap() const
 				const Vec2 label =
 				    center + Vec2(center.x + offset + 65 < right ? offset : -offset, cell * .12);
 				Line(center, label).draw(1, ColorF(.98, .87, .55, .75));
-				campaignvisual::MapLabel(label,
-				                         text(m_game.generals[army.general].name) + U" {}"_fmt(army.troops),
-				                         army.faction, i == m_army);
+				labels.push_back({label, text(m_game.generals[army.general].name) + U" {}"_fmt(army.troops),
+				                  army.faction, i == m_army});
 			}
 
 			if (!army.supplied)
@@ -231,6 +239,8 @@ void CampaignScene::drawMap() const
 				Line(center.movedBy(-cell * 0.3, cell * 0.4), center.movedBy(cell * 0.3, cell * 0.4))
 				    .draw(3, ColorF(0.98, 0.81, 0.36));
 		}
+		for (const auto& label : labels)
+			campaignvisual::MapLabel(label.p, label.name, label.faction, label.selected);
 		for (const auto& hit : m_hits)
 			FontAsset(U"campaignSmall")(U"-{}"_fmt(hit.amount))
 			    .drawAt(hit.position.movedBy(0, -12 - (0.75 - hit.time) * 30),
@@ -247,6 +257,7 @@ void CampaignScene::drawMap() const
 				const Vec2 center = (tileCenter(a.tile) + tileCenter(b.tile)) / 2;
 				campaignvisual::Clash(center, cell, i * 31 + j);
 			}
+		m_presentation.DrawMap([&](int tile) { return tileCenter(tile); }, cell);
 		const int hover = mouseTile();
 		if (Campaign::Valid(hover))
 			campaignvisual::TileShape(tileCenter(hover), cell, m_game.hexMap, m_camera.Pitch())

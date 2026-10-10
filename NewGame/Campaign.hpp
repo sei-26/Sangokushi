@@ -8,6 +8,7 @@
 #include <vector>
 #include "CampaignTypes.hpp"
 #include "OfficerCore.hpp"
+#include "CityIdentity.hpp"
 #include "WorldLayout.hpp"
 #include "HexGrid.hpp"
 
@@ -24,6 +25,7 @@ namespace frontline
 		std::array<int, TileCount> tileRegion{};
 		std::vector<General> generals;
 		std::vector<Army> armies;
+		std::vector<TacticEvent> tacticEvents;
 		std::vector<std::u32string> log;
 		std::vector<Bond> bonds;
 		std::vector<Mission> missions;
@@ -53,6 +55,7 @@ namespace frontline
 		int RegionCoverage(int region) const;
 		bool RegionConnected(int region) const;
 		void Reset(int faction);
+		void AddExpandedRoster();
 		void ResetLegacy(int faction);
 		void Note(const std::u32string& text);
 		int Affinity(int a, int b) const;
@@ -64,6 +67,15 @@ namespace frontline
 		int WorkGain(int general, Duty duty, int helper = -1) const;
 		bool Develop(int city, int general, Duty duty, bool ai = false, int helper = -1);
 		bool CancelWork(int city);
+		cityidentity::Kind CityKind(int city) const;
+		int Governor(int city) const;
+		bool AppointGovernor(int city, int general, bool ai = false);
+		int CityIncome(int city, bool food, int candidate = -2) const;
+		int CityLogistics(int city, int candidate = -2) const;
+		int CityDamagePercent(int city, int candidate = -2) const;
+		int Recruitment(int city) const;
+		int CityWorkGain(int city) const;
+		int GovernorWorkBonus(int city, int general) const;
 		int ArmyCount(int faction) const;
 		std::vector<int> Available(int city) const;
 		int MissionChance(int general, int target, MissionKind kind, int helper = -1) const;
@@ -76,6 +88,8 @@ namespace frontline
 		bool ActivateTactic(int index, bool ai = false);
 		bool SetStance(int index, battle::Stance stance, bool ai = false);
 		int AttackRange(int index) const;
+		int OfficerAttackPercent(int army, bool siege = false) const;
+		int OfficerDamagePercent(int army) const;
 		bool CanStrike(int index, int tile) const;
 		int Cost(int tile, Arm arm) const;
 		std::vector<int> Route(int from, int to, Arm arm, int faction = -1) const;
@@ -101,6 +115,7 @@ namespace frontline
 	private:
 		enum class AIKind
 		{
+			Govern,
 			Develop,
 			Recruit,
 			Deploy,

@@ -57,7 +57,7 @@ void CampaignScene::drawTransport() const
 	const auto available = m_game.Available(m_city);
 	const bool own = city.owner == m_game.player;
 	const bool orders = (m_daysLeft == 0 || m_paused) && m_game.result == 0 && own;
-	const int pack = officer::SupplyPack(1000, city.logistics);
+	const int pack = officer::SupplyPack(1000, m_game.CityLogistics(m_city));
 
 	if (m_transportEstimateFrom != m_city || m_transportEstimateTo != target ||
 	    m_transportEstimateDay != m_game.day || m_transportEstimateRevision != m_game.revision)

@@ -2,6 +2,7 @@
 #include <Siv3D.hpp>
 #include "Campaign.hpp"
 #include "CampaignMapArt.hpp"
+#include "CampaignPresentation.hpp"
 #include "MapCamera.hpp"
 #include "HeroStoryScene.hpp"
 
@@ -27,7 +28,7 @@ private:
 	int m_tab = 0, m_speed = 0;
 	bool m_paused = false;
 	int m_councilMode = 0, m_rosterFaction = 0, m_inspect = 0, m_partner = -1, m_targetCity = 3,
-	    m_historyPage = 0;
+	    m_historyPage = 0, m_rosterPage = 0;
 	String m_message = U"都市を選んで出陣。部隊を選んで右クリックで進路を指示。";
 	Array<Vec2> m_positions;
 	struct Hit
@@ -39,6 +40,7 @@ private:
 	Array<Hit> m_hits;
 	Texture m_campaignFaces{U"StoryArt/heroes.png"};
 	campaignvisual::MapArt m_mapArt;
+	CampaignPresentation m_presentation;
 	mutable RenderTexture m_mapTexture;
 	mutable unsigned m_mapRevision = 0;
 	mutable int m_mapDay = -1;
@@ -67,8 +69,24 @@ private:
 	mutable unsigned m_transportEstimateRevision = 0;
 	int m_transportTarget = -1, m_cargo = 5000;
 	void drawMenu() const;
+	bool m_infoOpen = false, m_infoRelations = false;
+	int m_infoTab = 0, m_infoFaction = -1, m_infoSort = 0, m_infoPage = 0, m_infoSelection = -1,
+	    m_infoDetailPage = 0;
+	void openInformation(int tab = 0, int selected = -1);
+	void updateInformation();
+	void drawInformation() const;
+	void drawInformationDetail() const;
+	void focusInformation();
+	std::vector<int> informationRows() const;
+	String informationPosting(int officer) const;
+
 	void updateCouncil();
+	void updateRosterPage(int faction);
+	void drawRosterPages(int faction) const;
 	void drawCouncil() const;
+	int m_governCity = -1, m_governChoice = -1, m_governPage = 0;
+	void updateGovernance();
+	void drawGovernance() const;
 	void updateAssignments();
 	void drawAssignments() const;
 	int m_assignmentTarget = -1;

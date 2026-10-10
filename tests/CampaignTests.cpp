@@ -23,7 +23,7 @@ Army Force(int faction, int general, int tile, Arm arm = Arm::Spear)
 int main()
 {
 	Campaign game; game.Reset(0);
-	assert(game.cities.size() == 30 && game.generals.size() == 24);
+	assert(game.cities.size() == 30 && game.generals.size() == 72);
 	// Preparation takes time; a working officer cannot simultaneously lead an army.
 	game.BeginTurn(); assert(game.armies.empty());
 	assert(game.Develop(0,19,Duty::Commerce));
@@ -193,7 +193,7 @@ int main()
  corridor.tiles[Campaign::At(3,1)].owner=1;assert(corridor.AssignmentDays(0,1)==-1);
  corridor.tiles[Campaign::At(3,1)].owner=0;corridor.armies={Force(1,1,Campaign::At(3,1))};
  assert(corridor.AssignmentDays(0,1)==-1);
- allocation.Reset(0);allocation.day=30;const int aiCommands=allocation.commands;allocation.BeginTurn();
+ allocation.Reset(0);allocation.generals.resize(24);allocation.day=30;const int aiCommands=allocation.commands;allocation.BeginTurn();
  assert(allocation.assignments.size()==2 && allocation.commands==aiCommands);
  for(const auto& move:allocation.assignments)assert(move.faction!=allocation.player && allocation.Busy(move.general));
  allocation.Reset(0);assert(allocation.AssignOfficer(19,9));allocation.cities[0].owner=1;allocation.tiles[allocation.cities[0].tile].owner=1;allocation.AdvanceDay();

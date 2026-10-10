@@ -15,6 +15,7 @@ namespace campaignvisual
 	void Shore(Vec2 center, double width, double pitch, Vec2 direction, bool sea);
 	void Fields(Vec2 center, double width, int seed);
 	void CityIcon(Vec2 center, double cell, int faction, bool selected);
-	void ArmyIcon(Vec2 center, double cell, const frontline::Army& army, bool selected);
+	void ArmyIcon(Vec2 center, double cell, const frontline::Army& army, bool selected,
+	              const frontline::General& general, const Texture& faces);
 	void OfficerCard(const RectF& rect, const frontline::General& officer, const Texture& faces);
 } // namespace campaignvisual

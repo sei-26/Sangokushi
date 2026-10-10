@@ -5,8 +5,38 @@
 using namespace frontline;
 using namespace campaignui;
 
+void CampaignScene::updateRosterPage(int faction)
+{
+	int count = 0;
+	for (const auto& g : m_game.generals)
+		if (g.faction == faction)
+			++count;
+	const int last = Max(0, (count - 1) / 8);
+	m_rosterPage = Clamp(m_rosterPage, 0, last);
+	if (Rect(80, 550, 104, 30).leftClicked())
+		m_rosterPage = Max(0, m_rosterPage - 1);
+	if (Rect(194, 550, 104, 30).leftClicked())
+		m_rosterPage = Min(last, m_rosterPage + 1);
+}
+void CampaignScene::drawRosterPages(int faction) const
+{
+	int count = 0;
+	for (const auto& g : m_game.generals)
+		if (g.faction == faction)
+			++count;
+	const int pages = Max(1, (count + 7) / 8);
+	DrawButton(Rect(80, 550, 104, 30), U"前の武将", m_rosterPage > 0);
+	DrawButton(Rect(194, 550, 104, 30), U"次の武将", m_rosterPage + 1 < pages);
+	FontAsset(U"campaignSmall")(U"{}人 / {} / {}頁"_fmt(count, m_rosterPage + 1, pages))
+	    .draw(80, 588, ColorF(.8, .85, .75));
+}
 void CampaignScene::updateCouncil()
 {
+	if (m_councilMode == 4)
+	{
+		updateGovernance();
+		return;
+	}
 	if (m_councilMode == 3)
 	{
 		updateAssignments();
@@ -16,6 +46,7 @@ void CampaignScene::updateCouncil()
 	{
 		m_councilMode = 3;
 		m_rosterFaction = m_game.player;
+		m_rosterPage = 0;
 		m_inspect = m_game.player * 6;
 		return;
 	}
@@ -37,14 +68,21 @@ void CampaignScene::updateCouncil()
 	if (button(20).leftClicked())
 	{
 		m_rosterFaction = (m_rosterFaction + 1) % 3;
+		m_rosterPage = 0;
 		m_inspect = m_rosterFaction * 6;
 		m_partner = -1;
 	}
+	updateRosterPage(m_rosterFaction);
 	int row = 0;
 	for (int g = 0; g < static_cast<int>(m_game.generals.size()); ++g)
 		if (m_game.generals[g].faction == m_rosterFaction)
 		{
-			if (button(31 + row).leftClicked())
+			if (row < m_rosterPage * 8 || row >= (m_rosterPage + 1) * 8)
+			{
+				++row;
+				continue;
+			}
+			if (button(31 + row % 8).leftClicked())
 			{
 				m_inspect = g;
 				m_partner = -1;
@@ -100,6 +138,11 @@ void CampaignScene::updateCouncil()
 
 void CampaignScene::drawCouncil() const
 {
+	if (m_councilMode == 4)
+	{
+		drawGovernance();
+		return;
+	}
 	if (m_councilMode == 3)
 	{
 		drawAssignments();
@@ -144,14 +187,21 @@ void CampaignScene::drawCouncil() const
 	for (int member = 0; member < static_cast<int>(m_game.generals.size()); ++member)
 		if (m_game.generals[member].faction == m_rosterFaction)
 		{
-			DrawButton(button(31 + row), text(m_game.generals[member].name) +
-			                                 (m_game.Busy(member)                             ? U" / 任務中"
-			                                  : m_game.generals[member].readyDay > m_game.day ? U" / 休養中"
-			                                                                                  : U""));
+			if (row < m_rosterPage * 8 || row >= (m_rosterPage + 1) * 8)
+			{
+				++row;
+				continue;
+			}
+			DrawButton(button(31 + row % 8),
+			           text(m_game.generals[member].name) + (m_game.Busy(member) ? U" / 任務中"
+			                                                 : m_game.generals[member].readyDay > m_game.day
+			                                                     ? U" / 休養中"
+			                                                     : U""));
 			if (member == m_inspect)
-				button(31 + row).drawFrame(2, ColorF(0.96, 0.78, 0.40));
+				button(31 + row % 8).drawFrame(2, ColorF(0.96, 0.78, 0.40));
 			++row;
 		}
+	drawRosterPages(m_rosterFaction);
 	const int middle = 330, right = Scene::Width() - 460;
 	Line(314, 156, 314, Scene::Height() - 144).draw(1, ColorF(0.35, 0.45, 0.42));
 	Line(right - 16, 156, right - 16, Scene::Height() - 144).draw(1, ColorF(0.35, 0.45, 0.42));

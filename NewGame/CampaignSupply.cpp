@@ -41,7 +41,7 @@ namespace frontline
 			if (a.troops <= 0)
 				continue;
 			const int source = supply[a.faction][a.tile];
-			const int efficiency = source >= 0 ? cities[source].logistics / 5 : 0;
+			const int efficiency = source >= 0 ? CityLogistics(source) / 5 : 0;
 			const int baseNeed =
 			    a.troops / (40 + efficiency + (generals[a.general].specialty == Duty::Logistics ? 10 : 0) +
 			                (generals[a.general].trait == Trait::Quartermaster ? 10 : 0));

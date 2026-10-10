@@ -197,5 +197,19 @@ int main()
  std::cout << "Hex saves and version 9 square-map migration passed" << std::endl;
  std::cout << "AI budget persistence and deterministic continuation passed" << std::endl;
  std::cout << "Personnel save state and version 4 compatibility passed" << std::endl;
+ frontline::Campaign expanded;expanded.Reset(0);const int newArmy=expanded.Deploy(expanded.generals[24].home,24,2000,frontline::Arm::Cavalry);
+ assert(newArmy>=0 && expanded.ActivateTactic(newArmy));expanded.AdvanceDay();
+ assert(frontline::LoadJSON(frontline::SaveJSON(expanded),loaded) && loaded.generals.size()==72 && loaded.armies[newArmy].general==24 && loaded.armies[newArmy].tacticLeft==5 && loaded.tacticEvents.empty() && expanded.tacticEvents.size()==1);
+ frontline::Campaign oldRosterGame=versionFour;oldRosterGame.generals.resize(24);JSON oldRoster=frontline::SaveJSON(oldRosterGame);oldRoster[U"version"]=11;
+ assert(frontline::LoadJSON(oldRoster,loaded) && loaded.generals.size()==24);
+ assert(frontline::LoadJSON(frontline::SaveJSON(loaded),migrated) && migrated.generals.size()==24);
+ JSON invalidRoster=frontline::SaveJSON(expanded);invalidRoster[U"rosterCount"]=24;assert(!frontline::LoadJSON(invalidRoster,migrated));
+ frontline::Campaign governance;governance.Reset(0);assert(governance.AppointGovernor(0,19));
+ assert(frontline::LoadJSON(frontline::SaveJSON(governance),loaded) && loaded.Governor(0)==19 && loaded.Busy(19) && loaded.CityIncome(0,true)==governance.CityIncome(0,true));
+ JSON badGovernor=frontline::SaveJSON(governance);badGovernor[U"cities"][0][U"governor"]=6;assert(!frontline::LoadJSON(badGovernor,loaded));
+ badGovernor=frontline::SaveJSON(governance);badGovernor[U"cities"][0][U"worker"]=19;badGovernor[U"cities"][0][U"workLeft"]=30;assert(!frontline::LoadJSON(badGovernor,loaded));
+ badGovernor=frontline::SaveJSON(governance);badGovernor[U"cities"][0][U"governor"]=72;assert(!frontline::LoadJSON(badGovernor,loaded));
+ JSON oldGovernor=frontline::SaveJSON(governance);oldGovernor[U"version"]=12;assert(frontline::LoadJSON(oldGovernor,loaded) && loaded.Governor(0)==-1 && !loaded.Busy(19));
+ std::cout << "Governor save round trips, conflicting reservations and version 12 migration passed\n";
  std::cout << "Campaign save tests passed; old world migration and new world round trips passed\n";
 }
