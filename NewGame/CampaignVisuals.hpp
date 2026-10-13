@@ -8,6 +8,8 @@ namespace campaignvisual
 	void TerrainTile(const RectF& rect, frontline::Terrain terrain, int seed, bool hex = false,
 	                 double pitch = 1.);
 	void TerrainRelief(Vec2 center, double width, frontline::Terrain terrain, int seed);
+	RectF CityBannerRect(Vec2 center,const String& label);
+	void CityBanner(Vec2 center, const String& label, int faction, bool selected);
 	void MapLabel(Vec2 center, const String& label, int faction, bool selected = false, bool small = false);
 	void MapLight(const RectF& area);
 	void Clash(Vec2 center, double cell, int seed);

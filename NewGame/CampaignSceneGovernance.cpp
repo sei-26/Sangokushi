@@ -36,6 +36,7 @@ void CampaignScene::updateGovernance()
 	}
 	if (CloseGovernance().leftClicked() || KeyEscape.down())
 	{
+		if (m_domesticCity == m_governCity) { openDomestic(m_governCity); return; }
 		m_councilMode = 0;
 		openInformation(0, m_governCity);
 		return;
@@ -87,7 +88,7 @@ void CampaignScene::drawGovernance() const
 	    .draw(ColorF(.075, .13, .14))
 	    .drawFrame(2, ColorF(.56, .57, .39));
 	FontAsset(U"campaignTitle")(text(city.name) + U" / 都市運営").draw(80, 116, ColorF(.96, .86, .61));
-	DrawButton(CloseGovernance(), U"城情報へ戻る");
+	DrawButton(CloseGovernance(), m_domesticCity == m_governCity ? U"内政へ戻る" : U"城情報へ戻る");
 	FontAsset(U"campaignBody")(String(cityidentity::Name(m_game.CityKind(m_governCity))))
 	    .draw(80, 170, ColorF(.95, .81, .51));
 	(void)FontAsset(U"campaignSmall")(String(cityidentity::Description(m_game.CityKind(m_governCity))))

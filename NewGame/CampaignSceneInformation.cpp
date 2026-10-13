@@ -149,7 +149,7 @@ void CampaignScene::updateInformation()
 		m_governChoice = -1;
 		m_governPage = 0;
 		m_infoOpen = false;
-		m_councilMode = 4;
+		openDomestic(m_governCity);
 		return;
 	}
 	if (m_infoTab != 4 && iu::Map().leftClicked())

@@ -52,7 +52,7 @@ void CampaignScene::updateTransport()
 }
 void CampaignScene::drawTransport() const
 {
-	const int x = Scene::Width() - 330, target = transportTarget();
+	const int x = 16, target = transportTarget();
 	const auto& city = m_game.cities[m_city];
 	const auto available = m_game.Available(m_city);
 	const bool own = city.owner == m_game.player;

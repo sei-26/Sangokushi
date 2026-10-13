@@ -39,6 +39,7 @@ namespace frontline
 		int worker = -1, work = 0, workLeft = 0;
 		int helper = -1;
 		int governor = -1;
+		int level = 0;
 	};
 	struct Region
 	{
@@ -54,6 +55,7 @@ namespace frontline
 		int intelligence = 60, charm = 60;
 		Trait trait = Trait::Administrator;
 		Tactic tactic = Tactic::Charge;
+		int policy = -1;
 	};
 	struct Army
 	{

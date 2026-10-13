@@ -9,15 +9,12 @@ namespace iu = informationui;
 void CampaignScene::drawInformation() const
 {
 	Scene::Rect().draw(ColorF(.015, .03, .04, .82));
-	Rect(40, 104, Scene::Width() - 80, Scene::Height() - 144)
-	    .rounded(7)
-	    .draw(ColorF(.07, .115, .13))
-	    .drawFrame(2, ColorF(.56, .63, .54));
+	campaignui::Panel(RectF(40, 102, Scene::Width()-80, Scene::Height()-144),true);
 	FontAsset(U"campaignTitle")(U"情報メニュー").draw(64, 115, ColorF(.95, .85, .58));
 	FontAsset(U"campaignSmall")(U"閲覧中は日数停止 / 閉じると元の進行に戻ります")
 	    .draw(300, 126, ColorF(.74, .82, .76));
 	DrawButton(iu::Close(), U"閉じる");
-	const String tabs[]{U"城", U"武将", U"勢力", U"部隊", U"記録"};
+	const String tabs[]{U"都市", U"武将", U"勢力", U"部隊", U"記録"};
 	for (int i = 0; i < 5; ++i)
 	{
 		DrawButton(iu::Tab(i), tabs[i]);
@@ -64,9 +61,9 @@ void CampaignScene::drawInformation() const
 			break;
 		const int id = rows[n];
 		const auto rect = iu::Row(row);
-		rect.rounded(3).draw(id == m_infoSelection ? ColorF(.20, .29, .25)
-		                     : rect.mouseOver()    ? ColorF(.16, .22, .21)
-		                                           : ColorF(.10, .16, .17));
+		rect.rounded(3).draw(id == m_infoSelection ? ColorF(.21, .31, .41)
+		                     : rect.mouseOver()    ? ColorF(.16, .24, .33)
+		                                           : ColorF(.08, .14, .22));
 		if (id == m_infoSelection)
 			rect.drawFrame(1.5, ColorF(.97, .78, .39));
 		String name;

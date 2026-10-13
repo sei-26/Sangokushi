@@ -8,7 +8,7 @@ int main()
 	g.Reset(0);
 	const int before = g.Affinity(0, 19), gold = g.cities[0].gold, food = g.cities[0].food;
 	assert(g.TrainTogether(0, 0, 19) && g.cities[0].gold == gold - 300 && g.cities[0].food == food - 500 &&
-	       g.commands == 2);
+	       g.commands == g.commandBudget - 1);
 	assert(g.Busy(0) && g.Busy(19) && g.TrainingAt(0) == 0 &&
 	       information::PostOf(g, 0).kind == information::Post::Training);
 	assert(g.Deploy(0, 0, 2000, Arm::Spear) < 0 && !g.Develop(0, 19, Duty::Commerce) &&

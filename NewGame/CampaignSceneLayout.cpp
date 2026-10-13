@@ -7,9 +7,9 @@ using namespace campaignui;
 
 Rect CampaignScene::button(int index) const
 {
-	const int x = Scene::Width() - 330;
+	const int x = 16;
 	if (m_started && !panelVisible() && index != 0 && index != 10 && index != 11 && index != 12 &&
-	    index != 15 && index != 16 && index != 17 && index != 18 && index != 49 &&
+	    index != 15 && index != 16 && index != 17 && index != 18 && index != 49 && index < 50 &&
 	    (index < 19 || index >= 39))
 		return Rect(-1000, -1000, 1, 1);
 	const int right = Scene::Width() - 460;
@@ -18,9 +18,29 @@ Rect CampaignScene::button(int index) const
 	switch (index)
 	{
 	case 49:
-		return Rect(20, 250, 190, 26);
+		return Rect(Scene::Width() - 246, Scene::Height() - 264, 82, 26);
+	case 50:
+		return Rect(16, Scene::Height() - 47, 100, 36);
+	case 51:
+		return Rect(232, Scene::Height() - 47, 116, 36);
+	case 52:
+		return Rect(464, Scene::Height() - 47, 100, 36);
+	case 53:
+		return Rect(Scene::Width() - 160, Scene::Height() - 264, 70, 26);
+	case 54:
+		return Rect(Scene::Width() - 86, Scene::Height() - 264, 28, 26);
+	case 55:
+		return Rect(Scene::Width() - 54, Scene::Height() - 264, 28, 26);
+	case 59:
+		return Rect(896, Scene::Height() - 47, 110, 36);
+	case 58:
+		return Rect(788, Scene::Height() - 47, 100, 36);
+	case 57:
+		return Rect(680, Scene::Height() - 47, 100, 36);
+	case 56:
+		return Rect(572, Scene::Height() - 47, 100, 36);
 	case 0:
-		return Rect(x, 22, 306, 48);
+		return Rect(Scene::Width() - 246, 12, 230, 50);
 	case 1:
 		return Rect(x + 12, 282, 282, 34);
 	case 2:
@@ -40,21 +60,23 @@ Rect CampaignScene::button(int index) const
 	case 9:
 		return Rect(x + 12, 302, 134, 34);
 	case 10:
-		return Rect(x + 12, Scene::Height() - 182, 134, 34);
+		return m_settingsOpen ? Rect(Scene::Width() - 296, 180, 126, 32) : Rect(-1000, -1000, 1, 1);
 	case 11:
-		return Rect(x + 158, Scene::Height() - 182, 136, 34);
+		return m_settingsOpen ? Rect(Scene::Width() - 162, 180, 126, 32) : Rect(-1000, -1000, 1, 1);
+	case 12:
+		return m_settingsOpen ? Rect(Scene::Width() - 296, 220, 260, 32) : Rect(-1000, -1000, 1, 1);
 	case 13:
 		return Rect(x + 12, 242, 90, 30);
 	case 14:
 		return Rect(x + 108, 242, 90, 30);
 	case 15:
-		return Rect(225, 65, 170, 24);
+		return Rect(Scene::Width() - 362, 40, 104, 24);
 	case 16:
-		return Rect(405, 65, 170, 24);
+		return m_game.hexMap ? Rect(-1000, -1000, 1, 1) : Rect(788, Scene::Height() - 47, 110, 36);
 	case 17:
-		return Rect(585, 65, 170, 24);
+		return Rect(124, Scene::Height() - 47, 100, 36);
 	case 18:
-		return Rect(765, 65, 160, 24);
+		return Rect(356, Scene::Height() - 47, 100, 36);
 	case 19:
 		return Rect(Scene::Width() - 170, 114, 90, 30);
 	case 20:

@@ -27,7 +27,7 @@ int main()
 	// Preparation takes time; a working officer cannot simultaneously lead an army.
 	game.BeginTurn(); assert(game.armies.empty());
 	assert(game.Develop(0,19,Duty::Commerce));
-	assert(game.cities[0].gold == 2500 && game.commands == 2);
+	assert(game.cities[0].gold == 2500 && game.commands == game.commandBudget - 1);
 	assert(game.Deploy(0,19,3000,Arm::Spear) == -1);
 	assert(!game.Develop(0,0,Duty::Farming));
 	assert(game.WorkGain(19,Duty::Commerce) > game.WorkGain(19,Duty::Farming));
@@ -92,7 +92,7 @@ int main()
 	assert(game.Deploy(3,6,3000,Arm::Spear) == -1);
 	assert(game.Deploy(0,0,10000,Arm::Spear) == -1);
 	const int deployed = game.Deploy(0,0,3000,Arm::Spear);
-	assert(deployed == 0 && game.commands == 2 && game.cities[0].troops == 7000 && game.cities[0].gold == 2700);
+	assert(deployed == 0 && game.commands == game.commandBudget - 1 && game.cities[0].troops == 7000 && game.cities[0].gold == 2700);
 	assert(game.Deploy(0,0,3000,Arm::Spear) == -1);
 	assert(!game.Order(0,Campaign::At(95,0)));
 	assert(game.Order(0,game.cities[3].tile));
@@ -173,7 +173,7 @@ int main()
  const int transferDays=allocation.AssignmentDays(0,9);
  assert(transferDays>=3 && transferDays<=180);
  const int transferGold=allocation.cities[0].gold;
- assert(allocation.AssignOfficer(19,9) && allocation.commands==2 && allocation.cities[0].gold==transferGold-100);
+ assert(allocation.AssignOfficer(19,9) && allocation.commands==allocation.commandBudget-1 && allocation.cities[0].gold==transferGold-100);
  assert(allocation.Busy(19) && allocation.generals[19].home==0);
  assert(!allocation.AssignOfficer(19,10) && !allocation.Develop(0,19,Duty::Commerce) && allocation.Deploy(0,19,3000,Arm::Spear)==-1);
  for(int d=0;d<transferDays-1;++d)allocation.AdvanceDay();
@@ -205,7 +205,7 @@ int main()
  const int eta=convoy.TransportDays(convoy.cities[0].tile,convoy.cities[9].tile,0);
  assert(eta>0);
  assert(convoy.DispatchTransport(0,19,9,10000)==0);
- assert(convoy.cities[0].troops==9000 && convoy.cities[0].gold==goldBefore-100 && convoy.commands==2);
+ assert(convoy.cities[0].troops==9000 && convoy.cities[0].gold==goldBefore-100 && convoy.commands==convoy.commandBudget-1);
  assert(convoy.cities[0].food+convoy.armies[0].food+convoy.armies[0].cargoFood==foodBefore);
  assert(convoy.Busy(19) && !convoy.ActivateTactic(0));
  assert(convoy.Deploy(0,0,1000,Arm::Transport)==-1);
@@ -252,7 +252,7 @@ int main()
 
  Campaign balanced=Empty();balanced.armies={Force(0,0,Campaign::At(4,4)),Force(1,1,Campaign::At(5,4))};
  Campaign assault=balanced,guarded=balanced;
- assert(assault.SetStance(0,battle::Stance::Assault) && assault.commands==2);
+ assert(assault.SetStance(0,battle::Stance::Assault) && assault.commands==assault.commandBudget-1);
  assert(guarded.SetStance(0,battle::Stance::Guard));
  assert(!guarded.SetStance(0,battle::Stance::Guard) && !guarded.SetStance(1,battle::Stance::Assault));
  balanced.AdvanceDay();assault.AdvanceDay();guarded.AdvanceDay();

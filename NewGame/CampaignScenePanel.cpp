@@ -8,11 +8,8 @@ using namespace campaignui;
 
 void CampaignScene::drawPanel() const
 {
-	const int x = Scene::Width() - 330;
-	Rect(x, 86, 306, Scene::Height() - 106)
-	    .rounded(3)
-	    .draw(ColorF(.075, .12, .10))
-	    .drawFrame(1, ColorF(.57, .49, .31));
+	const int x = 16;
+	campaignui::Panel(RectF(x, 86, 306, Scene::Height() - 160), true);
 	const auto line = [&](const String& label, int y, ColorF color = ColorF(0.87, 0.90, 0.86)) {
 		FontAsset(U"campaignBody")(label).draw(x + 14, y, color);
 	};
@@ -94,7 +91,7 @@ void CampaignScene::drawPanel() const
 		line(U"金 {}"_fmt(city.gold), 180);
 		line(U"兵糧 {}"_fmt(city.food), 215);
 		DrawButton(button(13), m_tab == 0 ? U"● 軍務" : U"軍務");
-		DrawButton(button(14), m_tab == 1 ? U"● 内政" : U"内政");
+		DrawButton(button(14), U"内政 / D", own);
 		DrawButton(button(40), m_tab == 2 ? U"● 輸送" : U"輸送");
 		const auto available = m_game.Available(m_city);
 		const String name = available.empty()
@@ -148,11 +145,20 @@ void CampaignScene::drawPanel() const
 			DrawButton(button(5), U"攻城隊で出陣", own && orders);
 			DrawButton(button(6), U"騎兵で出陣", own && orders);
 			DrawButton(button(7), U"募兵 +{}"_fmt(m_game.Recruitment(m_city)), own && orders);
+			const int values[]{city.farming, city.commerce, city.order, city.logistics};
+			const String labels[]{U"農業", U"商業", U"治安", U"兵站"};
+			for (int i = 0; i < 4; ++i)
+			{
+				const double y = 512 + i * 28;
+				FontAsset(U"campaignSmall")(labels[i]).draw(x + 14, y, ColorF(.76, .84, .87));
+				RectF(x + 65, y + 7, 164, 7).draw(ColorF(.015, .04, .07));
+				RectF(x + 65, y + 7, 164 * Clamp(values[i] / 100., 0., 1.), 7).draw(ColorF(.49, .69, .73));
+				FontAsset(U"campaignSmall")(Format(values[i])).draw(x + 244, y, ColorF(.97, .92, .75));
+			}
 			FontAsset(U"campaignSmall")(
-			    U"出陣：金 {} / 携行糧 {}\n出陣士気 {}（治安で変化）\n兵站が高いと多くの糧を携行。\n携行糧は都市から支払います。\n募兵は治安を10消費。"_fmt(
-			        m_soldiers / 10, officer::SupplyPack(m_soldiers, m_game.CityLogistics(m_city)),
-			        officer::StartingMorale(city.order)))
-			    .draw(x + 14, 503, ColorF(0.68, 0.77, 0.74));
+			    String(citygrowth::Name(city.level)) +
+			    U" / 出陣糧 {}"_fmt(officer::SupplyPack(m_soldiers, m_game.CityLogistics(m_city))))
+			    .draw(x + 14, 618, ColorF(.85, .81, .66));
 		}
 	}
 	else
@@ -165,9 +171,4 @@ void CampaignScene::drawPanel() const
 		    U"兵：2マス先へ射撃\n騎兵：平地で速く強い\n攻城隊：城に強い、野戦に弱い")
 		    .draw(RectF(x + 14, 154, 280, Max(330, Scene::Height() - 350)), ColorF(0.75, 0.82, 0.77));
 	}
-	DrawButton(button(10), U"保存", m_daysLeft == 0);
-	DrawButton(button(11), U"読込", m_daysLeft == 0);
-	DrawButton(button(12), U"勢力選択へ", m_daysLeft == 0);
-	(void)FontAsset(U"campaignSmall")(m_message).draw(RectF(x + 14, Scene::Height() - 84, 280, 60),
-	                                                  ColorF(0.94, 0.83, 0.55));
 }

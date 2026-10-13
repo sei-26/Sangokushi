@@ -447,6 +447,9 @@
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
     <ClCompile Include="NewGame\CampaignGovernance.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignDevelopment.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignScenePolicies.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneDomestic.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignSceneGovernance.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignTraining.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignSceneTraining.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
@@ -489,6 +492,11 @@
     <ClCompile Include="NewGame\CampaignSceneLayout.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneTerritory.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneTerrain.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneScenery.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneHUD.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneAtlas.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignSceneMap.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
@@ -510,6 +518,10 @@
     <ClCompile Include="NewGame\CampaignTurn.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
+    <ClInclude Include="NewGame\CityGrowth.hpp"><Filter>Header Files\自由戦略</Filter></ClInclude>
+    <ClInclude Include="NewGame\ChinaAtlas.hpp"><Filter>Header Files\自由戦略</Filter></ClInclude>
+    <ClInclude Include="NewGame\AtlasCamera.hpp"><Filter>Header Files\自由戦略</Filter></ClInclude>
+    <ClInclude Include="NewGame\PolicyDefinition.hpp"><Filter>Header Files\自由戦略</Filter></ClInclude>
     <ClInclude Include="NewGame\CityIdentity.hpp"><Filter>Header Files\自由戦略\ルール</Filter></ClInclude>
     <ClInclude Include="NewGame\CampaignTypes.hpp">
       <Filter>Header Files\自由戦略\ルール</Filter>

@@ -17,6 +17,27 @@ int main()
 		tale.Finish(false); assert(hero::LoadJSON(hero::SaveJSON(tale),restoredTale)&&restoredTale.failed); tale.Retry(); tale.Finish(true); assert(hero::LoadJSON(hero::SaveJSON(tale),restoredTale));
 	}
 	tale.Choose(0); assert(hero::LoadJSON(hero::SaveJSON(tale),restoredTale)&&restoredTale.phase==4);
+    frontline::Campaign budgetSave; budgetSave.Reset(0);
+    assert(budgetSave.commands == budgetSave.CommandLimit(0) && budgetSave.commands > 3);
+    --budgetSave.commands;
+    frontline::Campaign budgetLoaded;
+    assert(frontline::LoadJSON(frontline::SaveJSON(budgetSave), budgetLoaded));
+    assert(budgetLoaded.commands == budgetSave.commands && budgetLoaded.commandBudget == budgetSave.commandBudget);
+    JSON badBudget = frontline::SaveJSON(budgetSave); badBudget[U"commands"] = budgetSave.commandBudget + 1;
+    assert(!frontline::LoadJSON(badBudget, budgetLoaded));
+    JSON oldBudget = frontline::SaveJSON(budgetSave); oldBudget[U"version"] = 14; oldBudget[U"commands"] = 2;
+    assert(frontline::LoadJSON(oldBudget, budgetLoaded) && budgetLoaded.commands == 2 && budgetLoaded.commandBudget == 3);
+    frontline::Campaign nation; nation.Reset(0); nation.cities[0].level=2;
+    assert(nation.AdoptPolicy(0,19,frontline::Duty::Commerce));
+    JSON nationJSON=frontline::SaveJSON(nation);
+    frontline::Campaign nationLoaded;
+    assert(frontline::LoadJSON(nationJSON,nationLoaded) && nationLoaded.cities[0].level==2 && nationLoaded.policyCouncil==nation.policyCouncil);
+    assert(nationLoaded.generals[19].policy==1 && nationLoaded.CityIncome(0,false)==nation.CityIncome(0,false));
+    JSON badNation=nationJSON;badNation[U"cities"][0][U"level"]=4;assert(!frontline::LoadJSON(badNation,nationLoaded));
+    badNation=nationJSON;badNation[U"policyCouncil"]=Array<int>{19,19,-1,-1,-1,-1,-1,-1,-1};assert(!frontline::LoadJSON(badNation,nationLoaded));
+    badNation=nationJSON;badNation[U"generals"][19][U"policy"]=4;assert(!frontline::LoadJSON(badNation,nationLoaded));
+    JSON oldNation=nationJSON;oldNation[U"version"]=15;
+    assert(frontline::LoadJSON(oldNation,nationLoaded) && nationLoaded.cities[0].level==0 && nationLoaded.generals[19].policy==-1 && nationLoaded.policyCouncil[0][0]==-1);
 	JSON badStory=hero::SaveJSON(tale); badStory[U"state"]=Array<int>{99}; assert(!hero::LoadJSON(badStory,restoredTale)&&restoredTale.phase==4);
 	tale.chapter=3;tale.phase=2;tale.StartMission();badStory=hero::SaveJSON(tale);badStory[U"units"][0][U"values"]=Array<int>{};assert(!hero::LoadJSON(badStory,restoredTale));
 	std::cout << "Story save tests passed\n";
@@ -173,7 +194,7 @@ int main()
  for(int d=0;d<90;++d){if(d%10==0){aiSave.BeginTurn();aiLoaded.BeginTurn();}aiSave.AdvanceDay();aiLoaded.AdvanceDay();}
  assert(aiLoaded.armies.size()==aiSave.armies.size() && aiLoaded.aiCommands==aiSave.aiCommands && aiLoaded.randomState==aiSave.randomState);
  for(size_t c=0;c<aiSave.cities.size();++c)assert(aiLoaded.cities[c].food==aiSave.cities[c].food && aiLoaded.cities[c].gold==aiSave.cities[c].gold && aiLoaded.cities[c].owner==aiSave.cities[c].owner);
- JSON badAI=frontline::SaveJSON(aiSave);badAI[U"aiCommands"]=Array<int>{3,4,3};assert(!frontline::LoadJSON(badAI,aiLoaded));
+ JSON badAI=frontline::SaveJSON(aiSave);badAI[U"aiCommands"]=Array<int>{3,99,3};assert(!frontline::LoadJSON(badAI,aiLoaded));
  badAI=frontline::SaveJSON(aiSave);badAI[U"aiPlannedDay"]=Array<int>{0,aiSave.day+1,0};assert(!frontline::LoadJSON(badAI,aiLoaded));
  badAI=frontline::SaveJSON(aiSave);badAI[U"version"]=7;assert(frontline::LoadJSON(badAI,aiLoaded) && aiLoaded.aiPlannedDay[1]==-1 && aiLoaded.aiCommands[1]==3);
  // Preserve an offensive assembly timer, including the exact day of cancellation.

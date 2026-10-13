@@ -4,19 +4,29 @@ namespace campaignui
 {
 	ColorF FactionColor(int faction)
 	{
-		return faction == 0   ? ColorF(.32, .63, .43)
-		       : faction == 1 ? ColorF(.38, .57, .78)
-		       : faction == 2 ? ColorF(.78, .36, .28)
-		                      : ColorF(0.40, 0.43, 0.42);
+		return faction == 0   ? ColorF(.13, .86, .46)
+		       : faction == 1 ? ColorF(.22, .52, 1.)
+		       : faction == 2 ? ColorF(1., .32, .17)
+		                      : ColorF(.59, .61, .59);
+	}
+	void Panel(const RectF& rect, bool raised)
+	{
+		rect.movedBy(0, 3).draw(ColorF(.01, .025, .05, .45));
+		rect.draw(Arg::top = ColorF(.105, .17, .24, .97), Arg::bottom = ColorF(.035, .075, .12, .97));
+		rect.drawFrame(1, ColorF(.59, .62, .60, .85));
+		Line(rect.x, rect.y + 1, rect.rightX(), rect.y + 1).draw(1, ColorF(.79, .73, .56, .80));
+		if (raised)
+			RectF(rect.x + 1, rect.y + 2, 3, rect.h - 4).draw(ColorF(.80, .66, .36));
 	}
 	void DrawButton(const Rect& rect, const String& label, bool enabled)
 	{
-		rect.movedBy(0, 2).rounded(3).draw(ColorF(.015, .025, .02, .6));
-		rect.rounded(3).draw(enabled && rect.mouseOver() ? ColorF(.22, .29, .23) : ColorF(.105, .16, .135));
-		rect.rounded(3).drawFrame(1, enabled ? ColorF(.63, .55, .35) : ColorF(.24, .28, .24));
-		Line(rect.x + 4, rect.y + 2, rect.rightX() - 4, rect.y + 2)
-		    .draw(1, ColorF(.91, .81, .52, enabled ? .2 : .05));
-		FontAsset(U"campaignBody")(label).drawAt(rect.center(),
-		                                         enabled ? ColorF(0.94, 0.93, 0.86) : ColorF(0.45));
+		const bool hover = enabled && rect.mouseOver();
+		rect.draw(Arg::top = hover ? ColorF(.24, .34, .44) : ColorF(.15, .23, .31),
+		          Arg::bottom = hover ? ColorF(.10, .19, .29) : ColorF(.055, .11, .18));
+		rect.drawFrame(1, enabled ? ColorF(.59, .62, .59) : ColorF(.24, .30, .34));
+		Line(rect.x + 2, rect.y + 1, rect.rightX() - 2, rect.y + 1)
+		    .draw(1, ColorF(.90, .84, .67, enabled ? .38 : .08));
+		FontAsset(rect.h < 30 ? U"campaignSmall" : U"campaignBody")(label).drawAt(
+		    rect.center(), enabled ? ColorF(.96, .95, .88) : ColorF(.46, .52, .55));
 	}
 } // namespace campaignui

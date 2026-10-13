@@ -10,7 +10,7 @@ namespace frontline
 			if (f == player || aiPlannedDay[f] == day)
 				continue;
 			if (aiPlannedDay[f] < 0 || aiPlannedDay[f] / 10 != day / 10)
-				aiCommands[f] = 3;
+				aiCommands[f] = CommandLimit(f);
 			aiPlannedDay[f] = day;
 			// Re-evaluate after each successful action: officers and stores may now be reserved.
 			while (aiCommands[f] > 0)
@@ -34,8 +34,11 @@ namespace frontline
 		bool success = false;
 		switch (o.kind)
 		{
+		case AIKind::Policy:
+			success = AdoptPolicy(o.target, o.general, o.duty, true);
+			break;
 		case AIKind::Train:
-			success=TrainTogether(o.city,o.general,o.target,true);
+			success = TrainTogether(o.city, o.general, o.target, true);
 			break;
 		case AIKind::Govern:
 			success = AppointGovernor(o.city, o.general, true);

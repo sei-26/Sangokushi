@@ -20,6 +20,12 @@ void CampaignScene::deploy(Arm arm)
 		m_message = U"守備兵1000を残す兵力・金・糧・命令が必要です。出陣上限は6隊。";
 		return;
 	}
+	const auto departure =
+	    hexgrid::Center(m_game.cities[m_city].tile % Width, m_game.cities[m_city].tile / Width);
+	m_camera.x = departure.first;
+	m_camera.y = departure.second;
+	m_camera.zoom = Max(3., m_camera.zoom);
+	m_positions.clear();
 	m_army = army;
 	m_city = -1;
 	m_message = U"右クリックで進路を指定。赤い都市へ進むと包囲・攻城を開始します。";
@@ -35,7 +41,8 @@ void CampaignScene::update()
 			m_storyActive = false;
 		return;
 	}
-	const bool musicClicked = m_musicPlayer.Input(Vec2(225, 8), 24);
+	const bool musicClicked =
+	    m_musicPlayer.Input(m_settingsOpen ? Vec2(Scene::Width() - 296, 134) : Vec2(-1000, -1000), 26);
 	bool combat = false;
 	for (int i = 0; i < static_cast<int>(m_game.armies.size()) && !combat; ++i)
 	{
@@ -55,7 +62,8 @@ void CampaignScene::update()
 	}
 	m_musicPlayer.Update(musiccues::Campaign(m_started, m_game.result, combat), Scene::DeltaTime(),
 	                     m_presentation.Busy());
-	const bool soundClicked = m_started && Rect(Scene::Width() - 155, 73, 130, 20).leftClicked();
+	const bool soundClicked =
+	    m_started && m_settingsOpen && Rect(Scene::Width() - 296, 266, 126, 24).leftClicked();
 	if (KeyM.down() || soundClicked)
 		m_presentation.ToggleSound();
 	if (KeyG.down())
@@ -69,7 +77,7 @@ void CampaignScene::update()
 	                          (KeySpace.down() || (MouseL.down() && !soundClicked && !musicClicked)));
 	if (wasPresenting || m_presentation.Busy())
 		return;
-	if (m_started && m_councilMode == 0 && !m_infoOpen && m_spectacle.ReportTile() >= 0 &&
+	if (m_started && !m_settingsOpen && m_councilMode == 0 && !m_infoOpen && m_spectacle.ReportTile() >= 0 &&
 	    m_spectacle.ReportRect().leftClicked())
 	{
 		if (m_spectacle.CloseRect().leftClicked())
@@ -122,6 +130,7 @@ void CampaignScene::update()
 				fitMap();
 				m_mapTexture = RenderTexture{};
 				m_started = true;
+				m_atlasView = m_game.hexMap;
 				m_city = f * 3;
 				m_army = -1;
 				m_generalChoice = 0;
@@ -141,6 +150,7 @@ void CampaignScene::update()
 				m_transportEstimateDay = -1;
 				fitMap();
 				m_started = true;
+				m_atlasView = m_game.hexMap;
 				m_city = -1;
 				m_army = -1;
 				m_positions.clear();
@@ -155,6 +165,21 @@ void CampaignScene::update()
 		}
 		return;
 	}
+	if (m_settingsOpen)
+	{
+		updateSettings();
+		return;
+	}
+	if (m_councilMode == 0 && !m_infoOpen && button(52).leftClicked())
+	{
+		m_settingsOpen = true;
+		return;
+	}
+	if (m_councilMode == 0 && !m_infoOpen && button(56).leftClicked() && m_daysLeft == 0)
+	{
+		openPolicies();
+		return;
+	}
 	if (m_councilMode != 0)
 	{
 		updateCouncil();
@@ -165,8 +190,34 @@ void CampaignScene::update()
 		updateInformation();
 		return;
 	}
-	if ((KeyL.down() || (panelVisible() && Rect(Scene::Width() - 316, 239, 278, 18).leftClicked())) &&
-	    m_army >= 0 && m_army < static_cast<int>(m_game.armies.size()) && m_game.armies[m_army].troops > 0)
+	if (m_game.hexMap && (KeyH.down() || button(59).leftClicked()))
+		m_gridVisible = !m_gridVisible;
+	if (m_game.hexMap && (KeyF.down() || button(58).leftClicked()))
+	{
+		m_atlasView = !m_atlasView;
+		m_positions.clear();
+		m_hits.clear();
+		if (!m_atlasView && m_city >= 0)
+		{
+			const auto p =
+			    hexgrid::Center(m_game.cities[m_city].tile % Width, m_game.cities[m_city].tile / Width);
+			m_camera.x = p.first;
+			m_camera.y = p.second;
+			m_camera.zoom = 3.5;
+		}
+		m_message = m_atlasView ? U"全国概況：都市の支配勢力を表示。都市を選び、戦場図で周辺を確認。"
+		                        : U"戦場図：地形・部隊・補給路を確認して命令する。";
+		return;
+	}
+	if (KeyEscape.down())
+	{
+		m_city = -1;
+		m_army = -1;
+		m_region = -1;
+		return;
+	}
+	if ((KeyL.down() || (panelVisible() && Rect(30, 239, 278, 18).leftClicked())) && m_army >= 0 &&
+	    m_army < static_cast<int>(m_game.armies.size()) && m_game.armies[m_army].troops > 0)
 	{
 		m_councilMode = 5;
 		return;
@@ -181,29 +232,37 @@ void CampaignScene::update()
 			openInformation(0);
 		return;
 	}
+	if (KeyD.down() || button(50).leftClicked())
+	{
+		openDomestic(m_city);
+		return;
+	}
 	if (panelVisible() && m_councilMode == 0)
 	{
 		if (m_army >= 0 && m_army < static_cast<int>(m_game.armies.size()) &&
-		    Rect(Scene::Width() - 316, 102, 56, 66).leftClicked())
+		    Rect(30, 102, 56, 66).leftClicked())
 		{
 			openInformation(1, m_game.armies[m_army].general);
 			return;
 		}
-		if (m_city >= 0 && Rect(Scene::Width() - 316, 102, 282, 34).leftClicked())
+		if (m_city >= 0 && Rect(30, 102, 282, 34).leftClicked())
 		{
 			openInformation(0, m_city);
 			return;
 		}
 	}
-	if (KeyTab.down())
+	if (KeyTab.down() || button(57).leftClicked())
 	{
 		m_supplyView = !m_supplyView;
 		m_mapDay = -1;
 	}
+	const auto legend = territoryLegendRect();
+	if (KeyT.down() || RectF(legend.x + 12, legend.bottomY() - 31, legend.w - 24, 24).leftClicked())
+		m_territoryView = !m_territoryView;
 	if (KeyV.down() || button(49).leftClicked())
 		m_panelHidden = !m_panelHidden;
 	updateCamera();
-	if (button(17).leftClicked() && (!m_game.hexMap || m_daysLeft == 0))
+	if ((button(17).leftClicked() || button(51).leftClicked()) && (!m_game.hexMap || m_daysLeft == 0))
 	{
 		m_councilMode = 1;
 		m_paused = m_daysLeft > 0;
@@ -235,8 +294,11 @@ void CampaignScene::update()
 		m_paused = !m_paused;
 	if (m_city >= 0 && button(13).leftClicked())
 		m_tab = 0;
-	if (m_city >= 0 && button(14).leftClicked())
-		m_tab = 1;
+	if (m_city >= 0 && m_game.cities[m_city].owner == m_game.player && button(14).leftClicked())
+	{
+		openDomestic(m_city);
+		return;
+	}
 	if (m_city >= 0 && button(40).leftClicked())
 		m_tab = 2;
 	if (m_daysLeft > 0 && !m_paused)
@@ -271,48 +333,6 @@ void CampaignScene::update()
 	}
 	else
 	{
-		if (m_daysLeft == 0 && button(12).leftClicked())
-		{
-			m_started = false;
-			m_spectacle.Reset();
-			m_army = -1;
-			m_city = -1;
-			return;
-		}
-		if (m_daysLeft == 0 && button(10).leftClicked())
-		{
-			try
-			{
-				m_message = SaveJSON(m_game).save(U"frontline-save.json") ? U"新作の戦況を保存しました。"
-				                                                          : U"保存できませんでした。";
-			}
-			catch (...)
-			{
-				m_message = U"保存できませんでした。";
-			}
-		}
-		if (m_daysLeft == 0 && button(11).leftClicked())
-		{
-			Campaign loaded;
-			if (LoadJSON(JSON::Load(U"frontline-save.json"), loaded))
-			{
-				m_game = std::move(loaded);
-				m_region = -1;
-				m_transportEstimateDay = -1;
-				fitMap();
-				m_city = -1;
-				m_army = -1;
-				m_positions.clear();
-				m_hits.clear();
-				m_presentation.Reset();
-				m_spectacle.Reset();
-				m_mapDay = -1;
-				m_mapTexture = RenderTexture{};
-				m_message = U"戦況を復元しました。";
-			}
-			else
-				m_message = U"有効な新作のセーブが見つかりません。";
-		}
 		if (m_game.result == 0)
 		{
 			const int tile = mouseTile();
@@ -408,9 +428,11 @@ void CampaignScene::update()
 					else if (button(6).leftClicked())
 						deploy(Arm::Cavalry);
 					else if (button(7).leftClicked())
-						m_message = m_game.Recruit(m_city)
-						                ? U"兵2000を募集。金300・糧1000・治安10を使用。"
-						                : U"金300・糧1000・命令1・治安35以上が必要。兵力上限18000。";
+						m_message =
+						    m_game.Recruit(m_city)
+						        ? U"兵{}を募集。金300・糧1000・治安10を使用。"_fmt(m_game.Recruitment(m_city))
+						        : U"金300・糧1000・命令1・治安35以上が必要。募集上限{}。"_fmt(
+						              m_game.GarrisonCapacity(m_city));
 				}
 			}
 			if (m_daysLeft == 0 && (button(0).leftClicked() || KeyEnter.down() || button(16).leftClicked()))

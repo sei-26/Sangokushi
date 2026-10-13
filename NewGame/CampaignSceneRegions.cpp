@@ -47,7 +47,7 @@ void CampaignScene::drawRegions(double cell) const
 
 void CampaignScene::drawRegionPanel() const
 {
-	const int x = Scene::Width() - 316;
+	const int x = 30;
 	const auto& r = m_game.regions[m_region];
 	const auto line = [&](const String& value, int y) {
 		FontAsset(U"campaignBody")(value).draw(x, y, ColorF(.88, .90, .80));

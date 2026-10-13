@@ -30,6 +30,7 @@ try {
         'NewGame\CampaignEconomy.cpp',
         'NewGame\CampaignTraining.cpp',
         'NewGame\CampaignGovernance.cpp',
+        'NewGame\CampaignDevelopment.cpp',
         'NewGame\CampaignOfficers.cpp',
         'NewGame\CampaignOrders.cpp',
         'NewGame\CampaignReturn.cpp',
@@ -55,9 +56,19 @@ try {
     $taskCampaign = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\CampaignTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\CampaignTests.exe /Fo:Intermediate\CampaignTests.obj /link /STACK:8388608 && Intermediate\CampaignTests.exe"
     & cmd /c $taskCampaign
     if ($LASTEXITCODE -ne 0) { throw 'Campaign tests failed.' }
+    $taskBudget = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\CommandBudgetTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\CommandBudgetTests.exe /Fo:Intermediate\CommandBudgetTests.obj /link /STACK:8388608 && Intermediate\CommandBudgetTests.exe"
+    & cmd /c $taskBudget
+    if ($LASTEXITCODE -ne 0) { throw 'Command budget tests failed.' }
+    $taskDevelopment = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\DevelopmentTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\DevelopmentTests.exe /Fo:Intermediate\DevelopmentTests.obj /link /STACK:8388608 && Intermediate\DevelopmentTests.exe"
+    & cmd /c $taskDevelopment
+    if ($LASTEXITCODE -ne 0) { throw 'Development and policy tests failed.' }
+
     $taskHex = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\HexTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\HexTests.exe /Fo:Intermediate\HexTests.obj /link /STACK:8388608 && Intermediate\HexTests.exe"
     & cmd /c $taskHex
     if ($LASTEXITCODE -ne 0) { throw 'Hex tests failed.' }
+    $taskAtlas = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\ChinaAtlasTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\ChinaAtlasTests.exe /Fo:Intermediate\ChinaAtlasTests.obj /link /STACK:8388608 && Intermediate\ChinaAtlasTests.exe"
+    & cmd /c $taskAtlas
+    if ($LASTEXITCODE -ne 0) { throw 'China atlas projection tests failed.' }
     $taskRegions = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\RegionTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\RegionTests.exe /Fo:Intermediate\RegionTests.obj /link /STACK:8388608 && Intermediate\RegionTests.exe"
     & cmd /c $taskRegions
     if ($LASTEXITCODE -ne 0) { throw 'Region tests failed.' }

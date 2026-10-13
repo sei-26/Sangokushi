@@ -44,7 +44,14 @@ namespace frontline
 		if (city < 0 || city >= static_cast<int>(cities.size()))
 			return 0;
 		const auto& c = cities[city];
-		int percent = 100;
+		int percent = 100 + c.level * 10;
+		percent += PolicyPower(c.owner, food ? Duty::Farming : Duty::Commerce);
+		if (food && PolicyPower(c.owner, Duty::Commerce) > 0)
+			percent -= 5;
+		if (!food)
+			for (Duty policy : {Duty::Farming, Duty::Order, Duty::Logistics})
+				if (PolicyPower(c.owner, policy) > 0)
+					percent -= 5;
 		if (CityKind(city) == (food ? cityidentity::Kind::Granary : cityidentity::Kind::Market))
 			percent += 40;
 		const int g =
@@ -66,7 +73,9 @@ namespace frontline
 	{
 		if (city < 0 || city >= static_cast<int>(cities.size()))
 			return 0;
-		int value = cities[city].logistics + (CityKind(city) == cityidentity::Kind::Supply ? 20 : 0);
+		int value = cities[city].logistics + cities[city].level * 5 +
+		            PolicyPower(cities[city].owner, Duty::Logistics) +
+		            (CityKind(city) == cityidentity::Kind::Supply ? 20 : 0);
 		const int g =
 		    candidate == -2
 		        ? Governor(city)
@@ -81,7 +90,8 @@ namespace frontline
 	}
 	int Campaign::CityDamagePercent(int city, int candidate) const
 	{
-		int percent = CityKind(city) == cityidentity::Kind::Fortress ? 85 : 100;
+		int percent = (CityKind(city) == cityidentity::Kind::Fortress ? 85 : 100) -
+		              (city >= 0 && city < static_cast<int>(cities.size()) ? cities[city].level * 3 : 0);
 		const int g =
 		    candidate == -2
 		        ? Governor(city)
@@ -92,7 +102,14 @@ namespace frontline
 	}
 	int Campaign::Recruitment(int city) const
 	{
-		return CityKind(city) == cityidentity::Kind::Military ? 2500 : 2000;
+		if (city < 0 || city >= static_cast<int>(cities.size()))
+			return 0;
+		const auto& c = cities[city];
+		const int base = (CityKind(city) == cityidentity::Kind::Military ? 2500 : 2000) + c.level * 250;
+		return base *
+		       (100 + PolicyPower(c.owner, Duty::Logistics) -
+		        (PolicyPower(c.owner, Duty::Commerce) > 0 ? 10 : 0)) /
+		       100;
 	}
 	int Campaign::GovernorWorkBonus(int city, int general) const
 	{

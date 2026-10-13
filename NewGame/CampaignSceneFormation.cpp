@@ -64,10 +64,7 @@ void CampaignScene::drawFormation() const
 	const auto& g = m_game.generals[a.general];
 	const auto total = m_game.Formation(m_army);
 	Scene::Rect().draw(ColorF(.015, .035, .04, .87));
-	Rect(60, 102, Scene::Width() - 120, Scene::Height() - 174)
-	    .rounded(8)
-	    .draw(ColorF(.07, .13, .14))
-	    .drawFrame(2, ColorF(.64, .60, .39));
+	campaignui::Panel(RectF(60, 102, Scene::Width()-120, Scene::Height()-174),true);
 	FontAsset(U"campaignTitle")(U"部隊連携 / 仲間の力をつなぐ").draw(80, 116, ColorF(.97, .86, .61));
 	DrawButton(FormationClose(), U"閉じる / L");
 	campaignvisual::OfficerCard(RectF(80, 190, 118, 144), g, m_campaignFaces);

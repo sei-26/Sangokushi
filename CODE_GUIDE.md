@@ -44,7 +44,7 @@
 | CampaignSceneCamera.cpp | 地図の拡縮、移動、マウス位置からマスを選ぶ |
 | CampaignSceneLayout.cpp | ボタンを置く位置 |
 | CampaignSceneMap.cpp | 地形、都市、部隊、進路、ミニマップの描画 |
-| CampaignScenePanel.cpp | 右側の都市・部隊の情報と命令ボタン |
+| CampaignScenePanel.cpp | 左側の都市・部隊の情報と命令ボタン |
 | CampaignSceneMenu.cpp | スタート画面 |
 | CampaignSceneLogistics.cpp | 輸送先・積荷・到着目安と輸送命令 |
 | CampaignSceneAssignments.cpp | 武将の送り先・到着日・異動中の表示 |
@@ -106,7 +106,7 @@ CampaignReturn.cpp は指定した味方都市への帰還・即時入城、Camp
 
 ## 敵AIを読む順番
 
-- CampaignAI.cpp：命令の回数管理と実行。10日3命令・同日の再実行防止。
+- CampaignAI.cpp：命令の回数管理と実行。10日ごとに城数に応じた命令を回復・同日の再実行防止。
 - CampaignAIPlanning.cpp：危機、兵糧、武将、到達できる目標を評価し、優先順位つきの候補を作る。
 - CampaignAIArmies.cpp：日々の撤退、近くの城の救援、輸送隊護衛、攻撃対象、戦法の発動判断。
 - HeroStoryAI.cpp：地形・占有・射線・損害・守備から、敵の攻撃対象と移動先を選ぶ。
@@ -118,7 +118,7 @@ CampaignReturn.cpp は指定した味方都市への帰還・即時入城、Camp
 
 - `NewGame/CampaignBattlefield.cpp`：敵部隊の補給封鎖範囲、味方護衛と守備兵による保護、方向数に基づく包囲圧力。補給・輸送経路・戦闘・AI・画面が同じ評価関数を使う。
 
-- `NewGame/CampaignTerrainDraw.cpp`：軍略地図の地面・山並み・森林・水面・橋。固定の地形描画は地図テクスチャにキャッシュする。
+- `NewGame/CampaignTerrainDraw.cpp`：軍略地図の地面・山並み・森林・水面・橋。地面と水面は地図テクスチャにキャッシュし、山・森の素材は `CampaignSceneTerrain.cpp` から直接描画する。
 - `NewGame/CampaignMarkerDraw.cpp`：城郭、部隊の軍旗と兵力バー、既存の英雄肖像と未収録武将の紋章。
 - `NewGame/CampaignVisuals.hpp`：本編の地図・部隊欄が使う描画関数。ゲームのルールやセーブには依存する状態を追加しない。
 
@@ -195,3 +195,58 @@ Gキーで追加の戦場演出を切り替える。交戦の火花・砂煙・�
 `StoryBattleTerrain.cpp` は地形・拠点・船、`StoryBattleUnits.cpp` は隊列・旗・肖像と移動・攻撃の軌跡、`StoryBattleSpectacle.cpp` は戦法・火攻めの効果を担当します。`StoryPresentation::Capture` は前後の実際の状態から移動と損害を抽出し、操作側が渡す武将番号を攻撃の起点に使います。敵手番全体の集計から攻撃者を推測せず、対象への被弾演出で表示します。状態とセーブは変更しません。
 
 `HeroStorySceneBattle.cpp` はカーソル下の敵の予定を可視化し、通常攻撃の結果を状態コピーで予測します。プレビュー `story-strike` / `story-firestorm` は弓と火攻めの効果の確認に使えます。
+
+`CampaignSceneTerritory.cpp` は領土の凡例とその画面領域を担当。勢力の共通色は `CampaignUI.cpp`、領土の塗りと境界はキャッシュされる `CampaignSceneMap.cpp` にあります。補給表示時は領土の塗りを抑えて補給色も読み取れるようにしています。
+
+## 内政画面と命令の規模
+`CampaignSceneDomestic.cpp` は仕事選択・担当武将の比較・開始可否・進捗表示を担当します。`CampaignSceneCouncil.cpp` の画面7として表示し、太守・共同訓練画面にもつながります。仕事の計算と決済は既存の `Develop` / `CityWorkGain` / `CancelWork` を使います。
+
+`Campaign::CommandLimit(faction)` は全シナリオの都市所有者から命令容量を算出。`commandBudget` は現在の命令期間の容量で、`FinishDay` の10日境界で容量と残数を更新します。AIは期間の初回計画で同じ容量を設定し、同日再計画やロードで予算を増やしません。形式15は `commandBudget` を保存し、旧形式では残数を維持します。`tests/CommandBudgetTests.cpp` は0～30城・命令期間更新・城喪失・AI再計画・旧盤面を検証し、`SaveDataTests.cpp` は予算の往復・不正残数・旧形式を検証します。
+
+## 都市発展と国策
+`CityGrowth.hpp` は規模名と必要能力、`PolicyDefinition.hpp` は国策名と負担を定義。`CampaignDevelopment.cpp` は日次昇格・募集上限・政策枠・登用と撤回・適性と在席の判定を担当します。`CampaignGovernance.cpp` / `CampaignEconomy.cpp` が収入・兵站・募兵・防衛・内政開発・月末治安に効果を反映します。国策を担当していても `Busy` に追加せず、内政・太守と兼務可。出陣・移動・外交中は効果を休止します。
+
+`CampaignScenePolicies.cpp` は国策の選択・候補・効果・負担、`CampaignSceneDomestic.cpp` は規模と次の条件を表示します。形式16で都市level・武将policy・9人分のpolicyCouncilを保存。読み込みは範囲・人数・所属勢力・同一武将/政策の重複を検証します。`DevelopmentTests.cpp` と保存テストが条件・永続成長・休止・費用・個性/得意・旧形式を検証。プレビューは `city-growth`、`national-policy`、`policy-compact`、`metropolis-map`。
+
+### 自然地形の表示
+`CampaignMapArt.cpp` は世界座標の連続UV・気候の色調・新しい山/森林の素材を担当。`CampaignSceneTerrain.cpp` が表示範囲の山・森と隣接数を取得し、元画像の縦横比を維持して画面へ直接描画します。主稜線と支稜線の大きさは隣接数で変わります。領土境界は素材の上に描きます。城・府は別の既存素材を使用。地面・水面の地図キャッシュは48px/マスで、領土表示フラグの変更時にも再描画します。`CampaignSceneTerritory.cpp` がTキーの表示モードのボタン、`CampaignSceneInput.cpp` が入力を処理します。初期モードは領土色、強い勢力色は領土色モードで使用します。
+
+新素材は `App/MapArt/terrain-relief-v2.png`、生成プロンプトは `App/MapArt/TERRAIN_V2_PROMPT.md`。画像欠落時は旧素材または手続き描画へ戻ります。`metropolis-map`、`world`、`territory-world` で拡大・自然地形・領土色を確認できます。
+
+
+`CampaignSceneTerrain.cpp::drawTerrainTransitions` は森林・山の近傍分布を共有頂点で補間し、地面キャッシュへ林縁・山麓の色を描きます。`drawTerrainRelief` は画面内の素材・森林の隙間と林縁・内陸の勢力境界を描画。`CampaignLandscapeDraw.cpp::Shore` は共有端点を固定した水際の曲線と砂浜・浅瀬を担当します。海との境界は太い勢力線を省略し、地形ルールには影響しません。
+
+
+`CampaignSceneScenery.cpp` は都市周辺と水面の景観を担当。`drawCityLandscape` は平野に小道・農地・集落を配置し、農業値と都市規模から農地の密度と家の数を決めます。地図更新時にキャッシュへ描画。`drawWaterSurface` は表示範囲の川・海だけに時間依存の光の筋を描き、橋には重ねません。遠景では筋を減らし、1マス12px未満では省略します。小道は景観であり、経路・移動速度・補給の計算を変更しません。
+
+
+## 本編UIの構成
+三國志14の公式メイン画面の役割分担を参考に、地図を中心に再配置。市販ゲームのUI画像は使わず、描画コードと既存の独自素材で構成しています。
+
+- `CampaignSceneHUD.cpp`：上部の君主・経過年月旬・命令書・勢力資源・進行操作、下部の勢力コマンド、作戦/報告欄、設定ポップアップ。年表示は開始からの経過年で史実年ではありません。
+- `CampaignScenePanel.cpp` / `CampaignSceneRegions.cpp` / `CampaignSceneLogistics.cpp`：左側の選択対象と命令。都市の内政値はゲージで表示。
+- `CampaignSceneLayout.cpp`：コマンドの共通座標。保存・読込・勢力選択のボタンは設定を開いた時だけ有効。
+- `CampaignSceneCamera.cpp`：右下ミニマップ、地図UIの当たり判定、全図/拡縮/移動。
+- `CampaignUI.cpp::Panel` / `DrawButton`：紺のグラデーションと銀・金の罫線を使う共通意匠。情報・内政・施政・任免と勢力選択にも適用。
+
+設定を開くと進行を停止し、閉じると元の進行に戻ります。Escで選択対象を解除。補給は下部のボタン/Tab、領土色は右下のTボタン。初期表示は領土色（地形を残す薄い塗り）。プレビュー `ui-settings` と `ui-compact` を追加しています。
+
+
+## 中国全土の全国図
+`CampaignSceneAtlas.cpp` は全国図の表示・都市紋章・地名の重なり回避・部隊の実際の進路を担当。`ChinaAtlas.hpp` は既存30都市の表示用アンカーと、戦場マスから全国図への滑らかな投影を担当します。都市ID・論理地形・セーブ形式は変更しません。全国図の勢力色は都市の支配勢力をもとにした概況であり、個々のHEXの占領/補給状態は戦場図で表示します。勢力色画像は都市所有者が変化した時だけ作り直し、海は元画像の色から除外します。
+
+背景は `App/MapArt/china-atlas-v1.png`、内蔵image_genで作った独自の地形画。ユーザーの参考画像は雰囲気の参考に使用し、ゲーム画面の素材を転用していません。生成プロンプトは `App/MapArt/CHINA_ATLAS_PROMPT.md`。位置は表示上の概略で、測量データや史実シナリオではありません。
+
+新規開始/読込はHEX戦場図。全国図はFで任意に開きます。F/下部ボタンで戦場図と切替、出陣と補給表示は戦場図へ移ります。全国図でも都市選択と命令が可能。都市が密集する場所は最寄りの紋章を選択します。`ChinaAtlasTests.cpp` が都市アンカーと全マスの投影の有限性・範囲・隣接の連続性を確認。プレビューは `china-atlas`、`china-atlas-city`、`china-atlas-compact`、`china-atlas-route`。
+
+
+## HEXグリッドを維持した戦場の描画
+通常表示を戦場図に戻し、六角グリッドを初期ONに変更。`CampaignSceneTerrain.cpp::drawHexGrid` は `tileCenter` と `TileShape` を使い、実際の選択・経路と同じ座標で山・森の上に境界線を描画します。表示範囲だけ描画し、H/下部「マス」で切替。参考画像の都市紋章と金色の名前は `CampaignLandscapeDraw.cpp::CityBanner` に反映。名札の描画・クリック領域は `CityBannerRect` を共有し、都市名からも選択できます。詳細マップの所有色は実際のHEXの所有者を使います。
+
+
+## 褐色の中国マップを維持したグリッド表示
+ユーザーの指示を修正し、褐色の全国図の背景・都市位置・勢力色を維持して、その上へ整った六角グリッドを重ねます。新規開始・読込はこの全国図を表示。`CampaignSceneAtlas.cpp::ensureAtlasGrid` が透過RenderTextureへ線をキャッシュし、`BlendState::MaxAlpha` でアルファを書き込みます（既定の2Dブレンドでは透明な描画先のアルファが増えません）。H/「マス」で切替。全国図のグリッドは表示の補助で、既存の96×64論理HEXの地形・移動判定を変更しません。既存の都市選択・部隊進路表示も維持します。
+
+
+## 全国図のズーム・移動
+`AtlasCamera.hpp` は正規化座標でカメラ中心と倍率を保持。ホイールのカーソル位置を維持した1〜6倍のズーム、中ドラッグ・矢印キーの移動、端のクランプ、全図リセットを担当します。`CampaignSceneAtlas.cpp` の `atlasViewport` は固定表示枠、`atlasRect` はカメラから計算する画像の描画範囲です。地形・勢力色・グリッド・都市・部隊・進路・クリック/ホバーが共通の変換を使い、枠外はシザーで切り取ります。グリッドのキャッシュ生成時のみシザーを無効にし、全画像の線を保存。`ChinaAtlasTests.cpp` でカーソル固定・最大最小倍率・移動境界・リセットを検証します。プレビュー `china-atlas-zoom` / `china-atlas-zoom-compact` は倍率3の経路表示です。

@@ -8,14 +8,20 @@ using namespace campaignui;
 
 void CampaignScene::drawMap() const
 {
+	if (m_started && m_atlasView && m_game.hexMap)
+	{
+		drawAtlas();
+		return;
+	}
+	constexpr double TerrainPixels = 48.;
 	const RectF area = mapRect();
 	const double cell = m_camera.Cell(area.w, area.h);
 	if (!m_mapTexture || m_mapRevision != m_game.revision || m_mapSupply != m_supplyView ||
-	    (m_supplyView && m_mapDay != m_game.day))
+	    m_mapTerritory != m_territoryView || (m_supplyView && m_mapDay != m_game.day))
 	{
 		if (!m_mapTexture)
-			m_mapTexture = RenderTexture(static_cast<int>(std::ceil((Width + .5) * 32)), Height * 32,
-			                             ColorF(0.08, 0.12, 0.13));
+			m_mapTexture = RenderTexture(static_cast<int>(std::ceil((Width + .5) * TerrainPixels)),
+			                             static_cast<int>(Height * TerrainPixels), ColorF(0.08, 0.12, 0.13));
 		const auto supply = m_game.Supply(m_game.player);
 		const auto blockade = m_game.SupplyBlockade(m_game.player);
 		{
@@ -26,9 +32,11 @@ void CampaignScene::drawMap() const
 				const auto& tile = m_game.tiles[i];
 				const auto p = m_game.hexMap ? hexgrid::Center(i % Width, i / Width)
 				                             : std::pair<double, double>{i % Width + .5, i / Width + .5};
-				const RectF rect(Arg::center(Vec2(p.first * 32, p.second * 32 * m_camera.Pitch())), 32, 32);
+				const RectF rect(
+				    Arg::center(Vec2(p.first * TerrainPixels, p.second * TerrainPixels * m_camera.Pitch())),
+				    TerrainPixels, TerrainPixels);
 				const auto shape =
-				    campaignvisual::TileShape(rect.center(), 32, m_game.hexMap, m_camera.Pitch());
+				    campaignvisual::TileShape(rect.center(), TerrainPixels, m_game.hexMap, m_camera.Pitch());
 				if (!m_game.hexMap || !m_mapArt.Ground(rect, tile.terrain, i, m_camera.Pitch()))
 					campaignvisual::TerrainTile(rect, tile.terrain, i, m_game.hexMap, m_camera.Pitch());
 				const bool water = tile.terrain == Terrain::Sea || tile.terrain == Terrain::River ||
@@ -48,22 +56,29 @@ void CampaignScene::drawMap() const
 						else
 							Line(rect.bl(), rect.br()).draw(2, ColorF(.76, .73, .48, .6));
 					}
+				if (m_game.hexMap && !water)
+					shape.draw(ColorF(.47, .29, .12, .18));
 				if (tile.owner >= 0)
-					shape.draw(ColorF(FactionColor(tile.owner), 0.13));
+					shape.draw(
+					    ColorF(FactionColor(tile.owner), m_territoryView ? (m_supplyView ? .18 : .28) : .07));
 				if (m_supplyView && supply[i] >= 0)
 					shape.draw(ColorF(0.4, 0.95, 0.72, 0.22));
 				if (m_supplyView && blockade[i] && tile.terrain != Terrain::Sea)
 					shape.draw(ColorF(1.0, .35, .2, .35)).drawFrame(1, ColorF(1.0, .52, .3));
-				shape.drawFrame(0.35, ColorF(.10, .14, .09, .10));
+				if (!m_game.hexMap)
+					shape.drawFrame(0.35, ColorF(.10, .14, .09, .10));
 				if (m_game.hexMap)
 				{
 					for (int n : m_game.MapNeighbors(i))
-						if (tile.owner != m_game.tiles[n].owner)
+						if (tile.owner != m_game.tiles[n].owner && tile.terrain != Terrain::Sea &&
+						    m_game.tiles[n].terrain != Terrain::Sea)
 						{
 							const auto neighbor = hexgrid::Center(n % Width, n / Width);
-							const Vec2 direction((neighbor.first - p.first) * 32,
-							                     (neighbor.second - p.second) * 32 * m_camera.Pitch());
-							campaignvisual::TileEdge(rect.center(), 32, m_camera.Pitch(), direction)
+							const Vec2 direction((neighbor.first - p.first) * TerrainPixels,
+							                     (neighbor.second - p.second) * TerrainPixels *
+							                         m_camera.Pitch());
+							campaignvisual::TileEdge(rect.center(), TerrainPixels, m_camera.Pitch(),
+							                         direction)
 							    .draw(.9, ColorF(.83, .77, .49, .46));
 						}
 				}
@@ -73,10 +88,12 @@ void CampaignScene::drawMap() const
 					Line(rect.bl(), rect.br()).draw(1.5, ColorF(0.82, 0.80, 0.63, 0.6));
 			}
 			if (m_game.hexMap)
+				drawTerrainTransitions(TerrainPixels);
+			if (m_game.hexMap)
 				for (int i = 0; i < TileCount; ++i)
 				{
 					const auto p = hexgrid::Center(i % Width, i / Width);
-					const Vec2 center(p.first * 32, p.second * 32 * m_camera.Pitch());
+					const Vec2 center(p.first * TerrainPixels, p.second * TerrainPixels * m_camera.Pitch());
 					const auto terrain = m_game.tiles[i].terrain;
 					const bool water =
 					    terrain == Terrain::Sea || terrain == Terrain::River || terrain == Terrain::Bridge;
@@ -87,51 +104,55 @@ void CampaignScene::drawMap() const
 							if (land == Terrain::Sea || land == Terrain::River || land == Terrain::Bridge)
 								continue;
 							const auto next = hexgrid::Center(n % Width, n / Width);
-							campaignvisual::Shore(center, 32, m_camera.Pitch(),
-							                      Vec2((next.first - p.first) * 32,
-							                           (next.second - p.second) * 32 * m_camera.Pitch()),
-							                      terrain == Terrain::Sea);
+							campaignvisual::Shore(
+							    center, TerrainPixels, m_camera.Pitch(),
+							    Vec2((next.first - p.first) * TerrainPixels,
+							         (next.second - p.second) * TerrainPixels * m_camera.Pitch()),
+							    terrain == Terrain::Sea);
 						}
-					if (terrain == Terrain::Plain && i % 7 == 0)
-						for (const auto& city : m_game.cities)
-							if (m_game.MapDistance(i, city.tile) <= 3 && m_game.CityAt(i) < 0)
-							{
-								campaignvisual::Fields(center, 32, i);
-								break;
-							}
 				}
+			if (m_game.hexMap)
+				drawCityLandscape(TerrainPixels);
+			if (m_game.hexMap)
+				for (int i = 0; i < TileCount; ++i)
+					if (m_game.tiles[i].terrain == Terrain::Bridge)
+					{
+						const auto p = hexgrid::Center(i % Width, i / Width);
+						campaignvisual::TerrainRelief(
+						    Vec2(p.first * TerrainPixels, p.second * TerrainPixels * m_camera.Pitch()),
+						    TerrainPixels, Terrain::Bridge, i);
+					}
 			if (m_game.hexMap)
 				for (int i = 0; i < TileCount; ++i)
 				{
-					const auto p = hexgrid::Center(i % Width, i / Width);
-					if (!m_mapArt.Relief(Vec2(p.first * 32, p.second * 32 * m_camera.Pitch()), 32,
-					                     m_game.tiles[i].terrain, i))
-						campaignvisual::TerrainRelief(Vec2(p.first * 32, p.second * 32 * m_camera.Pitch()),
-						                              32, m_game.tiles[i].terrain, i);
-				}
-			if (m_game.hexMap)
-				for (int i = 0; i < TileCount; ++i)
-				{
-					if (m_game.tiles[i].owner < 0)
+					if (m_game.tiles[i].owner < 0 || m_game.tiles[i].terrain == Terrain::Sea)
 						continue;
 					const auto p = hexgrid::Center(i % Width, i / Width);
 					for (int n : m_game.MapNeighbors(i))
-						if (n > i && m_game.tiles[n].owner >= 0 &&
-						    m_game.tiles[n].owner != m_game.tiles[i].owner)
+						if ((n > i || m_game.tiles[n].owner < 0) &&
+						    m_game.tiles[n].owner != m_game.tiles[i].owner &&
+						    m_game.tiles[n].terrain != Terrain::Sea)
 						{
 							const auto q = hexgrid::Center(n % Width, n / Width);
 							const auto edge = campaignvisual::TileEdge(
-							    Vec2(p.first * 32, p.second * 32 * m_camera.Pitch()), 32, m_camera.Pitch(),
-							    Vec2((q.first - p.first) * 32,
-							         (q.second - p.second) * 32 * m_camera.Pitch()));
-							edge.draw(3, ColorF(.03, .07, .045, .85));
-							edge.draw(1.5, ColorF(.98, .88, .57, .9));
+							    Vec2(p.first * TerrainPixels, p.second * TerrainPixels * m_camera.Pitch()),
+							    TerrainPixels, m_camera.Pitch(),
+							    Vec2((q.first - p.first) * TerrainPixels,
+							         (q.second - p.second) * TerrainPixels * m_camera.Pitch()));
+							const Vec2 normal =
+							    Vec2(q.first - p.first, (q.second - p.second) * m_camera.Pitch())
+							        .normalized();
+							edge.draw(6.3, ColorF(.015, .025, .03, .95));
+							edge.movedBy(-normal * 1.35).draw(2.4, FactionColor(m_game.tiles[i].owner));
+							if (m_game.tiles[n].owner >= 0)
+								edge.movedBy(normal * 1.35).draw(2.4, FactionColor(m_game.tiles[n].owner));
 						}
 				}
 		}
 		m_mapRevision = m_game.revision;
 		m_mapDay = m_game.day;
 		m_mapSupply = m_supplyView;
+		m_mapTerritory = m_territoryView;
 	}
 	area.stretched(5).draw(ColorF(.05, .07, .055)).drawFrame(1, ColorF(.58, .49, .30));
 	area.draw(ColorF(.055, .1, .13));
@@ -140,8 +161,9 @@ void CampaignScene::drawMap() const
 	                                static_cast<int>(area.w), static_cast<int>(area.h)));
 	{
 		const ScopedRenderStates2D clipping(RasterizerState::SolidCullNoneScissor);
-		m_mapTexture(RectF(0, 0, m_camera.ExtentX() * 32, m_camera.ExtentY() * 32 * m_camera.Pitch()))
-		    .scaled(cell / 32)
+		m_mapTexture(RectF(0, 0, m_camera.ExtentX() * TerrainPixels,
+		                   m_camera.ExtentY() * TerrainPixels * m_camera.Pitch()))
+		    .scaled(cell / TerrainPixels)
 		    .drawAt(area.center() + Vec2((m_camera.ExtentX() / 2. - m_camera.x) * cell,
 		                                 (m_camera.ExtentY() / 2. - m_camera.y) * cell * m_camera.Pitch()));
 		if (m_game.hexMap)
@@ -162,6 +184,9 @@ void CampaignScene::drawMap() const
 				FontAsset(U"campaignBody")(label).drawAt(tileCenter(Campaign::At(x, y)),
 				                                         ColorF(.96, .88, .65, .55));
 		}
+		drawWaterSurface(cell);
+		drawTerrainRelief(cell);
+		drawHexGrid(cell);
 		if (m_army >= 0 && m_army < static_cast<int>(m_game.armies.size()) &&
 		    m_game.armies[m_army].troops > 0)
 		{
@@ -182,14 +207,17 @@ void CampaignScene::drawMap() const
 		{
 			const auto& city = m_game.cities[i];
 			const Vec2 center = tileCenter(city.tile);
-			if (!m_game.hexMap || !m_mapArt.City(center, cell, city.owner, i == m_city))
-				campaignvisual::CityIcon(center, cell, city.owner, i == m_city);
+			if (!m_game.hexMap ||
+			    !m_mapArt.City(center, cell * (1 + city.level * .12), city.owner, i == m_city))
+				campaignvisual::CityIcon(center, cell * (1 + city.level * .12), city.owner, i == m_city);
 			RectF(center.x - cell * 0.4, center.y + cell * 0.5, cell * 0.8, 3).draw(ColorF(0.04, 0.07, 0.08));
 			RectF(center.x - cell * 0.4, center.y + cell * 0.5, cell * 0.8 * Min(1.0, city.troops / 10000.0),
 			      3)
 			    .draw(FactionColor(city.owner));
-			campaignvisual::MapLabel(center.movedBy(0, -Max(29., cell * .94)), text(city.name), city.owner,
-			                         i == m_city);
+			campaignvisual::CityBanner(
+			    center.movedBy(0, -Max(29., cell * .94)),
+			    text(city.name) + (city.level > 0 ? U" / " + String(citygrowth::Name(city.level)) : U""),
+			    city.owner, i == m_city);
 		}
 		struct ArmyLabel
 		{
@@ -226,7 +254,7 @@ void CampaignScene::drawMap() const
 			if (i == m_army || (count == 1 && !nearby))
 			{
 				const double offset = Max(95., cell * (count * .3 + 1.3));
-				const double right = panelVisible() ? Scene::Width() - 342. : Scene::Width() - 20.;
+				const double right = Scene::Width() - 20.;
 				const Vec2 label =
 				    (i == m_army && nearby)
 				        ? center + Vec2(0, -offset)
@@ -273,8 +301,9 @@ void CampaignScene::drawMap() const
 	if (m_camera.zoom > 1)
 	{
 		const auto mini = miniRect();
-		mini.stretched(5).draw(ColorF(.045, .065, .05, .98)).drawFrame(1, ColorF(.72, .60, .35));
-		m_mapTexture(RectF(0, 0, m_camera.ExtentX() * 32, m_camera.ExtentY() * 32 * m_camera.Pitch()))
+		campaignui::Panel(mini.stretched(5));
+		m_mapTexture(RectF(0, 0, m_camera.ExtentX() * TerrainPixels,
+		                   m_camera.ExtentY() * TerrainPixels * m_camera.Pitch()))
 		    .resized(mini.w, mini.h)
 		    .draw(mini.pos);
 		for (const auto& city : m_game.cities)
@@ -294,17 +323,6 @@ void CampaignScene::drawMap() const
 		      hh * 2 / m_camera.ExtentY() * mini.h)
 		    .drawFrame(2, ColorF(.98, .85, .46));
 	}
-	RectF(16, Scene::Height() - 132, Scene::Width() - 360, 118)
-	    .rounded(5)
-	    .draw(ColorF(.035, .075, .065, .98));
 	if (m_started)
-		DrawButton(button(49), m_panelHidden ? U"情報を表示 / V" : U"情報を隠す / V");
-	const int y = Scene::Height() - 122;
-	DrawButton(Rect(24, y, 100, 30), U"全図 / Home");
-	DrawButton(Rect(134, y, 70, 30), U"＋ 拡大");
-	DrawButton(Rect(214, y, 70, 30), U"－ 縮小");
-	FontAsset(U"campaignSmall")(
-	    U"{}都市 / {}×{}　倍率 {:.1f}　V：情報を隠す"_fmt(m_game.cities.size(), m_game.MapWidth(),
-	                                                      m_game.MapHeight(), m_camera.zoom))
-	    .draw(300, y + 5, ColorF(.8, .85, .73));
+		drawTerritoryLegend();
 }

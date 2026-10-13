@@ -1,6 +1,7 @@
 ﻿#include "CampaignScene.hpp"
 #include "CampaignSave.hpp"
 #include "CampaignUI.hpp"
+#include "CampaignVisuals.hpp"
 
 using namespace frontline;
 using namespace campaignui;
@@ -16,20 +17,31 @@ bool CampaignScene::panelVisible() const
 bool CampaignScene::overMapUI() const
 {
 	const Vec2 p = Cursor::PosF();
-	if(!m_presentation.Busy() && m_spectacle.ReportTile()>=0 && m_spectacle.ReportRect().contains(p))return true;
-	if (button(49).mouseOver())
+	if (m_settingsOpen)
 		return true;
-	if (p.y < 96 || (m_camera.zoom > 1 && miniRect().contains(p)))
+	if (m_started && territoryLegendRect().contains(p))
 		return true;
-	if (panelVisible() && RectF(Scene::Width() - 330, 86, 306, Scene::Height() - 100).contains(p))
+	if (!m_presentation.Busy() && m_spectacle.ReportTile() >= 0 && m_spectacle.ReportRect().contains(p))
 		return true;
-	if (RectF(16, Scene::Height() - 132, Scene::Width() - 360, 118).contains(p))
+	if (p.y < 76 || p.y >= Scene::Height() - 58)
 		return true;
-	return RectF(Scene::Width() - 330, Scene::Height() - 194, 306, 180).contains(p);
+	if (!m_atlasView && m_camera.zoom > 1 && miniRect().stretched(5).contains(p))
+		return true;
+	for (int id : {49, 53, 54, 55})
+		if (button(id).mouseOver())
+			return true;
+	if (panelVisible() && RectF(16, 86, 306, Scene::Height() - 160).contains(p))
+		return true;
+	if (m_atlasView)
+		return RectF(Scene::Width() - 246, 94, 224, 172).contains(p);
+	const double logX = panelVisible() ? 340 : 20;
+	return RectF(logX, Scene::Height() - 142, Scene::Width() - logX - 270, 70).contains(p);
 }
 
 void CampaignScene::fitMap()
 {
+	m_atlasView = false;
+	m_atlasCamera.Reset();
 	m_camera.Fit(m_game.MapWidth(), m_game.MapHeight(), m_game.hexMap, true);
 	m_panelHidden = false;
 	m_camera.zoom = 1.8;
@@ -54,11 +66,13 @@ RectF CampaignScene::mapRect() const
 RectF CampaignScene::miniRect() const
 {
 	const auto r = mapRect();
-	return RectF(20, 108, 190, 134);
+	return RectF(Scene::Width() - 246, Scene::Height() - 228, 224, 144);
 }
 
 Vec2 CampaignScene::tileCenter(int tile) const
 {
+	if (m_atlasView && m_game.hexMap)
+		return atlasPosition(tile);
 	const auto r = mapRect();
 	const double c = m_camera.Cell(r.w, r.h);
 	const auto p = m_game.hexMap ? hexgrid::Center(tile % Width, tile / Width)
@@ -71,9 +85,39 @@ int CampaignScene::mouseTile() const
 	const auto r = mapRect();
 	if (!r.mouseOver() || overMapUI())
 		return -1;
+	if (m_atlasView && m_game.hexMap)
+	{
+		if (!atlasViewport().mouseOver())
+			return -1;
+		if (MouseL.down() || MouseR.down())
+		{
+			double closest = 17 * 17;
+			int found = -1;
+			for (const auto& city : m_game.cities)
+			{
+				const double d = atlasPosition(city.tile).distanceFromSq(Cursor::PosF());
+				if (d < closest)
+				{
+					closest = d;
+					found = city.tile;
+				}
+			}
+			if (found >= 0)
+				return found;
+			for (const auto& army : m_game.armies)
+				if (army.troops > 0 &&
+				    (atlasPosition(army.tile) + Vec2(16, 0)).distanceFrom(Cursor::PosF()) < 9)
+					return army.tile;
+		}
+		return -1;
+	}
 	if (MouseL.down() || MouseR.down())
 		for (const auto& city : m_game.cities)
-			if (tileCenter(city.tile).distanceFrom(Cursor::PosF()) < 11)
+			if (tileCenter(city.tile).distanceFrom(Cursor::PosF()) < 11 ||
+			    campaignvisual::CityBannerRect(
+			        tileCenter(city.tile) + Vec2(0, -Max(29., m_camera.Cell(r.w, r.h) * .94)),
+			        text(city.name) + (city.level > 0 ? U" / " + String(citygrowth::Name(city.level)) : U""))
+			        .mouseOver())
 				return city.tile;
 	const auto p = Cursor::PosF() - r.pos;
 	return m_camera.Tile(p.x, p.y, r.w, r.h, Width);
@@ -81,6 +125,11 @@ int CampaignScene::mouseTile() const
 
 void CampaignScene::updateCamera()
 {
+	if (m_atlasView && m_game.hexMap)
+	{
+		updateAtlasCamera();
+		return;
+	}
 	const auto r = mapRect();
 	const auto p = Cursor::PosF() - r.pos;
 	const double ox = m_camera.x, oy = m_camera.y, oz = m_camera.zoom;
@@ -95,14 +144,13 @@ void CampaignScene::updateCamera()
 		const auto d = Cursor::DeltaF();
 		m_camera.Pan(d.x, d.y, r.w, r.h);
 	}
-	const int y = Scene::Height() - 122;
-	if (KeyHome.down() || Rect(24, y, 100, 30).leftClicked())
+	if (KeyHome.down() || button(53).leftClicked())
 		m_camera.Fit(m_game.MapWidth(), m_game.MapHeight(), m_game.hexMap, true);
-	if (Rect(134, y, 70, 30).leftClicked())
+	if (button(54).leftClicked())
 		m_camera.Zoom(1.4, r.w / 2, r.h / 2, r.w, r.h);
-	if (Rect(214, y, 70, 30).leftClicked())
+	if (button(55).leftClicked())
 		m_camera.Zoom(1 / 1.4, r.w / 2, r.h / 2, r.w, r.h);
-	if (m_camera.zoom > 1 && miniRect().mouseOver() && MouseL.pressed())
+	if (!m_atlasView && m_camera.zoom > 1 && miniRect().mouseOver() && MouseL.pressed())
 	{
 		const auto n = miniRect();
 		const auto q = Cursor::PosF() - n.pos;

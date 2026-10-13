@@ -1,4 +1,5 @@
 ﻿#include "MusicPlayer.hpp"
+#include "CampaignUI.hpp"
 void MusicPlayer::Stop()
 {
 	if (m_current < 0 && m_previous < 0)
@@ -78,12 +79,7 @@ bool MusicPlayer::Input(Vec2 p, int h)
 }
 void MusicPlayer::Draw(Vec2 p, int h) const
 {
-	const auto button = [](const Rect& r, const String& label) {
-		r.rounded(3)
-		    .draw(r.mouseOver() ? ColorF(.23, .31, .22) : ColorF(.10, .17, .16))
-		    .drawFrame(1, ColorF(.56, .52, .34));
-		FontAsset(U"campaignSmall")(label).drawAt(r.center(), ColorF(.94, .89, .72));
-	};
+	const auto button = [](const Rect& r, const String& label) { campaignui::DrawButton(r, label); };
 	button(ToggleRect(p, h), m_enabled ? U"BGM ON / B" : U"BGM OFF / B");
 	button(VolumeRect(p, h), U"音量 {}% / N"_fmt((m_volume + 1) * 20));
 }

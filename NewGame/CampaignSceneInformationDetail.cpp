@@ -24,7 +24,7 @@ void CampaignScene::drawInformationDetail() const
 	if (m_infoTab == 0)
 	{
 		const auto& c = m_game.cities[id];
-		FontAsset(U"campaignTitle")(text(c.name) + U" / 城情報").draw(d, 218, ColorF(.96, .86, .61));
+		FontAsset(U"campaignTitle")(text(c.name) + U" / " + String(citygrowth::Name(c.level))).draw(d, 218, ColorF(.96, .86, .61));
 		label(text(Campaign::FactionName(c.owner)) +
 		          U"軍 / {} / 座標 ({}, {})"_fmt(String(cityidentity::Name(m_game.CityKind(id))),
 		                                         c.tile % Width, c.tile / Width),
@@ -35,7 +35,7 @@ void CampaignScene::drawInformationDetail() const
 		const int cw = (w - 24) / 4;
 		for (int i = 0; i < 4; ++i)
 		{
-			Rect(d + i * (cw + 8), 330, cw, 54).rounded(3).draw(ColorF(.13, .20, .19));
+			Rect(d + i * (cw + 8), 330, cw, 54).rounded(3).draw(ColorF(.12, .20, .28));
 			FontAsset(U"campaignSmall")(names[i]).draw(d + i * (cw + 8) + 10, 335, ColorF(.75, .81, .73));
 			FontAsset(U"campaignBody")(Format(levels[i]))
 			    .draw(d + i * (cw + 8) + 10, 355, ColorF(.98, .87, .60));
@@ -184,7 +184,7 @@ void CampaignScene::drawInformationDetail() const
 		DrawButton(iu::DetailNext(), U"次の武将", m_infoDetailPage + 1 < pages);
 	}
 	if (m_infoTab == 0 && m_game.cities[id].owner == m_game.player)
-		DrawButton(Rect(iu::DetailX() + 12, Scene::Height() - 124, 220, 30), U"都市運営・共同訓練",
+		DrawButton(Rect(iu::DetailX() + 12, Scene::Height() - 124, 220, 30), U"内政・太守・共同訓練",
 		           m_daysLeft == 0 && m_game.result == 0);
 	if (m_infoTab != 4)
 		DrawButton(iu::Map(), U"地図で見る", m_infoTab != 2 || information::Faction(m_game, id).cities > 0);

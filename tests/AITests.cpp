@@ -31,7 +31,7 @@ void Invariants(const Campaign& g)
         CHECK(a.food>=0 && a.cargoFood>=0 && a.morale>=0 && a.morale<=100 && g.Cost(a.tile,a.arm)<100000);
         if(!a.path.empty())CHECK(g.MapDistance(a.tile,a.path.front())==1);
     }
-    for(int f=0;f<3;++f)CHECK(g.ArmyCount(f)<=Campaign::MaxArmies && g.aiCommands[f]>=0 && g.aiCommands[f]<=3);
+    for(int f=0;f<3;++f)CHECK(g.ArmyCount(f)<=Campaign::MaxArmies && g.aiCommands[f]>=0 && g.aiCommands[f]<=3 + std::max(0, static_cast<int>(g.cities.size()) - 1) / 2);
 }
 int main()
 {
@@ -39,10 +39,10 @@ int main()
     const auto cities=budget.cities;const auto credit=budget.aiCommands;const auto notes=budget.chronicle.size();
     budget.BeginTurn();CHECK(budget.chronicle.size()==notes && budget.aiCommands==credit);
     for(size_t c=0;c<cities.size();++c)CHECK(budget.cities[c].gold==cities[c].gold && budget.cities[c].food==cities[c].food);
-    budget.day=1;budget.BeginTurn();CHECK(budget.aiCommands[1]==0 && budget.aiCommands[2]==0);
+    const auto samePeriodCredit=budget.aiCommands; budget.day=1;budget.BeginTurn();CHECK(budget.aiCommands[1]<=samePeriodCredit[1] && budget.aiCommands[2]<=samePeriodCredit[2]);
     budget.day=10;budget.BeginTurn();CHECK(budget.aiPlannedDay[1]==10);
     Campaign threat=Small();threat.armies.push_back(Unit(0,0,Campaign::At(5,14),6000));threat.BeginTurn();
-    CHECK(threat.ArmyCount(1)>0 && threat.cities[3].troops>=2000 && threat.commands==3);
+    CHECK(threat.ArmyCount(1)>0 && threat.cities[3].troops>=2000 && threat.commands==threat.commandBudget);
     bool defender=false;for(const auto& a:threat.armies)if(a.faction==1 && a.target==threat.armies[0].tile)defender=true;CHECK(defender);
     Campaign food=Small();food.cities[3].food=1000;const int reserve=food.cities[4].food;food.BeginTurn();
     int cargo=-1;for(int i=0;i<static_cast<int>(food.armies.size());++i)if(food.armies[i].faction==1 && food.armies[i].arm==Arm::Transport)cargo=i;

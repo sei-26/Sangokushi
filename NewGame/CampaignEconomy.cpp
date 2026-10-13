@@ -20,6 +20,7 @@ namespace frontline
 				bonus = 3;
 		}
 		return 6 + g.politics / 10 + (g.specialty == duty ? 8 : 0) + bonus +
+		       PolicyPower(g.faction, duty) / 5 +
 		       (helper >= 0 ? generals[helper].politics / 20 + Affinity(general, helper) / 10 : 0);
 	}
 
@@ -71,7 +72,7 @@ namespace frontline
 			return false;
 		auto& c = cities[city];
 		if ((!ai && (c.owner != player || commands <= 0)) || c.gold < 300 || c.food < 1000 ||
-		    c.troops > 16000 || c.order < 35)
+		    c.troops > GarrisonCapacity(city) - Recruitment(city) || c.order < 35)
 			return false;
 		c.troops += Recruitment(city);
 		c.gold -= 300;
@@ -127,7 +128,7 @@ namespace frontline
 	{
 		if (day % 10 == 0)
 		{
-			commands = 3;
+			commands = commandBudget = CommandLimit(player);
 		}
 		if (day % 30 == 0)
 		{
@@ -136,7 +137,10 @@ namespace frontline
 				c.gold =
 				    std::min(100000000, c.gold + CityIncome(static_cast<int>(&c - cities.data()), false));
 				c.food = std::min(100000000, c.food + CityIncome(static_cast<int>(&c - cities.data()), true));
-				c.order = std::max(0, c.order - (ArmyCount(c.owner) > 0 ? 3 : 1));
+				const int benevolence = PolicyPower(c.owner, Duty::Order);
+				c.order = std::clamp(c.order - (ArmyCount(c.owner) > 0 ? 3 : 1) +
+				                         (benevolence > 0 ? 1 + benevolence / 10 : 0),
+				                     0, 100);
 			}
 			RegionIncome();
 			Note(U"月末収入。城の特色・太守・農政・商業・治安が収穫と税収を左右します。");

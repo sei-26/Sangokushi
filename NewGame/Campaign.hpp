@@ -9,6 +9,8 @@
 #include "CampaignTypes.hpp"
 #include "OfficerCore.hpp"
 #include "CityIdentity.hpp"
+#include "CityGrowth.hpp"
+#include "PolicyDefinition.hpp"
 #include "WorldLayout.hpp"
 #include "HexGrid.hpp"
 
@@ -32,9 +34,19 @@ namespace frontline
 		std::vector<Assignment> assignments;
 		std::vector<Training> training;
 		std::vector<Chronicle> chronicle;
+		std::array<std::array<int, 3>, 3> policyCouncil{{{{-1,-1,-1}},{{-1,-1,-1}},{{-1,-1,-1}}}};
+		int PolicySlots(int faction) const;
+		bool PolicyEligible(int general) const;
+		int PolicyPower(int faction, Duty policy) const;
+		int PolicyStrength(int general, Duty policy) const;
+		bool AdoptPolicy(int slot, int general, Duty policy, bool ai = false);
+		bool RemovePolicy(int faction, int slot);
+		int GarrisonCapacity(int city) const;
 		std::array<std::array<int, 3>, 3> truceUntil{}, regard{};
 		unsigned randomState = 89173;
 		int player = 0, day = 0, commands = 3, result = 0;
+		int commandBudget = 3;
+		int CommandLimit(int faction) const;
 		unsigned revision = 0;
 		bool legacyLayout = false, hexMap = false;
 		std::array<int, 3> aiPlannedDay{{-1, -1, -1}}, aiCommands{{3, 3, 3}};
@@ -121,6 +133,7 @@ namespace frontline
 		enum class AIKind
 		{
 			Train,
+			Policy,
 			Govern,
 			Develop,
 			Recruit,
@@ -149,6 +162,7 @@ namespace frontline
 		bool AIUseTactic(int index, const SupplyGrid& supply) const;
 		// Daily phases are called only by AdvanceDay(), in the order shown there.
 		void AdvanceCityWork();
+		void AdvanceCityGrowth();
 		void AdvanceTraining();
 		void CancelInvalidTraining();
 		void AdvanceAssignments();

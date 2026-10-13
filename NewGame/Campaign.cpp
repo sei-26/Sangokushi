@@ -98,6 +98,7 @@ namespace frontline
 		missions.clear();
 		assignments.clear();
 		training.clear();
+		for (auto& row : policyCouncil) row.fill(-1);
 		aiPlannedDay.fill(-1);
 		aiCommands.fill(3);
 		chronicle.clear();
@@ -186,6 +187,9 @@ namespace frontline
 		ChangeBond(6, 11, 35);
 		ChangeBond(12, 14, 30);
 		BuildRegions();
+		commands = commandBudget = CommandLimit(player);
+		for (int f = 0; f < 3; ++f)
+			aiCommands[f] = CommandLimit(f);
 		Note(U"進路を描き、補給路を守り、複数部隊で城を包囲せよ。");
 		++revision;
 	}
@@ -240,6 +244,9 @@ namespace frontline
 			}
 		for (const auto& c : cities)
 			tiles[c.tile] = {Terrain::Plain, c.owner};
+		commands = commandBudget = CommandLimit(player);
+		for (int f = 0; f < 3; ++f)
+			aiCommands[f] = CommandLimit(f);
 		++revision;
 	}
 
@@ -276,5 +283,13 @@ namespace frontline
 			if (a.troops > 0 && a.faction == faction)
 				++count;
 		return count;
+	}
+	int Campaign::CommandLimit(int faction) const
+	{
+		int count = 0;
+		for (const auto& city : cities)
+			if (city.owner == faction)
+				++count;
+		return 3 + std::max(0, count - 1) / 2;
 	}
 } // namespace frontline

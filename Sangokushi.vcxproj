@@ -262,6 +262,9 @@
     <ClCompile Include="NewGame\CampaignDailyCombat.cpp" />
     <ClCompile Include="NewGame\CampaignDiplomacy.cpp" />
     <ClCompile Include="NewGame\CampaignGovernance.cpp" />
+    <ClCompile Include="NewGame\CampaignDevelopment.cpp" />
+    <ClCompile Include="NewGame\CampaignScenePolicies.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneDomestic.cpp" />
     <ClCompile Include="NewGame\CampaignSceneGovernance.cpp" />
     <ClCompile Include="NewGame\CampaignTraining.cpp" />
     <ClCompile Include="NewGame\CampaignSceneTraining.cpp" />
@@ -278,6 +281,11 @@
     <ClCompile Include="NewGame\CampaignSceneInput.cpp" />
     <ClCompile Include="NewGame\CampaignSceneArmyOrders.cpp" />
     <ClCompile Include="NewGame\CampaignSceneLayout.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneTerritory.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneTerrain.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneScenery.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneHUD.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneAtlas.cpp" />
     <ClCompile Include="NewGame\CampaignSceneMap.cpp" />
     <ClCompile Include="NewGame\CampaignSceneMenu.cpp" />
     <ClCompile Include="NewGame\CampaignScenePanel.cpp" />
@@ -285,6 +293,10 @@
     <ClCompile Include="NewGame\CampaignScenePreview.cpp" />
     <ClCompile Include="NewGame\CampaignSupply.cpp" />
     <ClCompile Include="NewGame\CampaignTurn.cpp" />
+    <ClInclude Include="NewGame\CityGrowth.hpp" />
+    <ClInclude Include="NewGame\ChinaAtlas.hpp" />
+    <ClInclude Include="NewGame\AtlasCamera.hpp" />
+    <ClInclude Include="NewGame\PolicyDefinition.hpp" />
     <ClInclude Include="NewGame\CityIdentity.hpp" />
     <ClInclude Include="NewGame\CampaignTypes.hpp" />
     <ClCompile Include="NewGame\CampaignTerrainDraw.cpp" />

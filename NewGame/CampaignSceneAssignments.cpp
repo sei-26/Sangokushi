@@ -79,10 +79,7 @@ void CampaignScene::updateAssignments()
 void CampaignScene::drawAssignments() const
 {
 	Scene::Rect().draw(ColorF(.02, .04, .06, .85));
-	Rect(60, 102, Scene::Width() - 120, Scene::Height() - 176)
-	    .rounded(8)
-	    .draw(ColorF(.09, .14, .17))
-	    .drawFrame(2, ColorF(.49, .60, .55));
+	campaignui::Panel(RectF(60, 102, Scene::Width()-120, Scene::Height()-176),true);
 	DrawButton(button(19), U"閉じる");
 	DrawButton(Rect(330, 114, 200, 30), U"武将評定へ");
 	FontAsset(U"campaignBody")(U"武将配置").draw(80, 115, ColorF(.95, .85, .60));

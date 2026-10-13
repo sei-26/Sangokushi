@@ -35,6 +35,32 @@ namespace frontline
 	std::vector<Campaign::AIOrder> Campaign::AIPlan(int faction) const
 	{
 		std::vector<AIOrder> plan;
+		if (day >= 30)
+			for (int slot = 0; slot < PolicySlots(faction); ++slot)
+				if (!PolicyEligible(policyCouncil[faction][slot]))
+				{
+					int best = -1;
+					for (int g = 0; g < static_cast<int>(generals.size()); ++g)
+					{
+						if (generals[g].faction != faction || !PolicyEligible(g) || cities[generals[g].home].gold < 200 || AIThreat(generals[g].home) > 0) continue;
+						const int policy = generals[g].policy < 0 ? static_cast<int>(generals[g].specialty) : generals[g].policy;
+						bool duplicate = false;
+						for (int other = 0; other < 3; ++other) if (other != slot)
+						{
+							const int member = policyCouncil[faction][other];
+							if (member >= 0 && (member == g || generals[member].policy == policy)) duplicate = true;
+						}
+						if (!duplicate && (best < 0 || generals[g].politics > generals[best].politics)) best = g;
+					}
+					if (best >= 0)
+					{
+						AIOrder order{AIKind::Policy, 55};
+						order.general = best; order.city = generals[best].home; order.target = slot;
+						order.duty = generals[best].policy < 0 ? generals[best].specialty : static_cast<Duty>(generals[best].policy);
+						order.reason = U"政治力を国策に生かす";
+						plan.push_back(order);
+					}
+				}
 		if (day >= 30 && day % 30 == 0 &&
 		    std::none_of(assignments.begin(), assignments.end(),
 		                 [&](const Assignment& a) { return a.faction == faction; }))

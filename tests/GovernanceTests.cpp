@@ -42,7 +42,7 @@ int main()
 	assert(g.CityIncome(0, true) == 3640 && g.CityIncome(3, false) == 637);
 	const int baseGold = g.CityIncome(0, false), baseFood = g.CityIncome(0, true),
 	          baseDefense = g.CityDamagePercent(0);
-	assert(g.AppointGovernor(0, 19) && g.commands == 2 && g.cities[0].gold == 2900);
+	assert(g.AppointGovernor(0, 19) && g.commands == g.commandBudget - 1 && g.cities[0].gold == 2900);
 	assert(g.Busy(19) && information::PostOf(g, 19).kind == information::Post::Governor);
 	assert(g.Deploy(0, 19, 2000, Arm::Spear) < 0 && !g.Develop(0, 19, Duty::Farming) &&
 	       !g.AssignOfficer(19, 9) && !g.SendMission(0, 19, 3, MissionKind::Diplomacy));
@@ -57,6 +57,7 @@ int main()
 	g.ChangeBond(19, 0, 60);
 	assert(g.CityWorkGain(0) > gain);
 	assert(g.AppointGovernor(0, -1) && !g.Busy(19));
+	g.commands = 0;
 	assert(!g.AppointGovernor(0, 19) && g.commands == 0);
 	g.Reset(0);
 	assert(g.AppointGovernor(0, 19));
@@ -104,7 +105,7 @@ int main()
 	ai.cities[3].owner = 1;
 	ai.generals = {{U"Commander", 1, 3, 95, 0, 30}, {U"Administrator", 1, 3, 40, 0, 90}};
 	ai.BeginTurn();
-	assert(ai.Governor(3) == 1 && !ai.Busy(0) && ai.commands == 3);
+	assert(ai.Governor(3) == 1 && !ai.Busy(0) && ai.commands == ai.commandBudget);
 	const int budget = ai.aiCommands[1];
 	ai.BeginTurn();
 	assert(ai.aiCommands[1] == budget);

@@ -32,6 +32,8 @@ void CampaignScene::drawRosterPages(int faction) const
 }
 void CampaignScene::updateCouncil()
 {
+	if (m_councilMode == 8) { updatePolicies(); return; }
+	if (m_councilMode == 7) { updateDomestic(); return; }
 	if (m_councilMode == 6)
 	{
 		updateTraining();
@@ -148,6 +150,8 @@ void CampaignScene::updateCouncil()
 
 void CampaignScene::drawCouncil() const
 {
+	if (m_councilMode == 8) { drawPolicies(); return; }
+	if (m_councilMode == 7) { drawDomestic(); return; }
 	if (m_councilMode == 6)
 	{
 		drawTraining();
@@ -169,10 +173,7 @@ void CampaignScene::drawCouncil() const
 		return;
 	}
 	Scene::Rect().draw(ColorF(0.02, 0.04, 0.06, 0.82));
-	Rect(60, 102, Scene::Width() - 120, Scene::Height() - 176)
-	    .rounded(8)
-	    .draw(ColorF(0.09, 0.14, 0.17))
-	    .drawFrame(2, ColorF(0.49, 0.60, 0.55));
+	campaignui::Panel(RectF(60, 102, Scene::Width()-120, Scene::Height()-176),true);
 	DrawButton(button(19), U"閉じる");
 	if (m_councilMode == 1)
 		DrawButton(Rect(330, 114, 200, 30), U"武将配置へ");
@@ -201,7 +202,7 @@ void CampaignScene::drawCouncil() const
 		      390, Scene::Height() - 118);
 		return;
 	}
-	label(U"武将・評定", 80, 115);
+	label(U"任免・外交・計略", 80, 115);
 	DrawButton(button(20), text(Campaign::FactionName(m_rosterFaction)) + U"軍の武将 / 切替");
 	int row = 0;
 	for (int member = 0; member < static_cast<int>(m_game.generals.size()); ++member)

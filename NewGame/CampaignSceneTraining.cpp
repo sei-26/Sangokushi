@@ -39,6 +39,7 @@ void CampaignScene::updateTraining()
 	}
 	if (Close().leftClicked() || KeyEscape.down())
 	{
+		if (m_domesticCity == m_governCity) { openDomestic(m_governCity); return; }
 		m_councilMode = 4;
 		return;
 	}
@@ -98,12 +99,9 @@ void CampaignScene::drawTraining() const
 	const int first = task >= 0 ? m_game.training[task].first : m_trainingFirst,
 	          second = task >= 0 ? m_game.training[task].second : m_trainingSecond;
 	Scene::Rect().draw(ColorF(.015, .035, .04, .88));
-	Rect(60, 102, Scene::Width() - 120, Scene::Height() - 160)
-	    .rounded(8)
-	    .draw(ColorF(.07, .13, .14))
-	    .drawFrame(2, ColorF(.67, .60, .36));
+	campaignui::Panel(RectF(60, 102, Scene::Width()-120, Scene::Height()-160),true);
 	FontAsset(U"campaignTitle")(text(c.name) + U" / 共同訓練").draw(80, 116, ColorF(.97, .86, .61));
-	DrawButton(Close(), U"都市運営へ戻る");
+	DrawButton(Close(), m_domesticCity == m_governCity ? U"内政へ戻る" : U"都市運営へ戻る");
 	FontAsset(U"campaignBody")(U"待機中の武将から2人を選択").draw(80, 190, ColorF(.9, .89, .75));
 	const auto staff = m_game.Available(m_governCity);
 	for (int row = 0; row < Rows(); ++row)

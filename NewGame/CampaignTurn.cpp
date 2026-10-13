@@ -13,6 +13,7 @@ namespace frontline
 		AdvanceAssignments();
 		AdvanceTraining();
 		AdvanceCityWork();
+		AdvanceCityGrowth();
 		SupplyGrid supply;
 		for (int faction = 0; faction < 3; ++faction)
 			supply[faction] = Supply(faction);

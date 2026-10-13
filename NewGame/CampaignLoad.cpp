@@ -7,11 +7,11 @@ namespace frontline
 		try
 		{
 			const int version = json[U"version"].get<int>();
-			if (version < 1 || version > 14)
+			if (version < 1 || version > 16)
 				return false;
 			const int player = json[U"player"].get<int>(), day = json[U"day"].get<int>(),
 			          commands = json[U"commands"].get<int>();
-			if (player < 0 || player > 2 || day < 0 || day > 100000 || commands < 0 || commands > 3)
+			if (player < 0 || player > 2 || day < 0 || day > 100000 || commands < 0 || commands > 17)
 				return false;
 			int savedTiles = 0;
 			for (const auto& value : json[U"owners"].arrayView())
@@ -59,6 +59,11 @@ namespace frontline
 				return false;
 			loaded.day = day;
 			loaded.commands = commands;
+			loaded.commandBudget = version >= 15 ? json[U"commandBudget"].get<int>() : std::max(3, commands);
+			if (loaded.commandBudget < 3 || loaded.commandBudget > 17 || commands > loaded.commandBudget)
+				return false;
+			if (version < 8)
+				loaded.aiCommands.fill(3);
 			if (version >= 8)
 			{
 				int count = 0;
@@ -75,7 +80,7 @@ namespace frontline
 				for (const auto& v : json[U"aiCommands"].arrayView())
 				{
 					int c = v.get<int>();
-					if (count >= 3 || c < 0 || c > 3)
+					if (count >= 3 || c < 0 || c > 17)
 						return false;
 					loaded.aiCommands[count++] = c;
 				}
@@ -108,6 +113,9 @@ namespace frontline
 				if (index >= static_cast<int>(loaded.cities.size()))
 					return false;
 				auto& c = loaded.cities[index++];
+				c.level = version >= 16 ? j[U"level"].get<int>() : 0;
+				if (c.level < 0 || c.level > 3)
+					return false;
 				if (version >= 13)
 				{
 					c.governor = json[U"cities"][index - 1][U"governor"].get<int>();
@@ -154,6 +162,9 @@ namespace frontline
 				if (index >= static_cast<int>(loaded.generals.size()))
 					return false;
 				auto& g = loaded.generals[index++];
+				g.policy = version >= 16 ? j[U"policy"].get<int>() : -1;
+				if (g.policy < -1 || g.policy > 3)
+					return false;
 				g.home = j[U"home"].get<int>();
 				g.readyDay = j[U"readyDay"].get<int>();
 				if (g.home < 0 || g.home >= static_cast<int>(loaded.cities.size()) || g.readyDay < 0 ||
@@ -437,7 +448,42 @@ namespace frontline
 				loaded.regions.clear();
 				loaded.tileRegion.fill(-1);
 			}
+			const int maximumBudget = 3 + std::max(0, static_cast<int>(loaded.cities.size()) - 1) / 2;
+			if (loaded.commandBudget > maximumBudget)
+				return false;
+			for (int credit : loaded.aiCommands)
+				if (credit > maximumBudget)
+					return false;
 			bool all = true, any = false;
+			if (version >= 16)
+			{
+				int n = 0;
+				for (const auto& value : json[U"policyCouncil"].arrayView())
+				{
+					if (n >= 9)
+						return false;
+					const int member = value.get<int>(), faction = n / 3, slot = n % 3;
+					if (member < -1 || member >= static_cast<int>(loaded.generals.size()))
+						return false;
+					if (member >= 0)
+					{
+						const auto& g = loaded.generals[member];
+						if (g.faction != faction || g.policy < 0)
+							return false;
+						for (int other = 0; other < slot; ++other)
+						{
+							const int previous = loaded.policyCouncil[faction][other];
+							if (previous >= 0 &&
+							    (previous == member || loaded.generals[previous].policy == g.policy))
+								return false;
+						}
+					}
+					loaded.policyCouncil[faction][slot] = member;
+					++n;
+				}
+				if (n != 9)
+					return false;
+			}
 			for (const auto& c : loaded.cities)
 			{
 				all = all && c.owner == player;

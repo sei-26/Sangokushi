@@ -8,6 +8,41 @@ using namespace campaignui;
 void CampaignScene::preview(int mode)
 {
     if(m_musicPlayer.Enabled())m_musicPlayer.Toggle();
+    if(mode==67 || mode==68) {preview(66);m_atlasCamera.zoom=3;m_atlasCamera.x=.44;m_atlasCamera.y=.44;m_atlasCamera.Clamp();return;}
+    if(mode==66) {preview(63);m_army=m_game.Deploy(0,0,3000,Arm::Spear);m_game.Order(m_army,m_game.cities[4].tile);return;}
+    if(mode==63 || mode==64 || mode==65) {preview(14);m_atlasView=true;m_message=U"全国概況：都市の支配勢力を表示。都市選択 → 命令 / F → 戦場図";if(mode==64)m_city=0;return;}
+    if (mode == 61) {preview(14);m_settingsOpen=true;return;}
+    if (mode == 62) {preview(57);return;}
+    if (mode == 59) { preview(57); m_camera.zoom=6; return; }
+    if (mode == 60) { preview(14); m_camera.zoom=3.5; m_camera.x=82; m_camera.y=45*hexgrid::Row; return; }
+    if (mode == 58) { preview(14); m_territoryView=true; return; }
+    if (mode == 57)
+    {
+        m_started=true;m_game.Reset(0);m_game.cities[0].level=3;m_city=0;fitMap();m_camera.zoom=4;
+        return;
+    }
+    if (mode >= 54 && mode <= 56)
+    {
+        m_started=true; m_game.Reset(0);
+        m_game.cities[0].farming=m_game.cities[0].commerce=m_game.cities[0].order=m_game.cities[0].logistics=70;
+        m_game.AdvanceDay();
+        openDomestic(0);
+        if (mode != 54)
+        {
+            m_game.AdoptPolicy(0,0,Duty::Farming);m_game.AdoptPolicy(1,19,Duty::Commerce);
+            openPolicies();m_policySlot=2;
+        }
+        return;
+    }
+    if (mode >= 51 && mode <= 53)
+    {
+        m_started = true;
+        m_game.Reset(0);
+        openDomestic(0);
+        if (mode == 52) m_game.Develop(0, m_domesticOfficer, Duty::Farming);
+        if (mode == 52) { for(int d=0;d<12;++d)m_game.AdvanceDay(); m_message=U"閉じて日数を進めよう。完了まであと18日。"; }
+        return;
+    }
 	if (mode == 46 || mode == 47 || mode == 48)
 	{
 		m_started = true;

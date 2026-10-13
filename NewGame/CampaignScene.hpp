@@ -2,6 +2,7 @@
 #include <Siv3D.hpp>
 #include "Campaign.hpp"
 #include "CampaignMapArt.hpp"
+#include "AtlasCamera.hpp"
 #include "CampaignPresentation.hpp"
 #include "CampaignSpectacle.hpp"
 #include "MusicPlayer.hpp"
@@ -24,6 +25,29 @@ private:
 	HeroStoryScene m_story;
 	bool m_storyActive = false;
 	bool m_started = false, m_supplyView = false;
+	bool m_territoryView = true;
+	mutable bool m_mapTerritory = false;
+	bool m_settingsOpen = false;
+	bool m_atlasView = false;
+	bool m_gridVisible = true;
+	void drawHexGrid(double cell) const;
+	Texture m_atlasTexture;
+	Image m_atlasSource;
+	mutable Texture m_atlasTerritory;
+	mutable unsigned m_atlasOwnerHash=0;
+	chinaatlas::Camera m_atlasCamera;
+	RectF atlasViewport() const;
+	RectF atlasRect() const;
+	void updateAtlasCamera();
+	void drawAtlasContents() const;
+	Vec2 atlasPosition(int tile) const;
+	void drawAtlas() const;
+	void ensureAtlasGrid() const;
+	int atlasGridCellAt(Vec2 point) const;
+	mutable RenderTexture m_atlasGrid;
+	mutable Array<Polygon> m_atlasCells;
+	void drawHUD() const;
+	void updateSettings();
 	int m_region = -1;
 	int m_city = -1, m_army = -1, m_generalChoice = 0, m_soldiers = 3000, m_daysLeft = 0;
 	double m_timer = 0;
@@ -62,6 +86,12 @@ private:
 	void updateReturnOrders();
 	int m_returnCity = -1, m_returnArmy = -1;
 	void drawMap() const;
+	void drawTerrainRelief(double cell) const;
+	void drawTerrainTransitions(double pixels) const;
+	void drawCityLandscape(double pixels) const;
+	void drawWaterSurface(double cell) const;
+	RectF territoryLegendRect() const;
+	void drawTerritoryLegend() const;
 	void drawSieges(double cell) const;
 	void drawFormationLinks(double cell) const;
 	void updateFormation();
@@ -98,6 +128,17 @@ private:
 	int m_governCity = -1, m_governChoice = -1, m_governPage = 0;
 	void updateGovernance();
 	void drawGovernance() const;
+	int m_domesticCity = -1, m_domesticDuty = 0, m_domesticOfficer = -1;
+	void openDomestic(int city = -1);
+	void updateDomestic();
+	void drawDomestic() const;
+	std::vector<int> domesticCandidates() const;
+	String domesticBlockReason() const;
+	int m_policySlot = 0, m_policyOfficer = -1, m_policyChoice = 0, m_policyPage = 0;
+	void openPolicies();
+	void updatePolicies();
+	void drawPolicies() const;
+	std::vector<int> policyCandidates() const;
 	void updateAssignments();
 	void drawAssignments() const;
 	int m_assignmentTarget = -1;

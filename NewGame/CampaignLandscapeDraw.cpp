@@ -4,6 +4,41 @@
 
 namespace campaignvisual
 {
+	RectF CityBannerRect(Vec2 p, const String& label)
+	{
+		const double w = FontAsset(U"campaignBody")(label).region().w + 30;
+		if (p.x < 0 || p.x > Scene::Width() || p.y < 80 || p.y > Scene::Height() - 58)
+			return RectF(-1000, -1000, 0, 0);
+		p.x = Clamp(p.x, w * .5 + 4, Scene::Width() - w * .5 - 4);
+		return RectF(Arg::center = p, w, 27);
+	}
+	void CityBanner(Vec2 p, const String& label, int faction, bool selected)
+	{
+		const auto glyph = FontAsset(U"campaignBody")(label);
+		const RectF plate = CityBannerRect(p, label);
+		if (plate.w <= 0)
+			return;
+		p = plate.center();
+		plate.rounded(2).draw(ColorF(.045, .03, .015, .80));
+		if (selected)
+			plate.drawFrame(1.4, ColorF(.98, .84, .39));
+		const Vec2 emblem(plate.x + 12, p.y);
+		const auto shield =
+		    Polygon{Array<Vec2>{emblem + Vec2(-9, -11), emblem + Vec2(9, -11), emblem + Vec2(9, 6),
+		                        emblem + Vec2(0, 12), emblem + Vec2(-9, 6)}};
+		const ColorF colour = faction == 0   ? ColorF(.18, .43, .18)
+		                      : faction == 1 ? ColorF(.22, .26, .65)
+		                      : faction == 2 ? ColorF(.65, .16, .14)
+		                                     : ColorF(.4);
+		shield.draw(colour).drawFrame(1, ColorF(.89, .86, .70));
+		FontAsset(U"campaignSmall")(faction == 0   ? U"蜀"
+		                            : faction == 1 ? U"魏"
+		                            : faction == 2 ? U"呉"
+		                                           : U"〇")
+		    .drawAt(emblem, ColorF(.96, .94, .82));
+		glyph.drawAt(p + Vec2(12, 1), ColorF(.05, .03, .01));
+		glyph.drawAt(p + Vec2(12, 0), ColorF(.99, .86, .30));
+	}
 	void MapLabel(Vec2 p, const String& label, int faction, bool selected, bool small)
 	{
 		const auto glyph = FontAsset(small ? U"campaignSmall" : U"campaignBody")(label);
@@ -78,8 +113,21 @@ namespace campaignvisual
 	void Shore(Vec2 center, double width, double pitch, Vec2 direction, bool sea)
 	{
 		const auto bank = TileEdge(center, width, pitch, direction);
-		bank.draw(width * .095, sea ? ColorF(.66, .63, .40, .8) : ColorF(.40, .48, .29, .9));
-		bank.draw(width * .035, sea ? ColorF(.80, .84, .68, .66) : ColorF(.47, .70, .64, .6));
+		// Keep the endpoints shared while softening the angular tile shoreline.
+		LineString shore;
+		const Vec2 normal = direction.normalized();
+		const double phase = bank.begin.x * .037 + bank.begin.y * .021;
+		for (int k = 0; k <= 12; ++k)
+		{
+			const double t = k / 12.;
+			const double bend = std::sin(t * Math::Pi) * (.035 + .014 * std::sin(phase + t * Math::TwoPi));
+			shore << bank.begin.lerp(bank.end, t) - normal * (width * bend);
+		}
+		shore.draw(width * .26, sea ? ColorF(.66, .65, .48, .12) : ColorF(.24, .36, .23, .16));
+		shore.draw(width * .16, sea ? ColorF(.73, .70, .51, .22) : ColorF(.38, .44, .28, .26));
+		shore.draw(width * .07, sea ? ColorF(.80, .78, .60, .34) : ColorF(.49, .54, .36, .30));
+		shore.movedBy(normal * width * .03)
+		    .draw(width * .018, sea ? ColorF(.88, .94, .88, .46) : ColorF(.64, .78, .69, .33));
 	}
 
 	void Fields(Vec2 p, double w, int seed)
