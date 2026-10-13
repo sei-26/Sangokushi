@@ -232,7 +232,10 @@
     <ClInclude Include="NewGame\OfficerCore.hpp" />
     <ClInclude Include="NewGame\BattleCore.hpp" />
     <ClInclude Include="NewGame\CampaignSave.hpp" />
+    <ClInclude Include="NewGame\StoryDrama.hpp" />
     <ClInclude Include="NewGame\StoryBook.hpp" />
+    <ClInclude Include="NewGame\MusicPlayer.hpp" />
+    <ClInclude Include="NewGame\MusicCues.hpp" />
     <ClInclude Include="NewGame\StoryPresentation.hpp" />
     <ClInclude Include="NewGame\HeroStory.hpp" />
     <ClInclude Include="NewGame\StorySave.hpp" />
@@ -260,6 +263,8 @@
     <ClCompile Include="NewGame\CampaignDiplomacy.cpp" />
     <ClCompile Include="NewGame\CampaignGovernance.cpp" />
     <ClCompile Include="NewGame\CampaignSceneGovernance.cpp" />
+    <ClCompile Include="NewGame\CampaignTraining.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneTraining.cpp" />
     <ClCompile Include="NewGame\CampaignEconomy.cpp" />
     <ClCompile Include="NewGame\CampaignOfficers.cpp" />
     <ClCompile Include="NewGame\CampaignOrders.cpp" />
@@ -286,10 +291,18 @@
     <ClCompile Include="NewGame\CampaignMapArt.cpp" />
     <ClCompile Include="NewGame\CampaignLandscapeDraw.cpp" />
     <ClCompile Include="NewGame\CampaignPortraitDraw.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneFormation.cpp" />
+    <ClCompile Include="NewGame\CampaignSceneSieges.cpp" />
+    <ClCompile Include="NewGame\CampaignSpectacle.cpp" />
+    <ClCompile Include="NewGame\CampaignSpectacleDraw.cpp" />
     <ClCompile Include="NewGame\CampaignPresentation.cpp" />
     <ClCompile Include="NewGame\CampaignPresentationDraw.cpp" />
     <ClCompile Include="NewGame\CampaignPresentationAudio.cpp" />
     <ClCompile Include="NewGame\CampaignMarkerDraw.cpp" />
+    <ClInclude Include="NewGame\FormationStatus.hpp" />
+    <ClInclude Include="NewGame\SiegeStatus.hpp" />
+    <ClInclude Include="NewGame\CampaignSpectacle.hpp" />
+    <ClInclude Include="NewGame\BattlefieldMoments.hpp" />
     <ClInclude Include="NewGame\CampaignPresentation.hpp" />
     <ClInclude Include="NewGame\PortraitCatalog.hpp" />
     <ClInclude Include="NewGame\CampaignVisuals.hpp" />
@@ -304,6 +317,7 @@
     <ClCompile Include="NewGame\HeroStoryScene.cpp" />
     <ClCompile Include="NewGame\HeroStorySceneBattle.cpp" />
     <ClCompile Include="NewGame\HeroStorySceneCivil.cpp" />
+    <ClCompile Include="NewGame\HeroStorySceneCinema.cpp" />
     <ClCompile Include="NewGame\HeroStorySceneDialogue.cpp" />
     <ClCompile Include="NewGame\HeroStorySceneDraw.cpp" />
     <ClCompile Include="NewGame\HeroStorySceneInput.cpp" />
@@ -312,6 +326,10 @@
     <ClCompile Include="NewGame\HeroStoryScenePreview.cpp" />
     <ClCompile Include="NewGame\HeroStorySkills.cpp" />
     <ClCompile Include="NewGame\HeroStoryObjectives.cpp" />
+    <ClCompile Include="NewGame\MusicPlayer.cpp" />
+    <ClCompile Include="NewGame\StoryBattleTerrain.cpp" />
+    <ClCompile Include="NewGame\StoryBattleUnits.cpp" />
+    <ClCompile Include="NewGame\StoryBattleSpectacle.cpp" />
     <ClCompile Include="NewGame\StoryPresentation.cpp" />
     <ClCompile Include="NewGame\StoryPresentationAudio.cpp" />
     <ClCompile Include="NewGame\StoryPresentationDraw.cpp" />

@@ -11,6 +11,7 @@ namespace frontline
 		// 1日の処理順。損害をまとめて反映してから部隊を移動させる。
 		ResolveMissions();
 		AdvanceAssignments();
+		AdvanceTraining();
 		AdvanceCityWork();
 		SupplyGrid supply;
 		for (int faction = 0; faction < 3; ++faction)

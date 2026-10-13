@@ -30,6 +30,7 @@ namespace frontline
 		std::vector<Bond> bonds;
 		std::vector<Mission> missions;
 		std::vector<Assignment> assignments;
+		std::vector<Training> training;
 		std::vector<Chronicle> chronicle;
 		std::array<std::array<int, 3>, 3> truceUntil{}, regard{};
 		unsigned randomState = 89173;
@@ -69,6 +70,9 @@ namespace frontline
 		bool CancelWork(int city);
 		cityidentity::Kind CityKind(int city) const;
 		int Governor(int city) const;
+		bool TrainTogether(int city, int first, int second, bool ai = false);
+		bool CancelTraining(int city);
+		int TrainingAt(int city) const;
 		bool AppointGovernor(int city, int general, bool ai = false);
 		int CityIncome(int city, bool food, int candidate = -2) const;
 		int CityLogistics(int city, int candidate = -2) const;
@@ -85,6 +89,7 @@ namespace frontline
 		void ResolveMissions();
 		int SupportBond(int army) const;
 		officer::Link Formation(int army) const;
+		officer::Link FormationLink(int army, int ally) const;
 		bool ActivateTactic(int index, bool ai = false);
 		bool SetStance(int index, battle::Stance stance, bool ai = false);
 		int AttackRange(int index) const;
@@ -115,6 +120,7 @@ namespace frontline
 	private:
 		enum class AIKind
 		{
+			Train,
 			Govern,
 			Develop,
 			Recruit,
@@ -143,6 +149,8 @@ namespace frontline
 		bool AIUseTactic(int index, const SupplyGrid& supply) const;
 		// Daily phases are called only by AdvanceDay(), in the order shown there.
 		void AdvanceCityWork();
+		void AdvanceTraining();
+		void CancelInvalidTraining();
 		void AdvanceAssignments();
 		void RedistributeOfficers(int faction);
 		void CancelInvalidAssignments();

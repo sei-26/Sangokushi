@@ -2,15 +2,21 @@
 
 void HeroStoryScene::update()
 {
+	const bool musicClicked = m_musicPlayer.Input(Vec2(Scene::Width() - 600, 26), 38);
+	m_musicPlayer.Update(musiccues::Story(m_story.chapter, m_story.phase, m_landing, m_story.failed),
+	                     Scene::DeltaTime(), m_presentation.Busy());
+	if (musicClicked)
+		return;
 	m_presentation.Tick(!m_landing && !m_showNotes && m_story.phase == 2 && m_story.Tactical() &&
 	                    !m_story.failed);
 	if (Rect(Scene::Width() - 180, 26, 148, 38).leftClicked())
 	{
 		m_presentation.Stop();
+		m_musicPlayer.Stop();
 		m_backRequested = true;
 		return;
 	}
-	if (Rect(Scene::Width() - 310, 26, 115, 38).leftClicked())
+	if (KeyM.down() || Rect(Scene::Width() - 310, 26, 115, 38).leftClicked())
 	{
 		m_presentation.ToggleSound();
 		return;
@@ -37,6 +43,17 @@ void HeroStoryScene::update()
 		}
 		return;
 	}
+	syncNarrative();
+	if (m_chapterIntro > 0)
+	{
+		const bool skip = MouseL.down() || KeySpace.down() || KeyEnter.down();
+		m_chapterIntro = Max(0., m_chapterIntro - Scene::DeltaTime());
+		if (skip && m_chapterIntro < 3.3)
+			m_chapterIntro = 0;
+		if (m_chapterIntro == 0)
+			m_dialogueAge = 0;
+		return;
+	}
 	if (buttonRect(7).leftClicked())
 	{
 		m_showNotes = !m_showNotes;
@@ -54,11 +71,31 @@ void HeroStoryScene::update()
 		return;
 	}
 	if (m_presentation.Busy())
+	{
+		if (KeySpace.down() || KeyEnter.down())
+			m_presentation.Skip();
 		return;
+	}
+	if (!m_showNotes && (m_story.phase == 0 || m_story.phase == 1 || m_story.phase == 3))
+	{
+		if (KeySpace.down() || KeyEnter.down() ||
+		    Rect(326, Scene::Height() - 182, Scene::Width() - 390, 40).leftClicked())
+		{
+			advanceDialogue();
+			return;
+		}
+		if (m_dialogueBeat < 2 && (choiceRect(0).leftClicked() || choiceRect(1).leftClicked() ||
+		                           Rect(326, Scene::Height() - 344, Scene::Width() - 390, 200).leftClicked()))
+		{
+			advanceDialogue();
+			return;
+		}
+	}
 	if (!MouseL.down())
 		return;
 	const hero::Story before = m_story;
 	bool changed = false;
+	int actor = -1;
 	if (m_story.phase == 1 && buttonRect(0).leftClicked())
 	{
 		m_story.AssignPlanner((m_story.planner + 1) % m_story.Unlocked());
@@ -71,14 +108,14 @@ void HeroStoryScene::update()
 			if (battleChoiceRect(i).leftClicked())
 			{
 				changed = m_story.ResolveBattleEvent(i);
-				m_presentation.Moment(m_story.chapter == 3 ? (i == 0 ? 2 : 3) : 0,
+				m_presentation.Moment(m_story.chapter == 3 ? (i == 0 ? 2 : 3) : m_story.Companion(),
 				                      i == 0 ? U"仲間と、踏みとどまる" : U"誰も、見捨てない",
 				                      m_story.chapter == 3 ? StoryPresentation::Quote(i == 0 ? 2 : 3)
 				                                           : StoryPresentation::Quote(0));
 			}
 		if (changed)
 		{
-			m_presentation.Capture(before, m_story);
+			m_presentation.Capture(before, m_story, actor);
 			save();
 		}
 		return;
@@ -86,7 +123,7 @@ void HeroStoryScene::update()
 	if (m_story.phase == 0 || m_story.phase == 1 || m_story.phase == 3)
 	{
 		for (int i = 0; i < 2; ++i)
-			if (choiceRect(i).leftClicked())
+			if (m_dialogueBeat == 2 && choiceRect(i).leftClicked())
 			{
 				changed = m_story.Choose(i);
 				m_selectedUnit = 0;
@@ -134,10 +171,14 @@ void HeroStoryScene::update()
 			if (u >= 0 && !m_story.units[u].enemy && !m_story.units[u].civilian)
 				m_selectedUnit = u;
 			else
+			{
+				actor = m_selectedUnit;
 				changed = m_story.Act(m_selectedUnit, x, y);
+			}
 		}
 		if (buttonRect(0).leftClicked())
 		{
+			actor = m_selectedUnit;
 			changed = m_story.Skill(m_selectedUnit);
 			if (changed)
 				m_presentation.Moment(m_story.units[m_selectedUnit].hero,
@@ -169,7 +210,7 @@ void HeroStoryScene::update()
 	}
 	if (changed)
 	{
-		m_presentation.Capture(before, m_story);
+		m_presentation.Capture(before, m_story, actor);
 		if (before.phase == 1 && m_story.phase == 2 && m_story.Tactical())
 			m_presentation.Moment(m_story.chapter == 3 ? 2 : m_story.Companion(),
 			                      U"{} ― 開戦"_fmt(String(hero::Book()[m_story.chapter].place)),

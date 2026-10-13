@@ -29,21 +29,90 @@ void CampaignScene::update()
 {
 	if (m_storyActive)
 	{
+		m_musicPlayer.Stop();
 		m_story.update();
 		if (m_story.Back())
 			m_storyActive = false;
 		return;
 	}
+	const bool musicClicked = m_musicPlayer.Input(Vec2(225, 8), 24);
+	bool combat = false;
+	for (int i = 0; i < static_cast<int>(m_game.armies.size()) && !combat; ++i)
+	{
+		const auto& a = m_game.armies[i];
+		if (a.troops <= 0)
+			continue;
+		const int city = m_game.CityAt(a.target);
+		if (!a.retreat && city >= 0 && m_game.Hostile(a.faction, m_game.cities[city].owner) &&
+		    m_game.MapDistance(a.tile, a.target) <= 1)
+			combat = true;
+		for (const auto& b : m_game.armies)
+			if (b.troops > 0 && m_game.Hostile(a.faction, b.faction) && m_game.CanStrike(i, b.tile))
+			{
+				combat = true;
+				break;
+			}
+	}
+	m_musicPlayer.Update(musiccues::Campaign(m_started, m_game.result, combat), Scene::DeltaTime(),
+	                     m_presentation.Busy());
 	const bool soundClicked = m_started && Rect(Scene::Width() - 155, 73, 130, 20).leftClicked();
 	if (KeyM.down() || soundClicked)
 		m_presentation.ToggleSound();
+	if (KeyG.down())
+		m_spectacle.Toggle();
+	m_spectacle.Update(Scene::DeltaTime(),
+	                   m_started && m_councilMode == 0 && !m_infoOpen && !m_presentation.Busy(),
+	                   m_presentation.SoundEnabled(), m_game);
 	const bool wasPresenting = m_presentation.Busy();
 	m_presentation.Update(Scene::DeltaTime(),
-	                      wasPresenting && (KeySpace.down() || (MouseL.down() && !soundClicked)));
+	                      wasPresenting &&
+	                          (KeySpace.down() || (MouseL.down() && !soundClicked && !musicClicked)));
 	if (wasPresenting || m_presentation.Busy())
 		return;
+	if (m_started && m_councilMode == 0 && !m_infoOpen && m_spectacle.ReportTile() >= 0 &&
+	    m_spectacle.ReportRect().leftClicked())
+	{
+		if (m_spectacle.CloseRect().leftClicked())
+		{
+			m_spectacle.Dismiss();
+			return;
+		}
+		const int tile = m_spectacle.ReportTile();
+		const auto pos = m_game.hexMap ? hexgrid::Center(tile % Width, tile / Width)
+		                               : std::pair<double, double>{tile % Width + .5, tile / Width + .5};
+		m_camera.x = pos.first;
+		m_camera.y = pos.second;
+		m_camera.zoom = Max(3.5, m_camera.zoom);
+		m_camera.Clamp(Scene::Width(), Scene::Height());
+		m_city = m_game.CityAt(tile);
+		m_army = -1;
+		m_region = -1;
+		if (m_city < 0)
+		{
+			for (int i = 0; i < static_cast<int>(m_game.armies.size()); ++i)
+				if (m_game.armies[i].troops > 0 && m_game.armies[i].tile == tile)
+				{
+					m_army = i;
+					break;
+				}
+			if (m_army < 0)
+				m_region = m_game.RegionAt(tile);
+		}
+		m_panelHidden = false;
+		m_positions.clear();
+		m_hits.clear();
+		m_spectacle.Dismiss();
+		return;
+	}
 	if (!m_started)
 	{
+		if (Rect(Scene::Center().x - 465, Scene::Center().y - 145, 930, 86).leftClicked())
+		{
+			m_musicPlayer.Stop();
+			m_story.Open();
+			m_storyActive = true;
+			return;
+		}
 		const int start = Scene::Center().x - 465;
 		for (int f = 0; f < 3; ++f)
 			if (Rect(start + f * 320, Scene::Center().y - 20, 290, 155).leftClicked())
@@ -59,6 +128,7 @@ void CampaignScene::update()
 				m_positions.clear();
 				m_hits.clear();
 				m_presentation.Reset();
+				m_spectacle.Reset();
 				return;
 			}
 		if (Rect(Scene::Center().x - 225, Scene::Center().y + 165, 450, 38).leftClicked())
@@ -76,6 +146,7 @@ void CampaignScene::update()
 				m_positions.clear();
 				m_hits.clear();
 				m_presentation.Reset();
+				m_spectacle.Reset();
 				m_mapTexture = RenderTexture{};
 				m_message = U"戦況を復元しました。";
 			}
@@ -92,6 +163,12 @@ void CampaignScene::update()
 	if (m_infoOpen)
 	{
 		updateInformation();
+		return;
+	}
+	if ((KeyL.down() || (panelVisible() && Rect(Scene::Width() - 316, 239, 278, 18).leftClicked())) &&
+	    m_army >= 0 && m_army < static_cast<int>(m_game.armies.size()) && m_game.armies[m_army].troops > 0)
+	{
+		m_councilMode = 5;
 		return;
 	}
 	if (KeyI.down() || button(18).leftClicked())
@@ -172,7 +249,9 @@ void CampaignScene::update()
 			std::vector<int> troops;
 			for (const auto& army : m_game.armies)
 				troops.push_back(army.troops);
+			const auto observed = battlefieldmoments::Observe(m_game);
 			m_game.AdvanceDay();
+			m_spectacle.Capture(observed, m_game);
 			m_presentation.Capture(m_game);
 			if (m_presentation.Busy())
 				m_timer = 0;
@@ -195,6 +274,7 @@ void CampaignScene::update()
 		if (m_daysLeft == 0 && button(12).leftClicked())
 		{
 			m_started = false;
+			m_spectacle.Reset();
 			m_army = -1;
 			m_city = -1;
 			return;
@@ -225,6 +305,7 @@ void CampaignScene::update()
 				m_positions.clear();
 				m_hits.clear();
 				m_presentation.Reset();
+				m_spectacle.Reset();
 				m_mapDay = -1;
 				m_mapTexture = RenderTexture{};
 				m_message = U"戦況を復元しました。";

@@ -28,6 +28,7 @@ try {
         'NewGame\CampaignDailyCombat.cpp',
         'NewGame\CampaignDiplomacy.cpp',
         'NewGame\CampaignEconomy.cpp',
+        'NewGame\CampaignTraining.cpp',
         'NewGame\CampaignGovernance.cpp',
         'NewGame\CampaignOfficers.cpp',
         'NewGame\CampaignOrders.cpp',
@@ -72,12 +73,24 @@ try {
     $taskGovernance = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\GovernanceTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\GovernanceTests.exe /Fo:Intermediate\GovernanceTests.obj /link /STACK:8388608 && Intermediate\GovernanceTests.exe"
     & cmd /c $taskGovernance
     if ($LASTEXITCODE -ne 0) { throw 'Governance tests failed.' }
+    $taskBattlefieldMoments = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\BattlefieldMomentsTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\BattlefieldMomentsTests.exe /Fo:Intermediate\BattlefieldMomentsTests.obj /link /STACK:8388608 && Intermediate\BattlefieldMomentsTests.exe"
+    & cmd /c $taskBattlefieldMoments
+    if ($LASTEXITCODE -ne 0) { throw 'Battlefield presentation event tests failed.' }
+    $taskFormation = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\FormationTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\FormationTests.exe /Fo:Intermediate\FormationTests.obj /link /STACK:8388608 && Intermediate\FormationTests.exe"
+    & cmd /c $taskFormation
+    if ($LASTEXITCODE -ne 0) { throw 'Formation contribution tests failed.' }
+    $taskTraining = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\TrainingTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\TrainingTests.exe /Fo:Intermediate\TrainingTests.obj /link /STACK:8388608 && Intermediate\TrainingTests.exe"
+    & cmd /c $taskTraining
+    if ($LASTEXITCODE -ne 0) { throw 'Training tests failed.' }
     $taskInformation = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\InformationTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\InformationTests.exe /Fo:Intermediate\InformationTests.obj /link /STACK:8388608 && Intermediate\InformationTests.exe"
     & cmd /c $taskInformation
     if ($LASTEXITCODE -ne 0) { throw 'Information tests failed.' }
     $taskStory = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\StoryTests.cpp Intermediate\tests\StoryCore.lib /Fe:Intermediate\StoryTests.exe /Fo:Intermediate\StoryTests.obj && Intermediate\StoryTests.exe"
     & cmd /c $taskStory
     if ($LASTEXITCODE -ne 0) { throw 'Story tests failed.' }
+    $taskMusic = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\MusicCueTests.cpp /Fe:Intermediate\MusicCueTests.exe /Fo:Intermediate\MusicCueTests.obj && Intermediate\MusicCueTests.exe"
+    & cmd /c $taskMusic
+    if ($LASTEXITCODE -ne 0) { throw 'Music cue tests failed.' }
     $taskSave = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++latest /MT /utf-8 /D_ENABLE_EXTENDED_ALIGNED_STORAGE /I `"$taskSdk\include`" /I `"$taskSdk\include\ThirdParty`" tests\SaveDataTests.cpp NewGame\CampaignSave.cpp NewGame\CampaignLoad.cpp NewGame\StorySave.cpp NewGame\StoryLoad.cpp Intermediate\tests\CampaignCore.lib Intermediate\tests\StoryCore.lib /Fe:Intermediate\SaveDataTests.exe /Fo:Intermediate\tests\save\ /link /STACK:8388608 /LIBPATH:`"$taskSdk\lib\Windows`" advapi32.lib shell32.lib gdi32.lib user32.lib ole32.lib winmm.lib && Intermediate\SaveDataTests.exe"
     & cmd /c $taskSave
     if ($LASTEXITCODE -ne 0) { throw 'Save tests failed.' }

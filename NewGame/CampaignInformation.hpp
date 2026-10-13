@@ -13,6 +13,7 @@ namespace information
 	};
 	enum class Post
 	{
+		Training,
 		Governor,
 		Ready,
 		Rest,
@@ -90,6 +91,7 @@ namespace information
 			if (game.cities[i].worker == officer ||
 			    (game.cities[i].worker >= 0 && game.cities[i].helper == officer))
 				return {Post::Development, i, game.cities[i].workLeft};
+		for(int i=0;i<static_cast<int>(game.training.size());++i)if(game.training[i].first==officer || game.training[i].second==officer)return {Post::Training,i,game.training[i].left};
 		const auto& g = game.generals[officer];
 		if (g.readyDay > game.day)
 			return {Post::Rest, -1, g.readyDay - game.day};

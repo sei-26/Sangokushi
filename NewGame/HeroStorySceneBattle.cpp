@@ -37,12 +37,49 @@ void HeroStoryScene::drawBattle() const
 		if (hovered >= 0 && m_story.units[hovered].enemy)
 		{
 			const auto intent = m_story.PlanEnemy(hovered);
+			const double cell = r.w / hero::W;
+			const auto center = [&](int index) {
+				const auto& u = m_story.units[index];
+				return r.pos + Vec2((u.x + .5) * cell, (u.y + .5) * cell);
+			};
+			const auto route = [&](Vec2 from, Vec2 to, ColorF color) {
+				const Vec2 delta = to - from;
+				if (delta.lengthSq() < 1)
+					return;
+				const Vec2 d = delta.normalized(), side(-d.y, d.x);
+				for (int k = 0; k < 12; ++k)
+					Line(from.lerp(to, k / 12.), from.lerp(to, (k + .55) / 12.)).draw(2.5, color);
+				Triangle(to, to - d * 10 + side * 5, to - d * 10 - side * 5).draw(color);
+			};
+			if (intent.target >= 0)
+			{
+				Vec2 from = center(hovered);
+				if (intent.next >= 0)
+				{
+					const Vec2 next = r.pos + Vec2((intent.next % hero::W + .5) * cell,
+					                               (intent.next / hero::W + .5) * cell);
+					route(from, next, ColorF(1., .72, .25, .85));
+					from = next;
+				}
+				route(from, center(intent.target), ColorF(1., .36, .23, .9));
+				Circle(center(intent.target), cell * .44).drawFrame(2.5, ColorF(1., .38, .24, .8));
+			}
 			help = intent.target < 0 ? U"敵の狙い：足止め中・有効な経路なし"
 			                         : U"敵の狙い：" +
 			                               (m_story.units[intent.target].civilian
 			                                    ? U"避難民"
 			                                    : text(hero::Name(m_story.units[intent.target].hero))) +
 			                               (intent.next >= 0 ? U" / 射撃位置へ移動" : U" / この位置から攻撃");
+			if (can && m_story.CanAttack(m_selectedUnit, hovered) && !m_story.units[m_selectedUnit].acted)
+			{
+				auto preview = m_story;
+				const auto& enemy = m_story.units[hovered];
+				if (preview.Act(m_selectedUnit, enemy.x, enemy.y))
+					help =
+					    U"通常攻撃：耐久 -{}{}"_fmt(enemy.hp - preview.units[hovered].hp,
+					                                preview.units[hovered].hp == 0 ? U" / 撃破可能" : U"") +
+					    U"\n" + help;
+			}
 		}
 	}
 	(void)FontAsset(U"campaignSmall")(help).draw(RectF(Scene::Width() - 305, 489, 270, 50),
@@ -74,15 +111,28 @@ void HeroStoryScene::drawBattleEvent() const
 	m_presentation.Portrait(m_story.chapter == 3 ? 2 : 0, RectF(panel.x + 24, panel.y + 68, 158, 194));
 	FontAsset(U"campaignSmall")(U"戦場の決断 / 会話と効果は創作")
 	    .draw(panel.x + 214, panel.y + 28, ColorF(.86, .72, .40));
-	FontAsset(U"storyDisplay")(m_story.chapter == 3 ? U"この橋を、越えさせぬ。" : U"今、何を守るか。")
+	FontAsset(U"storyDisplay")(m_story.chapter == 3   ? U"この橋を、越えさせぬ。"
+	                           : m_story.chapter == 4 ? U"炎の前に、守る道がある。"
+	                           : m_story.chapter == 5 ? U"老将の一射を、勝機へ。"
+	                                                  : U"旗を守るため、誰を信じるか。")
 	    .draw(panel.x + 210, panel.y + 65, ColorF(.99, .89, .65));
-	(void)FontAsset(U"storyDialogue")(
-	    m_story.chapter == 3
-	        ? U"張飛「兄者、ここは俺が止める！」\n趙雲「民が傷ついています。救護の指示を！」\n踏み"
-	          U"とどまる仲間と、救いを待つ人々。あなたは――"
-	        : U"敵と戦列がぶつかる。前へ出る仲間、傷ついた兵。\n劉備「皆で生きて、この先へ進むぞ！"
-	          U"」\n勢いをつかむか、傷ついた仲間を立て直すか。")
-	    .draw(RectF(panel.x + 214, panel.y + 135, 685, 165), ColorF(.95, .92, .81));
+	const String voices =
+	    m_story.chapter == 3 ? UR"(張飛「兄者、ここは俺が止める！」
+趙雲「民が傷ついています。救護の指示を！」
+橋を守る仲間と、救いを待つ人々。あなたは――)"
+	    : m_story.chapter == 4
+	        ? UR"(諸葛亮「退路を押さえれば、火攻めを勝利につなげられます」
+趙雲「傷ついた兵がいます。先に助ければ、守りを立て直せます」
+合図の前に、前線を押すか、仲間を救うか。)"
+	    : m_story.chapter == 5 ? UR"(黄忠「あと一歩で、この弓が届く位置に立てます」
+関羽「先鋒を進ませるなら、我らも再び動こう」
+勝機を急ぐか、傷ついた戦列を立て直すか。)"
+	                           : UR"(関羽「兄者、もう一度、皆に号令を！」
+張飛「前に出たいのは俺だけじゃねえ。だが、怪我人もいる」
+仲間に次の一歩を託すか、今は回復を優先するか。)";
+	(void)FontAsset(U"storyDialogue")(voices).draw(RectF(panel.x + 214, panel.y + 135, 685, 165),
+	                                               ColorF(.95, .92, .81));
+
 	drawButton(battleChoiceRect(0),
 	           m_story.chapter == 3 ? U"張飛を信じ、橋を守らせる" : U"仲間を信じ、一斉に押す");
 	drawButton(battleChoiceRect(1),

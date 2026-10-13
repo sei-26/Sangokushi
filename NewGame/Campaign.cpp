@@ -97,6 +97,7 @@ namespace frontline
 		bonds.clear();
 		missions.clear();
 		assignments.clear();
+		training.clear();
 		aiPlannedDay.fill(-1);
 		aiCommands.fill(3);
 		chronicle.clear();

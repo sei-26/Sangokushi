@@ -3,6 +3,8 @@
 #include "Campaign.hpp"
 #include "CampaignMapArt.hpp"
 #include "CampaignPresentation.hpp"
+#include "CampaignSpectacle.hpp"
+#include "MusicPlayer.hpp"
 #include "MapCamera.hpp"
 #include "HeroStoryScene.hpp"
 
@@ -41,6 +43,8 @@ private:
 	Texture m_campaignFaces{U"StoryArt/heroes.png"};
 	campaignvisual::MapArt m_mapArt;
 	CampaignPresentation m_presentation;
+	CampaignSpectacle m_spectacle;
+	MusicPlayer m_musicPlayer;
 	mutable RenderTexture m_mapTexture;
 	mutable unsigned m_mapRevision = 0;
 	mutable int m_mapDay = -1;
@@ -58,6 +62,13 @@ private:
 	void updateReturnOrders();
 	int m_returnCity = -1, m_returnArmy = -1;
 	void drawMap() const;
+	void drawSieges(double cell) const;
+	void drawFormationLinks(double cell) const;
+	void updateFormation();
+	void drawFormation() const;
+	int m_trainingFirst=-1,m_trainingSecond=-1,m_trainingPage=0,m_trainingSlot=0;
+	void updateTraining();
+	void drawTraining()const;
 	void drawPanel() const;
 	void drawRegions(double cell) const;
 	void drawRegionPanel() const;

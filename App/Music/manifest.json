@@ -1,0 +1,56 @@
+[
+  {
+    "file": "banner-of-dawn.wav",
+    "bpm": 88,
+    "seconds": 43.636,
+    "peak": 0.78,
+    "rms": 0.2204,
+    "seam_delta": 0.0,
+    "bytes": 3848772
+  },
+  {
+    "file": "companions-road.wav",
+    "bpm": 76,
+    "seconds": 50.526,
+    "peak": 0.78,
+    "rms": 0.2201,
+    "seam_delta": 0.0,
+    "bytes": 4456464
+  },
+  {
+    "file": "bridge-in-the-storm.wav",
+    "bpm": 96,
+    "seconds": 40.0,
+    "peak": 0.78,
+    "rms": 0.1866,
+    "seam_delta": 0.0,
+    "bytes": 3528044
+  },
+  {
+    "file": "battle-of-the-burning-river.wav",
+    "bpm": 128,
+    "seconds": 30.0,
+    "peak": 0.78,
+    "rms": 0.1944,
+    "seam_delta": 0.0,
+    "bytes": 2646044
+  },
+  {
+    "file": "oath-carried-forward.wav",
+    "bpm": 104,
+    "seconds": 36.923,
+    "peak": 0.78,
+    "rms": 0.2139,
+    "seam_delta": 0.0,
+    "bytes": 3256660
+  },
+  {
+    "file": "a-continent-under-banners.wav",
+    "bpm": 100,
+    "seconds": 38.4,
+    "peak": 0.78,
+    "rms": 0.2061,
+    "seam_delta": 0.0,
+    "bytes": 3386924
+  }
+]

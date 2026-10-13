@@ -33,6 +33,7 @@ namespace frontline
 
 	bool Campaign::Busy(int general) const
 	{
+		for(const auto& t:training)if(t.first==general || t.second==general)return true;
 		for (const auto& c : cities)
 			if (c.governor == general || c.worker == general || (c.worker >= 0 && c.helper == general))
 				return true;
@@ -71,24 +72,27 @@ namespace frontline
 		return best;
 	}
 
+	officer::Link Campaign::FormationLink(int army, int ally) const
+	{
+		officer::Link emptyLink;
+		if (army < 0 || ally < 0 || army == ally || army >= static_cast<int>(armies.size()) ||
+		    ally >= static_cast<int>(armies.size()))
+			return emptyLink;
+		const auto& a = armies[army];
+		const auto& b = armies[ally];
+		if (a.troops <= 0 || a.retreat || a.morale < 30 || (!a.supplied && a.food <= 0) ||
+		    b.arm == Arm::Transport || b.troops <= 0 || b.faction != a.faction || b.retreat ||
+		    b.morale < 30 || (!b.supplied && b.food <= 0) || MapDistance(a.tile, b.tile) > 2)
+			return emptyLink;
+		return officer::Contribution(officer::RoleOf(generals[a.general].name),
+		                             officer::RoleOf(generals[b.general].name),
+		                             Affinity(a.general, b.general));
+	}
 	officer::Link Campaign::Formation(int army) const
 	{
 		officer::Link effect;
-		if (army < 0 || army >= static_cast<int>(armies.size()))
-			return effect;
-		const auto& a = armies[army];
-		if (a.troops <= 0 || a.retreat || a.morale < 30 || (!a.supplied && a.food <= 0))
-			return effect;
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
-		{
-			const auto& b = armies[i];
-			if (i == army || b.arm == Arm::Transport || b.troops <= 0 || b.faction != a.faction ||
-			    b.retreat || b.morale < 30 || (!b.supplied && b.food <= 0) || MapDistance(a.tile, b.tile) > 2)
-				continue;
-			officer::Merge(effect, officer::Contribution(officer::RoleOf(generals[a.general].name),
-			                                             officer::RoleOf(generals[b.general].name),
-			                                             Affinity(a.general, b.general)));
-		}
+			officer::Merge(effect, FormationLink(army, i));
 		return effect;
 	}
 } // namespace frontline

@@ -6,10 +6,34 @@ void HeroStoryScene::draw() const
 	m_presentation.Landscape(Scene::Rect(), m_landing ? .95 : .32);
 	Scene::Rect().draw(ColorF(.015, .035, .035, m_landing ? .18 : .43));
 	m_presentation.Atmosphere();
+	if (!m_landing && !m_showNotes && m_story.phase == 4)
+	{
+		drawEnding();
+		drawButton(Rect(Scene::Width() - 180, 26, 148, 38), U"スタートへ");
+		drawButton(Rect(Scene::Width() - 310, 26, 115, 38),
+		           m_presentation.Sound() ? U"効果音 ON" : U"効果音 OFF");
+		m_presentation.Overlay();
+		m_musicPlayer.Draw(Vec2(Scene::Width() - 600, 26), 38);
+		return;
+	}
+	if (!m_landing && !m_showNotes && (m_story.phase == 0 || m_story.phase == 1 || m_story.phase == 3))
+	{
+		drawDialogue();
+		drawButton(Rect(Scene::Width() - 180, 26, 148, 38), U"スタートへ");
+		drawButton(Rect(Scene::Width() - 310, 26, 115, 38),
+		           m_presentation.Sound() ? U"効果音 ON" : U"効果音 OFF");
+		drawButton(buttonRect(7), U"史話・仲間の記録");
+		drawButton(buttonRect(8), U"保存");
+		m_presentation.Overlay();
+		drawChapterIntro();
+		m_musicPlayer.Draw(Vec2(Scene::Width() - 600, 26), 38);
+		return;
+	}
 	const auto& c = hero::Book()[m_story.chapter];
 	FontAsset(U"campaignTitle")(U"英雄譚 ― 劉備の旗").draw(34, 26, ColorF(.95, .85, .60));
 	drawButton(Rect(Scene::Width() - 180, 26, 148, 38), U"スタートへ");
-	drawButton(Rect(Scene::Width() - 310, 26, 115, 38), m_presentation.Sound() ? U"音 ON" : U"音 OFF");
+	drawButton(Rect(Scene::Width() - 310, 26, 115, 38),
+	           m_presentation.Sound() ? U"効果音 ON" : U"効果音 OFF");
 	if (m_landing)
 	{
 		drawLanding();
@@ -103,6 +127,7 @@ void HeroStoryScene::draw() const
 		drawBattleEvent();
 	}
 	m_presentation.Overlay();
+	m_musicPlayer.Draw(Vec2(Scene::Width() - 600, 26), 38);
 	if (!m_message.isEmpty())
 		FontAsset(U"campaignSmall")(m_message).draw(30, Scene::Height() - 28, ColorF(.74, .81, .71));
 }

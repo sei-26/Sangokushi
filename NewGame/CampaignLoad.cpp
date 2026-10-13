@@ -7,7 +7,7 @@ namespace frontline
 		try
 		{
 			const int version = json[U"version"].get<int>();
-			if (version < 1 || version > 13)
+			if (version < 1 || version > 14)
 				return false;
 			const int player = json[U"player"].get<int>(), day = json[U"day"].get<int>(),
 			          commands = json[U"commands"].get<int>();
@@ -381,6 +381,30 @@ namespace frontline
 					assigned[move.general] = true;
 					loaded.assignments.push_back(move);
 				}
+			if (version >= 14)
+			{
+				std::vector<bool> trainingCity(loaded.cities.size());
+				for (const auto& j : json[U"training"].arrayView())
+				{
+					Training t{j[U"city"].get<int>(), j[U"first"].get<int>(), j[U"second"].get<int>(),
+					           j[U"faction"].get<int>(), j[U"left"].get<int>()};
+					if (t.city < 0 || t.city >= static_cast<int>(loaded.cities.size()) || t.first < 0 ||
+					    t.second < 0 || t.first == t.second ||
+					    t.first >= static_cast<int>(loaded.generals.size()) ||
+					    t.second >= static_cast<int>(loaded.generals.size()) || t.faction < 0 ||
+					    t.faction > 2 || t.left < 1 || t.left > 10)
+						return false;
+					if (trainingCity[t.city] || loaded.cities[t.city].owner != t.faction)
+						return false;
+					for (int who : {t.first, t.second})
+						if (assigned[who] || loaded.generals[who].faction != t.faction ||
+						    loaded.generals[who].home != t.city || loaded.generals[who].readyDay > day)
+							return false;
+					assigned[t.first] = assigned[t.second] = true;
+					trainingCity[t.city] = true;
+					loaded.training.push_back(t);
+				}
+			}
 			if (version >= 11)
 			{
 				size_t count = 0;

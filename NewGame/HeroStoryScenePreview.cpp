@@ -2,7 +2,32 @@
 
 void HeroStoryScene::Preview(int mode)
 {
+	if (mode == 49 || mode == 50)
+	{
+		Preview(mode == 49 ? 19 : 40);
+		m_presentation.Skip();
+		const hero::Story before = m_story;
+		if (mode == 49)
+			m_story.Skill(5);
+		else
+		{
+			m_story.turn = 3;
+			m_story.FireSignal();
+		}
+		m_presentation.Capture(before, m_story, mode == 49 ? 5 : -1);
+		if (mode == 50)
+		{
+			m_presentation.Moment(4, U"紅蓮の火攻め", StoryPresentation::Quote(4));
+			m_presentation.Tick(true, 1.98);
+		}
+		else
+			m_presentation.Tick(true, .38);
+		return;
+	}
 	Open();
+	if (m_musicPlayer.Enabled())
+		m_musicPlayer.Toggle();
+	m_presentation.ToggleSound(); // Automated screenshot previews are silent.
 	if (mode != 4)
 	{
 		m_landing = false;
@@ -72,4 +97,32 @@ void HeroStoryScene::Preview(int mode)
 			m_notePage = 3;
 		}
 	}
+	if (mode == 38)
+	{
+		m_landing = false;
+		m_story.Reset();
+		m_chapterIntro = 2.6;
+	}
+	if (mode == 39)
+	{
+		m_landing = false;
+		m_story.Reset();
+		m_story.chapter = 3;
+		m_dialogueBeat = 0;
+	}
+	if (mode == 40)
+	{
+		m_landing = false;
+		m_story.Reset();
+		m_story.chapter = 4;
+		m_story.Choose(0);
+		m_story.Choose(0);
+		m_presentation.Moment(4, U"江上、紅蓮に染まる", U"退路を守り、仲間と勝機をつかめ！");
+	}
+	m_presentation.Chapter(m_story.chapter);
+	m_dialogueAge = 100;
+	if (mode == 10 || mode == 40)
+		m_presentation.Tick(false, .6);
+	if (mode != 39)
+		m_dialogueBeat = 2;
 }

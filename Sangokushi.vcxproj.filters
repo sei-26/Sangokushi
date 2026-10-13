@@ -1,9 +1,12 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
+    <ClInclude Include="NewGame\StoryDrama.hpp"><Filter>Header Files\英雄譚</Filter></ClInclude>
     <ClInclude Include="NewGame\StoryBook.hpp">
       <Filter>Header Files\英雄譚\ルール</Filter>
     </ClInclude>
+    <ClInclude Include="NewGame\MusicPlayer.hpp"><Filter>Header Files\共通</Filter></ClInclude>
+    <ClInclude Include="NewGame\MusicCues.hpp"><Filter>Header Files\共通</Filter></ClInclude>
     <ClInclude Include="NewGame\StoryPresentation.hpp">
       <Filter>Header Files\英雄譚\演出</Filter>
     </ClInclude>
@@ -445,6 +448,8 @@
     </ClCompile>
     <ClCompile Include="NewGame\CampaignGovernance.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignSceneGovernance.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignTraining.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneTraining.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignEconomy.cpp">
       <Filter>Source Files\自由戦略\ルール</Filter>
     </ClCompile>
@@ -521,6 +526,10 @@
     <ClCompile Include="NewGame\CampaignPortraitDraw.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneFormation.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSceneSieges.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSpectacle.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\CampaignSpectacleDraw.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignPresentation.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
@@ -533,6 +542,10 @@
     <ClCompile Include="NewGame\CampaignMarkerDraw.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
+    <ClInclude Include="NewGame\FormationStatus.hpp"><Filter>Header Files\自由戦略\ルール</Filter></ClInclude>
+    <ClInclude Include="NewGame\SiegeStatus.hpp"><Filter>Header Files\自由戦略\ルール</Filter></ClInclude>
+    <ClInclude Include="NewGame\CampaignSpectacle.hpp"><Filter>Header Files\自由戦略\ルール</Filter></ClInclude>
+    <ClInclude Include="NewGame\BattlefieldMoments.hpp"><Filter>Header Files\自由戦略\ルール</Filter></ClInclude>
     <ClInclude Include="NewGame\CampaignPresentation.hpp">
       <Filter>Header Files\自由戦略\画面</Filter>
     </ClInclude>
@@ -575,6 +588,7 @@
     <ClCompile Include="NewGame\HeroStorySceneCivil.cpp">
       <Filter>Source Files\英雄譚\画面</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\HeroStorySceneCinema.cpp"><Filter>Source Files\英雄譚\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\HeroStorySceneDialogue.cpp">
       <Filter>Source Files\英雄譚\画面</Filter>
     </ClCompile>
@@ -599,6 +613,10 @@
     <ClCompile Include="NewGame\HeroStoryObjectives.cpp">
       <Filter>Source Files\英雄譚\ルール</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\MusicPlayer.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="NewGame\StoryBattleTerrain.cpp"><Filter>Source Files\英雄譚\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\StoryBattleUnits.cpp"><Filter>Source Files\英雄譚\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\StoryBattleSpectacle.cpp"><Filter>Source Files\英雄譚\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\StoryPresentation.cpp">
       <Filter>Source Files\英雄譚\演出</Filter>
     </ClCompile>

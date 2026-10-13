@@ -198,6 +198,7 @@ void CampaignScene::drawMap() const
 			int faction;
 			bool selected;
 		};
+		drawFormationLinks(cell);
 		std::vector<ArmyLabel> labels;
 		for (int i = 0; i < static_cast<int>(m_game.armies.size()); ++i)
 		{
@@ -220,14 +221,16 @@ void CampaignScene::drawMap() const
 			bool nearby = false;
 			for (int j = 0; j < static_cast<int>(m_game.armies.size()); ++j)
 				if (j != i && m_game.armies[j].troops > 0 &&
-				    m_game.MapDistance(army.tile, m_game.armies[j].tile) <= 1)
+				    m_game.MapDistance(army.tile, m_game.armies[j].tile) <= 2)
 					nearby = true;
 			if (i == m_army || (count == 1 && !nearby))
 			{
 				const double offset = Max(95., cell * (count * .3 + 1.3));
 				const double right = panelVisible() ? Scene::Width() - 342. : Scene::Width() - 20.;
 				const Vec2 label =
-				    center + Vec2(center.x + offset + 65 < right ? offset : -offset, cell * .12);
+				    (i == m_army && nearby)
+				        ? center + Vec2(0, -offset)
+				        : center + Vec2(center.x + offset + 65 < right ? offset : -offset, cell * .12);
 				Line(center, label).draw(1, ColorF(.98, .87, .55, .75));
 				labels.push_back({label, text(m_game.generals[army.general].name) + U" {}"_fmt(army.troops),
 				                  army.faction, i == m_army});
@@ -257,6 +260,8 @@ void CampaignScene::drawMap() const
 				const Vec2 center = (tileCenter(a.tile) + tileCenter(b.tile)) / 2;
 				campaignvisual::Clash(center, cell, i * 31 + j);
 			}
+		drawSieges(cell);
+		m_spectacle.DrawMap(m_game, [&](int tile) { return tileCenter(tile); }, cell);
 		m_presentation.DrawMap([&](int tile) { return tileCenter(tile); }, cell);
 		const int hover = mouseTile();
 		if (Campaign::Valid(hover))

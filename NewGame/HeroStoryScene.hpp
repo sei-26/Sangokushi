@@ -1,10 +1,12 @@
 ﻿#pragma once
 #include "StorySave.hpp"
 #include "StoryPresentation.hpp"
+#include "MusicPlayer.hpp"
 class HeroStoryScene
 {
 	hero::Story m_story;
 	StoryPresentation m_presentation;
+	MusicPlayer m_musicPlayer;
 	bool m_landing = true, m_backRequested = false, m_showNotes = false;
 	int m_selectedUnit = 0;
 	int m_notePage = 0;
@@ -19,6 +21,11 @@ class HeroStoryScene
 	void save();
 	void drawLanding() const;
 	void drawNotes() const;
+	int m_dialogueBeat = 0, m_seenChapter = -1, m_seenPhase = -1;
+	double m_dialogueAge = 0, m_chapterIntro = 0;
+	void syncNarrative();
+	void drawChapterIntro() const;
+	bool advanceDialogue();
 	void drawDialogue() const;
 	void drawEnding() const;
 	void drawFailure() const;

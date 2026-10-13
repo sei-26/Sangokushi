@@ -40,6 +40,13 @@ void CampaignScene::updateGovernance()
 		openInformation(0, m_governCity);
 		return;
 	}
+	if (Rect(340, 164, 220, 32).leftClicked())
+	{
+		m_trainingFirst = m_trainingSecond = -1;
+		m_trainingPage = m_trainingSlot = 0;
+		m_councilMode = 6;
+		return;
+	}
 	const auto staff = m_game.Available(m_governCity);
 	const int last = Max(0, (static_cast<int>(staff.size()) - 1) / CandidateRows());
 	m_governPage = Clamp(m_governPage, 0, last);
@@ -86,6 +93,7 @@ void CampaignScene::drawGovernance() const
 	(void)FontAsset(U"campaignSmall")(String(cityidentity::Description(m_game.CityKind(m_governCity))))
 	    .draw(RectF(80, 202, Scene::Width() - 160, 38), ColorF(.80, .87, .79));
 	FontAsset(U"campaignBody")(U"太守候補 / 待機中の所属武将").draw(80, 242, ColorF(.9, .9, .82));
+	DrawButton(Rect(340, 164, 220, 32), U"共同訓練 / 親密度");
 	const auto staff = m_game.Available(m_governCity);
 	for (int row = 0; row < CandidateRows(); ++row)
 	{

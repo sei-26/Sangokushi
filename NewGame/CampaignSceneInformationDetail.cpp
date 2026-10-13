@@ -184,7 +184,7 @@ void CampaignScene::drawInformationDetail() const
 		DrawButton(iu::DetailNext(), U"次の武将", m_infoDetailPage + 1 < pages);
 	}
 	if (m_infoTab == 0 && m_game.cities[id].owner == m_game.player)
-		DrawButton(Rect(iu::DetailX() + 12, Scene::Height() - 124, 220, 30), U"都市運営・太守の任命",
+		DrawButton(Rect(iu::DetailX() + 12, Scene::Height() - 124, 220, 30), U"都市運営・共同訓練",
 		           m_daysLeft == 0 && m_game.result == 0);
 	if (m_infoTab != 4)
 		DrawButton(iu::Map(), U"地図で見る", m_infoTab != 2 || information::Faction(m_game, id).cities > 0);

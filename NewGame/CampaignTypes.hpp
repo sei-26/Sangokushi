@@ -91,6 +91,10 @@ namespace frontline
 	{
 		int general = 0, from = 0, to = 0, faction = 0, left = 3;
 	};
+	struct Training
+	{
+		int city = 0, first = 0, second = 0, faction = 0, left = 10;
+	};
 	struct Chronicle
 	{
 		int day = 0;

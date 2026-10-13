@@ -38,6 +38,10 @@ void CampaignPresentation::DrawMap(const std::function<Vec2(int)>& center, doubl
 	const double radius = Max(26., cell * .8) + t * Max(75., cell * 2.5);
 	if (e.target != e.tile)
 		Line(source, p).draw(5, ColorF(color, fade * .8));
+	for (int ring = 1; ring <= 3; ++ring)
+		Circle(p, radius * (.35 + ring * .3))
+		    .drawFrame(2 + fade * 3, ColorF(color, fade * (.55 - ring * .08)));
+	Circle(p, 20 + radius * .18).draw(ColorF(1., .91, .65, fade * .32));
 	Circle(p, radius).drawFrame(3 + 5 * fade, ColorF(color, fade * .8));
 	Circle(p, radius * .72).draw(ColorF(color, fade * .09)).drawFrame(1, ColorF(1., .94, .71, fade * .6));
 	const bool shield = e.tactic == Tactic::Fortify;
@@ -54,14 +58,14 @@ void CampaignPresentation::DrawMap(const std::function<Vec2(int)>& center, doubl
 			    .draw(ColorF(1., .86, .28, fade));
 		}
 
-	for (int i = 0; i < 24; ++i)
+	for (int i = 0; i < 64; ++i)
 	{
-		const double angle = i * Math::TwoPi / 24 + e.general * .31;
+		const double angle = i * Math::TwoPi / 64 + e.general * .31;
 		const Vec2 direction(std::cos(angle), std::sin(angle));
 		const Vec2 point = p + direction * (radius * (.55 + (i % 4) * .12));
 		if (shield)
 			Line(p + direction * radius,
-			     p + Vec2(std::cos(angle + Math::TwoPi / 24), std::sin(angle + Math::TwoPi / 24)) * radius)
+			     p + Vec2(std::cos(angle + Math::TwoPi / 64), std::sin(angle + Math::TwoPi / 64)) * radius)
 			    .draw(3, ColorF(color, fade));
 		else if (fire)
 			Circle(point.movedBy(0, -t * 60), 2 + fade * (i % 4 + 2))
@@ -83,18 +87,20 @@ void CampaignPresentation::DrawOverlay(const Texture& faces) const
 	if (alpha <= 0)
 		return;
 	const double w = Scene::Width(), h = Scene::Height();
-	const double top = h * .24, height = Min(300., h * .39), slide = (1. - enter) * w * .20;
+	const double top = h * .18, height = Min(390., h * .52), slide = (1. - enter) * w * .20;
 	RectF(0, 0, w, h).draw(ColorF(.015, .02, .03, alpha * .26));
 	const RectF band(slide, top, w, height);
 	band.draw(ColorF(.025, .045, .055, alpha * .97));
 	RectF(slide, top, w, 4).draw(ColorF(color, alpha));
 	RectF(slide, top + height - 4, w, 4).draw(ColorF(.96, .81, .40, alpha));
-	for (int i = 0; i < 26; ++i)
+	for (int i = 0; i < 60; ++i)
 	{
 		const double y = top + 12 + (i * 53) % static_cast<int>(height - 24);
-		const double x = std::fmod(i * 117 + m_elapsed * 550, w);
+		const double x = std::fmod(i * 117 + m_elapsed * 950, w);
 		Line(x, y, x + 90 + (i % 4) * 50, y - 22).draw(1 + (i % 3), ColorF(color, alpha * .16));
 	}
+	RectF(0, 0, w, 38).draw(ColorF(0., alpha * .85));
+	RectF(0, h - 38, w, 38).draw(ColorF(0., alpha * .85));
 	const double portrait = height - 32, left = w * .08 + slide;
 	campaignvisual::OfficerCard(RectF(left, top + 16, portrait, portrait), moment.officer, faces);
 	const double tx = left + portrait + 34;
@@ -102,11 +108,13 @@ void CampaignPresentation::DrawOverlay(const Texture& faces) const
 	                           String(frontline::Campaign::FactionName(moment.event.faction).c_str()) + U"軍")
 	    .draw(28, tx, top + 26, ColorF(.98, .91, .71, alpha));
 	FontAsset(U"campaignTitle")(String(frontline::TacticName(moment.event.tactic).c_str()))
-	    .draw(52, tx, top + 75, ColorF(color, alpha));
+	    .draw(70, tx, top + 84, ColorF(color, alpha));
 	FontAsset(U"campaignBody")(Call(moment.event.tactic))
-	    .draw(24, tx, top + 151, ColorF(.98, .96, .85, alpha));
+	    .draw(24, tx, top + 190, ColorF(.98, .96, .85, alpha));
 	FontAsset(U"campaignSmall")(U"戦法発動　/　クリック・Spaceで次へ　/　M：音の切替")
 	    .draw(tx, top + height - 45, ColorF(.73, .81, .80, alpha));
+	(void)FontAsset(U"campaignSmall")(String(frontline::TacticDescription(moment.event.tactic).c_str()))
+	    .draw(RectF(tx, top + 235, w - tx - 44, 70), ColorF(.86, .92, .86, alpha));
 	if (m_elapsed < .08)
 		RectF(0, 0, w, h).draw(ColorF(.99, .87, .60, (1. - m_elapsed / .08) * .17));
 }

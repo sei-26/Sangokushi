@@ -89,6 +89,37 @@ namespace frontline
 					    (administrator < 0 || generals[g].politics > generals[administrator].politics))
 						administrator = g;
 			}
+			if (day >= 30 && day < 60 && threat == 0 && staff.size() >= 3 && TrainingAt(c) < 0 &&
+			    city.gold >= 300 && city.food >= 7000)
+			{
+				int first = -1, second = -1, score = -1;
+				for (size_t a = 0; a < staff.size(); ++a)
+					for (size_t b = a + 1; b < staff.size(); ++b)
+					{
+						const int x = staff[a], y = staff[b];
+						if (Affinity(x, y) >= 40)
+							continue;
+						if (officer::RoleOf(generals[x].name) == officer::Role::Civil ||
+						    officer::RoleOf(generals[y].name) == officer::Role::Civil)
+							continue;
+						const int value = generals[x].leadership + generals[y].leadership;
+						if (value > score)
+						{
+							first = x;
+							second = y;
+							score = value;
+						}
+					}
+				if (first >= 0)
+				{
+					AIOrder o{AIKind::Train, 72};
+					o.city = c;
+					o.general = first;
+					o.target = second;
+					o.reason = U"安全な後方で武将の連携を育て、次の遠征に備える";
+					plan.push_back(o);
+				}
+			}
 			if (day >= 30 && Governor(c) < 0 && threat == 0 && staff.size() >= 2 && administrator >= 0 &&
 			    administrator != commander && generals[administrator].politics >= 70 && city.gold >= 100)
 			{

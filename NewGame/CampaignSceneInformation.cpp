@@ -26,6 +26,7 @@ String CampaignScene::informationPosting(int officer) const
 {
 	using information::Post;
 	const auto p = information::PostOf(m_game, officer);
+	if(p.kind==Post::Training)return U"共同訓練 / あと{}日"_fmt(p.days);
 	if (p.kind == Post::Governor)
 		return text(m_game.cities[p.index].name) + U"の太守";
 	if (p.kind == Post::Army)

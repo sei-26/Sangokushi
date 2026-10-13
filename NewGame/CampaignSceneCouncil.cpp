@@ -32,6 +32,16 @@ void CampaignScene::drawRosterPages(int faction) const
 }
 void CampaignScene::updateCouncil()
 {
+	if (m_councilMode == 6)
+	{
+		updateTraining();
+		return;
+	}
+	if (m_councilMode == 5)
+	{
+		updateFormation();
+		return;
+	}
 	if (m_councilMode == 4)
 	{
 		updateGovernance();
@@ -138,6 +148,16 @@ void CampaignScene::updateCouncil()
 
 void CampaignScene::drawCouncil() const
 {
+	if (m_councilMode == 6)
+	{
+		drawTraining();
+		return;
+	}
+	if (m_councilMode == 5)
+	{
+		drawFormation();
+		return;
+	}
 	if (m_councilMode == 4)
 	{
 		drawGovernance();

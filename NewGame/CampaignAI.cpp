@@ -34,6 +34,9 @@ namespace frontline
 		bool success = false;
 		switch (o.kind)
 		{
+		case AIKind::Train:
+			success=TrainTogether(o.city,o.general,o.target,true);
+			break;
 		case AIKind::Govern:
 			success = AppointGovernor(o.city, o.general, true);
 			break;

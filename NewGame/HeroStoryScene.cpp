@@ -20,6 +20,11 @@ String HeroStoryScene::text(const std::u32string& v)
 
 Rect HeroStoryScene::buttonRect(int i) const
 {
+	if (!m_landing && !m_showNotes && (m_story.phase == 0 || m_story.phase == 1 || m_story.phase == 3) &&
+	    (i == 7 || i == 8))
+		return Rect(Scene::Width() - (i == 7 ? 328 : 166), 80, 150, 34);
+	if (!m_landing && m_story.phase == 4 && i == 3)
+		return Rect(Scene::Width() - 380, Scene::Height() - 108, 300, 44);
 	if (i == 9)
 		return Rect(Scene::Width() - 310, 324, 278, 46);
 	return Rect(Scene::Width() - 310, 150 + i * 58, 278, 46);
@@ -27,7 +32,8 @@ Rect HeroStoryScene::buttonRect(int i) const
 
 Rect HeroStoryScene::choiceRect(int i) const
 {
-	return Rect(285, Scene::Height() - 228 + i * 82, Scene::Width() - 625, 70);
+	return Rect(64 + i * ((Scene::Width() - 128) / 2 + 12), Scene::Height() - 112, (Scene::Width() - 152) / 2,
+	            76);
 }
 
 RectF HeroStoryScene::mapRect() const
@@ -59,11 +65,15 @@ void HeroStoryScene::DrawBackdrop(const RectF& r, double alpha) const
 void HeroStoryScene::Open()
 {
 	m_presentation.Stop();
+	m_musicPlayer.Stop();
 	m_presentation.LoadAudio();
 	m_landing = true;
 	m_backRequested = false;
 	m_showNotes = false;
 	m_message.clear();
+	m_seenChapter = m_seenPhase = -1;
+	m_dialogueBeat = 0;
+	m_dialogueAge = m_chapterIntro = 0;
 }
 
 bool HeroStoryScene::Back() const

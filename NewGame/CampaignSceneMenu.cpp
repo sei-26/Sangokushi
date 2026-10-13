@@ -20,9 +20,9 @@ void CampaignScene::drawMenu() const
 	    .drawFrame(2, ColorF(.78, .65, .36));
 	m_story.DrawBackdrop(story, .48);
 	story.draw(ColorF(.02, .05, .04, .45));
-	FontAsset(U"campaignTitle")(U"新戦略　六角マスの領土と兵站")
+	FontAsset(U"campaignTitle")(U"ストーリーモード ― 劉備の旗")
 	    .draw(story.x + 24, story.y + 9, ColorF(.96, .85, .59));
-	FontAsset(U"campaignSmall")(U"HEXの一枚マップ / 六方向の進軍・包囲・補給　　下の勢力を選択")
+	FontAsset(U"campaignSmall")(U"全6章の英雄譚 / 会話・内政・護衛・決戦　　クリックで開く")
 	    .draw(story.x + 28, story.y + 57, ColorF(.81, .88, .76));
 	FontAsset(U"campaignSmall")(U"君主を選んで大陸統一を目指す")
 	    .drawAt(Scene::Center().x, Scene::Center().y - 39, ColorF(.72, .81, .74));

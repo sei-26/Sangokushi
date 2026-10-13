@@ -16,6 +16,7 @@ bool CampaignScene::panelVisible() const
 bool CampaignScene::overMapUI() const
 {
 	const Vec2 p = Cursor::PosF();
+	if(!m_presentation.Busy() && m_spectacle.ReportTile()>=0 && m_spectacle.ReportRect().contains(p))return true;
 	if (button(49).mouseOver())
 		return true;
 	if (p.y < 96 || (m_camera.zoom > 1 && miniRect().contains(p)))

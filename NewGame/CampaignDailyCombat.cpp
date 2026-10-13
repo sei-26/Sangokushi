@@ -238,6 +238,7 @@ namespace frontline
 					                              return true;
 				                              }),
 				               missions.end());
+				CancelInvalidTraining();
 				const int refuge = NearestCity(cities[c].tile, previousOwner, false);
 				if (refuge >= 0)
 					for (int g = 0; g < static_cast<int>(generals.size()); ++g)

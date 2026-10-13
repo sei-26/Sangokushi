@@ -58,6 +58,9 @@ void CampaignScene::draw() const
 	                                : U"左クリック：選択　右クリック：進路　Shift+左：都市　Tab：補給表示")
 	    .draw(24, Scene::Height() - 83, ColorF(0.73, 0.81, 0.77));
 
+	if (m_started)
+		FontAsset(U"campaignSmall")(m_spectacle.Enabled() ? U"戦場演出 ON / G" : U"戦場演出 OFF / G")
+		    .draw(38, 70, ColorF(.91, .81, .58));
 	const double logY = Scene::Height() - 64;
 	RectF(24, logY, Scene::Width() - 390, 54).rounded(5).draw(ColorF(.06, .105, .085));
 	const int first = Max(0, static_cast<int>(m_game.log.size()) - 2);
@@ -79,6 +82,11 @@ void CampaignScene::draw() const
 		drawCouncil();
 	if (m_infoOpen)
 		drawInformation();
+	m_musicPlayer.Draw(Vec2(225, 8), 24);
 	if (m_started && m_councilMode == 0 && !m_infoOpen)
+	{
+		if (!m_presentation.Busy())
+			m_spectacle.DrawReports(m_campaignFaces);
 		m_presentation.DrawOverlay(m_campaignFaces);
+	}
 }

@@ -7,6 +7,107 @@ using namespace campaignui;
 
 void CampaignScene::preview(int mode)
 {
+    if(m_musicPlayer.Enabled())m_musicPlayer.Toggle();
+	if (mode == 46 || mode == 47 || mode == 48)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_governCity = 0;
+		m_trainingFirst = 0;
+		m_trainingSecond = 19;
+		m_councilMode = 6;
+		m_game.ChangeBond(0, 19, 12);
+		if (mode == 47)
+		{
+			m_game.TrainTogether(0, 0, 19);
+			for (int d = 0; d < 4; ++d)
+				m_game.AdvanceDay();
+		}
+		return;
+	}
+	if (mode == 44 || mode == 45)
+	{
+		m_started = true;
+		m_game.Reset(0);
+		m_camera.Fit(Width, Height, true, true);
+		m_camera.zoom = 4;
+		m_camera.x = 49;
+		m_camera.y = 34 * hexgrid::Row + hexgrid::Radius;
+		m_army = m_game.Deploy(0, 0, 2000, Arm::Spear);
+		const int guardian = m_game.Deploy(0, 24, 2000, Arm::Spear, true);
+		m_game.generals[24].name = U"趙雲";
+		m_game.generals[26].home = 0;
+		const int strike = m_game.Deploy(0, 26, 2000, Arm::Bow, true);
+		const int civil = m_game.Deploy(0, 19, 1000, Arm::Spear, true);
+		m_game.generals[34].home = 0;
+		const int supply = m_game.Deploy(0, 34, 1000, Arm::Spear, true);
+		if (m_army < 0 || guardian < 0 || strike < 0 || civil < 0 || supply < 0)
+			return;
+		m_game.generals[26].name = U"黄忠";
+		m_game.armies[m_army].tile = m_game.armies[m_army].target = Campaign::At(49, 34);
+		m_game.armies[guardian].tile = m_game.armies[guardian].target = Campaign::At(48, 34);
+		m_game.armies[strike].tile = m_game.armies[strike].target = Campaign::At(50, 35);
+		m_game.ChangeBond(0, 24, 60);
+		m_game.ChangeBond(0, 26, 40);
+		m_game.ChangeBond(0, 19, 40);
+		m_game.ChangeBond(0, 34, 40);
+		m_game.armies[civil].tile = m_game.armies[civil].target = Campaign::At(49, 33);
+		m_game.armies[supply].tile = m_game.armies[supply].target = Campaign::At(52, 34);
+		for (int x = 46; x <= 52; ++x)
+			for (int y = 32; y <= 36; ++y)
+				m_game.tiles[Campaign::At(x, y)].owner = 0;
+		if (mode == 44)
+			m_councilMode = 5;
+		return;
+	}
+	if (mode == 43)
+	{
+		preview(23);
+		m_supplyView = false;
+		m_game.armies[0].troops = 0;
+		m_game.armies[1].tile = m_game.cities[2].tile - 1;
+		m_game.armies[1].target = m_game.cities[2].tile;
+		m_game.armies[1].arm = Arm::Siege;
+		m_game.armies[2].tile = m_game.cities[2].tile + 1;
+		m_game.armies[2].target = m_game.cities[2].tile;
+		m_game.armies[2].supplied = false;
+		m_city = 2;
+		m_army = -1;
+		m_spectacle.Update(.8, true, false, m_game);
+		return;
+	}
+	if (mode == 41 || mode == 42)
+	{
+		preview(23);
+		m_supplyView = false;
+		if (mode == 41)
+		{
+			const auto old = battlefieldmoments::Observe(m_game);
+			m_game.armies[m_army].supplied = false;
+			m_spectacle.Capture(old, m_game);
+			m_spectacle.Update(.7, true, false, m_game);
+		}
+		else
+		{
+			m_game.cities[2].troops = 1;
+			m_game.armies[0].troops = m_game.armies[2].troops = 0;
+			m_game.armies[1].arm = Arm::Siege;
+			auto& attacker = m_game.armies[1];
+			attacker.target = m_game.cities[2].tile;
+			attacker.tile = m_game.cities[2].tile - 1;
+			const auto old = battlefieldmoments::Observe(m_game);
+			m_game.AdvanceDay();
+			m_spectacle.Capture(old, m_game);
+			m_spectacle.Update(.6, true, false, m_game);
+		}
+		return;
+	}
+	if ((mode >= 38 && mode <= 40) || mode == 49 || mode == 50)
+	{
+		m_storyActive = true;
+		m_story.Preview(mode);
+		return;
+	}
 	if (mode == 36 || mode == 37)
 	{
 		m_started = true;

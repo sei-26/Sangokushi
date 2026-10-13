@@ -34,7 +34,7 @@ void CampaignScene::drawPanel() const
 		     army.supplied ? ColorF(0.5, 0.88, 0.65) : ColorF(1.0, 0.62, 0.36));
 		FontAsset(U"campaignSmall")(army.aiAssemblyDays > 0
 		                                ? U"作戦：集結待ち {}/20日"_fmt(army.aiAssemblyDays)
-		                                : U"進路：残り{}マス"_fmt(army.path.size()))
+		                                : U"進路 {}マス / 連携を見る L"_fmt(army.path.size()))
 		    .draw(x + 14, 239, ColorF(.87, .8, .57));
 		const bool own = army.faction == m_game.player;
 		const int home = returnTarget();

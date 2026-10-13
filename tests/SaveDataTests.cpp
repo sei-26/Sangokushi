@@ -211,5 +211,14 @@ int main()
  badGovernor=frontline::SaveJSON(governance);badGovernor[U"cities"][0][U"governor"]=72;assert(!frontline::LoadJSON(badGovernor,loaded));
  JSON oldGovernor=frontline::SaveJSON(governance);oldGovernor[U"version"]=12;assert(frontline::LoadJSON(oldGovernor,loaded) && loaded.Governor(0)==-1 && !loaded.Busy(19));
  std::cout << "Governor save round trips, conflicting reservations and version 12 migration passed\n";
+ frontline::Campaign trained;trained.Reset(0);assert(trained.TrainTogether(0,0,19));for(int d=0;d<4;++d)trained.AdvanceDay();
+ assert(frontline::LoadJSON(frontline::SaveJSON(trained),loaded) && loaded.training.size()==1 && loaded.training[0].left==6 && loaded.Busy(0) && loaded.Busy(19));
+ for(int d=0;d<6;++d){trained.AdvanceDay();loaded.AdvanceDay();}assert(loaded.training.empty() && loaded.Affinity(0,19)==trained.Affinity(0,19) && loaded.Affinity(0,19)==32);
+ trained.Reset(0);assert(trained.TrainTogether(0,0,19));JSON badTraining=frontline::SaveJSON(trained);badTraining[U"training"][0][U"second"]=0;assert(!frontline::LoadJSON(badTraining,loaded));
+ badTraining=frontline::SaveJSON(trained);badTraining[U"training"][0][U"left"]=11;assert(!frontline::LoadJSON(badTraining,loaded));
+ badTraining=frontline::SaveJSON(trained);badTraining[U"cities"][0][U"governor"]=0;assert(!frontline::LoadJSON(badTraining,loaded));
+ badTraining=frontline::SaveJSON(trained);badTraining[U"training"][0][U"city"]=3;assert(!frontline::LoadJSON(badTraining,loaded));
+ JSON oldTraining=frontline::SaveJSON(trained);oldTraining[U"version"]=13;assert(frontline::LoadJSON(oldTraining,loaded) && loaded.training.empty() && !loaded.Busy(0));
+ std::cout << "Joint training persistence, invalid participants and version 13 migration passed\n";
  std::cout << "Campaign save tests passed; old world migration and new world round trips passed\n";
 }
