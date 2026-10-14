@@ -92,6 +92,7 @@ namespace frontline
 		result = 0;
 		armies.clear();
 		tacticEvents.clear();
+		returnEvents.clear();
 		log.clear();
 		generals.clear();
 		bonds.clear();

@@ -6,6 +6,8 @@
 
 ## 最初に読む5ファイル
 
+新しい本編序章の入口は `CampaignSceneInput.cpp` → `StrategistJourneyScene.cpp` → `StrategistJourney.cpp`。従来の全国戦略は以下の５ファイルを参照する。
+
 | ファイル | 分かること |
 |---|---|
 | Main.cpp | 起動設定、フォント登録、更新と描画を毎フレーム呼ぶ場所 |
@@ -14,7 +16,24 @@
 | NewGame/Campaign.hpp | 自由戦略で呼べる命令と、ゲームが保持する状態 |
 | NewGame/CampaignTurn.cpp | 1日を進めるとき、何をどの順で処理するか |
 
+## 本編序章と連鎖戦闘
+
+| ファイル | 担当 |
+|---|---|
+| StrategistJourney.hpp / .cpp | 主人公の進行、出会い・軍議・準備・２戦・戦後、同じCampaignの資源と信頼 |
+| StrategistJourneyAI.cpp | 観測に基づく敵の移動、伏兵と通常交戦、指揮区切り |
+| TacticChain.hpp / .cpp | 誘導・伏兵・突破の条件、順次発動、途中停止、観測コピーでの予測 |
+| StrategistJourneyScene.hpp / .cpp | 会話と軍議の操作、移動と戦法の予約、ズーム、カットインの順次再生 |
+| StrategistJourneySceneDraw.cpp | 会話、野営地、HEX戦場、予約の成立見込み、戦後の表示 |
+| tests/TacticChainTests.cpp | 成立と対抗、情報漏れ、資源と人物関係の引き継ぎ |
+
+仕様・操作・未実装範囲は [CHAIN_BATTLE.md](CHAIN_BATTLE.md)。連鎖のルールはSiv3Dに依存しないため、画面を立ち上げず検証できる。全国戦略の保存形式へ局地戦を混ぜず、今の序章はメモリ内で進行を保持する。
+
 ## 自由戦略のルール
+
+軍師戦役の仕様と実装は [STRATEGIST_SPEC.md](STRATEGIST_SPEC.md) が入口。`StrategistBattle.cpp` が戦場と目的、`StrategistWarScene.cpp` が軍議・命令・時間の入力、`StrategistWarSceneDraw.cpp` が表示を担当する。補給・戦闘・移動は既存の `Campaign::AdvanceBattleDay()` を利用する。
+
+`BattleIntelligence.cpp` は各軍が見た情報、`StrategistBattleIntelligence.cpp` はその情報を使う敵判断・経路・報告、`StrategistBattleOperations.cpp` は条件付き作戦の評価と合図を扱う。作戦編集の入力と画面は `StrategistWarSceneOperations.cpp`。現実の戦場の状態はCampaign、知っている情報はBattleIntelligenceへ分け、表示に未発見の敵の実状態を渡さない。
 
 | ファイル | 担当 |
 |---|---|

@@ -8,6 +8,8 @@
 #include "MusicPlayer.hpp"
 #include "MapCamera.hpp"
 #include "HeroStoryScene.hpp"
+#include "StrategistWarScene.hpp"
+#include "StrategistJourneyScene.hpp"
 
 class CampaignScene
 {
@@ -19,11 +21,15 @@ public:
 
 private:
 	frontline::Campaign m_game;
+	StrategistJourneyScene m_journey;
+	bool m_journeyActive = false;
 	world::MapCamera m_camera;
 	RectF miniRect() const;
 	void updateCamera();
 	HeroStoryScene m_story;
 	bool m_storyActive = false;
+	StrategistWarScene m_strategist;
+	bool m_strategistActive = false;
 	bool m_started = false, m_supplyView = false;
 	bool m_territoryView = true;
 	mutable bool m_mapTerritory = false;

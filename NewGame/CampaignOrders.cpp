@@ -149,6 +149,7 @@ namespace frontline
 		if (a.troops <= 0 || cities[city].owner != a.faction)
 			return;
 		cities[city].troops += a.troops;
+		returnEvents.push_back({a.general, city, a.troops, a.cargoFood});
 		cities[city].food += a.food + a.cargoFood;
 		if (a.arm == Arm::Transport)
 			Note(generals[a.general].name + U"が" + cities[city].name + U"へ兵糧を届けた。");
@@ -166,7 +167,7 @@ namespace frontline
 
 namespace frontline
 {
-	void Campaign::MoveArmies(const std::vector<bool>& fighting)
+	void Campaign::MoveArmies(const std::vector<bool>& fighting, bool automaticTransportRouting)
 	{
 		// Resolve movement after combat. Opposing forces cannot pass through one another.
 		for (int i = 0; i < static_cast<int>(armies.size()); ++i)
@@ -191,7 +192,7 @@ namespace frontline
 					Return(a, CityAt(a.tile));
 					continue;
 				}
-				if (a.tile != a.target && day % 5 == 0 &&
+				if (automaticTransportRouting && a.tile != a.target && day % 5 == 0 &&
 				    (a.path.empty() || tiles[a.path.front()].owner != a.faction ||
 				     SupplyBlockade(a.faction)[a.path.front()] ||
 				     std::any_of(armies.begin(), armies.end(), [&](const Army& b) {

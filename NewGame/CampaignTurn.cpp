@@ -4,7 +4,16 @@ namespace frontline
 {
 	void Campaign::AdvanceDay()
 	{
+		AdvanceDaily(false);
+	}
+	void Campaign::AdvanceBattleDay()
+	{
+		AdvanceDaily(true);
+	}
+	void Campaign::AdvanceDaily(bool battlefieldOnly)
+	{
 		tacticEvents.clear();
+		returnEvents.clear();
 		if (result != 0)
 			return;
 		++day;
@@ -18,14 +27,14 @@ namespace frontline
 		for (int faction = 0; faction < 3; ++faction)
 			supply[faction] = Supply(faction);
 		ConsumeDailySupply(supply);
-		AdvanceAIArmies();
-		const auto assembly = AdvanceAIOperations();
-		auto fighting = ResolveDailyCombat(supply);
+		if (!battlefieldOnly) AdvanceAIArmies();
+		const auto assembly = battlefieldOnly ? std::vector<bool>(armies.size()) : AdvanceAIOperations();
+		auto fighting = ResolveDailyCombat(supply, !battlefieldOnly);
 		for (size_t i = 0; i < fighting.size(); ++i)
 			fighting[i] = fighting[i] || assembly[i];
 		CancelInvalidAssignments();
-		MoveArmies(fighting);
+		MoveArmies(fighting, !battlefieldOnly);
 		AdvanceRegions();
-		FinishDay();
+		if (!battlefieldOnly) FinishDay();
 	}
 } // namespace frontline

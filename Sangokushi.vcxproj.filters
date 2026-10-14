@@ -503,6 +503,13 @@
     <ClCompile Include="NewGame\CampaignSceneMenu.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
+    <ClCompile Include="NewGame\StrategistBattle.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\BattleIntelligence.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistBattleIntelligence.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistBattleOperations.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistWarSceneOperations.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistWarScene.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistWarSceneDraw.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignScenePanel.cpp">
       <Filter>Source Files\自由戦略\画面</Filter>
     </ClCompile>
@@ -720,5 +727,15 @@
     <ClCompile Include="NewGame\CampaignLogistics.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignSceneAssignments.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
     <ClCompile Include="NewGame\CampaignSceneLogistics.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NewGame\TacticChain.hpp"><Filter>Header Files\自由戦略</Filter></ClInclude>
+    <ClInclude Include="NewGame\StrategistJourney.hpp"><Filter>Header Files\自由戦略</Filter></ClInclude>
+    <ClInclude Include="NewGame\StrategistJourneyScene.hpp"><Filter>Header Files\自由戦略</Filter></ClInclude>
+    <ClCompile Include="NewGame\TacticChain.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistJourney.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistJourneyAI.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistJourneyScene.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
+    <ClCompile Include="NewGame\StrategistJourneySceneDraw.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>
   </ItemGroup>
 </Project>

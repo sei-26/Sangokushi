@@ -14,6 +14,12 @@ CampaignScene::CampaignScene()
 
 void CampaignScene::draw() const
 {
+	if (m_journeyActive) { m_journey.Draw(); return; }
+	if (m_strategistActive)
+	{
+		m_strategist.Draw();
+		return;
+	}
 	if (m_storyActive)
 	{
 		m_story.draw();

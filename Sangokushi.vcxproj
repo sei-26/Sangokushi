@@ -224,6 +224,11 @@
     <None Include="App\engine\soundfont\GMGSx.sf2.zstdcmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="NewGame\PreviewModes.hpp" />
+    <ClInclude Include="NewGame\StrategistBattle.hpp" />
+    <ClInclude Include="NewGame\BattleIntelligence.hpp" />
+    <ClInclude Include="NewGame\BattleOperation.hpp" />
+    <ClInclude Include="NewGame\StrategistWarScene.hpp" />
     <ClInclude Include="NewGame\HexGrid.hpp" />
     <ClInclude Include="NewGame\WorldLayout.hpp" />
     <ClInclude Include="NewGame\MapCamera.hpp" />
@@ -250,6 +255,13 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="NewGame\Campaign.cpp" />
+    <ClCompile Include="NewGame\StrategistBattle.cpp" />
+    <ClCompile Include="NewGame\BattleIntelligence.cpp" />
+    <ClCompile Include="NewGame\StrategistBattleIntelligence.cpp" />
+    <ClCompile Include="NewGame\StrategistBattleOperations.cpp" />
+    <ClCompile Include="NewGame\StrategistWarSceneOperations.cpp" />
+    <ClCompile Include="NewGame\StrategistWarScene.cpp" />
+    <ClCompile Include="NewGame\StrategistWarSceneDraw.cpp" />
  <ClCompile Include="NewGame\CampaignRoster.cpp" />
     <ClCompile Include="NewGame\CampaignRegions.cpp" />
     <ClCompile Include="NewGame\CampaignAI.cpp" />
@@ -362,5 +374,15 @@
     <ClCompile Include="NewGame\CampaignLogistics.cpp" />
     <ClCompile Include="NewGame\CampaignSceneAssignments.cpp" />
     <ClCompile Include="NewGame\CampaignSceneLogistics.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NewGame\TacticChain.hpp" />
+    <ClInclude Include="NewGame\StrategistJourney.hpp" />
+    <ClInclude Include="NewGame\StrategistJourneyScene.hpp" />
+    <ClCompile Include="NewGame\TacticChain.cpp" />
+    <ClCompile Include="NewGame\StrategistJourney.cpp" />
+    <ClCompile Include="NewGame\StrategistJourneyAI.cpp" />
+    <ClCompile Include="NewGame\StrategistJourneyScene.cpp" />
+    <ClCompile Include="NewGame\StrategistJourneySceneDraw.cpp" />
   </ItemGroup>
 </Project>

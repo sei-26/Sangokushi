@@ -28,6 +28,7 @@ namespace frontline
 		std::vector<General> generals;
 		std::vector<Army> armies;
 		std::vector<TacticEvent> tacticEvents;
+		std::vector<ReturnEvent> returnEvents; // Daily facts, not persistent save state.
 		std::vector<std::u32string> log;
 		std::vector<Bond> bonds;
 		std::vector<Mission> missions;
@@ -126,6 +127,7 @@ namespace frontline
 		bool ReturnToCity(int army, int city);
 		int Fronts(int tile, int faction) const;
 		void AdvanceDay();
+		void AdvanceBattleDay();
 		int AssignmentDays(int from, int to) const;
 		bool AssignOfficer(int general, int target, bool ai = false);
 
@@ -169,8 +171,9 @@ namespace frontline
 		void RedistributeOfficers(int faction);
 		void CancelInvalidAssignments();
 		void ConsumeDailySupply(const SupplyGrid& supply);
-		std::vector<bool> ResolveDailyCombat(const SupplyGrid& supply);
-		void MoveArmies(const std::vector<bool>& fighting);
+		void AdvanceDaily(bool battlefieldOnly);
+		std::vector<bool> ResolveDailyCombat(const SupplyGrid& supply, bool enemyAutomation = true);
+		void MoveArmies(const std::vector<bool>& fighting, bool automaticTransportRouting = true);
 		void AdvanceRegions();
 		void RegionIncome();
 		void FinishDay();

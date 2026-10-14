@@ -1,18 +1,29 @@
 ﻿#include <Siv3D.hpp>
 #include "NewGame/CampaignScene.hpp"
 #include <cstdlib>
-#include <cstring>
+#include "NewGame/PreviewModes.hpp"
 
 void Main()
 {
-	Window::SetTitle(U"群雄戦線 ～領土と兵站の三国志～");
+	Window::SetTitle(U"群雄戦線 ～軍師の策で歴史を紡ぐ～");
 	char* previewValue = nullptr; size_t previewLength = 0;
 	_dupenv_s(&previewValue,&previewLength,"SANGOKUSHI_PREVIEW");
 	const bool preview = previewValue != nullptr && previewLength > 1;
-	const int previewMode = std::strcmp(previewValue ? previewValue : "", "china-atlas-zoom")==0 ? 67 : std::strcmp(previewValue ? previewValue : "", "china-atlas-zoom-compact")==0 ? 68 : std::strcmp(previewValue ? previewValue : "", "china-atlas-route")==0 ? 66 : std::strcmp(previewValue ? previewValue : "", "china-atlas")==0 ? 63 : std::strcmp(previewValue ? previewValue : "", "china-atlas-city")==0 ? 64 : std::strcmp(previewValue ? previewValue : "", "china-atlas-compact")==0 ? 65 : std::strcmp(previewValue ? previewValue : "", "ui-settings")==0 ? 61 : std::strcmp(previewValue ? previewValue : "", "ui-compact")==0 ? 62 : std::strcmp(previewValue ? previewValue : "", "terrain-detail")==0 ? 59 : std::strcmp(previewValue ? previewValue : "", "terrain-coast")==0 ? 60 : std::strcmp(previewValue ? previewValue : "", "territory-world")==0 ? 58 : std::strcmp(previewValue ? previewValue : "", "metropolis-map")==0 ? 57 : std::strcmp(previewValue ? previewValue : "", "city-growth")==0 ? 54 : std::strcmp(previewValue ? previewValue : "", "national-policy")==0 ? 55 : std::strcmp(previewValue ? previewValue : "", "policy-compact")==0 ? 56 : std::strcmp(previewValue ? previewValue : "", "domestic")==0 ? 51 : std::strcmp(previewValue ? previewValue : "", "domestic-progress")==0 ? 52 : std::strcmp(previewValue ? previewValue : "", "domestic-compact")==0 ? 53 : std::strcmp(previewValue ? previewValue : "", "story-strike")==0 ? 49 : std::strcmp(previewValue ? previewValue : "", "story-firestorm")==0 ? 50 : std::strcmp(previewValue ? previewValue : "", "training-compact")==0 ? 48 : std::strcmp(previewValue ? previewValue : "", "joint-training")==0 ? 46 : std::strcmp(previewValue ? previewValue : "", "training-progress")==0 ? 47 : std::strcmp(previewValue ? previewValue : "", "formation-info")==0 ? 44 : std::strcmp(previewValue ? previewValue : "", "formation-map")==0 ? 45 : std::strcmp(previewValue ? previewValue : "", "siege-overview")==0 ? 43 : std::strcmp(previewValue ? previewValue : "", "battle-immersion")==0 ? 41 : std::strcmp(previewValue ? previewValue : "", "city-drama")==0 ? 42 : std::strcmp(previewValue ? previewValue : "", "story-intro")==0 ? 38 : std::strcmp(previewValue ? previewValue : "", "story-cinema")==0 ? 39 : std::strcmp(previewValue ? previewValue : "", "story-spectacle")==0 ? 40 : std::strcmp(previewValue ? previewValue : "", "governance-compact")==0 ? 37 : std::strcmp(previewValue ? previewValue : "", "governance")==0 ? 36 : std::strcmp(previewValue ? previewValue : "", "info-city")==0 ? 30 : std::strcmp(previewValue ? previewValue : "", "info-officer")==0 ? 31 : std::strcmp(previewValue ? previewValue : "", "info-relations")==0 ? 32 : std::strcmp(previewValue ? previewValue : "", "info-faction")==0 ? 33 : std::strcmp(previewValue ? previewValue : "", "info-army")==0 ? 34 : std::strcmp(previewValue ? previewValue : "", "info-records")==0 ? 35 : std::strcmp(previewValue ? previewValue : "", "tactic-cutin")==0 ? 28 : std::strcmp(previewValue ? previewValue : "", "tactic-fire")==0 ? 29 : std::strcmp(previewValue ? previewValue : "", "officers")==0 ? 27 : std::strcmp(previewValue ? previewValue : "", "world-wide")==0 ? 26 : std::strcmp(previewValue ? previewValue : "", "regions")==0 ? 24 : std::strcmp(previewValue ? previewValue : "", "battlefield")==0 ? 23 : std::strcmp(previewValue ? previewValue : "", "ai-assembly")==0 ? 22 : std::strcmp(previewValue ? previewValue : "", "story-depth")==0 ? 19 : std::strcmp(previewValue ? previewValue : "", "battle-depth")==0 ? 20 : std::strcmp(previewValue ? previewValue : "", "story-vow")==0 ? 21 : std::strcmp(previewValue ? previewValue : "", "convoy")==0 ? 17 : std::strcmp(previewValue ? previewValue : "", "convoy-plan")==0 ? 18 : std::strcmp(previewValue ? previewValue : "", "assignments")==0 ? 16 : !preview ? 1 : std::strcmp(previewValue,"world")==0 ? 14 : std::strcmp(previewValue,"world-front")==0 ? 15 : std::strcmp(previewValue,"story-prepare")==0 ? 12 : std::strcmp(previewValue,"story-links")==0 ? 13 : std::strcmp(previewValue,"start")==0 ? 11 : std::strcmp(previewValue,"story-event")==0 ? 9 : std::strcmp(previewValue,"story-cutin")==0 ? 10 : std::strcmp(previewValue,"story-menu")==0 ? 4 : std::strcmp(previewValue,"story")==0 ? 5 : std::strcmp(previewValue,"story-battle")==0 ? 6 : std::strcmp(previewValue,"story-civil")==0 ? 7 : std::strcmp(previewValue,"story-ending")==0 ? 8 : std::strcmp(previewValue,"history")==0 ? 2 : std::strcmp(previewValue,"tactics")==0 ? 3 : 1;
+	const int previewMode = frontline::preview::FindMode(previewValue ? previewValue : "");
 	std::free(previewValue);
-	if (preview) Window::Resize(previewMode==26 ? Size(1600,900) : (previewMode==37 || previewMode==48 || previewMode==53 || previewMode==56 || previewMode==62 || previewMode==65 || previewMode==68) ? Size(1280,720) : Size(1280,800));
-	else { Window::SetFullscreen(true); Scene::SetResizeMode(ResizeMode::Actual); }
+    char* windowedValue = nullptr; size_t windowedLength = 0;
+    _dupenv_s(&windowedValue, &windowedLength, "SANGOKUSHI_WINDOWED");
+    const bool windowed = windowedValue && std::string_view(windowedValue) == "1";
+    std::free(windowedValue);
+    if (preview)
+        Window::Resize(previewMode == 26 ? Size(1600, 900) :
+            frontline::preview::IsCompact(previewMode) ? Size(1280, 720) : Size(1280, 800));
+    else if (windowed)
+    {
+        Window::Resize(1280, 720);
+        Scene::SetResizeMode(ResizeMode::Actual);
+    }
+    else { Window::SetFullscreen(true); Scene::SetResizeMode(ResizeMode::Actual); }
 
 	FontAsset::Register(U"campaignTitle",32,Typeface::Bold);
 	FontAsset::Register(U"campaignBody",19,Typeface::CJK_Regular_JP);

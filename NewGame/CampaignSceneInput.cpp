@@ -33,6 +33,20 @@ void CampaignScene::deploy(Arm arm)
 
 void CampaignScene::update()
 {
+	if (m_journeyActive)
+	{
+		m_musicPlayer.Stop();
+		m_journey.Update();
+		if (m_journey.Back()) m_journeyActive = false;
+		return;
+	}
+	if (m_strategistActive)
+	{
+		m_musicPlayer.Stop();
+		m_strategist.Update();
+		if (m_strategist.Back()) m_strategistActive = false;
+		return;
+	}
 	if (m_storyActive)
 	{
 		m_musicPlayer.Stop();
@@ -114,11 +128,22 @@ void CampaignScene::update()
 	}
 	if (!m_started)
 	{
+		if (Rect(Scene::Center().x + 250, Scene::Center().y + 214, 190, 46).leftClicked())
+		{
+			m_musicPlayer.Stop(); m_story.Open(); m_storyActive = true; return;
+		}
+		if (Rect(Scene::Center().x - 225, Scene::Center().y + 214, 450, 46).leftClicked())
+		{
+			m_musicPlayer.Stop();
+			m_strategist.Open();
+			m_strategistActive = true;
+			return;
+		}
 		if (Rect(Scene::Center().x - 465, Scene::Center().y - 145, 930, 86).leftClicked())
 		{
 			m_musicPlayer.Stop();
-			m_story.Open();
-			m_storyActive = true;
+			m_journey.Open();
+			m_journeyActive = true;
 			return;
 		}
 		const int start = Scene::Center().x - 465;

@@ -7,6 +7,14 @@ using namespace campaignui;
 
 void CampaignScene::preview(int mode)
 {
+	if (mode >= 77 && mode <= 83) { m_journeyActive = true; m_journey.Preview(mode); return; }
+	if ((mode >= 69 && mode <= 72) || (mode >= 74 && mode <= 76))
+	{
+		m_strategistActive = true;
+		m_strategist.Preview(mode);
+		return;
+	}
+	if (mode == 73) return;
     if(m_musicPlayer.Enabled())m_musicPlayer.Toggle();
     if(mode==67 || mode==68) {preview(66);m_atlasCamera.zoom=3;m_atlasCamera.x=.44;m_atlasCamera.y=.44;m_atlasCamera.Clamp();return;}
     if(mode==66) {preview(63);m_army=m_game.Deploy(0,0,3000,Arm::Spear);m_game.Order(m_army,m_game.cities[4].tile);return;}

@@ -13,6 +13,13 @@ try {
     New-Item -ItemType Directory -Path 'Intermediate' -Force | Out-Null
     New-Item -ItemType Directory -Path 'Intermediate/tests/core','Intermediate/tests/save' -Force | Out-Null
     $taskCampaignFiles = @(
+        'NewGame\TacticChain.cpp',
+        'NewGame\StrategistJourney.cpp',
+        'NewGame\StrategistJourneyAI.cpp',
+        'NewGame\StrategistBattle.cpp',
+        'NewGame\BattleIntelligence.cpp',
+        'NewGame\StrategistBattleIntelligence.cpp',
+        'NewGame\StrategistBattleOperations.cpp',
         'NewGame\Campaign.cpp',
  'NewGame\CampaignRoster.cpp',
         'NewGame\CampaignRegions.cpp',
@@ -53,9 +60,21 @@ try {
     $taskBuildCore = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 /c $taskCampaignSources $taskStorySources /Fo:Intermediate\tests\core\ && lib /nologo /OUT:Intermediate\tests\CampaignCore.lib $taskCampaignObjects && lib /nologo /OUT:Intermediate\tests\StoryCore.lib $taskStoryObjects"
     & cmd /c $taskBuildCore
     if ($LASTEXITCODE -ne 0) { throw 'Simulation library compilation failed.' }
+    $taskPreview = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\PreviewModeTests.cpp /Fe:Intermediate\PreviewModeTests.exe /Fo:Intermediate\PreviewModeTests.obj && Intermediate\PreviewModeTests.exe"
+    & cmd /c $taskPreview
+    if ($LASTEXITCODE -ne 0) { throw 'Preview mode tests failed.' }
     $taskCampaign = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\CampaignTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\CampaignTests.exe /Fo:Intermediate\CampaignTests.obj /link /STACK:8388608 && Intermediate\CampaignTests.exe"
     & cmd /c $taskCampaign
     if ($LASTEXITCODE -ne 0) { throw 'Campaign tests failed.' }
+    $taskStrategist = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\StrategistBattleTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\StrategistBattleTests.exe /Fo:Intermediate\StrategistBattleTests.obj /link /STACK:8388608 && Intermediate\StrategistBattleTests.exe"
+    & cmd /c $taskStrategist
+    if ($LASTEXITCODE -ne 0) { throw 'Strategist battle tests failed.' }
+    $taskOperations = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\StrategistOperationsTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\StrategistOperationsTests.exe /Fo:Intermediate\StrategistOperationsTests.obj /link /STACK:8388608 && Intermediate\StrategistOperationsTests.exe"
+    & cmd /c $taskOperations
+    if ($LASTEXITCODE -ne 0) { throw 'Strategist intelligence and operation tests failed.' }
+    $taskChains = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\TacticChainTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\TacticChainTests.exe /Fo:Intermediate\TacticChainTests.obj /link /STACK:8388608 && Intermediate\TacticChainTests.exe"
+    & cmd /c $taskChains
+    if ($LASTEXITCODE -ne 0) { throw 'Tactic chain and journey continuity tests failed.' }
     $taskBudget = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\CommandBudgetTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\CommandBudgetTests.exe /Fo:Intermediate\CommandBudgetTests.obj /link /STACK:8388608 && Intermediate\CommandBudgetTests.exe"
     & cmd /c $taskBudget
     if ($LASTEXITCODE -ne 0) { throw 'Command budget tests failed.' }

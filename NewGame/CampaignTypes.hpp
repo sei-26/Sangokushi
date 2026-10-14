@@ -69,11 +69,16 @@ namespace frontline
 		std::vector<int> path;
 		int tacticLeft = 0, tacticReadyDay = 0;
 		bool tacticQueued = false;
+		bool scouting = false; // Tactical mission: wider sight with reduced attack.
 	};
 	struct TacticEvent
 	{
 		int general = 0, faction = 0, tile = 0, target = 0;
 		Tactic tactic = Tactic::Rally;
+	};
+	struct ReturnEvent
+	{
+		int general = -1, city = -1, troops = 0, cargoFood = 0;
 	};
 	struct Bond
 	{

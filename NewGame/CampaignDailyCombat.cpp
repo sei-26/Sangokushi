@@ -2,7 +2,7 @@
 
 namespace frontline
 {
-	std::vector<bool> Campaign::ResolveDailyCombat(const SupplyGrid& supply)
+	std::vector<bool> Campaign::ResolveDailyCombat(const SupplyGrid& supply, bool enemyAutomation)
 	{
 		// Calculate all casualties from the same snapshot, then apply together.
 		std::vector<int> losses(armies.size()), cityLoss(cities.size());
@@ -21,7 +21,7 @@ namespace frontline
 				continue;
 			if (a.tacticLeft > 0)
 				--a.tacticLeft;
-			if (a.faction != player && AIUseTactic(i, supply))
+			if (enemyAutomation && a.faction != player && AIUseTactic(i, supply))
 				ActivateTactic(i, true);
 			if (!a.tacticQueued)
 				continue;
@@ -128,7 +128,7 @@ namespace frontline
 					target = j;
 					distance = MapDistance(a.tile, armies[j].tile);
 				}
-			if (a.faction != player)
+			if (enemyAutomation && a.faction != player)
 			{
 				target = AITargetArmy(i);
 				distance = target >= 0 ? MapDistance(a.tile, armies[target].tile) : 100000;
@@ -136,6 +136,7 @@ namespace frontline
 			const double morale = 0.3 + a.morale / 140.0;
 			const double coordination = 1 + formations[i].attack / 100.0;
 			const double power = (a.troops / 22.0 + officer.leadership * 1.3) * morale * 0.55 * coordination *
+			                     (a.scouting ? .5 : 1.) *
 			                     battle::AttackPercent(a.stance) / 100.0;
 
 			if (target >= 0)
