@@ -52,6 +52,9 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
          [Label([this] { return Field->Presentation().Journey.Outcome; }, 17, Gold)]];
     Text->AddSlot().AutoHeight().Padding(0,0,0,8)[Label([this] { return Field->Presentation().Journey.ReviewFacts; },15)];
     Text->AddSlot().AutoHeight().Padding(0,0,0,10)[Label([this] { return Field->Presentation().Journey.ReviewLesson; },16,Gold)];
+    Text->AddSlot().AutoHeight().Padding(0,0,0,10)
+      [SNew(SBox).Visibility_Lambda([this] { const auto& J=Field->Presentation().Journey;return (J.bDebrief || J.bComplete) && Field->HasChainReview() ? EVisibility::Visible:EVisibility::Collapsed; })
+       [Button([] { return TEXT("直近の連鎖を振り返る / Y"); },[this] { ToggleChainReview(); },[this] { return Field->HasChainReview(); })]];
     auto Plans = SNew(SVerticalBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bPreparation ? EVisibility::Visible : EVisibility::Collapsed; });
     for (int Index = 0; Index < 2; ++Index)
     {

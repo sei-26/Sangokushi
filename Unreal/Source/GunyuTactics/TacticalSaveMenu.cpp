@@ -16,6 +16,7 @@ void ATacticalController::ToggleSaveMenu()
     bSaveMenuOpen=!bSaveMenuOpen;PendingSaveSlot=-1;
     if(bSaveMenuOpen)
     {
+        CloseChainReview();
         bInterfaceVisible=true;bBattleLogOpen=bMarchPlanOpen=bTacticPickerOpen=false;
         if(Field->bRealtimeCommand && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
         SaveStatus=TEXT("軍議・戦後に自動保存。戦闘中の命令も手動で記録できます。読み込み後は一時停止から再開します。");

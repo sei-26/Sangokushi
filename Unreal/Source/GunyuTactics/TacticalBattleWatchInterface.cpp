@@ -10,7 +10,7 @@ void ATacticalController::ToggleBattleLog()
 {
     if (!Field || !Field->bRealtimeCommand || !Field->Presentation().bBattle) return;
     bBattleLogOpen=!bBattleLogOpen;
-    if (bBattleLogOpen) { bMarchPlanOpen=false;bInterfaceVisible=true; }
+    if (bBattleLogOpen) { CloseChainReview();bMarchPlanOpen=false;bInterfaceVisible=true; }
     if (bBattleLogOpen && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
     IgnoreMapInputThroughFrame=Frames+1;
 }

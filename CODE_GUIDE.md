@@ -344,3 +344,7 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 戦法の抑揚と受け渡し（2026-10-26）
 
 `TacticalSpectacle` は戦法ごとの視点と公開済みの衝撃、`TacticalSignatureEffects.cpp` は大きな斬光と波、`TacticalCinematicLens.cpp` は一時的なブルーム等を担当する。`TacticalCinematicRelay.cpp` は次の予約担当の顔と名前を表示し、次の成否は読まない。`TacticalSpectacleTests.cpp` と視点検証で、味方への支援、未発見の対象、停止、最後の手、OFF時の復帰を確認する。[仕様・実描画・23検証群](TACTIC_SPECTACLE_UPGRADE.md)。
+
+## 連鎖の戦術記録（2026-10-27）
+
+`TacticalChainReview` は実行イベントから各手の役割・成果・つながりを作り、`TacticalChainReviewRead.cpp` は現在の段階と観測情報から表示可能な記録を読む。`TacticalChainReviewMenu.cpp` は停止と開閉、`Rows` / `Interface` は画面、`Tests` / `UiTests` は保存・実連鎖・排他の確認を担当する。既存のlastChainを使い、保存形式を増やさない。[仕様と25検証群](CHAIN_REVIEW_UPGRADE.md)。

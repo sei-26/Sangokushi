@@ -14,6 +14,7 @@ class UProceduralMeshComponent;
 class UInstancedStaticMeshComponent;
 class ACameraActor;
 struct FJourneyState;
+struct FChainReview;
 namespace frontline { struct JourneyWatchSnapshot; }
 struct FJourneyDeleter
 {
@@ -105,6 +106,9 @@ public:
     bool InfantryMotionSmokeTest();
     bool ActivityReadSmokeTest();
     bool SpectacleSmokeTest();
+    bool ChainReviewSmokeTest();
+    bool HasChainReview() const;
+    FChainReview ReadChainReview() const;
     bool RealtimeSmokeTest();
     bool ChainSignalSmokeTest();
     bool BattleWatchSmokeTest();
@@ -282,6 +286,15 @@ private:
     FString UnitChainNumber(int Index) const;
     void BuildBattleFeed(TSharedRef<class SCanvas>);
     bool bEnemyDetailsOpen=false;
+    void BuildChainReviewInterface(TSharedRef<class SCanvas> Canvas);
+    TSharedRef<class SWidget> ChainReviewRow(int Index);
+    void ToggleChainReview();
+    void CloseChainReview();
+    void UpdateChainReviewInput();
+    bool ChainReviewInterfaceSmokeTest();
+    void PrepareChainReviewCapture();
+    bool bChainReviewOpen=false;
+    TSharedPtr<FChainReview> ChainReviewSnapshot;
     void BuildSaveInterface(TSharedRef<class SCanvas> Canvas);
     void ToggleSaveMenu();
     void RefreshSaveSlots();

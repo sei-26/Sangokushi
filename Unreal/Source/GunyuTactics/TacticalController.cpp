@@ -98,14 +98,16 @@ void ATacticalController::PlayerTick(float Delta)
 {
     Super::PlayerTick(Delta);
     if (!Field || !BattleCamera) return;
-    const bool bSaveInputBlocked=bSaveMenuOpen || WasInputKeyJustPressed(EKeys::F6);
+    const bool bReviewInputBlocked=bChainReviewOpen || WasInputKeyJustPressed(EKeys::Y);
+    UpdateChainReviewInput();
+    const bool bModalInputBlocked=bSaveMenuOpen || bReviewInputBlocked || WasInputKeyJustPressed(EKeys::F6);
     if(WasInputKeyJustPressed(EKeys::F6)) ToggleSaveMenu();
     if(bSaveMenuOpen && WasInputKeyJustPressed(EKeys::Escape)) ToggleSaveMenu();
     if(bSaveMenuOpen && Field->bRealtimeCommand && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
-    if (!bSaveInputBlocked && !bMarchPlanOpen && !bBattleLogOpen && WasInputKeyJustPressed(EKeys::Tab)) bInterfaceVisible = !bInterfaceVisible;
-    if (!bSaveInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && WasInputKeyJustPressed(EKeys::I)) bEnemyDetailsOpen=!bEnemyDetailsOpen;
-    if (!bSaveInputBlocked && WasInputKeyJustPressed(EKeys::L)) ToggleBattleLog();
-    if (!bSaveInputBlocked && WasInputKeyJustPressed(EKeys::V)) ToggleMarchPlan();
+    if (!bModalInputBlocked && !bMarchPlanOpen && !bBattleLogOpen && WasInputKeyJustPressed(EKeys::Tab)) bInterfaceVisible = !bInterfaceVisible;
+    if (!bModalInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && WasInputKeyJustPressed(EKeys::I)) bEnemyDetailsOpen=!bEnemyDetailsOpen;
+    if (!bModalInputBlocked && WasInputKeyJustPressed(EKeys::L)) ToggleBattleLog();
+    if (!bModalInputBlocked && WasInputKeyJustPressed(EKeys::V)) ToggleMarchPlan();
     if (bMarchPlanOpen && (!Field->bRealtimeCommand || !Field->Presentation().bBattle || Field->IsPlaying() || WasInputKeyJustPressed(EKeys::Escape))) bMarchPlanOpen=false;
     if (bBattleLogOpen && (!Field->bRealtimeCommand || !Field->Presentation().bBattle || WasInputKeyJustPressed(EKeys::Escape))) bBattleLogOpen=false;
     if (bBattleLogOpen && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
@@ -123,14 +125,14 @@ void ATacticalController::PlayerTick(float Delta)
     }
     const FKey Commands[] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::M, EKeys::Escape, EKeys::A, EKeys::G, EKeys::F, EKeys::Q, EKeys::W, EKeys::E, EKeys::T, EKeys::C, EKeys::R, EKeys::SpaceBar, EKeys::Enter, EKeys::N, EKeys::F5, EKeys::Period, EKeys::X, EKeys::B};
     for (const FKey& Key : Commands)
-        if (!bSaveInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && WasInputKeyJustPressed(Key)) Field->Action(Key);
-    if (!bSaveInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && !IsInputKeyDown(EKeys::MiddleMouseButton) && Frames > IgnoreMapInputThroughFrame && !IsPointerOverInterface() && WasInputKeyJustPressed(EKeys::LeftMouseButton)) Field->ClickTile(PickTile());
-    if (!bSaveInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && !IsInputKeyDown(EKeys::MiddleMouseButton) && Frames > IgnoreMapInputThroughFrame && !IsPointerOverInterface() && WasInputKeyJustPressed(EKeys::RightMouseButton))
+        if (!bModalInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && WasInputKeyJustPressed(Key)) Field->Action(Key);
+    if (!bModalInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && !IsInputKeyDown(EKeys::MiddleMouseButton) && Frames > IgnoreMapInputThroughFrame && !IsPointerOverInterface() && WasInputKeyJustPressed(EKeys::LeftMouseButton)) Field->ClickTile(PickTile());
+    if (!bModalInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && !IsInputKeyDown(EKeys::MiddleMouseButton) && Frames > IgnoreMapInputThroughFrame && !IsPointerOverInterface() && WasInputKeyJustPressed(EKeys::RightMouseButton))
     {
         if (Field->bRealtimeCommand && (IsInputKeyDown(EKeys::LeftShift) || IsInputKeyDown(EKeys::RightShift))) Field->AppendWaypointAt(PickTile());
         else Field->CommandAt(PickTile());
     }
-    UpdateBattleCamera(Delta,bSaveInputBlocked || bBattleLogOpen || bMarchPlanOpen || bTacticPickerOpen);
+    UpdateBattleCamera(Delta,bModalInputBlocked || bBattleLogOpen || bMarchPlanOpen || bTacticPickerOpen);
     ++Frames;
     if (Frames==30 && bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuProfile")))
     {
@@ -310,11 +312,13 @@ void ATacticalController::PlayerTick(float Delta)
             UE_LOG(LogTemp,Display,TEXT("GUNYU_SAVE_UI: %s (slots, load confirmation, restored orders, close retains pause)"),bPassed ? TEXT("PASS") : TEXT("FAIL"));
         }
         if(bPassed) bPassed=CameraPresentationSmokeTest();
+        if(bPassed) bPassed=ChainReviewInterfaceSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
     if (bCapture && Frames == 120) FAssetCompilingManager::Get().FinishAllCompilation();
 #endif
+    if(bCapture && Frames==5 && FParse::Param(FCommandLine::Get(),TEXT("GunyuChainReview"))) PrepareChainReviewCapture();
     if(bCapture && Frames==5 && FParse::Param(FCommandLine::Get(),TEXT("GunyuInfantryClose")))
     {
         const auto* Beat=Field->CurrentBeat();const auto& Units=Field->VisualUnits();

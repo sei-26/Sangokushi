@@ -62,6 +62,7 @@ bool ATacticalField::SmokeTest()
     if (!TacticRepertoireSmokeTest()) return false;
     if (!TacticCinemaSmokeTest()) return false;
     if (!SpectacleSmokeTest()) return false;
+    if (!ChainReviewSmokeTest()) return false;
     if (!ChainPresentationSmokeTest()) return false;
     if (!EnemyReadSmokeTest()) return false;
     if (!VisualGeometrySmokeTest()) return false;

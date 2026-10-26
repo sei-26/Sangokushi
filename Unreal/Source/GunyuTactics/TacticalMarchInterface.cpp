@@ -11,6 +11,7 @@ void ATacticalController::ToggleMarchPlan()
     bMarchPlanOpen=!bMarchPlanOpen;
     if (bMarchPlanOpen)
     {
+        CloseChainReview();
         bInterfaceVisible=true;
         bBattleLogOpen=false;bTacticPickerOpen=false;
         if (!Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
