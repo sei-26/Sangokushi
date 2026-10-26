@@ -4,7 +4,7 @@
 
 ## Unreal移行後の優先順位
 
-2026-10-26のユーザー指定：合戦の見た目を三國志8 REMAKE PKへ寄せる。[戦法のカットイン・視点・実戦果の演出](TACTIC_CINEMA_UPGRADE.md) を実装。[城郭・街並み・山の遠景](FORTRESS_BACKDROP_UPGRADE.md) も追加した。次は寄った時の兵の動作と建築の造形を、この基準へそろえる。
+2026-10-26のユーザー指定：合戦の見た目を三國志8 REMAKE PKへ寄せる。[戦法のカットイン・視点・実戦果の演出](TACTIC_CINEMA_UPGRADE.md) を実装。[城郭・街並み・山の遠景](FORTRESS_BACKDROP_UPGRADE.md) も追加した。[兵の関節・槍の突き・被弾と行軍隊形の変化](INFANTRY_MOTION_UPGRADE.md) も追加した。次は兵や建築の造形と、実際の一戦を遊んだ際の分かりやすさを評価する。
 
 2026-10-26：[戦場全体の質感と光](LANDSCAPE_VISUAL_REFINEMENT.md) を更新。地面・稜線・木立・岩・川と照明をまとめ、観測情報とマス選択の整合を維持した。
 

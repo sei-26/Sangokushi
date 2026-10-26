@@ -1,9 +1,11 @@
-using UnrealBuildTool;
+﻿using UnrealBuildTool;
 using System.IO;
 public class GunyuTactics : ModuleRules
 {
     public GunyuTactics(ReadOnlyTargetRules Target) : base(Target)
     {
+        // Keep translation units isolated; Git adaptive unity must not change name lookup.
+        bUseUnity = false;
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "InputCore" });
         PrivateDependencyModuleNames.AddRange(new[] { "Slate", "SlateCore", "ProceduralMeshComponent" });

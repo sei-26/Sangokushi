@@ -315,6 +315,12 @@ void ATacticalController::PlayerTick(float Delta)
 #if WITH_EDITOR
     if (bCapture && Frames == 120) FAssetCompilingManager::Get().FinishAllCompilation();
 #endif
+    if(bCapture && Frames==5 && FParse::Param(FCommandLine::Get(),TEXT("GunyuInfantryClose")))
+    {
+        const auto* Beat=Field->CurrentBeat();const auto& Units=Field->VisualUnits();
+        const int Id=Beat && Units.IsValidIndex(Beat->Actor) && Units[Beat->Actor].Id>=0 ? Beat->Actor:0;
+        if(Units.IsValidIndex(Id)) { Focus=Units[Id].Position;Distance=ViewDistance=1200;CameraYaw=125;CameraElevation=36;CameraPreset=-1;bTacticCinema=false; }
+    }
     if (bCapture && Frames == 130)
         FScreenshotRequest::RequestScreenshot(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / TEXT("trial.png")), true, false);
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);

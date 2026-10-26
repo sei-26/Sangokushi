@@ -332,3 +332,7 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 城郭と山の背景（2026-10-26）
 
 城郭は `TacticalFortressBackdrop.cpp`、山は `TacticalMountainBackdrop.cpp`、外縁の地面は `TacticalBackdropGround.cpp`、背景専用の頂点共有は `TacticalSceneryMesh.h`。`TacticalBackdropTests.cpp` は盤外配置と戦闘データの不変性を確認する。`TacticalMapScenery.cpp` のキャッシュは選択変更で背景を再生成しない。[仕様・素材・確認結果](FORTRESS_BACKDROP_UPGRADE.md)。
+
+## 兵の関節と動作（2026-10-26）
+
+`TacticalSoldierMotion` が観測済みの一手から関節と陣形の補間を求め、`TacticalInfantry` が腕・脚・武器をメッシュの変換へ変える。`TacticalUnits.cpp` は部隊・荷車・旗とバッチ更新に集中する。`TacticalInfantryTests.cpp` は公開時点・未知の敵・関節と武器の接続・一時停止・状態の不変性を確認する。モジュールはCPP間の名前の混入を避けるためunityビルドを使わない。[実装と21検証群](INFANTRY_MOTION_UPGRADE.md)。

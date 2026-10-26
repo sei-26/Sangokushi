@@ -101,6 +101,7 @@ public:
     bool EnemyReadSmokeTest();
     bool VisualGeometrySmokeTest();
     bool BackdropSmokeTest();
+    bool InfantryMotionSmokeTest();
     bool RealtimeSmokeTest();
     bool ChainSignalSmokeTest();
     bool BattleWatchSmokeTest();
