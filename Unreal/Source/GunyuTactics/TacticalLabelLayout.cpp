@@ -22,6 +22,7 @@ void ATacticalController::LayoutMapLabels()
         const auto C=Field->ReadTacticCinema();
         if(bTacticCinema && C.bVisible)
         {
+            if(C.Relay>.001f) Occupied.Add(FSlateRect(860,168,1228,224));
             if(C.Intro>.001f) { Occupied.Add(FSlateRect(20,180,340,660));Occupied.Add(FSlateRect(300,220,760,400)); }
             if(C.Impact>.001f && !C.Primary.IsEmpty()) { const auto P=TacticResultPosition();Occupied.Add(FSlateRect(P.X,P.Y,P.X+380,P.Y+142)); }
         }

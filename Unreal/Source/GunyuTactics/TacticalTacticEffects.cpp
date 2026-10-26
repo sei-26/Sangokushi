@@ -39,29 +39,16 @@ void gunyufx::Tactic(const FBattleBeat& B,const TArray<FVisualUnit>& U,float P,F
     if(!U.IsValidIndex(B.Target) || U[B.Target].Id<0) return;
     const FVector Target=U[B.Target].Position+FVector(0,0,35);
     const FVector Forward=(Target-Actor).GetSafeNormal2D(),Across(-Forward.Y,Forward.X,0);
-    if(B.Kind==EBattleCue::AzureDragon)
+    if(B.Kind==EBattleCue::AzureDragon || B.Kind==EBattleCue::SerpentRoar)
+        gunyufx::Signature(B,U,P,Quad);
+    else if(B.Kind==EBattleCue::Lure || B.Kind==EBattleCue::Feint)
     {
-        // A blade-like crescent rises through the displayed impact position.
-        for(int Layer=0;Layer<3;++Layer) for(int I=0;I<32;++I)
+        // Retreat/feint leaves blue wakes on the acting unit, not sword blows on the enemy.
+        for(int I=0;I<5;++I)
         {
-            const float A=-.9f+I*PI*1.65f/32+T*1.7f,Z=A+PI*1.65f/32;
-            const float Radius=100+Layer*15+T*55,Width=FMath::Sin((I+1)*PI/33)*(12-Layer*3)*(1-T);
-            const FVector V=Across*FMath::Cos(A)+FVector::UpVector*FMath::Sin(A),W=Across*FMath::Cos(Z)+FVector::UpVector*FMath::Sin(Z);
-            auto Tint=Color;if(Layer==0) Tint=FLinearColor(.75f,1,.86f,Color.A);
-            Quad(Target+V*Radius,Target+V*(Radius+Width),Target+W*(Radius+Width),Target+W*Radius,Tint);
+            const FVector Offset=Across*((I-2)*18)+FVector(0,0,I%2*8);
+            Line(Actor+Offset+Forward*(25+T*70),Actor+Offset-Forward*20,2.4f*(1-T),Color);
         }
-    }
-    else if(B.Kind==EBattleCue::SerpentRoar)
-    {
-        for(int Ring=0;Ring<3;++Ring) for(int I=0;I<32;++I)
-        {
-            const float A=I*2*PI/32,Z=(I+1)*2*PI/32,Radius=(45+T*160)*(1-Ring*.16f);
-            const FVector V(FMath::Cos(A),FMath::Sin(A),0),W(FMath::Cos(Z),FMath::Sin(Z),0);
-            const FVector Center=Actor+FVector(0,0,Ring*12+T*14);
-            Quad(Center+V*Radius,Center+V*(Radius+6*(1-T)),Center+W*(Radius+6*(1-T)),Center+W*Radius,Color);
-        }
-        for(int I=0;I<10;++I)
-        { const FVector Offset=Across*(I-4.5f)*18+FVector(0,0,I%3*12);Line(Target+Offset-Forward*28,Target+Offset+Forward*(50+T*100),3,Color); }
     }
     else if(B.Kind==EBattleCue::Ambush)
     {

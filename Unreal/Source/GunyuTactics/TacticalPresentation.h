@@ -83,10 +83,10 @@ struct FBattleBeat
 };
 struct FTacticCinematicRead
 {
-    FString Officer,Tactic,Voice,Chain,Primary,Secondary;
+    FString Officer,Tactic,Voice,Chain,Primary,Secondary,NextOfficer;
     FLinearColor Accent=FLinearColor::White;
-    int Actor=-1,Target=-1;
-    float Intro=0,Impact=0,CameraWeight=0;
+    int Actor=-1,Target=-1,NextActor=-1;
+    float Intro=0,Impact=0,CameraWeight=0,Relay=0;
     bool bVisible=false,bResolved=false,bHit=false;
 };
 // UI receives observed information and cached predictions only.

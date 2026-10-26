@@ -1,5 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalFormation.h"
+#include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
 #include "StrategistJourney.hpp"
 
 bool ATacticalController::CameraPresentationSmokeTest()
@@ -51,6 +53,11 @@ bool ATacticalController::CameraPresentationSmokeTest()
     FVector Presented=Focus;float PresentedRange=ViewDistance,PresentedTilt=CameraElevation;
     ApplyTacticCamera(Presented,PresentedRange,PresentedTilt);
     if(!Check(!Presented.Equals(Focus) && PresentedRange<ViewDistance && Focus.Equals(OriginalFocus) && Distance==OriginalRange && CameraElevation==OriginalTilt,TEXT("tactic camera never overwrites player orbit or focus"))) return false;
+    UpdateTacticLens();
+    if(!Check(BattleCamera->GetCameraComponent()->PostProcessSettings.VignetteIntensity>.22f,TEXT("tactic lens follows the current shot"))) return false;
+    bTacticCinema=false;UpdateTacticLens();
+    const auto& NeutralLens=BattleCamera->GetCameraComponent()->PostProcessSettings;
+    if(!Check(FMath::IsNearlyEqual(NeutralLens.BloomIntensity,.35f) && FMath::IsNearlyEqual(NeutralLens.VignetteIntensity,.22f) && FMath::IsNearlyEqual(NeutralLens.AutoExposureBias,.25f),TEXT("cinema off immediately restores neutral lens settings"))) return false;
     bTacticCinema=false;Presented=Focus;PresentedRange=ViewDistance;PresentedTilt=CameraElevation;
     ApplyTacticCamera(Presented,PresentedRange,PresentedTilt);
     if(!Check(Presented.Equals(Focus) && PresentedRange==ViewDistance && PresentedTilt==CameraElevation,TEXT("cinema off retains the tactical view"))) return false;

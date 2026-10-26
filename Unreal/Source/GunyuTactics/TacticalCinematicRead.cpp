@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalCinematicStyle.h"
+#include "TacticalState.h"
 FTacticCinematicRead ATacticalField::ReadTacticCinema() const
 {
     FTacticCinematicRead R;const auto* B=CurrentBeat();
@@ -12,6 +13,14 @@ FTacticCinematicRead ATacticalField::ReadTacticCinema() const
     R.CameraWeight=FMath::SmoothStep(.06f,.28f,P)*(1-FMath::SmoothStep(.82f,.99f,P));
     R.bResolved=P>=.48f;R.bHit=R.bResolved && B->Kind!=EBattleCue::Stop;
     R.Impact=R.bResolved ? FMath::SmoothStep(.48f,.53f,P)*(1-FMath::SmoothStep(.81f,.98f,P)) : 0;
+    // The next officer is already part of the player's queued plan. Never read
+    // the next kind, success, reason or After snapshot for this handoff.
+    if(B->Kind!=EBattleCue::Stop && P>.81f && State->Beats.IsValidIndex(State->BeatIndex+1))
+    {
+        const auto& Next=State->Beats[State->BeatIndex+1];const int Id=Next.Actor;
+        if(Id>=0 && Id<3 && VisualUnits().IsValidIndex(Id) && VisualUnits()[Id].Id==Id && VisualUnits()[Id].Troops>0)
+        { R.NextActor=Id;R.NextOfficer=VisualUnits()[Id].Name;R.Relay=FMath::SmoothStep(.81f,.90f,P)*(1-FMath::SmoothStep(.97f,1.f,P)); }
+    }
     if(!R.bResolved) return R; // Never report future damage or state changes before impact.
     if(B->Kind==EBattleCue::Stop) { R.Primary=TEXT("連鎖停止");R.Secondary=TEXT("条件を作り直し、次の指揮へ");return R; }
     if(B->Kind==EBattleCue::Rally)

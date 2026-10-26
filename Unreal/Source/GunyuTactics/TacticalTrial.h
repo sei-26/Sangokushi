@@ -104,6 +104,7 @@ public:
     bool BackdropSmokeTest();
     bool InfantryMotionSmokeTest();
     bool ActivityReadSmokeTest();
+    bool SpectacleSmokeTest();
     bool RealtimeSmokeTest();
     bool ChainSignalSmokeTest();
     bool BattleWatchSmokeTest();
@@ -250,10 +251,12 @@ private:
     void BuildBattleHeader(TSharedRef<class SCanvas>);
     void BuildCameraInterface(TSharedRef<class SCanvas>);
     void BuildTacticCinema(TSharedRef<class SCanvas>);
+    void BuildTacticRelay(TSharedRef<class SCanvas>);
+    void UpdateTacticLens();
     FVector2D TacticResultPosition() const;
     void ApplyTacticCamera(FVector& ViewFocus,float& ViewRadius,float& ViewTilt) const;
     bool bTacticCinema=true;
-    TSharedPtr<class SWidget> CinematicIntro,CinematicResult;
+    TSharedPtr<class SWidget> CinematicIntro,CinematicResult,CinematicRelay;
     UPROPERTY() TArray<TObjectPtr<class UTexture2D>> CutinTextures;
     TArray<TSharedPtr<struct FSlateBrush>> CutinBrushes;
     void LoadCutinPortraits();

@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalInkStroke.h"
+#include "TacticalCinematicStyle.h"
 #include "TacticalWidgets.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SOverlay.h"
@@ -9,6 +10,7 @@
 using namespace gunyuui;
 void ATacticalController::BuildTacticCinema(TSharedRef<SCanvas> Canvas)
 {
+    BuildTacticRelay(Canvas);
     auto Read=[this] { return Field->ReadTacticCinema(); };
     auto Banner=SNew(SOverlay)
         + SOverlay::Slot()[SNew(STacticalInkStroke).Read(Read)]
@@ -37,7 +39,7 @@ void ATacticalController::BuildTacticCinema(TSharedRef<SCanvas> Canvas)
 }
 FVector2D ATacticalController::TacticResultPosition() const
 {
-    const auto R=Field->ReadTacticCinema();const auto& U=Field->VisualUnits();const int Id=U.IsValidIndex(R.Target) && U[R.Target].Id>=0 ? R.Target:R.Actor;
+    const auto* Beat=Field->CurrentBeat();const auto& U=Field->VisualUnits();const int Id=Beat ? gunyucinema::ResultUnit(*Beat,U):-1;
     if(!U.IsValidIndex(Id) || U[Id].Id<0) return FVector2D(-2000,-2000);
     auto P=MapLabelPosition(U[Id].Position+FVector(0,0,280),FVector2D(380,142));
     if(P.X<-1000) return FVector2D(-2000,-2000);

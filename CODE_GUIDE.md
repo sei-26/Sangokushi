@@ -340,3 +340,7 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 戦闘中の担当と行動段階（2026-10-26）
 
 `TacticalActivity` は表示中の担当・対象・段階・色、`TacticalActivityRead.cpp` は通常の報告の公開点、`TacticalActivityMarkers.cpp` と `TacticalActivityOverlay.cpp` は向きと対象の盤上表示を担当する。札、武将カード、対象欄へ同じ読み取り結果を接続した。`TacticalActivityTests.cpp` は実連鎖・公開済み損害・未知の敵・支援と停止・状態の不変性を確認。[仕様と22検証群](BATTLE_ACTIVITY_UPGRADE.md)。
+
+## 戦法の抑揚と受け渡し（2026-10-26）
+
+`TacticalSpectacle` は戦法ごとの視点と公開済みの衝撃、`TacticalSignatureEffects.cpp` は大きな斬光と波、`TacticalCinematicLens.cpp` は一時的なブルーム等を担当する。`TacticalCinematicRelay.cpp` は次の予約担当の顔と名前を表示し、次の成否は読まない。`TacticalSpectacleTests.cpp` と視点検証で、味方への支援、未発見の対象、停止、最後の手、OFF時の復帰を確認する。[仕様・実描画・23検証群](TACTIC_SPECTACLE_UPGRADE.md)。
