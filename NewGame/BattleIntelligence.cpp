@@ -76,6 +76,7 @@ namespace frontline
 			snapshot.morale = army.morale;
 			snapshot.arm = army.arm;
 			snapshot.stance = army.stance;
+			snapshot.scouting = army.scouting;
 			snapshot.retreat = army.retreat;
 			found->observed = snapshot;
 		}

@@ -116,20 +116,8 @@ int main()
 		assert(j->Prepare(0, 1));
 		assert(j->world.cities[0].gold == gold - 200 && j->trust == 10);
 		assert(j->Preview(Standard()).completed == 0); // Next opponent changes the useful plan.
-		// Direct attacks from a different deployment beat the guard without lure.
-		assert(j->Move(0, Campaign::At(9, 11)));
-		assert(j->Move(2, Campaign::At(9, 10)));
-		for (int phase = 0; phase < 8 && j->stage == JourneyStage::Battle; ++phase)
-		{
-			if (phase == 1)
-				assert(j->Move(1, Campaign::At(9, 9)));
-			for (int army = 0; army < 3 && j->stage == JourneyStage::Battle; ++army)
-				j->Strike(army, 3);
-			if (j->stage == JourneyStage::Battle)
-				j->EndTurn();
-		}
-		assert(j->stage == JourneyStage::Debrief && j->won && j->trust == 20);
-		assert(j->Continue() && j->stage == JourneyStage::Complete);
+		assert(j->Definition().kind == JourneyObjective::Escort && j->world.armies.size() == 6);
+		assert(j->world.armies[StrategistJourney::ConvoyArmy].cargoFood == 2000);
 	}
 	{
 		auto j = Battle(0, 2);

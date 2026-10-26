@@ -1,6 +1,14 @@
 ﻿# コードを読むための地図
 
+2026-10-21以降の開発先はUnreal Engine。エディタで開く入口は `Unreal/GunyuTactics.uproject`。`Unreal/Source/GunyuTactics/` の `TacticalOrders.cpp` が既存の `StrategistJourney` へ命令を渡し、`TacticalField.cpp` が仮の3D地形・部隊を描く。`TacticalPresentation.cpp` は観測情報と成立予測を表示へ変換、`TacticalInterface.cpp` は武将カード・命令・連鎖編集、`TacticalController.cpp` はカメラ・入力、`TacticalSmoke.cpp` は結合検証を担当。素材とライトはUEエディタから編集できる。詳しくは [Unreal/README.md](Unreal/README.md)。以下は共通ルールと旧Siv3D画面の案内。
+
 まず Main.cpp → NewGame/CampaignScene.cpp → NewGame/CampaignTurn.cpp の順に読むと、起動・画面・ゲームルールのつながりが分かる。
+
+UEの行動演出は `TacticalPlayback.cpp`（実結果を順に表示）、`TacticalUnits.cpp`（隊列・旗・糧車・衝撃・音）、`TacticalPlaybackTests.cpp`（結果の不変性とスキップ）に分けている。武将肖像は旧版と同じ `PortraitCatalog.hpp` の対応を利用する。ゲームのフルスクリーン起動は `Unreal/Play.cmd`、編集は `.uproject` が入口。
+
+UEの会話・軍議・戦後は `TacticalJourney.cpp`、その画面は `TacticalJourneyInterface.cpp`。`TacticalJourneyTests.cpp` は同じ公開命令で出会い・募兵・敗北と再挑戦・３戦・終幕を通す。準備に必要な資源は共通ルールの `StrategistJourney::PreparationCosts` と `CanPrepare` から読み、表示だけの費用と実際の支払いを別々に定義しない。
+
+`TacticalConversations.cpp` は作戦・護送・損耗・撤収に応じた３人の反応、`TacticalPromiseTests.cpp` は約束を選んだ護送と撤収・再挑戦・次戦の人物の検証。共通ルールの `StrategistJourneyObjectives.cpp` が `SelectPromise` と `Withdraw` を処理し、実績は `StrategistJourney::history` に記録する。人物との会話を繰り返すだけで実績や絆を加算しない。参照原稿と複数の課題を一緒に解決する狙いは [STORY_STRATEGY_IMPROVEMENTS.md](STORY_STRATEGY_IMPROVEMENTS.md)。
 
 ヘッダー（.hpp）は主に「持っているデータと、呼べる関数」。実際の処理は同名や役割名の.cppにある。同じクラスの関数を複数の.cppに分けているため、別ファイルでも同じゲーム状態を扱う。ファイルを分けるために別のシステムへ作り直したわけではない。
 
@@ -20,12 +28,18 @@
 
 | ファイル | 担当 |
 |---|---|
-| StrategistJourney.hpp / .cpp | 主人公の進行、出会い・軍議・準備・２戦・戦後、同じCampaignの資源と信頼 |
+| StrategistJourney.hpp / .cpp | 主人公の進行、出会い・軍議・準備・３戦・戦後、同じCampaignの資源と信頼 |
 | StrategistJourneyAI.cpp | 観測に基づく敵の移動、伏兵と通常交戦、指揮区切り |
-| TacticChain.hpp / .cpp | 誘導・伏兵・突破の条件、順次発動、途中停止、観測コピーでの予測 |
+| JourneyMission.hpp | 突破・護送・防衛の任務データ、期限、配置と目的地 |
+| StrategistJourneyObjectives.cpp | 固守、糧車の進行、二拠点の維持、目的ごとの勝敗 |
+| TacticChain.hpp / .cpp | 戦法の状態、順次発動、途中停止、観測コピーでの予測 |
+| TacticCatalog.cpp | 得意・共通・固有戦法の担当、説明、士気費用 |
+| TacticChainActions.cpp | 各戦法の成立条件、効果、支払い、１戦１回、段階ごとの変化記録 |
+| JourneyEnemyPlan.hpp / .cpp | 観測盤面からの敵の進軍・護送車への接近・固守・混乱、推定攻撃圏 |
 | StrategistJourneyScene.hpp / .cpp | 会話と軍議の操作、移動と戦法の予約、ズーム、カットインの順次再生 |
 | StrategistJourneySceneDraw.cpp | 会話、野営地、HEX戦場、予約の成立見込み、戦後の表示 |
 | tests/TacticChainTests.cpp | 成立と対抗、情報漏れ、資源と人物関係の引き継ぎ |
+| tests/JourneyMissionTests.cpp / JourneyPlaythroughTests.cpp | 任務ごとの進行と精算、通常操作による３戦完遂と異なる防衛手順 |
 
 仕様・操作・未実装範囲は [CHAIN_BATTLE.md](CHAIN_BATTLE.md)。連鎖のルールはSiv3Dに依存しないため、画面を立ち上げず検証できる。全国戦略の保存形式へ局地戦を混ぜず、今の序章はメモリ内で進行を保持する。
 
@@ -269,3 +283,52 @@ Gキーで追加の戦場演出を切り替える。交戦の火花・砂煙・�
 
 ## 全国図のズーム・移動
 `AtlasCamera.hpp` は正規化座標でカメラ中心と倍率を保持。ホイールのカーソル位置を維持した1〜6倍のズーム、中ドラッグ・矢印キーの移動、端のクランプ、全図リセットを担当します。`CampaignSceneAtlas.cpp` の `atlasViewport` は固定表示枠、`atlasRect` はカメラから計算する画像の描画範囲です。地形・勢力色・グリッド・都市・部隊・進路・クリック/ホバーが共通の変換を使い、枠外はシザーで切り取ります。グリッドのキャッシュ生成時のみシザーを無効にし、全画像の線を保存。`ChinaAtlasTests.cpp` でカーソル固定・最大最小倍率・移動境界・リセットを検証します。プレビュー `china-atlas-zoom` / `china-atlas-zoom-compact` は倍率3の経路表示です。
+
+## UEの戦場ビジュアル第２段
+
+`TacticalSurface.cpp` が地表の高さとマス選択、`TacticalUnits.cpp` が隊列・装備・荷車、`TacticalStandards.cpp` が揺れる軍旗と幌を担当する。`TacticalVisualTests.cpp` は地形と選択位置、兵の足元、布の法線を確認する。地表・植生・門は `TacticalTerrain.cpp`、衝撃と地形に沿うリングは `TacticalEffects.cpp`。生成元のOBJと素材を保ち、新しい版の素材は `Tools/prepare_battle_cinema.py` で作成する。詳しくは [BATTLE_VISUALS_V2.md](BATTLE_VISUALS_V2.md)。
+## UEのマップ第３段
+
+序章の護送経路と戦後の達成方法は `NewGame/JourneyOpening.cpp`、実際の車の進行は `StrategistJourneyObjectives.cpp`。`TacticalOpeningPresentation.cpp` が軍議と戦果の表示内容、`TacticalOpeningInterface.cpp` が経路選択、`TacticalOpeningTests.cpp` が公開命令による勝利確認を担当する。詳細は [OPENING_UPGRADE.md](OPENING_UPGRADE.md)。
+
+戦術ポーズ付き同時進行の時計・継続命令・経路は `NewGame/JourneyRealtime.cpp`、UEの入力接続は `TacticalRealtime.cpp`、操作欄は `TacticalRealtimeInterface.cpp`。既存の敵AIを計画と適用に分け、交戦・補給・護送の更新を手動指揮と共有する。任意切替の12秒周期の試作であり、詳細は [REALTIME_COMMAND_PROTOTYPE.md](REALTIME_COMMAND_PROTOTYPE.md)。
+
+連鎖の合図待ちは `NewGame/JourneyChainSignal.cpp` で現在の予約と同一の計画だけを許可し、観測情報から全手の成立を確認する。`TacticalChainSignal.cpp` が発動・解除・発動後の停止を担当。予測は命令・戦況の更新時に行い、演出中は未来の解決結果を表示しない。通常の手動発動と同じ戦法処理を呼び出す。
+
+伝令の報告は `NewGame/JourneyBattleWatch.cpp` が観測情報と味方の実際の損耗・移動結果から抽出する。`JourneyOrderRead.cpp` は経路の残りと進路なしを読み取る。`TacticalBattleWatch.cpp` は演出後まで報告を保留し、`TacticalBattleWatchInterface.cpp` が履歴・カメラ復帰を担当。詳細は [BATTLE_WATCH.md](BATTLE_WATCH.md)。
+
+行軍計画は `JourneyMarch.cpp` が地点・到着後の命令、`JourneyRealtimeRouting.cpp` が区間と全体の経路を担当する。時計・同時移動は `JourneyRealtime.cpp` に残した。UE側は `TacticalMarch.cpp` が命令と表示、`TacticalMarchInterface.cpp` が計画画面、`TacticalMarchOverlay.cpp` が森でも見える経路を担当する。詳細は [MARCH_PLAN.md](MARCH_PLAN.md)。
+
+地形の高さと稜線の接続キャッシュは TacticalSurface.cpp、地表とHEXは TacticalTerrain.cpp、橋・集落・畑と背景キャッシュは TacticalMapScenery.cpp、曲線の水路と川岸は TacticalMapWater.cpp に分担。TacticalMapMesh.h は共通の上向き地表メッシュを作る。オリジナル岩素材と斜面への混合は prepare_map_art.py。仕様・素材の生成プロンプト・確認結果は [MAP_VISUALS_V3.md](MAP_VISUALS_V3.md)。
+
+## UEの拠点と森の視認性
+
+TacticalFortifications.cpp が公開された都市と任務地点の建築・旗、TacticalFoliage.cpp が観測済みの表示部隊に追従する葉の透過を担当する。形状は make_battlefield_props.py、素材は prepare_field_readability.py。透過には表示用の部隊情報だけを使い、未知の敵の座標を渡さない。詳しくは [FIELD_VISUALS_V4.md](FIELD_VISUALS_V4.md)。
+
+## UE序章の記録（2026-10-26）
+
+`NewGame/JourneySave.hpp` が保存セッションの入口。アーカイブは世界・戦闘・セッションの３CPPに分け、検証は `JourneySaveValidation.cpp` に置く。UEの状態変換は `TacticalSession.cpp`、ファイル保存は `TacticalSaveStorage.cpp`、自動保存は `TacticalCheckpoint.cpp`、確認と画面は `TacticalSaveMenu.cpp` / `TacticalSaveInterface.cpp`。変更時は [JOURNEY_SAVE.md](JOURNEY_SAVE.md) の互換性と再挑戦の資源整合を確認する。
+
+## 画面の責務分割（2026-10-26）
+
+`TacticalInterface.cpp` は組立、`TacticalChrome` は共通装飾。戦闘ヘッダー・武将カード・命令・伝令・地図の札・出会いはそれぞれ `TacticalBattleHeader.cpp` / `TacticalRosterInterface.cpp` / `TacticalCommandsInterface.cpp` / `TacticalBattleFeed.cpp` / `TacticalMapLabels.cpp` / `TacticalEncounterInterface.cpp`。座標、肖像の比率と各画面の意図は [UI_VISUAL_REFINEMENT.md](UI_VISUAL_REFINEMENT.md)。
+
+## 戦場の視点と隊形（2026-10-26）
+
+`TacticalCamera.cpp` に視点操作、`TacticalFormation` に代表兵の配置、`TacticalLabelLayout.cpp` / `TacticalLabelLeaders.cpp` に観測済み部隊札の配置と引き出し線を分けた。操作と、描画がシミュレーションを変えない検証は [BATTLE_VIEW_UPGRADE.md](BATTLE_VIEW_UPGRADE.md)。
+
+## 連鎖の予約を読む画面（2026-10-26）
+
+`TacticalChainInterface.cpp` が顔付き手順カード、`TacticalChainOverlay.cpp` が表示中の担当と対象を結ぶ点線、`TacticalChainVisual.h` が色・状態名を担当する。`TacticalChainPresentationTests.cpp` と視点検証で、予測済み・停止・後続未判定、地図番号の並べ替えを確認。詳細は [CHAIN_VISUAL_UPGRADE.md](CHAIN_VISUAL_UPGRADE.md)。
+
+## 戦場の環境素材と光（2026-10-26）
+
+`prepare_landscape_finish.py` がバージョン付きの地面・木立・岩・草・水と照明、`make_landscape_details.py` が新しい岩の形状を担当。`TacticalSurface.cpp` で連続する稜線、`TacticalTerrain.cpp` で幹・枝・樹冠と法線、`TacticalMapWater.cpp` で深浅のある川を描く。[設定と検証](LANDSCAPE_VISUAL_REFINEMENT.md)。
+
+## 戦法のカットインと演出（2026-10-26）
+
+表示内容は TacticalCinematicRead.cpp、見た目は TacticalCinematicStyle / TacticalInkStroke / TacticalCinematicInterface.cpp、人物絵は TacticalCutinPortraits.cpp、自動の視点は TacticalCinematicCamera.cpp、3D効果は TacticalTacticEffects に分担。TacticalCinematicTests.cpp と視点検証で、実戦果・公開時点・失敗・スキップ・表示だけの視点変更を確認。[仕様と素材](TACTIC_CINEMA_UPGRADE.md)。
+
+## 城郭と山の背景（2026-10-26）
+
+城郭は `TacticalFortressBackdrop.cpp`、山は `TacticalMountainBackdrop.cpp`、外縁の地面は `TacticalBackdropGround.cpp`、背景専用の頂点共有は `TacticalSceneryMesh.h`。`TacticalBackdropTests.cpp` は盤外配置と戦闘データの不変性を確認する。`TacticalMapScenery.cpp` のキャッシュは選択変更で背景を再生成しない。[仕様・素材・確認結果](FORTRESS_BACKDROP_UPGRADE.md)。

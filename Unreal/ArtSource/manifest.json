@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "source": "App/OfficerArt/shu-portraits-v1.png",
+      "destination": "/Game/Art/Officers",
+      "name": "T_ShuPortraitSheet",
+      "kind": "portrait",
+      "provenance": "Original AI-generated artwork; see App/OfficerArt/README.md and PROMPTS.md."
+    },
+    {
+      "source": "App/OfficerArt/wei-portraits-v1.png",
+      "destination": "/Game/Art/Officers",
+      "name": "T_WeiPortraitSheet",
+      "kind": "portrait",
+      "provenance": "Original AI-generated artwork; see App/OfficerArt/README.md and PROMPTS.md."
+    },
+    {
+      "source": "App/OfficerArt/wu-portraits-v1.png",
+      "destination": "/Game/Art/Officers",
+      "name": "T_WuPortraitSheet",
+      "kind": "portrait",
+      "provenance": "Original AI-generated artwork; see App/OfficerArt/README.md and PROMPTS.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Battle/ground-albedo-v1.png",
+      "destination": "/Game/Art/Battle",
+      "name": "T_BattleGround",
+      "kind": "terrain-albedo",
+      "provenance": "Original image_gen texture, 2026-10-22. Final prompt and provenance: Unreal/ArtSource/Battle/README.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Battle/rock-albedo-v3.png",
+      "destination": "/Game/Art/Battle",
+      "name": "T_MapRockV3",
+      "kind": "terrain-albedo",
+      "provenance": "Original builtin image_gen texture, 2026-10-24. Prompt: MAP_VISUALS_V3.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Cutins/liu-bei-cutin-v1.png",
+      "destination": "/Game/Art/Officers",
+      "name": "T_LiuCutinV1",
+      "kind": "tactic-cutin",
+      "provenance": "Original built-in image_gen artwork, 2026-10-26. Identity reference: project Shu atlas. Prompts and alpha verification: Unreal/ArtSource/Cutins/README.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Cutins/guan-yu-cutin-v1.png",
+      "destination": "/Game/Art/Officers",
+      "name": "T_GuanCutinV1",
+      "kind": "tactic-cutin",
+      "provenance": "Original built-in image_gen artwork, 2026-10-26. Identity reference: project Shu atlas. Prompts and alpha verification: Unreal/ArtSource/Cutins/README.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Cutins/zhang-fei-cutin-v1.png",
+      "destination": "/Game/Art/Officers",
+      "name": "T_ZhangCutinV1",
+      "kind": "tactic-cutin",
+      "provenance": "Original built-in image_gen artwork, 2026-10-26. Identity reference: project Shu atlas. Prompts and alpha verification: Unreal/ArtSource/Cutins/README.md."
+    }
+  ]
+}

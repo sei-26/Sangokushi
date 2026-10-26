@@ -1,0 +1,12 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.7",
+  "Category": "Games",
+  "Description": "Gunyu Senzen: engine migration trial using the existing tactical rules.",
+  "Modules": [{ "Name": "GunyuTactics", "Type": "Runtime", "LoadingPhase": "Default" }],
+  "Plugins": [
+    { "Name": "ProceduralMeshComponent", "Enabled": true },
+    { "Name": "PythonScriptPlugin", "Enabled": true, "TargetAllowList": ["Editor"] },
+    { "Name": "EditorScriptingUtilities", "Enabled": true, "TargetAllowList": ["Editor"] }
+  ]
+}

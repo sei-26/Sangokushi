@@ -3,18 +3,6 @@
 
 namespace frontline
 {
-	const char32_t* TacticChain::Name(ChainTactic tactic)
-	{
-		switch (tactic)
-		{
-		case ChainTactic::Lure:
-			return U"誘導";
-		case ChainTactic::Ambush:
-			return U"伏兵";
-		default:
-			return U"突破";
-		}
-	}
 	bool TacticChain::Living(const Campaign& world, int army)
 	{
 		return army >= 0 && army < static_cast<int>(world.armies.size()) && world.armies[army].troops > 0;
@@ -44,6 +32,7 @@ namespace frontline
 	void TacticChain::Reset(const Campaign& world)
 	{
 		concealed.assign(world.armies.size(), false);
+		signatureUsed.assign(world.armies.size(), false);
 		BeginTurn(world);
 	}
 	void TacticChain::BeginTurn(const Campaign& world)
@@ -51,6 +40,9 @@ namespace frontline
 		moved.assign(world.armies.size(), false);
 		spent.assign(world.armies.size(), false);
 		disordered.assign(world.armies.size(), false);
+		pressured.assign(world.armies.size(), false);
+		inspired.assign(world.armies.size(), false);
+		signatureUsed.resize(world.armies.size(), false);
 		concealed.resize(world.armies.size(), false);
 		for (int i = 0; i < static_cast<int>(world.armies.size()); ++i)
 			if (!Living(world, i))
@@ -118,10 +110,11 @@ namespace frontline
 		}
 		auto& victim = world.armies[enemy];
 		const auto& actor = world.armies[army];
-		const int damage = std::min(victim.troops, 100 + actor.troops / 12);
+		const int damage = std::min(victim.troops, (100 + actor.troops / 12) * (inspired[army] ? 120 : 100) / 100);
 		victim.troops -= damage;
 		victim.morale = std::max(0, victim.morale - 5);
 		spent[army] = true;
+		inspired[army] = false;
 		concealed[army] = false;
 		++world.revision;
 		const auto number = std::to_string(damage);
@@ -129,92 +122,13 @@ namespace frontline
 		         std::u32string(number.begin(), number.end()) + U"減らした。";
 		return true;
 	}
-	ChainEvent TacticChain::Apply(Campaign& world, const ChainOrder& order)
-	{
-		ChainEvent event;
-		event.army = order.army;
-		event.enemy = order.enemy;
-		event.tactic = order.tactic;
-		const auto fail = [&](const char32_t* reason) {
-			event.reason = reason;
-			return event;
-		};
-		if (!Living(world, order.army) || world.armies[order.army].faction != world.player)
-			return fail(U"担当部隊が戦場にいない。後続の戦法は保留した。");
-		if (!Living(world, order.enemy) || !world.Hostile(world.player, world.armies[order.enemy].faction))
-			return fail(U"対象の敵がいない。後続の戦法は保留した。");
-		if (spent[order.army])
-			return fail(U"担当部隊はこの指揮で戦法・攻撃を使用済み。");
-		auto& actor = world.armies[order.army];
-		auto& victim = world.armies[order.enemy];
-		if (actor.troops < 150 || actor.morale < 15)
-			return fail(U"担当部隊の兵力か士気が不足。");
-		if (world.MapDistance(actor.tile, victim.tile) != 1)
-			return fail(U"敵が隣接していない。誘導先と担当の配置を見直そう。");
-		const auto expected = order.tactic == ChainTactic::Lure     ? Tactic::Rally
-		                      : order.tactic == ChainTactic::Ambush ? Tactic::Ambush
-		                                                            : Tactic::Charge;
-		if (world.generals[actor.general].tactic != expected)
-			return fail(U"この武将は、その戦法を担当できない。");
-		event.from = victim.tile;
-		if (order.tactic == ChainTactic::Lure)
-		{
-			if (victim.stance == battle::Stance::Guard)
-				return fail(U"敵は固守して誘いを追わない。攻撃や別の相手から組み直そう。");
-			if (moved[order.army])
-				return fail(U"誘導役は移動済み。後退する余力がない。");
-			if (!Free(world, order.destination) || world.MapDistance(actor.tile, order.destination) != 1 ||
-			    world.MapDistance(victim.tile, order.destination) <= 1)
-				return fail(U"敵から離れる隣接マスへ後退先を指定しよう。");
-			const int old = actor.tile;
-			actor.tile = actor.target = order.destination;
-			victim.tile = victim.target = old;
-			actor.troops -= std::min(60, actor.troops - 1);
-			moved[order.army] = true;
-			event.reason = U"敵が追撃し、誘導役のいたマスへ入った。囮の兵60を消耗。";
-		}
-		else if (order.tactic == ChainTactic::Ambush)
-		{
-			if (!concealed[order.army] || world.tiles[actor.tile].terrain != Terrain::Forest)
-				return fail(U"伏兵が準備されていないか、すでに露見している。");
-			event.damage =
-			    std::min(victim.troops, actor.troops / 6 + world.generals[actor.general].leadership * 2);
-			victim.troops -= event.damage;
-			victim.morale = std::max(0, victim.morale - 25);
-			disordered[order.enemy] = true;
-			event.reason = U"森林から急襲。敵の隊列を崩し、突破をつなげられる。";
-		}
-		else
-		{
-			if (!disordered[order.enemy] && victim.morale > 60)
-				return fail(U"敵の隊列が整っている。伏兵で崩すか、士気を60以下へ落とそう。");
-			const int push = PushTile(world, order.army, order.enemy);
-			if (!Free(world, push))
-				return fail(U"押し出す先が塞がれている。後続の戦法は保留した。");
-			event.damage =
-			    std::min(victim.troops, actor.troops / 5 + world.generals[actor.general].leadership * 3);
-			victim.troops -= event.damage;
-			victim.morale = std::max(0, victim.morale - 15);
-			actor.tile = actor.target = victim.tile;
-			victim.tile = victim.target = push;
-			moved[order.army] = true;
-			event.reason = U"崩れた隊列を突破。敵を１マス押し出し、空いた場所へ進んだ。";
-		}
-		actor.path.clear();
-		victim.path.clear();
-		concealed[order.army] = false;
-		spent[order.army] = true;
-		actor.morale = std::max(0, actor.morale - 10);
-		event.to = victim.tile;
-		event.success = true;
-		++world.revision;
-		return event;
-	}
 	ChainResult TacticChain::Resolve(Campaign& world, const std::vector<ChainOrder>& orders)
 	{
 		ChainResult result;
 		if (orders.empty() || orders.size() > 3)
 			return result;
+		const auto count = world.armies.size();
+		for (auto* flags : {&concealed, &moved, &spent, &disordered, &pressured, &inspired, &signatureUsed}) flags->resize(count, false);
 		for (const auto& order : orders)
 		{
 			auto event = Apply(world, order);
@@ -248,6 +162,7 @@ namespace frontline
 		// action mutates the world. A bad hidden target must not probe reality.
 		for (const auto& order : orders)
 		{
+			if (!Definition(order.tactic).targetsEnemy) continue;
 			const auto* contact = known.Find(order.enemy);
 			if (!contact || !contact->current)
 			{

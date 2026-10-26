@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-26",
+  "tool": "built-in image_gen, imagegen skill",
+  "reference": "App/OfficerArt/shu-portraits-v1.png (project original atlas, identity only)",
+  "transparent_background": true,
+  "assets": [
+    {
+      "file": "liu-bei-cutin-v1.png",
+      "sha256": "78291b7cf7c12a94d30c19ad6ab5c5893925e647d267b48e67c679a353d8fc1f",
+      "prompt": "Use case: historical-scene. Asset type: a single original transparent character illustration for an Unreal historical strategy game's large tactic cut-in. The supplied atlas is ONLY an identity and costume reference for the specified single character. Paint only that character, no atlas, no other people. Detailed realistic painterly illustration, expressive commanding face, elegant hand-painted historical Chinese cloth and lamellar armor, cinematic warm rim lighting, subtle restrained ink edges. Portrait orientation; entire head and headgear, shoulders, arms and torso down to mid-thigh fully inside the canvas, generous 8% transparent padding on all sides; no cropped elbows, no weapons extending out of frame. Three-quarter view looking to the right, pose with one arm commanding toward the right. Authentic transparent alpha background, no scenery, no text, no labels, no logos, no UI. Design should be original and match this project's supplied art, not another game's illustration.\nCharacter: Liu Bei: the man in the atlas TOP ROW FIRST COLUMN, with small gold crown, black hair topknot, slim mustache and narrow goatee, calm compassionate but determined face, dark emerald robe with antique gold brocade. Preserve that man's facial identity. Green robe over subtle armor, one hand giving a clear command and the other near his waist."
+    },
+    {
+      "file": "guan-yu-cutin-v1.png",
+      "sha256": "5f776a4e9db29ee9720fdb397204c232c0ea37ae0c1abfa5fe7e2fbc4db34c4d",
+      "prompt": "Use case: historical-scene. Asset type: a single original transparent character illustration for an Unreal historical strategy game's large tactic cut-in. The supplied atlas is ONLY an identity and costume reference for the specified single character. Paint only that character, no atlas, no other people. Detailed realistic painterly illustration, expressive commanding face, elegant hand-painted historical Chinese cloth and lamellar armor, cinematic warm rim lighting, subtle restrained ink edges. Portrait orientation; entire head and headgear, shoulders, arms and torso down to mid-thigh fully inside the canvas, generous 8% transparent padding on all sides; no cropped elbows, no weapons extending out of frame. Three-quarter view looking to the right, pose with one arm commanding toward the right. Authentic transparent alpha background, no scenery, no text, no labels, no logos, no UI. Design should be original and match this project's supplied art, not another game's illustration.\nCharacter: Guan Yu: the man in SECOND ROW FIRST COLUMN, with green headwrap, long black beard and stern angular weathered face. Preserve that man's facial identity. Layered emerald robe over dark gold lamellar armor, tall imposing torso and green flowing cloth, one hand extended in command, the other holding his long beard. No polearm needed."
+    },
+    {
+      "file": "zhang-fei-cutin-v1.png",
+      "sha256": "e8a0d2212c383cc111544bcb7dcd4193a41386d91e822d125ba6bdaf7925ed00",
+      "prompt": "Use case: historical-scene. Asset type: a single original transparent character illustration for an Unreal historical strategy game's large tactic cut-in. The supplied atlas is ONLY an identity and costume reference for the specified single character. Paint only that character, no atlas, no other people. Detailed realistic painterly illustration, expressive commanding face, elegant hand-painted historical Chinese cloth and lamellar armor, cinematic warm rim lighting, subtle restrained ink edges. Portrait orientation; entire head and headgear, shoulders, arms and torso down to mid-thigh fully inside the canvas, generous 8% transparent padding on all sides; no cropped elbows, no weapons extending out of frame. Three-quarter view looking to the right, pose with one arm commanding toward the right. Authentic transparent alpha background, no scenery, no text, no labels, no logos, no UI. Design should be original and match this project's supplied art, not another game's illustration.\nCharacter: Zhang Fei: the man in TOP ROW THIRD COLUMN, broad face, wild black hair topknot, thick black beard and fierce eyes, stocky muscular build, black and antique bronze armor with dark red scarf and cloak. Preserve that man's facial identity. Roaring battle command, forceful raised fist, powerful shoulders and complete visible arms."
+    }
+  ]
+}

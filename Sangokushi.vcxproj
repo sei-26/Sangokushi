@@ -380,9 +380,12 @@
     <ClInclude Include="NewGame\StrategistJourney.hpp" />
     <ClInclude Include="NewGame\StrategistJourneyScene.hpp" />
     <ClCompile Include="NewGame\TacticChain.cpp" />
+    <ClCompile Include="NewGame\TacticCatalog.cpp" />
+    <ClCompile Include="NewGame\TacticChainActions.cpp" />
     <ClCompile Include="NewGame\StrategistJourney.cpp" />
     <ClCompile Include="NewGame\StrategistJourneyAI.cpp" />
+    <ClCompile Include="NewGame\JourneyEnemyPlan.cpp" />
     <ClCompile Include="NewGame\StrategistJourneyScene.cpp" />
     <ClCompile Include="NewGame\StrategistJourneySceneDraw.cpp" />
   </ItemGroup>
-</Project>
+<ItemGroup><ClInclude Include="NewGame\JourneyMission.hpp" /><ClCompile Include="NewGame\StrategistJourneyObjectives.cpp" /></ItemGroup></Project>

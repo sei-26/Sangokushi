@@ -14,8 +14,12 @@ try {
     New-Item -ItemType Directory -Path 'Intermediate/tests/core','Intermediate/tests/save' -Force | Out-Null
     $taskCampaignFiles = @(
         'NewGame\TacticChain.cpp',
+        'NewGame\TacticCatalog.cpp',
+        'NewGame\TacticChainActions.cpp',
         'NewGame\StrategistJourney.cpp',
         'NewGame\StrategistJourneyAI.cpp',
+        'NewGame\JourneyEnemyPlan.cpp',
+        'NewGame\StrategistJourneyObjectives.cpp',
         'NewGame\StrategistBattle.cpp',
         'NewGame\BattleIntelligence.cpp',
         'NewGame\StrategistBattleIntelligence.cpp',
@@ -75,6 +79,18 @@ try {
     $taskChains = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\TacticChainTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\TacticChainTests.exe /Fo:Intermediate\TacticChainTests.obj /link /STACK:8388608 && Intermediate\TacticChainTests.exe"
     & cmd /c $taskChains
     if ($LASTEXITCODE -ne 0) { throw 'Tactic chain and journey continuity tests failed.' }
+    $taskRepertoire = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\TacticRepertoireTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\TacticRepertoireTests.exe /Fo:Intermediate\TacticRepertoireTests.obj /link /STACK:8388608 && Intermediate\TacticRepertoireTests.exe"
+    & cmd /c $taskRepertoire
+    if ($LASTEXITCODE -ne 0) { throw 'Tactic repertoire and unique tactic tests failed.' }
+    $taskEnemyPlans = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\JourneyEnemyPlanTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\JourneyEnemyPlanTests.exe /Fo:Intermediate\JourneyEnemyPlanTests.obj /link /STACK:8388608 && Intermediate\JourneyEnemyPlanTests.exe"
+    & cmd /c $taskEnemyPlans
+    if ($LASTEXITCODE -ne 0) { throw 'Journey enemy plan tests failed.' }
+    $taskObjectives = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\JourneyMissionTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\JourneyMissionTests.exe /Fo:Intermediate\JourneyMissionTests.obj /link /STACK:8388608 && Intermediate\JourneyMissionTests.exe"
+    & cmd /c $taskObjectives
+    if ($LASTEXITCODE -ne 0) { throw 'Journey mission objective tests failed.' }
+    $taskPlaythrough = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\JourneyPlaythroughTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\JourneyPlaythroughTests.exe /Fo:Intermediate\JourneyPlaythroughTests.obj /link /STACK:8388608 && Intermediate\JourneyPlaythroughTests.exe"
+    & cmd /c $taskPlaythrough
+    if ($LASTEXITCODE -ne 0) { throw 'Journey player-command playthrough failed.' }
     $taskBudget = "call `"$taskVcVars`" >nul && cl /nologo /EHsc /std:c++17 /MT /utf-8 tests\CommandBudgetTests.cpp Intermediate\tests\CampaignCore.lib /Fe:Intermediate\CommandBudgetTests.exe /Fo:Intermediate\CommandBudgetTests.obj /link /STACK:8388608 && Intermediate\CommandBudgetTests.exe"
     & cmd /c $taskBudget
     if ($LASTEXITCODE -ne 0) { throw 'Command budget tests failed.' }

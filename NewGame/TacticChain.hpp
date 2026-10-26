@@ -7,7 +7,24 @@ namespace frontline
 	{
 		Lure,
 		Ambush,
-		Breakthrough
+		Breakthrough,
+		Feint,
+		Disrupt,
+		Oath,
+		AzureDragon,
+		SerpentRoar
+	};
+	struct ChainTacticDefinition
+	{
+		ChainTactic id;
+		const char32_t *name, *description;
+		int moraleCost;
+		bool unique, targetsEnemy;
+	};
+	struct ChainUnitChange
+	{
+		int army, tile, troops, morale;
+		bool concealed, disordered, pressured, inspired;
 	};
 	struct ChainOrder
 	{
@@ -21,6 +38,7 @@ namespace frontline
 		ChainTactic tactic = ChainTactic::Lure;
 		bool success = false;
 		std::u32string reason;
+		std::vector<ChainUnitChange> changes; // Per-event facts for playback, never final-state guesses.
 	};
 	struct ChainResult
 	{
@@ -33,7 +51,7 @@ namespace frontline
 	class TacticChain
 	{
 	public:
-		std::vector<bool> concealed, moved, spent, disordered;
+		std::vector<bool> concealed, moved, spent, disordered, pressured, inspired, signatureUsed;
 		void Reset(const Campaign& world);
 		void BeginTurn(const Campaign& world);
 		bool ArmAmbush(Campaign& world, int army, std::u32string& reason);
@@ -46,6 +64,9 @@ namespace frontline
 		ChainResult Execute(Campaign& world, const BattleIntelligence& known,
 		                    const std::vector<ChainOrder>& orders);
 		static const char32_t* Name(ChainTactic tactic);
+		static const ChainTacticDefinition& Definition(ChainTactic tactic);
+		static std::vector<ChainTactic> Loadout(const Campaign& world, int army);
+		static bool CanUse(const Campaign& world, int army, ChainTactic tactic);
 		static bool Living(const Campaign& world, int army);
 		static bool Free(const Campaign& world, int tile);
 		static int PushTile(const Campaign& world, int attacker, int enemy);

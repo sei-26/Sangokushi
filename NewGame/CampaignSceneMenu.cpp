@@ -23,7 +23,7 @@ void CampaignScene::drawMenu() const
 	story.draw(ColorF(.02, .05, .04, .45));
 	FontAsset(U"campaignTitle")(m_journey.Started() ? U"本編序章 ― 軍師の第一策 / 再開" : U"本編序章 ― 軍師の第一策")
 	    .draw(story.x + 24, story.y + 9, ColorF(.96, .85, .59));
-	FontAsset(U"campaignSmall")(U"黄巾の乱を背景に、出会い → 軍議 → 戦法連鎖 → 戦果を引き継ぐ２戦の試作")
+	FontAsset(U"campaignSmall")(U"黄巾の乱を背景に、出会い → 軍議 → 戦法連鎖 → 突破・護送・防衛の３戦へ")
 	    .draw(story.x + 28, story.y + 57, ColorF(.81, .88, .76));
 	FontAsset(U"campaignSmall")(U"従来の自由戦略 / 本編との統合前")
 	    .drawAt(Scene::Center().x, Scene::Center().y - 39, ColorF(.72, .81, .74));

@@ -14,7 +14,7 @@ namespace frontline
 	}
 	const char32_t* StrategistJourney::MissionName() const
 	{
-		return mission == 0 ? U"第一策 / 民の退路を開け" : U"第二策 / 追撃から仲間を守れ";
+		return Definition().title;
 	}
 	void StrategistJourney::Report(const std::u32string& text)
 	{
@@ -57,8 +57,12 @@ namespace frontline
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
 		turn = 1;
+		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
+		guarding = {};
 		enemyPolicy = 0;
 		won = reinforced = false;
+		withdrawn = false; promise = JourneyPromise::OpenRoad; history = {};
+        convoyRoute=JourneyConvoyRoute::Road;battleReview={};
 		goal = Campaign::At(12, 10);
 		lastChain = {};
 		reports.clear();
@@ -86,43 +90,87 @@ namespace frontline
 		Report(U"軍資金250・兵糧500を使い、義勇兵1,200を集めた。今回はこれ以上募れない。");
 		return true;
 	}
+	JourneySupplies StrategistJourney::PreparationCosts(int choice) const
+	{
+		const bool escort = Definition().kind == JourneyObjective::Escort;
+		return {(choice == 0 ? 3000 : 4800) + (HasConvoy() ? 900 : 0), (choice == 0 ? 200 : 80)+(IsRescue() ? ConvoyPlan(convoyRoute).guideGold : 0),
+		        escort ? 2000 : 0, HasConvoy() ? 600 : 0};
+	}
+	bool StrategistJourney::CanPrepare(int choice) const
+	{
+		if (stage != JourneyStage::Preparation || choice < 0 || choice > 1 || world.cities.empty())
+			return false;
+		const auto cost = PreparationCosts(choice);
+		const auto& camp = world.cities[0];
+		return camp.food >= cost.TotalFood() && camp.gold >= cost.gold && camp.troops >= cost.MinimumTroops();
+	}
 	bool StrategistJourney::Prepare(int choice, int policy)
 	{
 		if (stage != JourneyStage::Preparation || choice < 0 || choice > 1 || policy < 0 || policy > 2)
 			return false;
 		auto& camp = world.cities[0];
-		const int food = choice == 0 ? 3000 : 4800, gold = choice == 0 ? 200 : 80;
-		if (camp.food < food || camp.gold < gold || camp.troops < 1600)
+		const bool escort = HasConvoy();
+		const auto cost = PreparationCosts(choice);
+		const int food = cost.food, gold = cost.gold, cargo = cost.cargo;
+		if (!CanPrepare(choice))
 		{
 			message = U"兵・兵糧・軍資金が不足。募兵か準備方針を見直そう。";
 			return false;
 		}
-		camp.food -= food;
+		convoyEscort = cost.escort;
+		SetupBattlefield();
+		camp.food -= food + cargo;
 		camp.gold -= gold;
-		deployed = std::min(4200, camp.troops - 1000);
-		camp.troops -= deployed;
+		deployed = std::min(4200, camp.troops - 1000 - convoyEscort);
+		camp.troops -= deployed + convoyEscort;
 		preparation = choice;
 		enemyPolicy = policy;
 		turn = 1;
 		won = false;
+		withdrawn = false;
 		survivors = casualties = 0;
 		lastChain = {};
+		heldTurns = convoyStep = recoveredCargo = 0;
+        battleReview={};
+		guarding = {};
+		goal = IsRescue() ? Campaign::At(12, 11) : Definition().goal;
 		world.armies.clear();
-		const int positions[] = {Campaign::At(9, 10), Campaign::At(8, 9), Campaign::At(8, 10),
-		                         Campaign::At(10, 10),
-		                         policy == 2 ? Campaign::At(7, 11) : Campaign::At(14, 11)};
 		for (int i = 0; i < 5; ++i)
 		{
 			Army army;
 			army.general = i;
 			army.faction = i < 3 ? 0 : 1;
-			army.tile = army.target = positions[i];
+			army.tile = army.target = Definition().positions[i];
+			if (i == 4 && policy == 2 && mission < 2)
+				army.tile = army.target = Campaign::At(7, 11);
 			army.troops = i < 3 ? deployed / 3 + (i < deployed % 3 ? 1 : 0) : i == 3 ? 1800 : 1300;
-			army.food = i < 3 ? food / 3 : 3000;
+			army.food = i < 3 ? (food - (escort ? 900 : 0)) / 3 : 3000;
 			army.morale = choice == 1 && i < 3 ? 100 : 90;
 			army.stance = i >= 3 && policy == 1 ? battle::Stance::Guard : battle::Stance::Balanced;
 			army.scouting = i == 4 && policy == 2;
 			world.armies.push_back(army);
+		}
+		if (escort)
+		{
+			if (world.generals.size() < 6)
+			{
+				General carrier;
+				carrier.name = U"糧秣係";
+				carrier.faction = 0;
+				carrier.home = 0;
+				carrier.trait = Trait::Quartermaster;
+				world.generals.push_back(carrier);
+			}
+			world.generals[ConvoyArmy].name = IsRescue() ? U"季安の避難車" : history[0].rescued ? U"季安の糧車" : U"糧秣係";
+			Army cart;
+			cart.general = ConvoyArmy;
+			cart.faction = 0;
+			cart.arm = Arm::Transport;
+			cart.tile = cart.target = Campaign::At(6, 11);
+			cart.troops = convoyEscort;
+			cart.food = 900;
+			cart.cargoFood = cargo;
+			world.armies.push_back(cart);
 		}
 		stage = JourneyStage::Battle;
 		chain.Reset(world);
@@ -131,11 +179,14 @@ namespace frontline
 		for (auto& known : intelligence)
 			known.Reset(world);
 		RefreshIntelligence();
-		Report(choice == 0
+		Report(mission > 0 ? Definition().briefing
+		       : choice == 0
 		           ? (chain.concealed[1]
 		                  ? U"関羽隊が森林で伏兵を準備。劉備の誘導 → 関羽の伏兵 → 張飛の突破を狙える。"
 		                  : U"敵の斥候が接近し、伏兵を見破った。斥候を退けるか、別の森林へ配置し直そう。")
 		           : U"多めの兵糧で出陣。関羽を選び「伏兵準備」をすれば連鎖を組める。");
+		if (IsRescue())
+			Report(U"季安の避難車を東の出口へ護送する。先鋒を崩すだけでは終わらない。車の道を空け、追撃と護衛を分担しよう。");
 		return true;
 	}
 	void StrategistJourney::RefreshIntelligence()
@@ -150,6 +201,7 @@ namespace frontline
 			bool exposed = false;
 			for (int enemy = 3; enemy < static_cast<int>(world.armies.size()); ++enemy)
 				if (TacticChain::Living(world, enemy) &&
+				    world.Hostile(world.armies[i].faction, world.armies[enemy].faction) &&
 				    world.MapDistance(world.armies[i].tile, world.armies[enemy].tile) <=
 				        (world.armies[enemy].scouting ? 3 : 1) &&
 				    world.ClearShot(world.armies[enemy].tile, world.armies[i].tile))
@@ -210,6 +262,8 @@ namespace frontline
 		if (stage != JourneyStage::Battle)
 			return {};
 		lastChain = chain.Execute(world, intelligence[0], orders);
+        ++battleReview.tacticAttempts;battleReview.tacticSteps+=lastChain.completed;
+        battleReview.longestChain=std::max(battleReview.longestChain,lastChain.completed);
 		bestChain = std::max(bestChain, lastChain.completed);
 		for (const auto& event : lastChain.events)
 			Report(event.reason);
@@ -232,7 +286,19 @@ namespace frontline
 			world.armies[i].food = 0;
 		}
 		world.cities[0].troops += survivors;
-		casualties = deployed - survivors;
+		if (HasConvoy() && TacticChain::Living(world, ConvoyArmy))
+		{
+			auto& cart = world.armies[ConvoyArmy];
+			recoveredCargo = cart.cargoFood;
+			survivors += cart.troops;
+			world.cities[0].troops += cart.troops;
+			world.cities[0].food += cart.food + cart.cargoFood;
+			cart.food = cart.cargoFood = 0;
+		}
+		casualties = deployed + convoyEscort - survivors;
+        CompleteBattleReview(success);
+		history[mission] = {true, success, withdrawn, success && IsRescue(), survivors, casualties};
+        history[mission].review=battleReview;history[mission].route=convoyRoute;
 		if (success)
 		{
 			trust += 10;
@@ -243,44 +309,19 @@ namespace frontline
 		}
 		Report(reason);
 	}
-	void StrategistJourney::Evaluate()
-	{
-		if (stage != JourneyStage::Battle)
-			return;
-		if (world.armies[0].troops + world.armies[1].troops + world.armies[2].troops < 1800)
-		{
-			Finish(false, U"義勇軍の損耗が大きく、撤退した。次の戦いへ残せる兵を考え直そう。");
-			return;
-		}
-		if (world.armies[3].troops <= 450 || world.armies[3].morale <= 30)
-		{
-			Finish(true, U"敵の先鋒が崩れ、退路を確保した。生き残った兵と残りの携行糧が野営地へ戻る。");
-			return;
-		}
-		bool secured = false, threatened = false;
-		for (int i = 0; i < 3; ++i)
-			if (world.armies[i].troops > 0 && world.armies[i].tile == goal)
-				secured = true;
-		for (int i = 3; i < static_cast<int>(world.armies.size()); ++i)
-			if (world.armies[i].troops > 0 && world.MapDistance(world.armies[i].tile, goal) <= 1)
-				threatened = true;
-		if (secured && !threatened)
-			Finish(true, U"別路から退路の出口を確保した。撃破だけに頼らず、民を逃がす道を開いた。");
-		else if (turn > TurnLimit)
-			Finish(false, U"退路を開く猶予を失った。誘導だけに固執せず、直接攻撃や別路も試そう。");
-	}
 	bool StrategistJourney::Continue()
 	{
 		if (stage != JourneyStage::Debrief || !won)
 			return false;
-		if (mission == 1)
+		if (mission == 2)
 		{
 			stage = JourneyStage::Complete;
-			Report(U"序章の試作範囲を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");
+			Report(U"突破・護送・防衛の３戦を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");
 		}
 		else
 		{
 			++mission;
+            convoyRoute=JourneyConvoyRoute::Road;
 			stage = JourneyStage::Preparation;
 			reinforced = false;
 			enemyPolicy = 1;

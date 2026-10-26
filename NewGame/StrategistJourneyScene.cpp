@@ -65,6 +65,8 @@ Rect StrategistJourneyScene::Control(int id) const
 		return Rect(x, Scene::Height() - 98, 278, 36);
 	if (id == 7)
 		return Rect(x, Scene::Height() - 54, 278, 34);
+	if (id == 8)
+		return Rect(x, 306, 278, 30);
 	return Rect(-1000, -1000, 1, 1);
 }
 void StrategistJourneyScene::Sample()
@@ -251,6 +253,13 @@ void StrategistJourneyScene::Update()
 		m_journey.message = U"通常攻撃の対象を、地図の確認中の敵から選ぶ。";
 		return;
 	}
+	if (Control(8).leftClicked() || KeyG.down())
+	{
+		m_journey.Hold(m_selected);
+		m_orders.clear();
+		m_pick = 0;
+		return;
+	}
 	if (Control(1).leftClicked())
 	{
 		m_pick = 1;
@@ -360,10 +369,23 @@ void StrategistJourneyScene::Preview(int mode)
 	m_journey.Meet();
 	if (mode == 78)
 		return;
+	if (mode >= 84 && mode <= 88)
+	{
+		m_journey.mission = mode == 84 || mode == 86 ? 1 : 2;
+		m_policy = m_journey.mission == 1 ? 1 : 0;
+	}
 	m_checkpoint = std::make_unique<StrategistJourney>(m_journey);
-	m_journey.Prepare(0, mode == 82 ? 1 : 0);
+	m_journey.Prepare(0, mode == 82 ? 1 : m_policy);
 	m_enemy = 3;
-	Sample();
+	if (mode < 84)
+		Sample();
+	if (mode == 87)
+	{
+		m_journey.Move(0, m_journey.goal);
+		m_journey.Hold(0);
+		m_journey.Hold(2);
+		m_journey.EndTurn();
+	}
 	if (mode == 80)
 	{
 		m_journey.Execute(m_orders);

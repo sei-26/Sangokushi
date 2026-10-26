@@ -5,6 +5,11 @@ namespace frontline::preview
 {
     struct Mode { std::string_view name; int id; };
     inline constexpr Mode Modes[] = {
+        {"journey-escort", 84},
+        {"journey-defense", 85},
+        {"journey-escort-compact", 86},
+        {"journey-defense-progress", 87},
+        {"journey-defense-compact", 88},
         {"journey-encounter", 77},
         {"journey-council", 78},
         {"journey-chain", 79},
@@ -99,6 +104,6 @@ namespace frontline::preview
     constexpr bool IsCompact(int mode) noexcept
     {
         return mode == 37 || mode == 48 || mode == 53 || mode == 56 ||
-               mode == 62 || mode == 65 || mode == 68 || mode == 71 || mode == 76 || mode == 83;
+               mode == 62 || mode == 65 || mode == 68 || mode == 71 || mode == 76 || mode == 83 || mode == 86 || mode == 88;
     }
 }

@@ -458,3 +458,11 @@ Intermediate/
 App/Audio/
 App/frontline-save.json
 /App/hero-story-save.json
+
+# Unreal generated files; Content and asset source manifests remain tracked.
+Unreal/Binaries/
+Unreal/Saved/
+Unreal/DerivedDataCache/
+Unreal/.vs/
+Unreal/*.sln
+__pycache__/
