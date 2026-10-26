@@ -112,8 +112,7 @@ void ATacticalField::BeginPlayback()
     State->Units = CurrentBeat()->Before;
     State->HUD.bBusy = true;
     State->HUD.NextLabel = TEXT("演出を完了  /  Space");
-    const auto Cue=ReadTacticCinema();
-    State->HUD.Report = Cue.bVisible ? Cue.Tactic+TEXT(" / 発動準備：")+Cue.Voice : CurrentBeat()->Reason;
+    State->HUD.Report=ReadPlaybackReport();
     PlayCueSound(false);
 }
 void ATacticalField::FinishPlayback()
@@ -148,8 +147,7 @@ void ATacticalField::AdvancePresentation(float Delta)
         const float Progress = BeatProgress();
         if (!State->bImpactPlayed && Progress >= .48f)
         { PlayCueSound(true); State->bImpactPlayed = true; }
-        const auto Cue=ReadTacticCinema();
-        State->HUD.Report = Cue.bVisible && !Cue.bResolved ? Cue.Tactic+TEXT(" / 発動準備：")+Cue.Voice : Beat.Reason;
+
         State->Units = Beat.Before;
         for (int Id = 0; Id < State->Units.Num(); ++Id)
         {
@@ -172,9 +170,10 @@ void ATacticalField::AdvancePresentation(float Delta)
             Unit.Position.Z=SurfaceHeight(Unit.Position);
         }
         for (int Id = 0; Id < State->HUD.Officers.Num(); ++Id)
-            State->HUD.Officers[Id].Status = FString::Printf(TEXT("兵 %d 士気 %d\n行動の推移を確認中"), State->Units[Id].Troops, State->Units[Id].Morale);
+            State->HUD.Officers[Id].Status = FString::Printf(TEXT("兵 %d 士気 %d\n%s"), State->Units[Id].Troops, State->Units[Id].Morale,*ReadUnitActivity(Id).Caption);
         if (State->Units.IsValidIndex(Beat.Target) && State->Units[Beat.Target].Id >= 0)
-            State->HUD.Target = FString::Printf(TEXT("対象: %s\n兵 %d / 実行中"), *State->Units[Beat.Target].Name, State->Units[Beat.Target].Troops);
+            State->HUD.Target = FString::Printf(TEXT("対象: %s\n兵 %d / %s"), *State->Units[Beat.Target].Name, State->Units[Beat.Target].Troops,*ReadUnitActivity(Beat.Target).Caption);
+        State->HUD.Report=ReadPlaybackReport();
     }
     RenderUnits();
     RenderEffects();

@@ -66,6 +66,7 @@ bool ATacticalField::SmokeTest()
     if (!VisualGeometrySmokeTest()) return false;
     if (!BackdropSmokeTest()) return false;
     if (!InfantryMotionSmokeTest()) return false;
+    if (!ActivityReadSmokeTest()) return false;
     if (!RealtimeSmokeTest()) return false;
     if (!ChainSignalSmokeTest()) return false;
     if (!BattleWatchSmokeTest()) return false;

@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "InputCoreTypes.h"
 #include "TacticalPresentation.h"
+#include "TacticalActivity.h"
 #include <vector>
 #include <cstdint>
 #include "TacticalTrial.generated.h"
@@ -102,6 +103,7 @@ public:
     bool VisualGeometrySmokeTest();
     bool BackdropSmokeTest();
     bool InfantryMotionSmokeTest();
+    bool ActivityReadSmokeTest();
     bool RealtimeSmokeTest();
     bool ChainSignalSmokeTest();
     bool BattleWatchSmokeTest();
@@ -126,6 +128,7 @@ public:
     float BeatProgress() const;
     FString CueTitle() const;
     FString CueReason() const;
+    FUnitActivity ReadUnitActivity(int Id) const;
     FTacticCinematicRead ReadTacticCinema() const;
     static FVector TileLocation(int Tile);
     float SurfaceHeight(FVector Point) const;
@@ -185,6 +188,7 @@ private:
     void BeginPlayback();
     void FinishPlayback();
     void RenderUnits();
+    FString ReadPlaybackReport() const;
     void RenderStandards();
     void BuildTerrain();
     void BuildMapScenery();
@@ -267,6 +271,7 @@ private:
     TArray<TPair<FVector2D,FVector2D>> UnitLabelLeaders;
     uint64 LabelLayoutFrame=MAX_uint64;
     TSharedRef<class SWidget> MapLabelLeaderOverlay();
+    TSharedRef<class SWidget> BattleActivityOverlay();
     void BuildRosterInterface(TSharedRef<class SCanvas>);
     void BuildCommandInterface(TSharedRef<class SCanvas>);
     TSharedRef<class SWidget> ChainPlannerWidget();

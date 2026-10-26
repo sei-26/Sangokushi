@@ -336,3 +336,7 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 兵の関節と動作（2026-10-26）
 
 `TacticalSoldierMotion` が観測済みの一手から関節と陣形の補間を求め、`TacticalInfantry` が腕・脚・武器をメッシュの変換へ変える。`TacticalUnits.cpp` は部隊・荷車・旗とバッチ更新に集中する。`TacticalInfantryTests.cpp` は公開時点・未知の敵・関節と武器の接続・一時停止・状態の不変性を確認する。モジュールはCPP間の名前の混入を避けるためunityビルドを使わない。[実装と21検証群](INFANTRY_MOTION_UPGRADE.md)。
+
+## 戦闘中の担当と行動段階（2026-10-26）
+
+`TacticalActivity` は表示中の担当・対象・段階・色、`TacticalActivityRead.cpp` は通常の報告の公開点、`TacticalActivityMarkers.cpp` と `TacticalActivityOverlay.cpp` は向きと対象の盤上表示を担当する。札、武将カード、対象欄へ同じ読み取り結果を接続した。`TacticalActivityTests.cpp` は実連鎖・公開済み損害・未知の敵・支援と停止・状態の不変性を確認。[仕様と22検証群](BATTLE_ACTIVITY_UPGRADE.md)。

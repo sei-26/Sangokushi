@@ -82,6 +82,7 @@ void ATacticalController::BuildInterface()
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MarchRouteOverlay()];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MapLabelLeaderOverlay()];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[ChainPlanOverlay()];
+    Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[BattleActivityOverlay()];
     BuildMapLabels(Canvas);
     BuildBattleHeader(Canvas);
     BuildCameraInterface(Canvas);

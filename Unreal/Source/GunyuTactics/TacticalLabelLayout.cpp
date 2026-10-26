@@ -71,6 +71,7 @@ FString ATacticalController::UnitMapStatus(int Index) const
 {
     const auto& Units=Field->VisualUnits();if(!Units.IsValidIndex(Index) || Units[Index].Id<0) return FString();
     const auto& U=Units[Index];
+    if(Field->IsPlaying()) return Field->ReadUnitActivity(Index).Caption;
     if(U.Troops<=0) return TEXT("戦闘不能");
     if(U.bDisordered) return TEXT("混乱");
     if(U.bPressured) return TEXT("隙あり");
@@ -78,7 +79,6 @@ FString ATacticalController::UnitMapStatus(int Index) const
     if(U.bConcealed) return TEXT("潜伏中");
     if(U.bGuarded) return TEXT("固守");
     if(U.bInspired) return TEXT("鼓舞");
-    if(Field->IsPlaying()) return TEXT("行動を確認中");
     const auto& O=Field->Presentation().Officers;
     if(Index<3 && O.IsValidIndex(Index)) return O[Index].Command;
     return Index==5 ? TEXT("護送車") : FString();

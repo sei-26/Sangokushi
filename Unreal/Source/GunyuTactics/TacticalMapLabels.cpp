@@ -34,9 +34,13 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
                  + SVerticalBox::Slot().AutoHeight()[Label([this, Index] { return Field->VisualUnits().IsValidIndex(Index) ? FString::Printf(TEXT("%s %d"), Index == 5 ? TEXT("護衛") : TEXT("兵"), Field->VisualUnits()[Index].Troops) : FString(); }, 11)] ] ] ]
           + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(3)
              [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this,Index] { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) ? FMath::Clamp(U[Index].Morale/100.f,0.f,1.f):0.f; }).FillColorAndOpacity_Lambda([this,Index] { const auto& U=Field->VisualUnits();return FSlateColor(U.IsValidIndex(Index) && U[Index].bEnemy ? FLinearColor(.9f,.35f,.18f) : FLinearColor(.31f,.71f,.62f)); })]]
-          + SVerticalBox::Slot().AutoHeight()[Label([this, Index]
-            { return UnitChainNumber(Index)+UnitMapStatus(Index);
-            }, 11, FLinearColor(.75f, .91f, .75f))]
+          + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular",11))
+             .Text_Lambda([this,Index] { return FText::FromString(UnitChainNumber(Index)+UnitMapStatus(Index)); })
+             .ColorAndOpacity_Lambda([this,Index] { return FSlateColor(Field->IsPlaying() ? Field->ReadUnitActivity(Index).Color:FLinearColor(.75f,.91f,.75f)); })]
+          + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(2)
+             .Visibility_Lambda([this,Index] { return Field->IsPlaying() && Field->ReadUnitActivity(Index).bActive ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
+             [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this,Index] { return Field->ReadUnitActivity(Index).Progress; })
+              .FillColorAndOpacity_Lambda([this,Index] { return FSlateColor(Field->ReadUnitActivity(Index).Color); })]]
           + SVerticalBox::Slot().AutoHeight()[Label([this, Index] { return Field->VisualUnits().IsValidIndex(Index) && Field->VisualUnits()[Index].Loss > 0 ? FString::Printf(TEXT("−%d"), Field->VisualUnits()[Index].Loss) : FString(); }, 21, FLinearColor(1.f, .35f, .15f))];
         auto Plate=SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Cursor(EMouseCursor::Hand)
             .Visibility_Lambda([this,Index]
