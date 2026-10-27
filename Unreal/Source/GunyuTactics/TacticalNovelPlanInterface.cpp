@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalWidgets.h"
 #include "Widgets/SCanvas.h"
+#include "Widgets/SOverlay.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -14,7 +15,8 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
     auto Contents=SNew(SVerticalBox);
     Contents->AddSlot().AutoHeight()[SNew(SHorizontalBox)
         + SHorizontalBox::Slot().FillWidth(1)[Label([] { return TEXT("軍師の作戦書"); },34,Gold)]
-        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelAdvice ? TEXT("案を比較 / A"):TEXT("武将の見立て / A"); },[this] { bNovelAdvice=!bNovelAdvice; })]
+        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelAdvice ? TEXT("案を比較 / A"):TEXT("武将の見立て / A"); },[this] { bNovelMap=false;bNovelAdvice=!bNovelAdvice; })]
+        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelMap ? TEXT("作戦の比較 / M"):TEXT("戦場の地図 / M"); },[this] { TogglePlanningMap(); })]
         + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("軍議に戻る"); },[this] { CloseEpisode(); })]];
     Contents->AddSlot().AutoHeight().Padding(0,4,0,14)[Label([this] { return Field->Presentation().Journey.Episode.Title+TEXT("　／　出陣前の決断"); },14)];
     Contents->AddSlot().AutoHeight().Padding(0,0,0,12)[Label([this] { return Field->Presentation().Journey.PlanDifference; },15,Gold)];
@@ -50,12 +52,15 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
               + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this,I] { const auto& A=Field->Presentation().Journey.PlanAdvice;return A.IsValidIndex(I) ? A[I].Text:FString(); },18)]]];
     }
     Body->AddSlot().AutoHeight()[Advice];
-    Contents->AddSlot().FillHeight(1)[SNew(SScrollBox)+SScrollBox::Slot()[Body]];
+    Contents->AddSlot().FillHeight(1)[SNew(SOverlay)
+        + SOverlay::Slot()[SNew(SScrollBox).Visibility_Lambda([this] { return bNovelMap ? EVisibility::Collapsed:EVisibility::Visible; })+SScrollBox::Slot()[Body]]
+        + SOverlay::Slot()[BuildPlanningMap()]];
     Contents->AddSlot().AutoHeight().Padding(0,14,0,8)[Label([this] { return Field->Presentation().Journey.PlanReadiness; },16,Gold)];
     Contents->AddSlot().AutoHeight()[SNew(SHorizontalBox)
-        + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([] { return TEXT("1・2：準備案　／　A：比較・助言　／　Esc：会話へ"); },14)]
+        + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([this] { return bNovelMap ? (Field->Presentation().Journey.Map.bChooseRoute ? TEXT("1・2：準備案　M：比較　R：経路　Esc：作戦書"):TEXT("1・2：準備案　M：比較　Esc：作戦書")):TEXT("1・2：準備案　A：助言　M：地図　Esc：会話へ"); },14)]
         + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(360).HeightOverride(48)
           [Button([this] { return Field->CanIssue(ETacticalCommand::Deploy) ? TEXT("この作戦で出陣する / D"):TEXT("出陣できない：資源を確認"); },[this] { DeployNovelPlan(); },[this] { return Field->CanIssue(ETacticalCommand::Deploy); })]]];
     auto Panel=SNew(STacticalChrome).Padding(28).Opacity(1.f).Accent(gunyustyle::Brass).Visibility_Lambda(Visible)[Contents];
-    Canvas->AddSlot().Position(FVector2D(210,96)).Size(FVector2D(1180,712))[Panel];InputPanels.Add(Panel);
+    Canvas->AddSlot().Position_Lambda([this] { return bNovelMap ? FVector2D(150,50):FVector2D(210,96); })
+        .Size_Lambda([this] { return bNovelMap ? FVector2D(1300,800):FVector2D(1180,712); })[Panel];InputPanels.Add(Panel);
 }

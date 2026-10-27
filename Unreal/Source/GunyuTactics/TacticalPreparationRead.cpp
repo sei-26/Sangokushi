@@ -4,6 +4,7 @@
 using namespace frontline;
 void ATacticalField::BuildPreparationPresentation()
 {
+    BuildPreparationMap();
     const auto& J=State->Journey;auto& P=State->HUD.Journey;const auto& Camp=J.world.cities[0];
     P.PlanObjective=(J.IsRescue() ? FString(TEXT("季安の避難車を出口まで護送")):JourneyText(J.Definition().objective))+
         FString::Printf(TEXT(" / 期限%d指揮"),J.TurnBudget());

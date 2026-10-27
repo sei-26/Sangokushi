@@ -248,6 +248,7 @@ private:
     void BuildStoryPresentation();
     void BuildEpisodePresentation();
     void BuildPreparationPresentation();
+    void BuildPreparationMap();
     bool BattleStorySmokeTest();
     void BuildOpeningPresentation();
     void IssueJourney(ETacticalCommand Command);
@@ -343,6 +344,17 @@ private:
     void BuildNovelHistory(TSharedRef<class SCanvas> Canvas);
     void BuildNovelPlan(TSharedRef<class SCanvas> Canvas);
     void OpenNovelPlan();
+    TSharedRef<class SWidget> BuildPlanningMap();
+    void TogglePlanningMap();
+    void SelectPlanningTile(int Tile);
+    void TogglePlanningRoute();
+    FString PlanningTitle() const;
+    FString PlanningDescription() const;
+    FString PlanningHint(int Officer) const;
+    bool PlanningMapSmokeTest();
+    bool bNovelMap=false;
+    int PlanningTile=-1;
+    TSharedPtr<class SPlanningMap> PlanningWidget;
     void SelectNovelPlan(int Index);
     void DeployNovelPlan();
     bool NovelFlowSmokeTest();

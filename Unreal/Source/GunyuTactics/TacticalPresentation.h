@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "TacticalPreparationMap.h"
 #include "CoreMinimal.h"
 
 enum class ETacticalCommand : uint8
@@ -54,6 +55,7 @@ struct FJourneyPresentation
     FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
     FJourneyEpisodePresentation Episode;
     FString PlanDifference,PlanReadiness,PlanObjective,PlanRoute;
+    FPreparationMap Map;
     TArray<FDialoguePresentation> PlanAdvice;
     bool bNeedsReply=false;
     bool bChooseRoute=false,bSouthernRoute=false;
@@ -134,6 +136,6 @@ struct FTacticalPresentation
     int Predicted = 0, Selected = 0;
     int GoalTile = -1, SecondGoalTile = -1;
     int Mission = 0;
-    FString GoalLabel;
+    FString GoalLabel,SecondGoalLabel;
     bool bBattle = false, bWon = false, bComplete = false, bBusy = false;
 };

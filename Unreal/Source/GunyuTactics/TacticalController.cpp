@@ -331,6 +331,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=NovelInterfaceSmokeTest();
         if(bPassed) bPassed=NovelFlowSmokeTest();
         if(bPassed) bPassed=PreparationReadSmokeTest();
+        if(bPassed) bPassed=PlanningMapSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -357,6 +358,14 @@ void ATacticalController::PlayerTick(float Delta)
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelHistory"))) bNovelHistory=true;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelPlan"))) OpenNovelPlan();
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdvice"))) bNovelAdvice=true;
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningMap")))
+        {
+            OpenNovelPlan();TogglePlanningMap();
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningSouth")) && !Field->Presentation().Journey.Map.bSouthern) TogglePlanningRoute();
+            int Site=0;FParse::Value(FCommandLine::Get(),TEXT("PlanningSite="),Site);
+            const auto& Sites=Field->Presentation().Journey.Map.Sites;
+            if(Sites.IsValidIndex(Site)) SelectPlanningTile(Sites[Site].Tile);
+        }
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanShortage")))
         {
             std::vector<std::uint8_t> Bytes;auto Snapshot=MakeUnique<frontline::JourneySaveData>();

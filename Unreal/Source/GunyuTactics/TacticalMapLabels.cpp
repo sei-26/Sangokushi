@@ -19,7 +19,7 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
         }).Size(FVector2D(140, 34))
         [SNew(SBorder).Visibility(EVisibility::HitTestInvisible).Padding(FMargin(8, 4))
          .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.07f, .055f, .02f, .94f))
-         [Label([this] { return TEXT("◆ ") + Field->Presentation().GoalLabel; }, 13, Gold)]];
+         [Label([this,Index] { return TEXT("◆ ") + (Index==0 ? Field->Presentation().GoalLabel:Field->Presentation().SecondGoalLabel); }, 13, Gold)]];
     for (int Index = 0; Index < 6; ++Index)
     {
         auto Contents=SNew(SVerticalBox).Visibility(EVisibility::HitTestInvisible)

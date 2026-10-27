@@ -5,12 +5,12 @@ void ATacticalController::OpenEpisode()
 {
     if(!Field || Field->IsPlaying() || bSaveMenuOpen || Field->Presentation().Journey.Episode.Lines.IsEmpty()) return;
     EpisodeSnapshot=Field->Presentation().Journey.Episode;EpisodeSeenKey=EpisodeSnapshot.Key;
-    EpisodePage=0;NovelElapsed=NovelStageTime=NovelLineTime=0;NovelPreviousSpeaker=-1;bNovelPlan=bNovelPersonal=false;bNovelHistory=false;bEpisodeOpen=true;bInterfaceVisible=true;
+    EpisodePage=0;NovelElapsed=NovelStageTime=NovelLineTime=0;NovelPreviousSpeaker=-1;bNovelPlan=bNovelMap=bNovelPersonal=false;bNovelHistory=false;bEpisodeOpen=true;bInterfaceVisible=true;
     bBattleLogOpen=bMarchPlanOpen=bTacticPickerOpen=false;CloseChainReview();
     IgnoreMapInputThroughFrame=Frames+1;
 }
 void ATacticalController::CloseEpisode()
-{ bEpisodeOpen=false;bNovelPlan=bNovelHistory=bNovelAdvice=false;IgnoreMapInputThroughFrame=Frames+1; }
+{ bEpisodeOpen=false;bNovelPlan=bNovelMap=bNovelHistory=bNovelAdvice=false;IgnoreMapInputThroughFrame=Frames+1; }
 void ATacticalController::StepEpisode(int Direction)
 {
     if(!bEpisodeOpen || bNovelHistory || bNovelPlan) return;
@@ -24,8 +24,10 @@ void ATacticalController::HandleEpisodeKey(FKey Key)
     if(!bEpisodeOpen) return;
     if(bNovelPlan)
     {
-        if(Key==EKeys::Escape) bNovelPlan=false;
-        else if(Key==EKeys::A) bNovelAdvice=!bNovelAdvice;
+        if(Key==EKeys::Escape) { if(bNovelMap) bNovelMap=false;else bNovelPlan=false; }
+        else if(Key==EKeys::A) { bNovelMap=false;bNovelAdvice=!bNovelAdvice; }
+        else if(Key==EKeys::M) TogglePlanningMap();
+        else if(Key==EKeys::R) TogglePlanningRoute();
         else if(Key==EKeys::One) SelectNovelPlan(0);
         else if(Key==EKeys::Two) SelectNovelPlan(1);
         else if(Key==EKeys::D) DeployNovelPlan();
@@ -51,7 +53,7 @@ bool ATacticalController::UpdateEpisodeInput()
     if(!bEpisodeOpen && !bSaveMenuOpen && Field->Presentation().Journey.bPreparation && WasInputKeyJustPressed(EKeys::Enter))
     { OpenEpisode();OpenNovelPlan();return true; }
     if(!bEpisodeOpen) return WasOpen || Toggle;
-    for(const FKey& Key:{EKeys::Escape,EKeys::L,EKeys::Left,EKeys::Enter,EKeys::SpaceBar,EKeys::Right,EKeys::One,EKeys::Two,EKeys::D,EKeys::A})
+    for(const FKey& Key:{EKeys::Escape,EKeys::L,EKeys::Left,EKeys::Enter,EKeys::SpaceBar,EKeys::Right,EKeys::One,EKeys::Two,EKeys::D,EKeys::A,EKeys::M,EKeys::R})
         if(WasInputKeyJustPressed(Key)) { HandleEpisodeKey(Key);break; }
     return true;
 }
