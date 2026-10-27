@@ -98,6 +98,7 @@ void ATacticalController::PlayerTick(float Delta)
 {
     Super::PlayerTick(Delta);
     if (!Field || !BattleCamera) return;
+    AdvanceNovel(Delta);
     const bool bEpisodeInputBlocked=UpdateEpisodeInput();
     const bool bReviewInputBlocked=bEpisodeInputBlocked || bChainReviewOpen || WasInputKeyJustPressed(EKeys::Y);
     if(!bEpisodeInputBlocked) UpdateChainReviewInput();
@@ -326,6 +327,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=CameraPresentationSmokeTest();
         if(bPassed) bPassed=ChainReviewInterfaceSmokeTest();
         if(bPassed) bPassed=EpisodeInterfaceSmokeTest();
+        if(bPassed) bPassed=NovelInterfaceSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -347,7 +349,8 @@ void ATacticalController::PlayerTick(float Delta)
     if(bCapture && Frames==7 && FParse::Param(FCommandLine::Get(),TEXT("GunyuEpisode")))
     {
         OpenEpisode();int Page=0;FParse::Value(FCommandLine::Get(),TEXT("EpisodePage="),Page);
-        EpisodePage=FMath::Clamp(Page,0,FMath::Max(0,EpisodeSnapshot.Lines.Num()-1));
+        EpisodePage=FMath::Clamp(Page,0,FMath::Max(0,EpisodeSnapshot.Lines.Num()-1));NovelElapsed=1000;
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelHistory"))) bNovelHistory=true;
     }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }

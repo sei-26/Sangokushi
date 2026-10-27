@@ -12,7 +12,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
 {
     auto Command = [this](ETacticalCommand Action, TFunction<FString()> Name)
     {
-        return Button(Name, [this, Action] { Field->Issue(Action); }, [this, Action] { return Field->CanIssue(Action); });
+        return Button(Name, [this, Action] { Field->Issue(Action);if(Action==ETacticalCommand::TalkLiu || Action==ETacticalCommand::TalkGuan || Action==ETacticalCommand::TalkZhang) OpenOfficerNovel(); }, [this, Action] { return Field->CanIssue(Action); });
     };
     auto Contents = SNew(SVerticalBox);
     Contents->AddSlot().AutoHeight()[SNew(SHorizontalBox)

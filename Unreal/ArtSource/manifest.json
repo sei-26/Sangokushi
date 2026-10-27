@@ -56,6 +56,34 @@
       "name": "T_ZhangCutinV1",
       "kind": "tactic-cutin",
       "provenance": "Original built-in image_gen artwork, 2026-10-26. Identity reference: project Shu atlas. Prompts and alpha verification: Unreal/ArtSource/Cutins/README.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/command-tent-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_CommandTentV1",
+      "kind": "visual-novel",
+      "provenance": "Original artwork generated with built-in image_gen on 2026-10-27. Full prompts and source paths: Unreal/ArtSource/Novel/README.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/night-camp-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_NightCampV1",
+      "kind": "visual-novel",
+      "provenance": "Original artwork generated with built-in image_gen on 2026-10-27. Full prompts and source paths: Unreal/ArtSource/Novel/README.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/ji-an-standing-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_JiAnStandingV1",
+      "kind": "visual-novel",
+      "provenance": "Original artwork generated with built-in image_gen on 2026-10-27. Full prompts and source paths: Unreal/ArtSource/Novel/README.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/strategist-standing-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_StrategistStandingV1",
+      "kind": "visual-novel",
+      "provenance": "Original image_gen artwork, 2026-10-27. Inspired by the user-authorized Dragon Strategist chapters 01-15; interpreted clothing/face are original. See Unreal/ArtSource/Novel/README.md."
     }
   ]
 }

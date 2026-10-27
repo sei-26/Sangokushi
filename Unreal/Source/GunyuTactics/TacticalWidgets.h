@@ -6,12 +6,13 @@
 #include "Brushes/SlateRoundedBoxBrush.h"
 #include "Brushes/SlateColorBrush.h"
 #include "TacticalChrome.h"
+#include "TacticalStyle.h"
 namespace gunyuui
 {
-    inline const FLinearColor Ink(.86f, .90f, .91f), Gold(.92f, .73f, .39f);
+    inline const FLinearColor Ink=gunyustyle::Paper,Gold=gunyustyle::Brass;
     inline TSharedRef<STextBlock> Label(TFunction<FString()> Value, int Size = 15, FLinearColor Color = Ink)
     {
-        return SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular", Size))
+        return SNew(STextBlock).Font(gunyustyle::Font(Size,Size>=21))
             .ColorAndOpacity(Color).AutoWrapText(true)
             .Text_Lambda([Value] { return FText::FromString(Value()); });
     }
@@ -25,10 +26,10 @@ namespace gunyuui
     inline const FButtonStyle& CommandStyle()
     {
         static const FButtonStyle Style=FButtonStyle()
-            .SetNormal(FSlateRoundedBoxBrush(FLinearColor(.012f,.025f,.030f),2.f,FLinearColor(.12f,.18f,.18f),1.f))
-            .SetHovered(FSlateRoundedBoxBrush(FLinearColor(.085f,.13f,.14f),2.f,FLinearColor(.66f,.52f,.27f),1.f))
-            .SetPressed(FSlateRoundedBoxBrush(FLinearColor(.015f,.035f,.04f),2.f,FLinearColor(.9f,.7f,.33f),1.f))
-            .SetDisabled(FSlateRoundedBoxBrush(FLinearColor(.018f,.024f,.029f),2.f,FLinearColor(.10f,.13f,.14f),1.f));
+            .SetNormal(FSlateRoundedBoxBrush(FLinearColor(.020f,.025f,.027f),3.f,FLinearColor(.16f,.15f,.12f),1.f))
+            .SetHovered(FSlateRoundedBoxBrush(FLinearColor(.090f,.055f,.040f),3.f,FLinearColor(.55f,.36f,.20f),1.f))
+            .SetPressed(FSlateRoundedBoxBrush(FLinearColor(.13f,.042f,.028f),3.f,FLinearColor(.70f,.49f,.25f),1.f))
+            .SetDisabled(FSlateRoundedBoxBrush(FLinearColor(.017f,.020f,.022f),3.f,FLinearColor(.085f,.09f,.085f),1.f));
         return Style;
     }
     inline TSharedRef<SButton> Button(TFunction<FString()> Value, TFunction<void()> Click,

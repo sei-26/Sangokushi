@@ -77,6 +77,7 @@ void ATacticalController::BuildInterface()
             FaceBrushes.Add(Face);
         }
     LoadCutinPortraits();
+    LoadNovelArt();
     auto Canvas=SNew(SCanvas).Visibility(EVisibility::SelfHitTestInvisible);
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MarchRouteOverlay(true)];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MarchRouteOverlay()];

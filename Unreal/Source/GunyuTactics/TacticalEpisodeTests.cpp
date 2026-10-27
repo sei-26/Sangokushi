@@ -9,6 +9,8 @@ bool ATacticalController::EpisodeInterfaceSmokeTest()
     if(!Check(bEpisodeOpen && bInterfaceVisible && EpisodeSnapshot.Lines.Num()>=10 && EpisodeSnapshot.Title.Contains(TEXT("泥の道")),TEXT("council opens the staged ensemble, including the civilian perspective"))) return false;
     HandleEpisodeKey(EKeys::Left);if(!Check(EpisodePage==0,TEXT("reading backward is bounded"))) return false;
     HandleEpisodeKey(EKeys::Enter);
+    if(!Check(EpisodePage==0 && NovelTextComplete(),TEXT("first advance reveals the current line instead of skipping it"))) return false;
+    HandleEpisodeKey(EKeys::Enter);
     if(!Check(EpisodePage==1 && CurrentEpisodeLine().Name==TEXT("季安") && !CurrentEpisodeLine().Direction.IsEmpty(),TEXT("keyboard advances the cached speaker and stage direction"))) return false;
     for(int I=0;I<30;++I) HandleEpisodeKey(EKeys::SpaceBar);
     if(!Check(!bEpisodeOpen && Field->Presentation().Journey.bPreparation && Field->ExportSession(After) && Before==After,TEXT("finishing/extra keys never deploy, change resources or award trust"))) return false;

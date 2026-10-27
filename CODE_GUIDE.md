@@ -1,5 +1,7 @@
 ﻿# コードを読むための地図
 
+会話のノベル表示と共通の意匠は `Unreal/Source/GunyuTactics/TacticalNovel*.cpp` と `TacticalStyle.h`。[仕様と原画の入口](NOVEL_VISUAL_UPGRADE.md)。
+
 大河ドラマを意識した序章の本幕は `NewGame/JourneyEpisode*.cpp`、全画面の閲覧と入力は `Unreal/Source/GunyuTactics/TacticalEpisode*.cpp`。担当と実装範囲は [EPISODE_DRAMA_UPGRADE.md](EPISODE_DRAMA_UPGRADE.md)。
 
 2026-10-21以降の開発先はUnreal Engine。エディタで開く入口は `Unreal/GunyuTactics.uproject`。`Unreal/Source/GunyuTactics/` の `TacticalOrders.cpp` が既存の `StrategistJourney` へ命令を渡し、`TacticalField.cpp` が仮の3D地形・部隊を描く。`TacticalPresentation.cpp` は観測情報と成立予測を表示へ変換、`TacticalInterface.cpp` は武将カード・命令・連鎖編集、`TacticalController.cpp` はカメラ・入力、`TacticalSmoke.cpp` は結合検証を担当。素材とライトはUEエディタから編集できる。詳しくは [Unreal/README.md](Unreal/README.md)。以下は共通ルールと旧Siv3D画面の案内。
