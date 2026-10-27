@@ -69,6 +69,7 @@ bool ATacticalField::OpeningUpgradeSmokeTest()
         TEXT("debrief reports this battle's objective, facts and a next decision"))) return false;
     const int Bond=J.world.Affinity(0,1);Issue(ETacticalCommand::TalkLiu);Issue(ETacticalCommand::TalkGuan);Issue(ETacticalCommand::TalkZhang);
     if (!Check(J.world.Affinity(0,1)==Bond && Presentation().Journey.Dialogue.Contains(TEXT("林")),TEXT("officers remember the chosen route without farming relationships"))) return false;
+    if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);
     Issue(ETacticalCommand::Continue);
     if (!Check(J.history[0].route==JourneyConvoyRoute::SouthernWood && J.history[0].review.longestChain==2,TEXT("the result and method persist into the next council"))) return false;
     bRealtimeCommand=SavedMode;bStartWithCouncil=SavedCouncil;FirstMission=SavedMission;EnemyPolicy=SavedPolicy;

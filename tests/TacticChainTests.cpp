@@ -1,4 +1,5 @@
-﻿#include "../NewGame/StrategistJourney.hpp"
+﻿#include "JourneyTestFlow.hpp"
+#include "../NewGame/StrategistJourney.hpp"
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -110,7 +111,7 @@ int main()
 		const int soldiers = j->world.cities[0].troops, food = j->world.cities[0].food,
 		          gold = j->world.cities[0].gold;
 		assert(j->trust == 10 && j->world.Affinity(0, 1) == 43);
-		assert(j->Continue() && j->mission == 1 && j->stage == JourneyStage::Preparation);
+		assert(ContinueJourneyWithPledge(*j) && j->mission == 1 && j->stage == JourneyStage::Preparation);
 		assert(j->world.cities[0].troops == soldiers && j->world.cities[0].food == food &&
 		       j->world.cities[0].gold == gold);
 		assert(j->Prepare(0, 1));

@@ -1,4 +1,5 @@
-﻿#include "../NewGame/StrategistJourney.hpp"
+﻿#include "JourneyTestFlow.hpp"
+#include "../NewGame/StrategistJourney.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
@@ -41,7 +42,7 @@ int main()
 		for (int turn = 0; turn < 5; ++turn) assert(j->EndTurn());
 		assert(j->won && j->history[0].rescued && j->survivors == 4800);
 		assert(j->world.cities[0].troops == 6000 && j->recoveredCargo == 0);
-		assert(j->Continue() && j->Prepare(0, 1));
+		assert(ContinueJourneyWithPledge(*j) && j->Prepare(0, 1));
 		assert(j->world.generals[5].name == U"季安の糧車");
 	}
 	{
@@ -59,7 +60,7 @@ int main()
 		assert(j->Prepare(0, 0) && j->Withdraw());
 		assert(j->withdrawn && !j->won && j->trust == 0 && j->history[0].withdrawn && !j->history[0].rescued);
 		assert(j->world.cities[0].troops == 6000 && j->world.cities[0].food == 18000 && j->world.cities[0].gold == 700);
-		assert(!j->Withdraw() && j->world.cities[0].food == 18000 && !j->Continue());
+		assert(!j->Withdraw() && j->world.cities[0].food == 18000 && !ContinueJourneyWithPledge(*j));
 	}
 	// The council's advertised bill must match the real deployment, including
 	// the escort's cargo. Preview and duplicate deployment must not spend twice.
@@ -102,7 +103,7 @@ int main()
 		assert(j->world.cities[0].troops == 6000);
 		const int food = j->world.cities[0].food;
 		assert(!j->EndTurn() && j->world.cities[0].food == food);
-		assert(j->Continue() && j->mission == 2 && j->stage == JourneyStage::Preparation);
+		assert(ContinueJourneyWithPledge(*j) && j->mission == 2 && j->stage == JourneyStage::Preparation);
 	}
 	{
 		auto j = CreateMission(1);
@@ -132,7 +133,7 @@ int main()
 		assert(j->Move(2, j->Definition().secondGoal));
 		for (int i = 0; i < 3; ++i)
 			assert(j->EndTurn());
-		assert(j->won && j->heldTurns == 3 && j->Continue() && j->stage == JourneyStage::Complete);
+		assert(j->won && j->heldTurns == 3 && ContinueJourneyWithPledge(*j) && j->stage == JourneyStage::Complete);
 	}
 	{
 		auto j = CreateMission(2);

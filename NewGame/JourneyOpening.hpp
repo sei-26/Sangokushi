@@ -18,5 +18,6 @@ namespace frontline
     {
         JourneyResolution resolution=JourneyResolution::None;
         int endedAt=0,enemyStops=0,trafficStops=0,tacticAttempts=0,tacticSteps=0,longestChain=0;
+        int coordinatedOfficers=0;
     };
 }

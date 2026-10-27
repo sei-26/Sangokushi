@@ -78,6 +78,7 @@ bool ATacticalField::StoryPromiseSmokeTest()
     if (!Check(J.won && J.history[0].rescued && J.convoyStep == 6, TEXT("rescue completed through public UI orders"))) return false;
     Issue(ETacticalCommand::TalkGuan);
     if (!Check(Presentation().Journey.Dialogue.Contains(TEXT("車")), TEXT("officer remembers what was protected"))) return false;
+    if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);
     Issue(ETacticalCommand::Continue);
     if (!Check(Presentation().Journey.History.Contains(TEXT("季安")), TEXT("promise remains in the next council record"))) return false;
     Issue(ETacticalCommand::Reinforce); // Replenish the longer rescue's losses from real reserves.
@@ -109,6 +110,7 @@ bool ATacticalField::StoryPromiseSmokeTest()
         if (J.stage == JourneyStage::Battle) Issue(ETacticalCommand::EndTurn);
     }
     if (!Check(J.won && J.mission == 1, TEXT("rescued carrier's next mission remains winnable"))) return false;
+    if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);
     Issue(ETacticalCommand::Continue); Issue(ETacticalCommand::Deploy);
     for (int Phase = 0; Phase < J.TurnBudget() && J.stage == JourneyStage::Battle; ++Phase)
     {
@@ -124,6 +126,7 @@ bool ATacticalField::StoryPromiseSmokeTest()
         if (J.stage == JourneyStage::Battle) Issue(ETacticalCommand::EndTurn);
     }
     if (!Check(J.won && J.mission == 2 && J.history[0].rescued, TEXT("new rescue route reaches third victory with real resources"))) return false;
+    if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);
     Issue(ETacticalCommand::Continue);
     if (!Check(J.stage == JourneyStage::Complete, TEXT("new rescue route reaches conclusion"))) return false;
     FirstMission = SavedMission; EnemyPolicy = SavedPolicy; bStartWithCouncil = SavedCouncil; State->bNoPlayback = SavedPlayback;

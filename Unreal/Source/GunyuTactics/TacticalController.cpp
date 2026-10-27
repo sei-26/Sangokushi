@@ -329,6 +329,9 @@ void ATacticalController::PlayerTick(float Delta)
 #if WITH_EDITOR
     if (bCapture && Frames == 120) FAssetCompilingManager::Get().FinishAllCompilation();
 #endif
+    if(bCapture && Frames==5 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBattleStory"))) Field->PrepareBattleStoryPreview(FParse::Param(FCommandLine::Get(),TEXT("GunyuStoryCostly")));
+    if(bCapture && Frames==6 && FParse::Param(FCommandLine::Get(),TEXT("GunyuStoryCouncil")))
+    { Field->Issue(ETacticalCommand::StoryReplyCoordinate);Field->Issue(ETacticalCommand::Continue);Field->Issue(ETacticalCommand::TalkZhang); }
     if(bCapture && Frames==5 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTacticStatus"))) Field->PrepareTacticAvailabilityPreview(FParse::Param(FCommandLine::Get(),TEXT("GunyuTacticUsed")));
     if(bCapture && Frames==5 && FParse::Param(FCommandLine::Get(),TEXT("GunyuChainReview"))) PrepareChainReviewCapture();
     if(bCapture && Frames==5 && FParse::Param(FCommandLine::Get(),TEXT("GunyuInfantryClose")))

@@ -1,4 +1,5 @@
-﻿#include "../NewGame/JourneySave.hpp"
+﻿#include "JourneyTestFlow.hpp"
+#include "../NewGame/JourneySave.hpp"
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -61,7 +62,7 @@ int main()
         if(mission==2) result->journey.world.armies[0].tile=result->journey.goal;
         result->journey.RefreshIntelligence();
         while(result->journey.stage==JourneyStage::Battle) result->journey.EndTurn();
-        assert(result->journey.won);Round(*result);assert(result->journey.Continue());Round(*result);
+        assert(result->journey.won);Round(*result);assert(ContinueJourneyWithPledge(result->journey));Round(*result);
     }
     std::cout<<"Journey save PASS: encounter/council/battle/debrief/complete, exact continuation, retry finance, hidden observations, march/signal/watch, corrupt rejection\n";
 }

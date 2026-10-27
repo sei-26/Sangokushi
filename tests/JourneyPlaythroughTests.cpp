@@ -1,4 +1,5 @@
-﻿#include "../NewGame/StrategistJourney.hpp"
+﻿#include "JourneyTestFlow.hpp"
+#include "../NewGame/StrategistJourney.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
@@ -63,7 +64,7 @@ int main()
 	           .completed == 3);
 	j->EndTurn();
 	j->Execute({{2, 3, ChainTactic::Breakthrough, -1}});
-	assert(j->won && j->Continue() && j->mission == 1);
+	assert(j->won && ContinueJourneyWithPledge(*j) && j->mission == 1);
 	assert(j->Prepare(0, 1));
 	for (int phase = 1; phase <= j->Definition().limit && j->stage == JourneyStage::Battle; ++phase)
 	{
@@ -85,7 +86,7 @@ int main()
 		          << j->world.armies[3].troops << "," << j->world.armies[4].troops << "\n";
 	}
 	assert(j->won && j->stage == JourneyStage::Debrief && j->recoveredCargo >= 1200);
-	assert(j->Continue() && j->mission == 2 && j->Prepare(0, 0));
+	assert(ContinueJourneyWithPledge(*j) && j->mission == 2 && j->Prepare(0, 0));
 	for (int phase = 1; phase <= j->Definition().limit && j->stage == JourneyStage::Battle; ++phase)
 	{
 		for (int army = 0; army < 3 && j->stage == JourneyStage::Battle; ++army)
@@ -106,7 +107,7 @@ int main()
 		          << j->world.armies[3].troops << "," << j->world.armies[4].troops << "\n";
 	}
 	assert(j->won && j->stage == JourneyStage::Debrief && j->trust == 30);
-	assert(j->Continue() && j->stage == JourneyStage::Complete);
+	assert(ContinueJourneyWithPledge(*j) && j->stage == JourneyStage::Complete);
 	j->Reset();
 	j->Meet();
 	j->mission = 2;

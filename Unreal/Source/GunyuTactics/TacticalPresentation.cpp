@@ -20,6 +20,12 @@ void ATacticalField::BuildPresentation()
     HUD.GoalLabel = J.mission == 0 ? TEXT("脱出地点") : J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("防衛地点");
     HUD.Title = FString::Printf(TEXT("群雄戦線  /  %s    更新 %d / %d"), *JourneyText(J.MissionName()),FMath::Max(0,J.turn-1), J.TurnBudget());
     HUD.Objective = JourneyText(J.ObjectiveProgress());
+    if(J.stage==JourneyStage::Battle && J.CurrentPledge()!=JourneyPledge::None)
+    {
+        const FString Main=J.HasConvoy() ? FString::Printf(TEXT("護送 %d/%d区間 / 護衛%d"),J.convoyStep,int(J.ConvoyPath().size())-1,J.world.armies[StrategistJourney::ConvoyArmy].troops)
+            : FString::Printf(TEXT("烽火の維持 %d/%d指揮"),J.heldTurns,J.Definition().requiredProgress);
+        HUD.Objective=Main+TEXT(" / ")+JourneyText(J.PledgeProgress());
+    }
     HUD.Report = State->Report;
     BuildBattleWatchPresentation();
     BuildMarchPresentation();

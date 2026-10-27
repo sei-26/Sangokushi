@@ -20,6 +20,8 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     case ETacticalCommand::TalkLiu: State->Interlocutor = 0; break;
     case ETacticalCommand::TalkGuan: State->Interlocutor = 1; break;
     case ETacticalCommand::TalkZhang: State->Interlocutor = 2; break;
+    case ETacticalCommand::StoryReplyPreserve: J.ChooseStoryReply(JourneyPledge::Preserve);break;
+    case ETacticalCommand::StoryReplyCoordinate: J.ChooseStoryReply(JourneyPledge::Coordinate);break;
     case ETacticalCommand::Reinforce: J.Reinforce(); break;
     case ETacticalCommand::Deploy:
         CheckpointJourney(true);
@@ -38,6 +40,7 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     }
     State->Report = JourneyText(J.message);
     Refresh();
+    if(Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate) CheckpointJourney(true);
 }
 
 void ATacticalField::BuildJourneyPresentation()
@@ -58,9 +61,9 @@ void ATacticalField::BuildJourneyPresentation()
     {
         const TCHAR* Names[] = {TEXT("劉備"), TEXT("関羽"), TEXT("張飛")};
         const TCHAR* Lines[] = {
-            TEXT("泥の道で荷を分け、車を通していたのは君か。荷役の季安から聞いた。まず、この先の退路を一緒に考えてほしい。あの車には、歩けない者も乗っている。"),
-            TEXT("道を開くことと、最後の一台を送り届けることは、同じではない。敵を追う間、誰が車のそばに残る？ 戦う前に決めておこう。"),
-            TEXT("俺を走らせたいなら、そう言え。止めたいなら、それも先に言えよ。……あの車の後ろを、空っぽにしねえためにな。")};
+            TEXT("劉備「泥にはまった車を、君が出したのかい。」\n主人公「押しただけだ。兵を動かせるわけじゃない。」\n劉備「でも、誰かの帰る道を作った。今度は私たちの力も使ってくれ。」"),
+            TEXT("関羽「この兵を、駒と思うな。」\n主人公「分かってる。……いや、まだ顔も知らない。」\n関羽「では知れ。私も、その一人だ。どこへ行けと言う？」"),
+            TEXT("張飛「軍師ってのは、俺より先に敵を見つけるんだろ？」\n主人公「お前が飛び出す前に、帰り道も見つける。」\n張飛「ははっ！ なら頼むぜ。戻れって声は、でかく出せよ！」")};
         const int Index = FMath::Clamp(State->DialogueIndex, 0, 2);
         P.Heading = TEXT("序章  ―  名もなき軍師"); P.Speaker = Names[Index]; P.Dialogue = Lines[Index]; P.Portrait = Index;
         P.PrimaryLabel = Index < 2 ? TEXT("話を聞く  /  Enter") : TEXT("軍議へ進む  /  Enter");
@@ -125,4 +128,5 @@ void ATacticalField::BuildJourneyPresentation()
                 J.history[Index].survivors, J.history[Index].casualties);
     BuildOfficerConversation();
     BuildOpeningPresentation();
+    BuildStoryPresentation();
 }

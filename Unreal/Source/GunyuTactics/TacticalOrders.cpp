@@ -14,7 +14,8 @@ bool ATacticalField::CanIssue(ETacticalCommand Command) const
     if (IsPlaying()) return false;
     const auto& J = State->Journey;
     if (Command == ETacticalCommand::Restart || Command == ETacticalCommand::Cancel) return true;
-    if (Command == ETacticalCommand::Continue) return J.stage == JourneyStage::Debrief && J.won;
+    if (Command == ETacticalCommand::Continue) return J.CanContinue();
+    if(Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate) return J.NeedsStoryReply();
     if (Command == ETacticalCommand::Dialogue) return J.stage == JourneyStage::Encounter;
     if (Command == ETacticalCommand::PlanAmbush || Command == ETacticalCommand::PlanSupplies) return J.stage == JourneyStage::Preparation;
     if (Command == ETacticalCommand::Deploy) return J.CanPrepare(State->PreparationChoice);
@@ -159,7 +160,7 @@ void ATacticalField::Issue(ETacticalCommand Command)
     auto& J = State->Journey;
     if (!CanIssue(Command)) return;
     if (IsRealtimeAction(Command)) { IssueRealtime(Command);return; }
-    if (Command == ETacticalCommand::Dialogue || Command == ETacticalCommand::Reinforce || Command == ETacticalCommand::PlanAmbush || Command == ETacticalCommand::PlanSupplies || Command == ETacticalCommand::Deploy || Command == ETacticalCommand::Retry || Command == ETacticalCommand::PromiseRoad || Command == ETacticalCommand::PromiseRescue || Command == ETacticalCommand::TalkLiu || Command == ETacticalCommand::TalkGuan || Command == ETacticalCommand::TalkZhang || Command==ETacticalCommand::RouteRoad || Command==ETacticalCommand::RouteSouthernWood)
+    if (Command == ETacticalCommand::Dialogue || Command == ETacticalCommand::Reinforce || Command == ETacticalCommand::PlanAmbush || Command == ETacticalCommand::PlanSupplies || Command == ETacticalCommand::Deploy || Command == ETacticalCommand::Retry || Command == ETacticalCommand::PromiseRoad || Command == ETacticalCommand::PromiseRescue || Command == ETacticalCommand::TalkLiu || Command == ETacticalCommand::TalkGuan || Command == ETacticalCommand::TalkZhang || Command==ETacticalCommand::RouteRoad || Command==ETacticalCommand::RouteSouthernWood || Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate)
     { IssueJourney(Command); return; }
     if (bRealtimeCommand && (Command==ETacticalCommand::QueueTactic || Command==ETacticalCommand::Sample)) State->Realtime.paused=true;
     const auto Before = ObserveUnits();
@@ -287,6 +288,11 @@ void ATacticalField::Action(FKey Key)
     }
     if (State->Journey.stage != JourneyStage::Battle)
     {
+        if(State->Journey.NeedsStoryReply())
+        {
+            if(Key==EKeys::One) { Issue(ETacticalCommand::StoryReplyPreserve);return; }
+            if(Key==EKeys::Two) { Issue(ETacticalCommand::StoryReplyCoordinate);return; }
+        }
         if (Key == EKeys::N) Issue(ETacticalCommand::Restart);
         if (Key == EKeys::Enter)
         {

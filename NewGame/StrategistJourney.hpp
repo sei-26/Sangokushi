@@ -3,6 +3,7 @@
 #include "JourneyMission.hpp"
 #include "JourneyEnemyPlan.hpp"
 #include "JourneyOpening.hpp"
+#include "JourneyStory.hpp"
 
 namespace frontline
 {
@@ -27,6 +28,7 @@ namespace frontline
 		int survivors = 0, casualties = 0;
         JourneyBattleReview review;
         JourneyConvoyRoute route=JourneyConvoyRoute::Road;
+        JourneyBattleStory story;
 	};
 	// One persistent campaign for the first playable historical-background slice.
 	// Character conversations and these three local engagements are original fiction.
@@ -39,6 +41,7 @@ namespace frontline
 		std::array<BattleIntelligence, 2> intelligence;
 		JourneyStage stage = JourneyStage::Encounter;
 		int mission = 0, turn = 1, enemyPolicy = 0, trust = 0, bestChain = 0;
+        std::array<int,3> officerTrust{}; // Each officer's trust in the protagonist, separate from pair affinity.
 		int preparation = 0, deployed = 0, casualties = 0, survivors = 0;
 		int goal = Campaign::At(12, 10);
 		static constexpr int ConvoyArmy = 5;
@@ -82,6 +85,12 @@ namespace frontline
 		ChainResult Execute(const std::vector<ChainOrder>& orders);
 		bool EndTurn();
 		bool Continue();
+        bool CanContinue() const;
+        bool NeedsStoryReply() const;
+        bool ChooseStoryReply(JourneyPledge);
+        JourneyPledge CurrentPledge() const;
+        std::u32string PledgeProgress() const;
+        int StoryMoraleBonus(int officer) const;
 		void RefreshIntelligence();
 		// Estimate from current player contacts, never private enemy orders.
 		std::vector<JourneyEnemyPlan> ReadEnemyPlans() const;
@@ -100,6 +109,8 @@ namespace frontline
 		void Evaluate();
 		void Finish(bool success, const char32_t* reason);
         void CompleteBattleReview(bool success);
+        void CompleteBattleStory(bool success);
+        void RecordCooperation(const ChainResult&);
 		void Report(const std::u32string& text);
 	};
 } // namespace frontline

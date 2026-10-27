@@ -21,6 +21,9 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyArchiveBattle.cpp
     NewGame/JourneyArchiveSession.cpp
     NewGame/JourneyOpening.cpp
+    NewGame/JourneyBattleStory.cpp
+    NewGame/JourneyDrama.cpp
+    NewGame/JourneyCouncilDrama.cpp
     NewGame/JourneyChainSignal.cpp
     NewGame/JourneyBattleWatch.cpp
     NewGame/JourneyOrderRead.cpp
@@ -79,6 +82,7 @@ if(BUILD_TESTING)
     add_rules_test(tactic_chain tests/TacticChainTests.cpp)
     add_rules_test(tactic_repertoire tests/TacticRepertoireTests.cpp)
     add_rules_test(tactic_combo tests/TacticComboTests.cpp)
+    add_rules_test(journey_battle_story tests/JourneyBattleStoryTests.cpp)
     add_rules_test(journey_realtime tests/JourneyRealtimeTests.cpp)
     add_rules_test(journey_march tests/JourneyMarchTests.cpp)
     add_rules_test(journey_save tests/JourneySaveTests.cpp)

@@ -8,7 +8,7 @@ enum class ETacticalCommand : uint8
     Dialogue, Reinforce, PlanAmbush, PlanSupplies, Deploy, Retry,
     PromiseRoad, PromiseRescue, Withdraw, TalkLiu, TalkGuan, TalkZhang,
     RealtimeMode, RealtimePause, RealtimeSpeed, RealtimeStep, RealtimeStop, RealtimeChainSignal, RealtimeAlertPause,
-    RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood
+    RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate
 };
 enum class ETacticalInput : uint8 { Select, Move, Lure };
 
@@ -35,12 +35,17 @@ struct FTacticOptionPresentation
     FString Name, Description, Cost;
     bool bSelected = false, bUnique = false, bUsed = false;
 };
+struct FDialoguePresentation
+{ int Speaker=0;FString Name,Text;bool bProtagonist=false; };
 struct FJourneyPresentation
 {
     FString Heading, Speaker, Dialogue, Resources, Outcome, Relationships, Context, PrimaryLabel, PromiseText, History;
     TArray<FPreparationPresentation> Plans;
     int Portrait = 0;
     FString ConvoyRouteInfo,ReviewFacts,ReviewLesson;
+    TArray<FDialoguePresentation> Conversation;
+    FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
+    bool bNeedsReply=false;
     bool bChooseRoute=false,bSouthernRoute=false;
     bool bVisible = false, bPreparation = false, bDebrief = false, bComplete = false, bChoosePromise = false, bRescue = false;
 };

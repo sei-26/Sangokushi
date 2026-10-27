@@ -36,6 +36,7 @@ bool ATacticalField::SmokeTest()
     Issue(ETacticalCommand::EndTurn);
     SelectOfficer(2); Issue(ETacticalCommand::QueueTactic); Issue(ETacticalCommand::Execute);
     if (!State->Journey.won) { UE_LOG(LogTemp, Error, TEXT("GUNYU_RULES_SMOKE: FAIL at line %d; predicted=%d; orders=%d; report=%s"), __LINE__, Presentation().Predicted, static_cast<int>(State->Orders.size()), *State->Report); return false; }
+    if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);
     Issue(ETacticalCommand::Continue);
     if (State->Journey.mission != 1 || State->Journey.world.armies.size() != 6) { UE_LOG(LogTemp, Error, TEXT("GUNYU_RULES_SMOKE: FAIL at line %d; predicted=%d; orders=%d; report=%s"), __LINE__, Presentation().Predicted, static_cast<int>(State->Orders.size()), *State->Report); return false; }
     Issue(ETacticalCommand::Restart);
@@ -62,6 +63,7 @@ bool ATacticalField::SmokeTest()
     if (!TacticRepertoireSmokeTest()) return false;
     if (!ComboSmokeTest()) return false;
     if (!TacticAvailabilitySmokeTest()) return false;
+    if (!BattleStorySmokeTest()) return false;
     if (!TacticCinemaSmokeTest()) return false;
     if (!SpectacleSmokeTest()) return false;
     if (!ChainReviewSmokeTest()) return false;

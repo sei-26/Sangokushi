@@ -41,6 +41,7 @@ bool ATacticalField::JourneySmokeTest()
     SelectOfficer(2); Issue(ETacticalCommand::QueueTactic); Issue(ETacticalCommand::Execute);
     if (!Check(J.won && Presentation().Journey.bDebrief && J.world.Affinity(0, 1) == 43, TEXT("first battle settles survivors, relationships and dialogue"))) return false;
     const auto ReturnedCamp = J.world.cities[0];
+    if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);
     Issue(ETacticalCommand::Continue);
     if (!Check(J.mission == 1 && J.stage == JourneyStage::Preparation && J.world.cities[0].troops == ReturnedCamp.troops && J.world.cities[0].food == ReturnedCamp.food && J.world.cities[0].gold == ReturnedCamp.gold && J.trust == 10, TEXT("next council retains actual resources and trust"))) return false;
     Issue(ETacticalCommand::PlanAmbush);
@@ -84,6 +85,7 @@ bool ATacticalField::JourneySmokeTest()
         if (J.stage == JourneyStage::Battle) Issue(ETacticalCommand::EndTurn);
     }
     if (!Check(J.won && J.recoveredCargo >= 1200, TEXT("escort completed with UI commands"))) return false;
+    if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);
     Issue(ETacticalCommand::Continue); Issue(ETacticalCommand::Deploy);
     for (int Phase = 0; Phase < 12 && J.stage == JourneyStage::Battle; ++Phase)
     {
@@ -99,6 +101,7 @@ bool ATacticalField::JourneySmokeTest()
         if (J.stage == JourneyStage::Battle) Issue(ETacticalCommand::EndTurn);
     }
     if (!Check(J.won && J.mission == 2 && J.trust == 30, TEXT("three councils and three battles preserve the journey"))) return false;
+    if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);
     Issue(ETacticalCommand::Continue);
     if (!Check(J.stage == JourneyStage::Complete && Presentation().Journey.bComplete, TEXT("final scene appears"))) return false;
     FirstMission = SavedMission; EnemyPolicy = SavedPolicy; bStartWithCouncil = SavedCouncil; State->bNoPlayback = SavedPlayback;

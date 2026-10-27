@@ -39,7 +39,7 @@ namespace frontline
         {
             return Enum(r.resolution,8) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
                 Range(r.trafficStops,0,100) && Range(r.tacticAttempts,0,1000) &&
-                Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3);
+                Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3) && Range(r.coordinatedOfficers,0,7);
         }
         bool ChainRecord(const ChainResult& r)
         {
@@ -59,6 +59,13 @@ namespace frontline
                 else if(i+1!=r.events.size() || e.combo!=0 || e.damage!=0 || e.comboPercent!=100) return false;
             }
             return r.completed==completed;
+        }
+        bool Story(const JourneyBattleStory& s)
+        {
+            if(!Enum(s.pledge,2) || !Enum(s.reply,2) || !Range(s.coordinatedOfficers,0,7) || !Range(s.loss,0,100000)) return false;
+            for(int d:s.trustDelta) if(!Range(d,-120,120)) return false;
+            if(!s.recorded && (s.reply!=JourneyPledge::None || s.pledge!=JourneyPledge::None)) return false;
+            return true;
         }
         bool Journey(const StrategistJourney& j)
         {
@@ -85,7 +92,9 @@ namespace frontline
                 for(const auto& c:known.contacts) if(!Range(c.id,0,static_cast<int>(n)-1) ||
                     !ArmyValid(c.observed,static_cast<int>(w.generals.size()))) return false;
             }
-            for(const auto& h:j.history) if(!Review(h.review) || !Enum(h.route,1)) return false;
+            for(int t:j.officerTrust) if(!Range(t,-20,100)) return false;
+            for(const auto& h:j.history) if(!Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
+                (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
             return true;
         }
     }

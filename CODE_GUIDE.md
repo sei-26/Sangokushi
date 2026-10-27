@@ -14,6 +14,8 @@ UEの会話・軍議・戦後は `TacticalJourney.cpp`、その画面は `Tactic
 
 戦法の予約不可理由と対象更新は `Unreal/Source/GunyuTactics/TacticalTacticAvailability.cpp`、その回帰確認は `TacticalTacticAvailabilityTests.cpp`。[仕様](TACTIC_AVAILABILITY_FIX.md)。
 
+戦い方と主人公への評価は `NewGame/JourneyBattleStory.cpp`、台詞は `JourneyDrama.cpp` / `JourneyCouncilDrama.cpp`。UEの掛け合い表示は `TacticalStoryPresentation.cpp` / `TacticalDialogueInterface.cpp`。[仕様](BATTLE_STORY_UPGRADE.md)。
+
 ## 最初に読む5ファイル
 
 新しい本編序章の入口は `CampaignSceneInput.cpp` → `StrategistJourneyScene.cpp` → `StrategistJourney.cpp`。従来の全国戦略は以下の５ファイルを参照する。

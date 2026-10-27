@@ -56,6 +56,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
+        officerTrust={};
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -146,6 +147,7 @@ namespace frontline
 			army.troops = i < 3 ? deployed / 3 + (i < deployed % 3 ? 1 : 0) : i == 3 ? 1800 : 1300;
 			army.food = i < 3 ? (food - (escort ? 900 : 0)) / 3 : 3000;
 			army.morale = choice == 1 && i < 3 ? 100 : 90;
+            if(i<3) army.morale=std::clamp(army.morale+StoryMoraleBonus(i),0,100);
 			army.stance = i >= 3 && policy == 1 ? battle::Stance::Guard : battle::Stance::Balanced;
 			army.scouting = i == 4 && policy == 2;
 			world.armies.push_back(army);
@@ -262,6 +264,7 @@ namespace frontline
 		if (stage != JourneyStage::Battle)
 			return {};
 		lastChain = chain.Execute(world, intelligence[0], orders);
+        RecordCooperation(lastChain);
         ++battleReview.tacticAttempts;battleReview.tacticSteps+=lastChain.completed;
         battleReview.longestChain=std::max(battleReview.longestChain,lastChain.completed);
 		bestChain = std::max(bestChain, lastChain.completed);
@@ -299,6 +302,7 @@ namespace frontline
         CompleteBattleReview(success);
 		history[mission] = {true, success, withdrawn, success && IsRescue(), survivors, casualties};
         history[mission].review=battleReview;history[mission].route=convoyRoute;
+        CompleteBattleStory(success);
 		if (success)
 		{
 			trust += 10;
@@ -311,7 +315,7 @@ namespace frontline
 	}
 	bool StrategistJourney::Continue()
 	{
-		if (stage != JourneyStage::Debrief || !won)
+		if (!CanContinue())
 			return false;
 		if (mission == 2)
 		{

@@ -104,6 +104,7 @@ public:
     bool ComboSmokeTest();
     bool TacticAvailabilitySmokeTest();
     void PrepareTacticAvailabilityPreview(bool bUsedSignature);
+    void PrepareBattleStoryPreview(bool bCostly);
     bool EnemyReadSmokeTest();
     bool VisualGeometrySmokeTest();
     bool BackdropSmokeTest();
@@ -236,6 +237,8 @@ private:
     void BuildEnemyPresentation();
     void BuildJourneyPresentation();
     void BuildOfficerConversation();
+    void BuildStoryPresentation();
+    bool BattleStorySmokeTest();
     void BuildOpeningPresentation();
     void IssueJourney(ETacticalCommand Command);
 };
@@ -322,6 +325,7 @@ private:
     void ToggleBattleLog();
     void FocusBattleNotice(int Index);
     void BuildJourneyInterface(TSharedRef<class SCanvas> Canvas);
+    TSharedRef<class SWidget> StoryConversationWidget();
     void BuildEncounterInterface(TSharedRef<class SCanvas> Canvas);
     void BuildTacticInterface(TSharedRef<class SCanvas> Canvas);
     void BuildEnemyInterface(TSharedRef<class SCanvas> Canvas);

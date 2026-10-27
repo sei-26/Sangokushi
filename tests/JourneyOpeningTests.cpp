@@ -1,4 +1,5 @@
-﻿#include "../NewGame/StrategistJourney.hpp"
+﻿#include "JourneyTestFlow.hpp"
+#include "../NewGame/StrategistJourney.hpp"
 #include "../NewGame/JourneyRealtime.hpp"
 #include <cassert>
 #include <iostream>
@@ -120,7 +121,7 @@ int main()
         }
         assert(j->won && j->history[0].rescued && j->battleReview.resolution==JourneyResolution::Delivered);
         assert(route==JourneyConvoyRoute::Road ? j->battleReview.longestChain==3 : (j->battleReview.longestChain==2 && j->world.armies[3].troops>450 && j->world.armies[3].morale>30));
-        assert(j->Continue() && j->history[0].review.resolution==JourneyResolution::Delivered && j->Prepare(0,1));
+        assert(ContinueJourneyWithPledge(*j) && j->history[0].review.resolution==JourneyResolution::Delivered && j->Prepare(0,1));
         assert(j->world.generals[5].name==U"季安の糧車");
     }
     std::cout<<"Opening routes: PASS (real costs, geometry, distinct public-command victories, objective review, carryover)\n";
