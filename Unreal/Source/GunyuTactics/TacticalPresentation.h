@@ -133,6 +133,7 @@ struct FTacticalPresentation
     FJourneyPresentation Journey;
     int Predicted = 0, Selected = 0;
     int GoalTile = -1, SecondGoalTile = -1;
+    int Mission = 0;
     FString GoalLabel;
     bool bBattle = false, bWon = false, bComplete = false, bBusy = false;
 };

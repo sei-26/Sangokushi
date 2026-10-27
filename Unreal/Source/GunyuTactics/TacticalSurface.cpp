@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalBattlefieldStyle.h"
+#include "TacticalSceneryLayout.h"
 
 void ATacticalField::UpdateLandscapeTopology()
 {
@@ -70,6 +71,11 @@ float ATacticalField::SurfaceHeight(FVector P) const
     Height=FMath::Lerp(-9.f,Height,static_cast<float>(FMath::SmoothStep(0.,200.,BankDistance)));
     // Flatten only the real public route, including the chosen woodland detour.
     Height *= FMath::SmoothStep(30.f,85.f,RoadDistance(P));
+    if(J.mission==1 && J.world.tiles[frontline::Campaign::At(11,1)].terrain==frontline::Terrain::River && Cell.second<1 && P.Y>=-1700 && P.Y<=289)
+    {
+        const float Bank=FMath::Abs(float(P.X-TacticalMap::PortRiverX(P.Y)));
+        Height=FMath::Lerp(-12.f,Height,FMath::SmoothStep(70.f,185.f,Bank));
+    }
     // The water is a flat, lower surface. This affects art and picking only.
     if (Cell.first >= 1 && Cell.first < frontline::StrategistJourney::Columns - 1 && Cell.second >= 1 && Cell.second < frontline::StrategistJourney::Rows - 1)
     {

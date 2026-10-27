@@ -1,13 +1,16 @@
 ﻿#include "TacticalTrial.h"
+#include "TacticalState.h"
+#include "TacticalSceneryLayout.h"
 #include "TacticalSceneryMesh.h"
 #include "Materials/MaterialInterface.h"
 
 void ATacticalField::BuildMountainBackdrop()
 {
     TacticalMap::FIndexedScenery Scene;
+    const auto Layout=TacticalMap::SceneryLayout(State->Journey.mission);
     auto Mountain=[&](double X,double Y,int Layer)
     {
-        const FVector Peaks[]={FVector(550,-900,820),FVector(850,-1550,1120),FVector(3550,-900,970),FVector(4100,-1800,1320),FVector(2150,-2350,1270)};
+        const auto& Peaks=Layout.Peaks;
         double H=0;
         for(const auto& P:Peaks)
         {
@@ -16,8 +19,9 @@ void ATacticalField::BuildMountainBackdrop()
         }
         const double Begin=FMath::SmoothStep(180.,650.,-Y);
         // A real open valley frames the settlement; do not bury it in a ridge.
-        const double Side=FMath::SmoothStep(1200.,1450.,FMath::Abs(X-2200));
-        const double Behind=FMath::SmoothStep(1150.,1700.,-Y);
+        const double Side=FMath::SmoothStep(Layout.ValleyHalfWidth,Layout.ValleyHalfWidth+Layout.ValleyBlendWidth,FMath::Abs(X-Layout.ValleyCenter));
+        const bool Pass=Layout.Kind==TacticalMap::EBackdropKind::MountainPass;
+        const double Behind=FMath::SmoothStep(Pass ? 1100.:1450.,Pass ? 1850.:2800.,-Y);
         const double Valley=FMath::Max(Side,Behind);
         const double Fold=(36+30*FMath::Sin(X*.011+Y*.004))*FMath::Pow(FMath::Max(0.,FMath::Sin(X*.008-Y*.006)*.5+.5),3.);
         return BackdropGroundHeight(FVector(X,Y,0))-35+(H+Fold*FMath::Clamp(H/200.,0.,1.))*(Layer==0 ? 1.:1.12)*Begin*(Layer==0 ? Valley:1.);
@@ -34,7 +38,8 @@ void ATacticalField::BuildMountainBackdrop()
             const float Air=FMath::Clamp(float((-P.Y-500)/6000),0.f,1.f);
             const float Height=FMath::Clamp(float((P.Z-BackdropGroundHeight(P)+35)/650),0.f,1.f);
             const auto Stone=FMath::Lerp(FLinearColor(.10f,.13f,.095f),FLinearColor(.23f,.30f,.32f),Layer==0 ? Air*.4f:.6f+Air*.4f);
-            const auto Tint=Layer==0 ? FMath::Lerp(FLinearColor(.025f,.047f,.024f),Stone,FMath::SmoothStep(.06f,.68f,Height)) : Stone;
+            const auto Base=Layout.Kind==TacticalMap::EBackdropKind::MountainPass ? FLinearColor(.09f,.115f,.105f) : FLinearColor(.05f,.10f,.04f);
+            const auto Tint=Layer==0 ? FMath::Lerp(Base,Stone,FMath::SmoothStep(.06f,.68f,Height)) : Stone;
             return Tint*Light;
         };
         const int First=Scene.Vertices.Num();

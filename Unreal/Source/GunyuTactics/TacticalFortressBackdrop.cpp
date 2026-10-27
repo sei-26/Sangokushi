@@ -1,12 +1,18 @@
 ﻿#include "TacticalTrial.h"
+#include "TacticalState.h"
+#include "TacticalSceneryLayout.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
-// A visual settlement north of the playable grid. No mission/AI state is read.
+// Public, mission-specific geography north of the playable grid. No enemy state is read.
 // All masonry, roofs and details remain below world Y=50 (first hex starts >70).
 void ATacticalField::BuildFortressBackdrop()
 {
     for(auto* Part:{CityWalls.Get(),CityTimber.Get(),CityRoofs.Get()}) Part->ClearInstances();
     if(FortressMaterial) CityWalls->SetMaterial(0,FortressMaterial);
+    const auto Layout=TacticalMap::SceneryLayout(State->Journey.mission);
+    if(Layout.Kind==TacticalMap::EBackdropKind::Village) { BuildVillageBackdrop();return; }
+    const float H=Layout.WallHeight;
+
     auto Box=[](UInstancedStaticMeshComponent* Mesh,FVector P,FVector Size,FRotator R=FRotator::ZeroRotator)
     { Mesh->AddInstance(FTransform(R,P,Size/100)); };
     auto Floor=[this](double X,double Y) { return SceneryFloor(FVector(X,Y,0)); };
@@ -22,17 +28,17 @@ void ATacticalField::BuildFortressBackdrop()
         {
             FVector P=FMath::Lerp(A,B,(I+.5)/Count);P.Z=Floor(P.X,P.Y);
             const FRotator R(0,Dir.Rotation().Yaw,0);
-            Box(CityWalls,P+FVector(0,0,85),FVector(Length/Count+1,52,170),R);
+            Box(CityWalls,P+FVector(0,0,H*.5),FVector(Length/Count+1,52,H),R);
             Box(CityWalls,P+FVector(0,0,20),FVector(Length/Count+2,69,40),R);
-            Box(CityWalls,P+FVector(0,0,172),FVector(Length/Count+3,68,14),R);
+            Box(CityWalls,P+FVector(0,0,H+2),FVector(Length/Count+3,68,14),R);
             for(int Tooth=0;Tooth<2;++Tooth)
             {
                 const FVector T=P+Dir*((Tooth-.5)*Length/Count*.5)+Across*9;
-                Box(CityWalls,T+FVector(0,0,197),FVector(Length/Count*.28,42,37),R);
+                Box(CityWalls,T+FVector(0,0,H+27),FVector(Length/Count*.28,42,37),R);
             }
         }
     };
-    constexpr double West=1160,East=3100,Front=-240,Back=-1180,Gate=2300;
+    const double West=Layout.West,East=Layout.East,Front=Layout.Front,Back=Layout.Back,Gate=Layout.Gate;
     Wall(FVector(West,Front,0),FVector(Gate-150,Front,0));
     Wall(FVector(Gate+150,Front,0),FVector(East,Front,0));
     Wall(FVector(West,Front,0),FVector(West,Back,0));
@@ -73,14 +79,15 @@ void ATacticalField::BuildFortressBackdrop()
         for(int End:{-1,1})
             Wood(P+FVector(End*152,0,385)*Size,FVector(6,6,29)*Size);
     };
-    for(FVector P:{FVector(West,Front-20,0),FVector(East,Front-20,0),FVector(West,Back,0),FVector(East,Back,0)}) Pavilion(P,.82f,false);
-    Pavilion(FVector(Gate,Front-18,0),1.04f,true);
+    for(FVector P:{FVector(West,Front-20,0),FVector(East,Front-20,0),FVector(West,Back,0),FVector(East,Back,0)}) Pavilion(P,Layout.Kind==TacticalMap::EBackdropKind::MountainPass ? 1.12f:.82f,false);
+    Pavilion(FVector(Gate,Front-18,0),Layout.Kind==TacticalMap::EBackdropKind::MountainPass ? 1.18f:1.04f,true);
     // A second roofline gives the gatehouse a recognizable skyline.
-    Pavilion(FVector(2130,-850,0),1.10f,false);
+    if(Layout.Kind==TacticalMap::EBackdropKind::RiverPort) Pavilion(FVector(Gate-100,Back+210,0),1.10f,false);
     // Streets and courtyards remain empty between these buildings.
-    for(int Row=0;Row<3;++Row) for(int Col=0;Col<5;++Col)
+    const int Rows=Layout.Kind==TacticalMap::EBackdropKind::MountainPass ? 1:3;
+    for(int Row=0;Row<Rows;++Row) for(int Col=0;Col<5;++Col)
     {
-        const double X=1370+Col*330,Y=-455-Row*208;
+        const double X=West+170+Col*(East-West-340)/4,Y=Front-195-Row*205;
         if(Col==2 || (Row==2 && Col==3)) continue;
         const FVector P(X,Y,Floor(X,Y));
         const float S=.72f+((Row+Col)%3)*.08f;
@@ -92,4 +99,5 @@ void ATacticalField::BuildFortressBackdrop()
         // Roof ridge caps are physical rather than texture stripes.
         Wood(P+FVector(0,0,141)*S,FVector(243,8,8)*S);
     }
+    if(Layout.Kind==TacticalMap::EBackdropKind::RiverPort) BuildRiverPort();
 }

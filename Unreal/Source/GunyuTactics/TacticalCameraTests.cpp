@@ -1,4 +1,5 @@
 ﻿#include "TacticalTrial.h"
+#include "TacticalSceneryLayout.h"
 #include "TacticalFormation.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
@@ -7,7 +8,7 @@
 bool ATacticalController::CameraPresentationSmokeTest()
 {
     const auto SavedFocus=Focus;const float SavedYaw=CameraYaw,SavedTilt=CameraElevation,SavedDistance=Distance;
-    const int SavedPreset=CameraPreset;
+    const int SavedPreset=CameraPreset,SavedVistaMission=VistaMission;
     auto Check=[](bool Value,const TCHAR* Reason) { if(!Value) UE_LOG(LogTemp,Error,TEXT("GUNYU_BATTLE_VIEW: FAIL %s"),Reason);return Value; };
     Field->PrepareOpeningPreview(false);Field->bRealtimeCommand=true;Field->Issue(ETacticalCommand::Deploy);
     std::vector<std::uint8_t> Before,After;
@@ -29,8 +30,15 @@ bool ATacticalController::CameraPresentationSmokeTest()
     ResetBattleCamera();if(!Check(CameraPreset==0 && Distance==4300,TEXT("Home restores a full-map view"))) return false;
     const FVector TacticalFocus=Focus;
     CycleCameraView();CycleCameraView();CycleCameraView();
-    if(!Check(CameraPreset==3 && Focus.Equals(FVector(2100,650,0)),TEXT("vista preset frames the public backdrop"))) return false;
+    if(!Check(CameraPreset==3 && Focus.Equals(TacticalMap::SceneryLayout(Field->Presentation().Mission).VistaFocus),TEXT("vista preset frames the public backdrop"))) return false;
     CycleCameraView();if(!Check(CameraPreset==0 && Focus.Equals(TacticalFocus),TEXT("leaving vista returns to prior tactical focus"))) return false;
+    CameraPreset=3;BeforeVistaFocus=TacticalFocus;VistaMission=(Field->Presentation().Mission+1)%3;
+    UpdateBattleCamera(0,true);
+    if(!Check(VistaMission==Field->Presentation().Mission && Focus.Equals(TacticalMap::SceneryLayout(VistaMission).VistaFocus),TEXT("a new battle reframes its own public vista"))) return false;
+    Focus+=FVector(60,0,0);const FVector PannedFocus=Focus;UpdateBattleCamera(0,true);
+    if(!Check(Focus.Equals(PannedFocus),TEXT("ordinary ticks preserve panning within the same vista"))) return false;
+    CycleCameraView();
+    if(!Check(Focus.Equals(TacticalFocus),TEXT("leaving an updated vista restores tactical focus"))) return false;
     if(!Check(Field->ExportSession(After) && Before==After,TEXT("view controls consume no command, food or time"))) return false;
     const bool SavedDetails=bEnemyDetailsOpen;
     SelectMapUnit(2);if(!Check(Field->Presentation().Selected==2,TEXT("nameplate selects the displayed ally"))) return false;
@@ -69,7 +77,7 @@ bool ATacticalController::CameraPresentationSmokeTest()
     Unit.bDisordered=true;if(!Check(Shape(Unit,false)==EShape::Disordered,TEXT("disorder overrides a neat formation"))) return false;
     for(auto Formation:{EShape::Line,EShape::Column,EShape::ShieldWall,EShape::Hidden,EShape::Disordered,EShape::Wedge})
         for(int I=0;I<48;++I) if(!Check(Offset(Formation,I,48).Size2D()<115,TEXT("representative soldiers remain within their unit footprint"))) return false;
-    CameraYaw=SavedYaw;CameraElevation=SavedTilt;Distance=SavedDistance;Focus=SavedFocus;CameraPreset=SavedPreset;
+    CameraYaw=SavedYaw;CameraElevation=SavedTilt;Distance=SavedDistance;Focus=SavedFocus;CameraPreset=SavedPreset;VistaMission=SavedVistaMission;
     UE_LOG(LogTemp,Display,TEXT("GUNYU_BATTLE_VIEW: PASS (orbit/picking, displayed focus, no simulation mutation, visible formations and bounded footprint)"));
     return true;
 }

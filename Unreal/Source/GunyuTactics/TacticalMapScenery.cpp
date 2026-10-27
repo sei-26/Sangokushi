@@ -28,9 +28,9 @@ void ATacticalField::BuildMapScenery()
         Wood(P+R.RotateVector(FVector(0,-44,22)*Size),FVector(19,5,44)*Size,R);
     };
     // A small village and cultivated fields beyond the southern board boundary.
-    for (int I=0;I<(J.mission==1 ? 7 : J.mission==2 ? 2 : 4);++I)
+    for (int I=0;I<(J.mission==0 ? 7 : J.mission==1 ? 3 : 0);++I)
         House(FVector(470+(I%4)*163,2335+(I/4)*174,0),.68f+(I%3)*.08f,(I%2)*12-6);
-    for (int Field=0;Field<(J.mission==1 ? 3 : J.mission==2 ? 0 : 1);++Field)
+    for (int Field=0;Field<(J.mission==0 ? 2 : J.mission==1 ? 1 : 0);++Field)
     {
         const FVector Base(1240+Field*220,2390,0);
         for (int Row=0;Row<13;++Row)

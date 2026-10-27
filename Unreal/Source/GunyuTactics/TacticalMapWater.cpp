@@ -123,9 +123,10 @@ void ATacticalField::BuildMapWater()
     if (!Tiles.IsEmpty())
     {
         const FVector First=ChannelCenter(Tiles[0]),Last=ChannelCenter(Tiles.Last());
-        Cap(First,RadiusAt(First),Tint(Tiles[0]),Tiles.Num()>1 ? First-ChannelCenter(Tiles[FMath::Min(2,Tiles.Num()-1)]) : FVector(0,-1,0));
+        if(J.mission!=1 || Tiles[0]!=Campaign::At(11,1)) Cap(First,RadiusAt(First),Tint(Tiles[0]),Tiles.Num()>1 ? First-ChannelCenter(Tiles[FMath::Min(2,Tiles.Num()-1)]) : FVector(0,-1,0));
         Cap(Last,RadiusAt(Last),Tint(Tiles.Last()),Tiles.Num()>1 ? Last-ChannelCenter(Tiles[FMath::Max(0,Tiles.Num()-3)]) : FVector(0,1,0));
     }
     Water.Submit(Ground,2); Shore.Submit(Ground,5);
     Ground->SetMaterial(5,TerrainMaterial);
+    BuildSceneryWater();
 }

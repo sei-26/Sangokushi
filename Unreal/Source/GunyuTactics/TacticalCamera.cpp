@@ -1,4 +1,5 @@
 ﻿#include "TacticalTrial.h"
+#include "TacticalSceneryLayout.h"
 #include "Camera/CameraActor.h"
 #include "TacticalWidgets.h"
 #include "Widgets/SCanvas.h"
@@ -19,10 +20,11 @@ void ATacticalController::CycleCameraView()
 {
     const bool LeavingVista=CameraPreset==3;
     CameraPreset=(CameraPreset+1)%4;
-    if(CameraPreset==3) { BeforeVistaFocus=Focus;Focus=FVector(2100,650,0); }
+    if(CameraPreset==3) { BeforeVistaFocus=Focus;VistaMission=Field->Presentation().Mission;Focus=TacticalMap::SceneryLayout(VistaMission).VistaFocus; }
     else if(LeavingVista) Focus=BeforeVistaFocus;
     const float Yaws[]={90,125,90,90},Tilts[]={48.f,40,72,32},Ranges[]={2800,2800,3900,5500};
     CameraYaw=Yaws[CameraPreset];CameraElevation=Tilts[CameraPreset];Distance=Ranges[CameraPreset];
+    if(CameraPreset==3) Distance=TacticalMap::SceneryLayout(Field->Presentation().Mission).VistaDistance;
 }
 void ATacticalController::FocusSelectedOfficer()
 {
@@ -33,6 +35,13 @@ void ATacticalController::FocusSelectedOfficer()
 }
 void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
 {
+    // Reframe a newly reached battle once. Panning within its vista is preserved.
+    if(CameraPreset==3 && VistaMission!=Field->Presentation().Mission)
+    {
+        VistaMission=Field->Presentation().Mission;
+        const auto Layout=TacticalMap::SceneryLayout(VistaMission);
+        Focus=Layout.VistaFocus;Distance=Layout.VistaDistance;
+    }
     const bool OverUI=IsPointerOverInterface();
     if(!bBlocked)
     {
@@ -80,7 +89,7 @@ void ATacticalController::BuildCameraInterface(TSharedRef<SCanvas> Canvas)
     auto Controls=SNew(SHorizontalBox)
         + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([] { return TEXT("中ドラッグ回転"); },11)]
         + SHorizontalBox::Slot().AutoWidth().Padding(0,0,6,0)[Button([this]
-          { const TCHAR* Names[]={TEXT("標準"),TEXT("臨場"),TEXT("俯瞰"),TEXT("遠景")};return FString(TEXT("視点 "))+(CameraPreset<0 ? TEXT("自由") : Names[CameraPreset])+TEXT(" / K"); },[this] { CycleCameraView(); },[] { return true; },true)]
+          { const TCHAR* Names[]={TEXT("標準"),TEXT("臨場"),TEXT("俯瞰"),TacticalMap::SceneryLayout(Field->Presentation().Mission).ViewName};return FString(TEXT("視点 "))+(CameraPreset<0 ? TEXT("自由") : Names[CameraPreset])+TEXT(" / K"); },[this] { CycleCameraView(); },[] { return true; },true)]
         + SHorizontalBox::Slot().AutoWidth().Padding(0,0,6,0)[Button([] { return TEXT("選択隊へ J"); },[this] { FocusSelectedOfficer(); },[] { return true; },true)]
         + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("全景 Home"); },[this] { ResetBattleCamera(); },[] { return true; },true)];
     Controls->AddSlot().AutoWidth().Padding(5,0,0,0)[Button([this] { return bTacticCinema ? TEXT("演出ON O") : TEXT("演出OFF O"); },[this] { bTacticCinema=!bTacticCinema; },[] { return true; },true)];

@@ -205,6 +205,9 @@ private:
     void BuildTerrain();
     void BuildMapScenery();
     void BuildFortressBackdrop();
+    void BuildVillageBackdrop();
+    void BuildRiverPort();
+    void BuildSceneryWater();
     void BuildMountainBackdrop();
     void BuildBackdropGround();
     float BackdropGroundHeight(FVector P) const;
@@ -389,7 +392,7 @@ private:
     FVector BeforeVistaFocus=FVector(2250,1800,0);
     float Distance = 2800,ViewDistance=2800;
     float CameraYaw=90,CameraElevation=48.f;
-    int CameraPreset=0;
+    int CameraPreset=0, VistaMission=-1;
     bool bOrbitDragging=false;
     FVector2D PreviousOrbitCursor;
     int Frames = 0;

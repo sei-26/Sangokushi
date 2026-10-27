@@ -12,6 +12,7 @@ void ATacticalField::BuildPresentation()
     const auto& J = State->Journey;
     auto& HUD = State->HUD;
     HUD = {};
+    HUD.Mission=J.mission;
     HUD.bBattle = J.stage == JourneyStage::Battle;
     HUD.bWon = J.won;
     HUD.bComplete = J.stage == JourneyStage::Complete;
