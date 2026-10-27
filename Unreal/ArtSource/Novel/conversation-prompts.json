@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-28",
+  "mode": "built-in image_gen edit",
+  "transparent_background": true,
+  "assets": [
+    {
+      "key": "liu",
+      "file": "liu-bei-cutin-v1.png",
+      "prompt": "Edit the referenced original game character into a quiet conversation standing portrait for the same historical visual novel. Preserve EXACTLY this man's facial identity, age, hair, moustache and small beard, green and cream robe, golden armor design and crown, painterly realism and rendering quality. Change the dynamic outstretched arm to a relaxed lowered hand near his waist, the other hand loosely resting over the belt. Calm attentive eyes, closed mouth, subtle warmth and concern, a dignified approachable commander listening to a young strategist at a field council; no broad grin or heroic declaration. Relax the flowing cloth into natural hanging folds. Keep the original head scale and three-quarter framing from top of crown to below the hips, centered in a vertical 2:3 canvas, looking toward the viewer's right as in the reference; comfortable margins for hands and crown. Single original character only, genuinely transparent alpha background, no scenery, no gradient or aura, no weapons raised, no text, no frame, no logo. This is a conversation-pose variant of the same character, not a redesign."
+    },
+    {
+      "key": "guan",
+      "file": "guan-yu-cutin-v1.png",
+      "prompt": "Edit the referenced original game character into a quiet conversation standing portrait for the same historical visual novel. Preserve EXACTLY this man's facial identity and reddish complexion, long black beard, green cap and green robes, golden armor design and rendering style. Lower the gesturing outstretched arm; one hand rests on his belt and the other lightly holds the lower end of his beard, natural correct fingers. Closed mouth, steady thoughtful eyes and restrained stern dignity, a commander quietly weighing a young strategist's decision and its consequences. No shouting, pointing, charging, angry grimace or victory gesture. Relax the moving cloak into hanging fabric. Keep the original head scale and three-quarter framing from top of cap to below the hips, centered in a vertical 2:3 canvas, looking toward the viewer's right as in the reference. Comfortable margins, no clipped hands or cap. Single original character on a genuine transparent alpha background, no scenery, no aura or gradient background, no text, no logo, no frame. Identity and costume continuity are essential; only the conversational expression and pose should change."
+    },
+    {
+      "key": "zhang",
+      "file": "zhang-fei-cutin-v1.png",
+      "prompt": "Edit the referenced original game character into a quiet conversation standing portrait for the same historical visual novel. Preserve EXACTLY this man's facial identity, rugged broad face, thick tousled beard, dark tied hair with red ornament, large sturdy build, red cloak, brown and bronze armor and beast-head belt buckle, painterly realistic rendering and quality. Replace the yelling open mouth with a closed relaxed mouth, soften the fierce brows into a serious reflective expression with humane warmth. His gaze is attentive and slightly concerned, suitable for talking about comrades after battle, without tears or melodramatic grief. Both arms are lowered naturally: one relaxed hand rests on his belt, the other loosely holds the edge of his cloak; NO clenched raised fist, NO outstretched attacking hand. Relax flying cloth into natural folds. Keep original head scale and three-quarter framing from top of hair to below the hips, centered in a vertical 2:3 canvas, looking toward viewer's right as in the reference. Comfortable margins, correct hands. Single original character on genuinely transparent alpha background, no scenery, no gradient or aura, no text, no logo, no frame. Keep him recognizable as the same bold man in a quiet moment, not an elegant scholar or a new character."
+    }
+  ]
+}

@@ -10,11 +10,15 @@ FString ATacticalController::VisibleNovelText() const
 bool ATacticalController::NovelTextComplete() const
 { return VisibleNovelText().Len()==CurrentEpisodeLine().Text.Len(); }
 void ATacticalController::AdvanceNovel(float Delta)
-{ if(bEpisodeOpen && !bNovelHistory) NovelElapsed=FMath::Min(1000.f,NovelElapsed+FMath::Clamp(Delta,0.f,.25f)); }
+{
+    if(bEpisodeOpen && !bNovelHistory && !bNovelPlan)
+    { const float Step=FMath::Clamp(Delta,0.f,.25f);NovelElapsed=FMath::Min(1000.f,NovelElapsed+Step);NovelStageTime=FMath::Min(1.f,NovelStageTime+Step);NovelLineTime=FMath::Min(1.f,NovelLineTime+Step); }
+}
 void ATacticalController::ReadNextNovel()
 {
-    if(!bEpisodeOpen || bNovelHistory) return;
+    if(!bEpisodeOpen || bNovelHistory || bNovelPlan) return;
     if(!NovelTextComplete()) NovelElapsed=1000;
+    else if(EpisodePage+1==EpisodeSnapshot.Lines.Num() && !bNovelPersonal && Field->Presentation().Journey.bPreparation) OpenNovelPlan();
     else StepEpisode(1);
 }
 int ATacticalController::NovelOfficer() const
@@ -27,13 +31,13 @@ int ATacticalController::NovelOfficer() const
 void ATacticalController::OpenOfficerNovel()
 {
     if(!Field || Field->Presentation().Journey.Conversation.IsEmpty()) return;
-    OpenEpisode();if(!bEpisodeOpen) return;
+    OpenEpisode();if(!bEpisodeOpen) return;bNovelPersonal=true;
     const auto& P=Field->Presentation().Journey;
     EpisodeSnapshot.Lines=P.Conversation;EpisodeSnapshot.Title+=TEXT(" / ")+P.Speaker;
 }
 void ATacticalController::ChooseNovelReply(bool Preserve)
 {
-    if(!bEpisodeOpen || bNovelHistory || !NovelTextComplete() || EpisodePage+1!=EpisodeSnapshot.Lines.Num()) return;
+    if(!bEpisodeOpen || bNovelHistory || bNovelPlan || !NovelTextComplete() || EpisodePage+1!=EpisodeSnapshot.Lines.Num()) return;
     const auto Command=Preserve ? ETacticalCommand::StoryReplyPreserve:ETacticalCommand::StoryReplyCoordinate;
     if(!Field->CanIssue(Command)) return;
     Field->Issue(Command);CloseEpisode();

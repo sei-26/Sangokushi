@@ -332,6 +332,18 @@ private:
     TSharedRef<class SWidget> NovelBackdropWidget(TFunction<bool()> Night);
     TSharedRef<class SWidget> NovelPortraitWidget(TFunction<int()> Speaker,float Width,float Height);
     void BuildNovelHistory(TSharedRef<class SCanvas> Canvas);
+    void BuildNovelPlan(TSharedRef<class SCanvas> Canvas);
+    void OpenNovelPlan();
+    void SelectNovelPlan(int Index);
+    void DeployNovelPlan();
+    bool NovelFlowSmokeTest();
+    FLinearColor NovelPortraitTone(int Speaker) const;
+    const struct FSlateBrush* NovelPortraitBrush(int Speaker) const;
+    UPROPERTY() TArray<TObjectPtr<class UTexture2D>> ConversationTextures;
+    TArray<TSharedPtr<struct FSlateBrush>> ConversationBrushes;
+    bool bNovelPlan=false,bNovelPersonal=false;
+    float NovelStageTime=0,NovelLineTime=0;
+    int NovelPreviousSpeaker=-1;
     void AdvanceNovel(float Delta);
     void ReadNextNovel();
     void OpenOfficerNovel();

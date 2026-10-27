@@ -13,8 +13,8 @@ bool ATacticalController::EpisodeInterfaceSmokeTest()
     HandleEpisodeKey(EKeys::Enter);
     if(!Check(EpisodePage==1 && CurrentEpisodeLine().Name==TEXT("季安") && !CurrentEpisodeLine().Direction.IsEmpty(),TEXT("keyboard advances the cached speaker and stage direction"))) return false;
     for(int I=0;I<30;++I) HandleEpisodeKey(EKeys::SpaceBar);
-    if(!Check(!bEpisodeOpen && Field->Presentation().Journey.bPreparation && Field->ExportSession(After) && Before==After,TEXT("finishing/extra keys never deploy, change resources or award trust"))) return false;
-    OpenEpisode();HandleEpisodeKey(EKeys::Escape);
+    if(!Check(bEpisodeOpen && bNovelPlan && Field->Presentation().Journey.bPreparation && Field->ExportSession(After) && Before==After,TEXT("finishing opens the operation review without deploying, spending resources or awarding trust"))) return false;
+    CloseEpisode();OpenEpisode();HandleEpisodeKey(EKeys::Escape);
     if(!Check(!bEpisodeOpen,TEXT("a scene can always be skipped and reread"))) return false;
     OpenEpisode();ToggleSaveMenu();
     if(!Check(!bEpisodeOpen && bSaveMenuOpen,TEXT("saving replaces the scene rather than stacking input"))) return false;

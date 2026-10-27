@@ -5,16 +5,16 @@ void ATacticalController::OpenEpisode()
 {
     if(!Field || Field->IsPlaying() || bSaveMenuOpen || Field->Presentation().Journey.Episode.Lines.IsEmpty()) return;
     EpisodeSnapshot=Field->Presentation().Journey.Episode;EpisodeSeenKey=EpisodeSnapshot.Key;
-    EpisodePage=0;NovelElapsed=0;bNovelHistory=false;bEpisodeOpen=true;bInterfaceVisible=true;
+    EpisodePage=0;NovelElapsed=NovelStageTime=NovelLineTime=0;NovelPreviousSpeaker=-1;bNovelPlan=bNovelPersonal=false;bNovelHistory=false;bEpisodeOpen=true;bInterfaceVisible=true;
     bBattleLogOpen=bMarchPlanOpen=bTacticPickerOpen=false;CloseChainReview();
     IgnoreMapInputThroughFrame=Frames+1;
 }
 void ATacticalController::CloseEpisode()
-{ bEpisodeOpen=false;bNovelHistory=false;IgnoreMapInputThroughFrame=Frames+1; }
+{ bEpisodeOpen=false;bNovelPlan=bNovelHistory=false;IgnoreMapInputThroughFrame=Frames+1; }
 void ATacticalController::StepEpisode(int Direction)
 {
-    if(!bEpisodeOpen || bNovelHistory) return;
-    NovelElapsed=0;
+    if(!bEpisodeOpen || bNovelHistory || bNovelPlan) return;
+    NovelPreviousSpeaker=CurrentEpisodeLine().Speaker;NovelLineTime=0;NovelElapsed=0;
     if(Direction<0) EpisodePage=FMath::Max(0,EpisodePage-1);
     else if(EpisodePage+1<EpisodeSnapshot.Lines.Num()) ++EpisodePage;
     else CloseEpisode(); // Reading never deploys, changes a promise, advances history or grants trust.
@@ -22,6 +22,15 @@ void ATacticalController::StepEpisode(int Direction)
 void ATacticalController::HandleEpisodeKey(FKey Key)
 {
     if(!bEpisodeOpen) return;
+    if(bNovelPlan)
+    {
+        if(Key==EKeys::Escape) bNovelPlan=false;
+        else if(Key==EKeys::One) SelectNovelPlan(0);
+        else if(Key==EKeys::Two) SelectNovelPlan(1);
+        else if(Key==EKeys::D) DeployNovelPlan();
+        return;
+    }
+    if(Key==EKeys::One || Key==EKeys::Two) { ChooseNovelReply(Key==EKeys::One);return; }
     if(Key==EKeys::L) { bNovelHistory=!bNovelHistory;return; }
     if(Key==EKeys::Escape) { if(bNovelHistory) bNovelHistory=false;else CloseEpisode();return; }
     if(bNovelHistory) return;
@@ -38,8 +47,10 @@ bool ATacticalController::UpdateEpisodeInput()
     if(!bCapture && !bSmoke && !bSaveMenuOpen && E.Key!=EpisodeSeenKey) OpenEpisode();
     const bool Toggle=WasInputKeyJustPressed(EKeys::H) && !bSaveMenuOpen;
     if(Toggle) { if(bEpisodeOpen) CloseEpisode();else OpenEpisode(); }
+    if(!bEpisodeOpen && !bSaveMenuOpen && Field->Presentation().Journey.bPreparation && WasInputKeyJustPressed(EKeys::Enter))
+    { OpenEpisode();OpenNovelPlan();return true; }
     if(!bEpisodeOpen) return WasOpen || Toggle;
-    for(const FKey& Key:{EKeys::Escape,EKeys::L,EKeys::Left,EKeys::Enter,EKeys::SpaceBar,EKeys::Right})
+    for(const FKey& Key:{EKeys::Escape,EKeys::L,EKeys::Left,EKeys::Enter,EKeys::SpaceBar,EKeys::Right,EKeys::One,EKeys::Two,EKeys::D})
         if(WasInputKeyJustPressed(Key)) { HandleEpisodeKey(Key);break; }
     return true;
 }

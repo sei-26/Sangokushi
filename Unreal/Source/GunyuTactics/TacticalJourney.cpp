@@ -77,7 +77,7 @@ void ATacticalField::BuildJourneyPresentation()
         P.Dialogue = State->PreparationChoice == 0
             ? TEXT("伏兵の準備は私が担おう。敵を森林の隣へ引き込めれば、混乱から突破へつなげられる。ただし敵の接近や斥候には注意が要る。")
             : TEXT("長く戦うなら兵糧を厚くしよう。士気も高まるが、野営地の蓄えは減る。伏兵を使うなら、戦場で関羽に準備を命じてほしい。");
-        P.PrimaryLabel = TEXT("この段取りで出陣  /  Enter");
+        P.PrimaryLabel = TEXT("作戦書を確認  /  Enter");
         P.Outcome = FString::Printf(TEXT("期限 %d指揮 / %s"), J.TurnBudget(), *JourneyText(J.Definition().briefing));
         P.bChoosePromise = J.mission == 0; P.bRescue = J.IsRescue();
         P.PromiseText = J.IsRescue() ? TEXT("季安の避難車を東の出口まで護送。護衛600と兵糧900を追加で確保する。先鋒を崩しても護送は終わらない。")

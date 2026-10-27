@@ -84,6 +84,27 @@
       "name": "T_StrategistStandingV1",
       "kind": "visual-novel",
       "provenance": "Original image_gen artwork, 2026-10-27. Inspired by the user-authorized Dragon Strategist chapters 01-15; interpreted clothing/face are original. See Unreal/ArtSource/Novel/README.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/liu-conversation-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_LiuConversationV1",
+      "kind": "visual-novel",
+      "provenance": "Original conversation-pose variant of the existing cut-in, edited with built-in image_gen on 2026-10-28. Full prompt: Unreal/ArtSource/Novel/conversation-prompts.json."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/guan-conversation-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_GuanConversationV1",
+      "kind": "visual-novel",
+      "provenance": "Original conversation-pose variant of the existing cut-in, edited with built-in image_gen on 2026-10-28. Full prompt: Unreal/ArtSource/Novel/conversation-prompts.json."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/zhang-conversation-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_ZhangConversationV1",
+      "kind": "visual-novel",
+      "provenance": "Original conversation-pose variant of the existing cut-in, edited with built-in image_gen on 2026-10-28. Full prompt: Unreal/ArtSource/Novel/conversation-prompts.json."
     }
   ]
 }

@@ -328,6 +328,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=ChainReviewInterfaceSmokeTest();
         if(bPassed) bPassed=EpisodeInterfaceSmokeTest();
         if(bPassed) bPassed=NovelInterfaceSmokeTest();
+        if(bPassed) bPassed=NovelFlowSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -350,7 +351,9 @@ void ATacticalController::PlayerTick(float Delta)
     {
         OpenEpisode();int Page=0;FParse::Value(FCommandLine::Get(),TEXT("EpisodePage="),Page);
         EpisodePage=FMath::Clamp(Page,0,FMath::Max(0,EpisodeSnapshot.Lines.Num()-1));NovelElapsed=1000;
+        NovelStageTime=NovelLineTime=1;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelHistory"))) bNovelHistory=true;
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelPlan"))) OpenNovelPlan();
     }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }

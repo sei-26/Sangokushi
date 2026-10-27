@@ -1,5 +1,7 @@
 ﻿# コードを読むための地図
 
+会話から作戦書・出陣への接続は `TacticalNovelPlan.cpp` / `TacticalNovelPlanInterface.cpp`。[仕様](NOVEL_OPERATION_FLOW.md)。
+
 会話のノベル表示と共通の意匠は `Unreal/Source/GunyuTactics/TacticalNovel*.cpp` と `TacticalStyle.h`。[仕様と原画の入口](NOVEL_VISUAL_UPGRADE.md)。
 
 大河ドラマを意識した序章の本幕は `NewGame/JourneyEpisode*.cpp`、全画面の閲覧と入力は `Unreal/Source/GunyuTactics/TacticalEpisode*.cpp`。担当と実装範囲は [EPISODE_DRAMA_UPGRADE.md](EPISODE_DRAMA_UPGRADE.md)。

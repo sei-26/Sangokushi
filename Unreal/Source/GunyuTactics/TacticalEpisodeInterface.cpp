@@ -22,8 +22,6 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
             { const bool Match=Slot==0 || (Slot==1 ? NovelOfficer()!=4:NovelOfficer()==4);
               return bEpisodeOpen && Match && CurrentEpisodeLine().Speaker>=0 ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
             [SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush"))
-             .ColorAndOpacity_Lambda([this,Slot]
-             { const int Speaker=Slot==0 ? 3:NovelOfficer();const bool Active=CurrentEpisodeLine().Speaker==Speaker;return FLinearColor(Active ? 1.f:.66f,Active ? 1.f:.70f,Active ? 1.f:.72f,1.f); })
              [NovelPortraitWidget([this,Slot] { return Slot==0 ? 3:NovelOfficer(); },W,H)]];
         if(Slot>0) { Portrait->SetRenderTransformPivot(FVector2D(.5,.5));Portrait->SetRenderTransform(FSlateRenderTransform(FScale2D(-1,1))); }
         const FVector2D Position=Slot==0 ? FVector2D(-30,-100):Slot==1 ? FVector2D(850,60):FVector2D(640,-100);
@@ -51,20 +49,21 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
              + SHorizontalBox::Slot().FillWidth(1)[Label([this] { return CurrentEpisodeLine().Direction; },15,FLinearColor(.57f,.58f,.55f))]
              + SHorizontalBox::Slot().AutoWidth().Padding(16,0)[Label([this] { return NovelTextComplete() ? TEXT("▼"):TEXT(""); },17,Gold)]]]];
     Canvas->AddSlot().Position(FVector2D(64,610)).Size(FVector2D(1472,226))[Dialogue];InputPanels.Add(Dialogue);
-    auto Controls=SNew(SBox).Visibility_Lambda(Visible)[SNew(SHorizontalBox)
+    auto Controls=SNew(SBox).Visibility_Lambda([this] { return bEpisodeOpen && !bNovelPlan ? EVisibility::Visible:EVisibility::Collapsed; })[SNew(SHorizontalBox)
         + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("履歴 / L"); },[this] { bNovelHistory=true; })]
         + SHorizontalBox::Slot().AutoWidth().Padding(12,0)[Button([] { return TEXT("前へ / ←"); },[this] { StepEpisode(-1);NovelElapsed=1000; },[this] { return EpisodePage>0 && !bNovelHistory; })]
         + SHorizontalBox::Slot().AutoWidth()[Button([this] { return bNovelInstant ? TEXT("文字：一括"):TEXT("文字：ゆっくり"); },[this] { bNovelInstant=!bNovelInstant; })]
         + SHorizontalBox::Slot().FillWidth(1)
         + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("閉じる / Esc"); },[this] { CloseEpisode(); })]
         + SHorizontalBox::Slot().AutoWidth().Padding(18,0,0,0)[SNew(SBox).WidthOverride(280)
-            [Button([this] { return !NovelTextComplete() ? TEXT("全文を表示 / Enter"):EpisodePage+1<EpisodeSnapshot.Lines.Num() ? TEXT("続きを読む / Enter"):TEXT("采配へ戻る / Enter"); },[this] { ReadNextNovel(); })]]];
+            [Button([this] { return !NovelTextComplete() ? TEXT("全文を表示 / Enter"):EpisodePage+1<EpisodeSnapshot.Lines.Num() ? TEXT("続きを読む / Enter"):Field->Presentation().Journey.bPreparation && !bNovelPersonal ? TEXT("作戦書を開く / Enter"):TEXT("采配へ戻る / Enter"); },[this] { ReadNextNovel(); })]]];
     Canvas->AddSlot().Position(FVector2D(64,850)).Size(FVector2D(1472,34))[Controls];InputPanels.Add(Controls);
     auto Choices=SNew(SVerticalBox).Visibility_Lambda([this]
-        { return bEpisodeOpen && !bNovelHistory && NovelTextComplete() && EpisodePage+1==EpisodeSnapshot.Lines.Num() && Field->Presentation().Journey.bNeedsReply ? EVisibility::Visible:EVisibility::Collapsed; })
+        { return bEpisodeOpen && !bNovelHistory && !bNovelPlan && NovelTextComplete() && EpisodePage+1==EpisodeSnapshot.Lines.Num() && Field->Presentation().Journey.bNeedsReply ? EVisibility::Visible:EVisibility::Collapsed; })
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)
-          [Button([] { return TEXT("次は、みんなを連れて帰る\n兵の損失を一割以内に抑え、任務を果たす"); },[this] { ChooseNovelReply(true); })]
-        + SVerticalBox::Slot().AutoHeight()[Button([] { return TEXT("俺が合図を出して、皆をつなぐ\n二隊以上の戦法をつなぎ、任務を果たす"); },[this] { ChooseNovelReply(false); })];
+          [Button([] { return TEXT("1　次は、みんなを連れて帰る\n兵の損失を一割以内に抑え、任務を果たす"); },[this] { ChooseNovelReply(true); })]
+        + SVerticalBox::Slot().AutoHeight()[Button([] { return TEXT("2　俺が合図を出して、皆をつなぐ\n二隊以上の戦法をつなぎ、任務を果たす"); },[this] { ChooseNovelReply(false); })];
     Canvas->AddSlot().Position(FVector2D(460,370)).Size(FVector2D(680,180))[Choices];InputPanels.Add(Choices);
     BuildNovelHistory(Canvas);
+    BuildNovelPlan(Canvas);
 }

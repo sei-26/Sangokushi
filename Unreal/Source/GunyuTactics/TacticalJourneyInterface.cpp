@@ -115,7 +115,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
            [Button([this] { return Field->Presentation().Journey.PrimaryLabel; }, [this]
             {
                 if (Field->CanIssue(ETacticalCommand::Dialogue)) Field->Issue(ETacticalCommand::Dialogue);
-                else if (Field->Presentation().Journey.bPreparation) Field->Issue(ETacticalCommand::Deploy);
+                else if (Field->Presentation().Journey.bPreparation) { OpenEpisode();OpenNovelPlan(); }
                 else if (Field->CanIssue(ETacticalCommand::Continue)) Field->Issue(ETacticalCommand::Continue);
                 else if (Field->CanIssue(ETacticalCommand::Retry)) Field->Issue(ETacticalCommand::Retry);
                 else if (Field->Presentation().Journey.bComplete) Field->Issue(ETacticalCommand::Restart);
