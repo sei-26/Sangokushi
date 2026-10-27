@@ -37,18 +37,7 @@ bool ATacticalField::CanIssue(ETacticalCommand Command) const
     if (Command == ETacticalCommand::Hold) return !J.chain.moved[Id];
     if (Command == ETacticalCommand::PrepareAmbush)
         return J.world.generals[Id].tactic == Tactic::Ambush && !J.chain.moved[Id] && !J.chain.concealed[Id];
-    if (Command == ETacticalCommand::QueueTactic)
-    {
-        const auto Tactic = State->SelectedTactics[Id];
-        if (!TacticChain::CanUse(J.world, Id, Tactic) || State->Orders.size() >= 3) return false;
-        for (const auto& Order : State->Orders) if (Order.army == Id) return false;
-        const auto& Definition = TacticChain::Definition(Tactic);
-        if (Definition.unique && J.chain.signatureUsed[Id]) return false;
-        if (Tactic == ChainTactic::Lure && J.chain.moved[Id]) return false;
-        if (!Definition.targetsEnemy) return true;
-        const auto* Target = J.intelligence[0].Find(State->Target);
-        return Target && Target->current;
-    }
+    if (Command == ETacticalCommand::QueueTactic) return TacticReservationBlockReason().IsEmpty();
     const auto* Contact = J.intelligence[0].Find(State->Target);
     if (!Contact || !Contact->current) return false;
     if (Command == ETacticalCommand::Strike) return J.world.CanStrike(Id, Contact->observed.tile);

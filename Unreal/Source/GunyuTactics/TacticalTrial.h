@@ -88,6 +88,7 @@ public:
     void Action(FKey Key);
     void Issue(ETacticalCommand Command);
     bool CanIssue(ETacticalCommand Command) const;
+    FString TacticReservationBlockReason() const;
     void SelectOfficer(int Index);
     void SelectTactic(int Id);
     void EditOrder(int Index, int Direction);
@@ -101,6 +102,8 @@ public:
     bool StoryPromiseSmokeTest();
     bool TacticRepertoireSmokeTest();
     bool ComboSmokeTest();
+    bool TacticAvailabilitySmokeTest();
+    void PrepareTacticAvailabilityPreview(bool bUsedSignature);
     bool EnemyReadSmokeTest();
     bool VisualGeometrySmokeTest();
     bool BackdropSmokeTest();
@@ -228,6 +231,8 @@ private:
     void IssueMarchPlan(ETacticalCommand Command);
     void BuildPresentation();
     void BuildTacticsPresentation();
+    void BuildTacticAvailability();
+    void RetargetObservedEnemy();
     void BuildEnemyPresentation();
     void BuildJourneyPresentation();
     void BuildOfficerConversation();

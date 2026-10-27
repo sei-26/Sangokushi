@@ -9,7 +9,12 @@ using namespace gunyuui;
 
 TSharedRef<SWidget> ATacticalController::TacticPickerButton()
 {
-    return Button([this] { return TEXT("戦法：") + Field->Presentation().SelectedTacticName + TEXT(" ▼"); }, [this]
+    return Button([this]
+    {
+        FString Name=TEXT("戦法：")+Field->Presentation().SelectedTacticName;
+        for(const auto& T:Field->Presentation().Tactics) if(T.bSelected && T.bUsed) return T.Name+TEXT("［済］ ▼");
+        return Name+TEXT(" ▼");
+    }, [this]
     {
         bTacticPickerOpen = !bTacticPickerOpen;
         IgnoreMapInputThroughFrame = Frames + 1;

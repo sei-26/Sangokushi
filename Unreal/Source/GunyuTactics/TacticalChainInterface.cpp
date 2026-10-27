@@ -33,13 +33,13 @@ TSharedRef<SWidget> ATacticalController::ChainPlannerWidget()
                 + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom)[Edit(1,TEXT("↓"))]
                 + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Bottom)[Edit(0,TEXT("×"))]]
             + SVerticalBox::Slot().AutoHeight().Padding(0,3,0,0)
-                [SNew(SBox).HeightOverride(30).Clipping(EWidgetClipping::ClipToBounds)
+                [SNew(SBox).HeightOverride(20).Clipping(EWidgetClipping::ClipToBounds)
                  [SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular",11))
                  .ColorAndOpacity_Lambda([this,Index] { const auto& O=Field->Presentation().Orders;return FSlateColor(O.IsValidIndex(Index) ? gunyuchainui::Color(O[Index]) : FLinearColor(.5f,.59f,.60f)); })
                  .Text_Lambda([this,Index] { const auto& O=Field->Presentation().Orders;return FText::FromString(O.IsValidIndex(Index) ? gunyuchainui::Status(O[Index])+TEXT(" / ")+O[Index].Detail.Replace(TEXT("成立 / "),TEXT("")) : TEXT("戦法を選び「予約」で追加")); })
                  .AutoWrapText(true).OverflowPolicy(ETextOverflowPolicy::MultilineEllipsis)]];
         List->AddSlot().Padding(0,0,0,5)
-            [SNew(SBox).HeightOverride(82)
+            [SNew(SBox).HeightOverride(72)
              [SNew(SBorder).Padding(6).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
               .BorderBackgroundColor_Lambda([this,Index] { const auto& H=Field->Presentation();return H.Orders.IsValidIndex(Index) && H.Orders[Index].Actor==H.Selected ? FLinearColor(.045f,.095f,.09f,.98f) : FLinearColor(.014f,.029f,.035f,.95f); })
               .ToolTipText_Lambda([this,Index]

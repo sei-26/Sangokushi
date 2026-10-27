@@ -69,7 +69,7 @@ void ATacticalField::BuildPresentation()
         HUD.Officers.Add(MoveTemp(Officer));
     }
     const auto* Contact = J.intelligence[0].Find(State->Target);
-    HUD.Target = TEXT("敵部隊を左クリックで指定");
+    HUD.Target = J.HasConvoy() ? TEXT("対象にできる敵なし\n護送路を空け、車を出口まで送ろう") : TEXT("対象にできる敵なし\n見えている敵を指定するか、周囲を確認しよう");
     if (Contact && Contact->current)
         HUD.Target = FString::Printf(TEXT("対象: %s\n兵 %d / 士気 %d / %s"), *JourneyText(J.world.generals[Contact->observed.general].name), Contact->observed.troops, Contact->observed.morale,
             Contact->observed.stance == battle::Stance::Guard ? TEXT("固守") : Contact->observed.scouting ? TEXT("索敵中") : TEXT("通常"));

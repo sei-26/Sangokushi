@@ -12,6 +12,8 @@ UEの会話・軍議・戦後は `TacticalJourney.cpp`、その画面は `Tactic
 
 ヘッダー（.hpp）は主に「持っているデータと、呼べる関数」。実際の処理は同名や役割名の.cppにある。同じクラスの関数を複数の.cppに分けているため、別ファイルでも同じゲーム状態を扱う。ファイルを分けるために別のシステムへ作り直したわけではない。
 
+戦法の予約不可理由と対象更新は `Unreal/Source/GunyuTactics/TacticalTacticAvailability.cpp`、その回帰確認は `TacticalTacticAvailabilityTests.cpp`。[仕様](TACTIC_AVAILABILITY_FIX.md)。
+
 ## 最初に読む5ファイル
 
 新しい本編序章の入口は `CampaignSceneInput.cpp` → `StrategistJourneyScene.cpp` → `StrategistJourney.cpp`。従来の全国戦略は以下の５ファイルを参照する。

@@ -141,6 +141,7 @@ FVector ATacticalField::TileLocation(int Tile)
 void ATacticalField::Refresh()
 {
     auto& J = State->Journey;
+    RetargetObservedEnemy();
     SyncRealtime();
     SyncChainSignal();
     UpdateLandscapeTopology();

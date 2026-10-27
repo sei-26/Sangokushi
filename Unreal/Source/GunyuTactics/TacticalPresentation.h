@@ -112,7 +112,8 @@ struct FTacticalPresentation
     int ThreatFrom = -1, ThreatNext = -1;
     FString EnemyCounter;
     bool bThreatOverlay = true;
-    FString SelectedTacticName;
+    FString SelectedTacticName, TacticAvailability;
+    bool bTacticUnavailable=false;
     TArray<TPair<int, int>> Routes;
     FJourneyPresentation Journey;
     int Predicted = 0, Selected = 0;
