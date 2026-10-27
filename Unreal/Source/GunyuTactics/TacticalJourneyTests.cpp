@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include <queue>
 
 using namespace frontline;
 
@@ -51,11 +52,19 @@ bool ATacticalField::JourneySmokeTest()
     auto Approach = [this, &J](int Army, int Goal, bool AvoidRoad)
     {
         if (Goal < 0 || J.chain.moved[Army]) return;
-        int Destination = -1, Distance = J.world.MapDistance(J.world.armies[Army].tile, Goal);
-        for (int Tile : J.world.MapNeighbors(J.world.armies[Army].tile))
-            if (StrategistJourney::OnMap(Tile) && J.intelligence[0].visible[Tile] && TacticChain::Free(J.world, Tile) && (!AvoidRoad || Tile / Width != 11) && J.world.MapDistance(Tile, Goal) < Distance)
-            { Distance = J.world.MapDistance(Tile, Goal); Destination = Tile; }
-        if (Destination >= 0) { SelectOfficer(Army); CommandAt(Destination); }
+        const int From=J.world.armies[Army].tile;const bool Occupied=!TacticChain::Free(J.world,Goal);
+        std::array<int,TileCount> First;First.fill(-1);First[From]=From;
+        std::queue<int> Open;Open.push(From);int Destination=-1;
+        while(!Open.empty() && Destination<0)
+        {
+            const int At=Open.front();Open.pop();
+            if(At==Goal || (Occupied && J.world.MapDistance(At,Goal)<=1)) { Destination=First[At];break; }
+            for(int Next:J.world.MapNeighbors(At))
+                if(StrategistJourney::OnMap(Next) && First[Next]<0 && J.intelligence[0].visible[Next] &&
+                   TacticChain::Free(J.world,Next) && (!AvoidRoad || Next/Width!=11))
+                { First[Next]=At==From ? Next:First[At];Open.push(Next); }
+        }
+        if(Destination>=0 && Destination!=From) { SelectOfficer(Army);CommandAt(Destination); }
     };
     auto Attack = [this, &J](int Army)
     {
@@ -77,12 +86,25 @@ bool ATacticalField::JourneySmokeTest()
             { Distance = J.world.MapDistance(J.world.armies[Army].tile, Contact.observed.tile); Goal = Contact.observed.tile; }
         Approach(Army, Goal, AvoidRoad); Attack(Army);
     };
-    for (int Phase = 1; Phase <= 10 && J.stage == JourneyStage::Battle; ++Phase)
+    for (int Phase = 1; Phase <= J.Definition().limit && J.stage == JourneyStage::Battle; ++Phase)
     {
         if (Phase == 1) { SelectOfficer(0); CommandAt(Campaign::At(9, 9)); SelectOfficer(2); CommandAt(Campaign::At(9, 10)); }
         if (Phase == 2) { SelectOfficer(0); CommandAt(Campaign::At(10, 9)); SelectOfficer(1); CommandAt(Campaign::At(9, 9)); }
-        for (int Army = 0; Army < 3 && J.stage == JourneyStage::Battle; ++Army) Fight(Army, true);
+        Fight(0,true);Fight(1,true);
+        const auto* Vanguard=J.intelligence[0].Find(3);
+        if(Vanguard && Vanguard->current && J.world.armies[3].troops>0)
+        {
+            if(!J.world.CanStrike(2,Vanguard->observed.tile)) Approach(2,Vanguard->observed.tile,false);
+            if(J.Preview({{2,3,ChainTactic::Breakthrough,-1}}).completed==1)
+            {
+                SelectOfficer(2);SelectAt(J.world.armies[3].tile);
+                Issue(ETacticalCommand::QueueTactic);Issue(ETacticalCommand::Execute);
+            }
+        }
+        else if(J.world.armies[3].troops>0) Approach(2,J.goal,false);
+        if(J.world.armies[3].troops<=0 && J.world.armies[2].tile/Width==11) Approach(2,Campaign::At(12,10),false);
         if (J.stage == JourneyStage::Battle) Issue(ETacticalCommand::EndTurn);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_ESCORT_PLAY: phase=%d turn=%d cart=%d vanguard=%d reserve=%d"),Phase,J.turn,J.convoyStep,J.world.armies[3].troops,J.world.armies[4].troops);
     }
     if (!Check(J.won && J.recoveredCargo >= 1200, TEXT("escort completed with UI commands"))) return false;
     if(State->Journey.NeedsStoryReply()) Issue(ETacticalCommand::StoryReplyPreserve);

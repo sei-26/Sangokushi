@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticalBattlefieldStyle.h"
 
 void ATacticalField::UpdateLandscapeTopology()
 {
@@ -37,14 +38,18 @@ float ATacticalField::SurfaceHeight(FVector P) const
     const auto Cell = hexgrid::Pick(P.X / 200., P.Y / 200.);
     // Connected crest lines share one broad slope instead of separate mounds.
     // The small public-terrain topology cache is rebuilt only when terrain changes.
+    const auto Style=TacticalMap::BattlefieldStyle(J.mission);
+    // Higher canyon ridges also need broader slopes, so the normal overview
+    // can still see and select the playable hex centers behind their crest.
+    const float RidgeHeight=Style.RidgeHeight;
     double Mountain=0;
     for (const FVector& Peak : State->LandscapePeaks)
-        Mountain=FMath::Max(Mountain,175*FMath::Exp(-FVector::DistSquared2D(P,Peak)/24000.));
+        Mountain=FMath::Max(Mountain,RidgeHeight*FMath::Exp(-FVector::DistSquared2D(P,Peak)/Style.RidgeFalloff));
     for (const auto& Ridge : State->LandscapeRidges)
     {
         const FVector Delta=Ridge.Value-Ridge.Key;
         const double T=FMath::Clamp(FVector::DotProduct(P-Ridge.Key,Delta)/Delta.SizeSquared(),0.,1.);
-        Mountain=FMath::Max(Mountain,175*FMath::Exp(-FVector::DistSquared2D(P,Ridge.Key+Delta*T)/24000.));
+        Mountain=FMath::Max(Mountain,RidgeHeight*FMath::Exp(-FVector::DistSquared2D(P,Ridge.Key+Delta*T)/Style.RidgeFalloff));
     }
     // Connected ridges retain the same tactical cells, while their crest
     // varies continuously instead of forming one level tabletop.

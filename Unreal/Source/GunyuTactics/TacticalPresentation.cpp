@@ -1,6 +1,7 @@
 ﻿#include "TacticalPresentation.h"
 #include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyBattlefield.hpp"
 #include <memory>
 
 using namespace frontline;
@@ -18,7 +19,7 @@ void ATacticalField::BuildPresentation()
     HUD.GoalTile = J.goal;
     HUD.SecondGoalTile = J.Definition().secondGoal;
     HUD.GoalLabel = J.mission == 0 ? TEXT("脱出地点") : J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("防衛地点");
-    HUD.Title = FString::Printf(TEXT("群雄戦線  /  %s    更新 %d / %d"), *JourneyText(J.MissionName()),FMath::Max(0,J.turn-1), J.TurnBudget());
+    HUD.Title = FString::Printf(TEXT("%s  /  %s    更新 %d / %d"), *JourneyText(BattlefieldDefinition(J.mission).name), *JourneyText(J.MissionName()),FMath::Max(0,J.turn-1), J.TurnBudget());
     HUD.Objective = JourneyText(J.ObjectiveProgress());
     if(J.stage==JourneyStage::Battle && J.CurrentPledge()!=JourneyPledge::None)
     {

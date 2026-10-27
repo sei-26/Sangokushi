@@ -143,7 +143,7 @@ namespace frontline
 			army.faction = i < 3 ? 0 : 1;
 			army.tile = army.target = Definition().positions[i];
 			if (i == 4 && policy == 2 && mission < 2)
-				army.tile = army.target = Campaign::At(7, 11);
+				army.tile = army.target = mission == 1 ? Campaign::At(12, 8) : Campaign::At(7, 11);
 			army.troops = i < 3 ? deployed / 3 + (i < deployed % 3 ? 1 : 0) : i == 3 ? 1800 : 1300;
 			army.food = i < 3 ? (food - (escort ? 900 : 0)) / 3 : 3000;
 			army.morale = choice == 1 && i < 3 ? 100 : 90;

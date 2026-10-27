@@ -71,6 +71,33 @@ void ATacticalField::BuildFortifications()
         Roofs->AddInstance(FTransform(FRotator::ZeroRotator,P+FVector(0,0,275),FVector(.92,2.58,.48)));
         Flag(P+FVector(10,127,0),FLinearColor(.48f,.24f,.035f),.95f);
     };
-    Gate(J.goal);Gate(J.Definition().secondGoal);
+    if (J.mission==2)
+    {
+        // Actual defense sites have beacon towers, rather than two exit gates.
+        // Keep the fire and structure in a corner, clear of the formation center.
+        for (int Tile : {J.goal,J.Definition().secondGoal})
+        {
+            const FVector P=SurfaceLocation(Tile)+FVector(-75,-62,0);
+            Watchtowers->AddInstance(FTransform(FRotator::ZeroRotator,P,FVector(.60)));
+            Stonework->AddInstance(FTransform(FRotator::ZeroRotator,P+FVector(0,0,64),FVector(.39,.39,.13)));
+            for (int Side : {-1,1})
+            {
+                Wood(P+FVector(0,Side*10,75),FVector(34,7,7),FRotator(0,Side*25,0));
+                const FVector A=P+FVector(-15,Side*9,77),B=P+FVector(16,Side*9,77);
+                Cloth.Triangle(A,B,P+FVector(Side*5,0,122),FLinearColor(1,.24f,.015f),FLinearColor(1,.35f,.02f),FLinearColor(1,.85f,.25f));
+            }
+            Flag(P+FVector(26,0,0),FLinearColor(.48f,.24f,.035f),.90f);
+        }
+    }
+    else
+    {
+        Gate(J.goal);
+        if (J.mission==1)
+            for (int I=0;I<4;++I)
+            {
+                const FVector P=SurfaceLocation(J.goal)+FVector(-62+(I%2)*28,70+(I/2)*22,0);
+                SupplyCrates->AddInstance(FTransform(FRotator(0,I*11,0),P,FVector(.42)));
+            }
+    }
     Cloth.Submit(FieldBanners,0);
 }

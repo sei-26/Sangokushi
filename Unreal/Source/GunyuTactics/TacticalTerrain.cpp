@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticalBattlefieldStyle.h"
 #include "TacticalMapMesh.h"
 using TacticalMap::FSurface;
 #include "ProceduralMeshComponent.h"
@@ -21,8 +22,9 @@ namespace
 void ATacticalField::BuildTerrain()
 {
     const auto& J = State->Journey;
+    const auto Style = TacticalMap::BattlefieldStyle(J.mission);
     TArray<int32> Snapshot;
-    Snapshot.Append({J.goal, J.Definition().secondGoal, J.HasConvoy() ? 1 : 0});
+    Snapshot.Append({J.mission, J.goal, J.Definition().secondGoal, J.HasConvoy() ? 1 : 0});
     for (int Y = 1; Y < frontline::StrategistJourney::Rows - 1; ++Y)
         for (int X = 1; X < frontline::StrategistJourney::Columns - 1; ++X)
         {
@@ -55,7 +57,6 @@ void ATacticalField::BuildTerrain()
     };
     auto ColorAt = [&](FVector P, FLinearColor Base, bool)
     {
-        if (Base.B < .15f || Base.R > .20f)
         {
             const auto Cell=hexgrid::Pick(P.X/200.,P.Y/200.);
             FLinearColor Sum(0,0,0,0); float Total=0;
@@ -63,9 +64,9 @@ void ATacticalField::BuildTerrain()
             {
                 if (X<1 || Y<1 || X>=frontline::StrategistJourney::Columns-1 || Y>=frontline::StrategistJourney::Rows-1) continue;
                 const auto T=J.world.tiles[frontline::Campaign::At(X,Y)].terrain;
-                FLinearColor C(.14f,.175f,.105f);
-                if (T==frontline::Terrain::Forest) C=FLinearColor(.09f,.145f,.042f);
-                if (T==frontline::Terrain::Mountain) C=FLinearColor(.24f,.235f,.18f);
+                FLinearColor C=Style.Ground;
+                if (T==frontline::Terrain::Forest) C=Style.Forest;
+                if (T==frontline::Terrain::Mountain) C=Style.Rock;
                 if (T==frontline::Terrain::River) C=FLinearColor(.20f,.16f,.095f);
                 const float W=FMath::Square(FMath::Max(0.f,1.f-static_cast<float>(FVector::DistSquared2D(P,TileLocation(frontline::Campaign::At(X,Y))))/65000.f));
                 Sum+=C*W; Total+=W;
@@ -81,7 +82,7 @@ void ATacticalField::BuildTerrain()
             if (P.X > Start.X - 140 && P.X < End.X + 160)
             {
                 const float Road = 1 - FMath::SmoothStep(26., 72., FMath::Abs(P.Y - Start.Y));
-                Base = FMath::Lerp(Base, FLinearColor(.27f, .205f, .115f), Road);
+                Base = FMath::Lerp(Base, Style.Road, Road);
             }
         }
         return Base * VisibilityShade(P);
@@ -97,9 +98,9 @@ void ATacticalField::BuildTerrain()
             const bool bRock = Terrain == frontline::Terrain::Mountain;
             const bool bWater = Terrain == frontline::Terrain::River;
             FSurface& Surface = Land;
-            FLinearColor Base(.14f, .175f, .105f);
-            if (bForest) Base = FLinearColor(.09f, .145f, .042f);
-            if (bRock) Base = FLinearColor(.27f, .255f, .21f);
+            FLinearColor Base=Style.Ground;
+            if (bForest) Base = Style.Forest;
+            if (bRock) Base = Style.Rock;
             if (bWater) Base = FLinearColor(.20f, .16f, .095f);
             if (Terrain == frontline::Terrain::Bridge) Base = FLinearColor(.31f, .22f, .12f);
             auto Point = [&](FVector P) { P.Z = bWater ? -10.f : Height(P); return P; };
@@ -143,7 +144,7 @@ void ATacticalField::BuildTerrain()
                             J.world.tiles[frontline::Campaign::At(NX,NY)].terrain==frontline::Terrain::Bridge &&
                             FVector::DistSquared2D(P,TileLocation(frontline::Campaign::At(NX,NY)))<210*210) bBridgeApproach=true;
                     if (bBridgeApproach) continue;
-                    const float Size = .55f + N * .55f;
+                    const float Size = (.55f + N * .55f) * Style.TreeScale;
                     const FVector Root=P+FVector(0,0,Height(P));
                     const FRotator Twist(0,N*360,0);
                     Trunks->AddInstance(FTransform(Twist,Root+FVector(0,0,62)*Size,FVector(.10,.11,1.3)*Size));
@@ -210,7 +211,7 @@ void ATacticalField::BuildTerrain()
                 for (int I=0;I<4;++I) for (int K=0;K<4-I;++K)
                 {
                     const FVector P=Point(Center+U*(I/4.f)+V*(K/4.f)),Q=Point(Center+U*((I+1)/4.f)+V*(K/4.f)),R=Point(Center+U*(I/4.f)+V*((K+1)/4.f));
-                    const FLinearColor Base(.14f,.175f,.105f);
+                    const FLinearColor Base=Style.Ground;
                     Land.Triangle(P,Q,R,ColorAt(P,Base,false),ColorAt(Q,Base,false),ColorAt(R,Base,false));
                     if (I+K<3)
                     {

@@ -1,4 +1,5 @@
 ﻿#include "StrategistJourney.hpp"
+#include "JourneyBattlefield.hpp"
 
 namespace frontline
 {
@@ -34,18 +35,9 @@ namespace frontline
 		for (int y = 1; y < Rows - 1; ++y)
 			for (int x = 1; x < Columns - 1; ++x)
 			{
-				auto& tile = world.tiles[Campaign::At(x, y)];
-				tile = {Terrain::Plain, x <= 9 ? 0 : 1};
-				if (y >= 5 && y <= 9 && x >= 5 && x <= 10)
-					tile.terrain = Terrain::Forest;
-                if (IsRescue() && y==12 && x>=7 && x<=10) tile.terrain=Terrain::Forest;
-				if (y == 2 && x >= 8)
-					tile.terrain = Terrain::Mountain;
-				if (mission == 1 && x == 11 && y < 10)
-					tile.terrain = y == 6 ? Terrain::Bridge : Terrain::River;
-				if (mission == 2 && x == 10 && y >= 4 && y <= 8)
-					tile.terrain = Terrain::Mountain;
+                world.tiles[Campaign::At(x, y)] = {BattlefieldTerrain(mission, x, y, IsRescue()), x <= 9 ? 0 : 1};
 			}
+        world.cities[0].tile = mission == 2 ? Campaign::At(2, 6) : Campaign::At(2, 10);
 	}
 	bool StrategistJourney::Hold(int army)
 	{

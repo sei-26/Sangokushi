@@ -57,6 +57,7 @@ bool ATacticalField::SmokeTest()
     Issue(ETacticalCommand::Restart);
     State->bNoPlayback = false;
     if (!PlaybackSmokeTest()) return false;
+    if (!VisualGeometrySmokeTest()) return false;
     bStartWithCouncil = SavedCouncil;
     if (!JourneySmokeTest()) return false;
     if (!StoryPromiseSmokeTest()) return false;
@@ -69,7 +70,6 @@ bool ATacticalField::SmokeTest()
     if (!ChainReviewSmokeTest()) return false;
     if (!ChainPresentationSmokeTest()) return false;
     if (!EnemyReadSmokeTest()) return false;
-    if (!VisualGeometrySmokeTest()) return false;
     if (!BackdropSmokeTest()) return false;
     if (!InfantryMotionSmokeTest()) return false;
     if (!ActivityReadSmokeTest()) return false;

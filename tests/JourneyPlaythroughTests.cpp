@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <queue>
 
 using namespace frontline;
 static bool AttackVisible(StrategistJourney& j, int army)
@@ -19,18 +20,22 @@ static void Approach(StrategistJourney& j, int army, int target, bool avoidRoad)
 {
 	if (target < 0 || j.chain.moved[army])
 		return;
-	const auto& unit = j.world.armies[army];
-	int destination = -1, best = j.world.MapDistance(unit.tile, target);
-	for (int tile : j.world.MapNeighbors(unit.tile))
-		if (StrategistJourney::OnMap(tile) && j.intelligence[0].visible[tile] &&
-		    TacticChain::Free(j.world, tile) && (!avoidRoad || tile / Width != 11) &&
-		    j.world.MapDistance(tile, target) < best)
-		{
-			best = j.world.MapDistance(tile, target);
-			destination = tile;
-		}
-	if (destination >= 0)
-		j.Move(army, destination);
+    // A player following visible routes can go around a river. Greedy distance
+    // alone is not a valid playthrough once the battlefield has real crossings.
+    const int from=j.world.armies[army].tile;
+    const bool occupied=!TacticChain::Free(j.world,target);
+    std::array<int,TileCount> first;first.fill(-1);first[from]=from;
+    std::queue<int> open;open.push(from);int destination=-1;
+    while(!open.empty() && destination<0)
+    {
+        const int at=open.front();open.pop();
+        if(at==target || (occupied && j.world.MapDistance(at,target)<=1)) { destination=first[at];break; }
+        for(int next:j.world.MapNeighbors(at))
+            if(StrategistJourney::OnMap(next) && first[next]<0 && j.intelligence[0].visible[next] &&
+               TacticChain::Free(j.world,next) && (!avoidRoad || next/Width!=11))
+            { first[next]=at==from ? next:first[at];open.push(next); }
+    }
+    if(destination>=0 && destination!=from) j.Move(army,destination);
 }
 static void Fight(StrategistJourney& j, int army, bool avoidRoad)
 {
@@ -79,8 +84,18 @@ int main()
 			assert(j->Move(0, Campaign::At(10, 9)));
 			assert(j->Move(1, Campaign::At(9, 9)));
 		}
-		for (int army = 0; army < 3 && j->stage == JourneyStage::Battle; ++army)
-			Fight(*j, army, true);
+        // Divide the force: two officers take the north crossing; Zhang Fei
+        // clears the south bridgehead with solo tactics, then vacates the road.
+        Fight(*j,0,true);Fight(*j,1,true);
+        const auto* vanguard=j->intelligence[0].Find(3);
+        if(vanguard && vanguard->current && j->world.armies[3].troops>0)
+        {
+            if(!j->world.CanStrike(2,vanguard->observed.tile)) Approach(*j,2,vanguard->observed.tile,false);
+            j->Execute({{2,3,ChainTactic::Breakthrough,-1}});
+        }
+        else if(j->world.armies[3].troops>0) Approach(*j,2,j->goal,false);
+        if(j->world.armies[3].troops<=0 && j->world.armies[2].tile/Width==11)
+            Approach(*j,2,Campaign::At(12,10),false);
 		if (j->stage == JourneyStage::Battle)
 			j->EndTurn();
 		std::cout << "escort phase " << phase << " cart " << j->convoyStep << " enemies "

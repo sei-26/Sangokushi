@@ -28,9 +28,9 @@ void ATacticalField::BuildMapScenery()
         Wood(P+R.RotateVector(FVector(0,-44,22)*Size),FVector(19,5,44)*Size,R);
     };
     // A small village and cultivated fields beyond the southern board boundary.
-    for (int I=0;I<7;++I)
+    for (int I=0;I<(J.mission==1 ? 7 : J.mission==2 ? 2 : 4);++I)
         House(FVector(470+(I%4)*163,2335+(I/4)*174,0),.68f+(I%3)*.08f,(I%2)*12-6);
-    for (int Field=0;Field<3;++Field)
+    for (int Field=0;Field<(J.mission==1 ? 3 : J.mission==2 ? 0 : 1);++Field)
     {
         const FVector Base(1240+Field*220,2390,0);
         for (int Row=0;Row<13;++Row)
@@ -52,19 +52,31 @@ void ATacticalField::BuildMapScenery()
         const FVector Center=TileLocation(Tile);
         if (Terrain==Terrain::Bridge)
         {
-            // Deck top is exactly the common SurfaceHeight used by soldiers,
-            // selection rays and the grid; rails are outside the formation.
+            // Orient the crossing perpendicular to the actual river. The
+            // canyon's east/west channel requires north/south bridge decks.
+            TArray<FVector> Wet;
+            for (int Other : J.world.MapNeighbors(Tile))
+            {
+                const auto T=J.world.tiles[Other].terrain;
+                if (T==Terrain::River || T==Terrain::Bridge) Wet.Add(TileLocation(Other));
+            }
+            const FVector Along=Wet.Num()>=2 ? Wet[1]-Wet[0] : FVector(0,200,0);
+            const FVector Across(Along.Y,-Along.X,0);
+            const FRotator Rotation(0,FMath::RadiansToDegrees(FMath::Atan2(Across.Y,Across.X)),0);
+            auto Point=[&](FVector Offset) { return Center+Rotation.RotateVector(Offset); };
+            auto Beam=[&](FVector Offset,FVector Size) { Wood(Point(Offset),Size,Rotation); };
+            // Deck top agrees with SurfaceHeight and leaves formation centers clear.
             for (int Side : {-1,1}) for (int End : {-1,1})
-                Stonework->AddInstance(FTransform(FRotator::ZeroRotator,Center+FVector(End*103,Side*77,-10),FVector(.18,.21,.20)));
+                Stonework->AddInstance(FTransform(Rotation,Point(FVector(End*103,Side*77,-10)),FVector(.18,.21,.20)));
             for (int Plank=0;Plank<22;++Plank)
-                Wood(Center+FVector(-105+Plank*10,0,-4),FVector(9,158,8));
+                Beam(FVector(-105+Plank*10,0,-4),FVector(9,158,8));
             for (int Side : {-1,1})
             {
                 for (int Post=0;Post<5;++Post)
-                    Wood(Center+FVector(-100+Post*50,Side*85,19),FVector(6,6,62));
+                    Beam(FVector(-100+Post*50,Side*85,19),FVector(6,6,62));
                 for (int Level : {14,36})
-                    Wood(Center+FVector(0,Side*85,Level),FVector(218,5,5));
-                Wood(Center+FVector(0,Side*55,-13),FVector(228,10,13));
+                    Beam(FVector(0,Side*85,Level),FVector(218,5,5));
+                Beam(FVector(0,Side*55,-13),FVector(228,10,13));
             }
         }
     }

@@ -128,7 +128,7 @@ int main()
 		assert(j->heldTurns == 0); // Repeated input cannot manufacture elapsed defense time.
 		assert(j->Hold(0) && j->chain.spent[0] && !j->Strike(0, 3));
 		assert(j->EndTurn() && j->heldTurns == 1 && !j->guarding[0]);
-		assert(j->Move(2, Campaign::At(9, 11)));
+		assert(j->Move(2, Campaign::At(9, 9)));
 		assert(j->EndTurn() && j->heldTurns == 0); // A longer attack that abandons a point loses the hold.
 		assert(j->Move(2, j->Definition().secondGoal));
 		for (int i = 0; i < 3; ++i)
@@ -155,8 +155,8 @@ int main()
 		RemoveOpponents(*j);
 		assert(j->Move(0, j->goal) && j->Hold(0));
 		j->world.armies[3].troops = j->world.armies[4].troops = 1000;
-		j->world.armies[3].tile = Campaign::At(8, 9);
-		j->world.armies[4].tile = Campaign::At(7, 10);
+		j->world.armies[3].tile = Campaign::At(8, 6);
+		j->world.armies[4].tile = Campaign::At(7, 7);
 		assert(!j->PositionSecured(j->goal));
 		j->world.armies[4].troops = 0;
 		assert(j->PositionSecured(j->goal));

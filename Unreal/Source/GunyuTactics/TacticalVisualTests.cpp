@@ -17,7 +17,7 @@ bool ATacticalField::VisualGeometrySmokeTest()
     for (int Mission=0; Mission<3; ++Mission)
     {
         FirstMission=Mission; Issue(ETacticalCommand::Restart);
-        if (Mission==1)
+        if (Mission==1 || Mission==2)
         {
             const auto* Channel=Ground->GetProcMeshSection(2);
             if (!Check(Channel && Channel->ProcVertexBuffer.Num()>0,TEXT("escort mission has a continuous river mesh"))) return false;
@@ -39,7 +39,7 @@ bool ATacticalField::VisualGeometrySmokeTest()
         if (!Check(Spearheads->GetStaticMesh() && Standards->GetMaterial(0),TEXT("real spear and banner assets are loaded"))) return false;
         if (!Check(Palisades->GetStaticMesh() && Watchtowers->GetStaticMesh() && Tents->GetStaticMesh() && SupplyCrates->GetStaticMesh(),
             TEXT("editable fortification mesh references are loaded"))) return false;
-        if (!Check(Palisades->GetInstanceCount()>40 && Watchtowers->GetInstanceCount()==2 && Tents->GetInstanceCount()==2,
+        if (!Check(Palisades->GetInstanceCount()>40 && Watchtowers->GetInstanceCount()==(Mission==2 ? 4 : 2) && Tents->GetInstanceCount()==2,
             TEXT("both public camp sites have actual instanced fortifications"))) return false;
         if (!Check(Palisades->GetCollisionEnabled()==ECollisionEnabled::NoCollision && Stonework->GetCollisionEnabled()==ECollisionEnabled::NoCollision,
             TEXT("decorative buildings cannot introduce hidden movement blockers"))) return false;

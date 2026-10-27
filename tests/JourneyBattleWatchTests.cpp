@@ -5,7 +5,11 @@
 using namespace frontline;
 static std::unique_ptr<StrategistJourney> WatchMission(int index=1)
 {
-    auto j=std::make_unique<StrategistJourney>();j->Reset();j->Meet();j->mission=index;assert(j->Prepare(0,1));return j;
+    auto j=std::make_unique<StrategistJourney>();j->Reset();j->Meet();j->mission=index;assert(j->Prepare(0,1));
+    // This notification fixture needs an observed contact; mission deployment
+    // is covered separately by the authored-battlefield and playthrough tests.
+    if(index==1) { j->world.armies[3].tile=Campaign::At(10,10);j->RefreshIntelligence(); }
+    return j;
 }
 static int Count(const std::vector<JourneyBattleNotice>& events,JourneyNoticeKind kind)
 { return static_cast<int>(std::count_if(events.begin(),events.end(),[&](const auto& e) { return e.kind==kind; })); }

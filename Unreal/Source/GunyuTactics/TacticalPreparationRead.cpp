@@ -1,12 +1,15 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyBattlefield.hpp"
 using namespace frontline;
 void ATacticalField::BuildPreparationPresentation()
 {
     const auto& J=State->Journey;auto& P=State->HUD.Journey;const auto& Camp=J.world.cities[0];
     P.PlanObjective=(J.IsRescue() ? FString(TEXT("季安の避難車を出口まで護送")):JourneyText(J.Definition().objective))+
         FString::Printf(TEXT(" / 期限%d指揮"),J.TurnBudget());
-    if(J.HasConvoy())
+    const auto& Field=BattlefieldDefinition(J.mission);
+    P.PlanRoute=JourneyText(Field.name)+TEXT(" / ")+JourneyText(Field.reading);
+    if(J.IsRescue())
     {
         const auto Route=J.IsRescue() ? J.convoyRoute:JourneyConvoyRoute::Road;const auto& Path=ConvoyPlan(Route);
         P.PlanRoute=JourneyText(Path.name)+FString::Printf(TEXT(" / %d区間 / 案内料%d"),int(J.ConvoyPath().size())-1,Path.guideGold);

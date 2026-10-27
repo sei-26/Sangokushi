@@ -27,7 +27,8 @@ bool ATacticalField::BattleWatchSmokeTest()
     if (!Check(State->Journey.world.armies[0].tile==Campaign::At(5,4),TEXT("changing the real order resolves the conflict"))) return false;
 
     State->bNoPlayback=false;Issue(ETacticalCommand::Restart);
-    State->Journey.world.armies[0].troops=510;Refresh();
+    State->Journey.world.armies[3].tile=Campaign::At(10,10);
+    State->Journey.world.armies[0].troops=510;State->Journey.RefreshIntelligence();Refresh();
     Issue(ETacticalCommand::RealtimePause);AdvanceRealtime(12);
     if (!Check(IsPlaying() && State->bWatchPending && Presentation().BattleNotices.IsEmpty() && !RealtimePaused(),
         TEXT("resolved losses stay private until their playback completes"))) return false;
@@ -37,13 +38,15 @@ bool ATacticalField::BattleWatchSmokeTest()
     const int StableTurn=State->Journey.turn;AdvanceRealtime(50);
     if (!Check(State->Journey.turn==StableTurn,TEXT("warning pause freezes the actual battlefield"))) return false;
 
-    Issue(ETacticalCommand::Restart);State->Journey.world.armies[0].troops=510;Refresh();
+    Issue(ETacticalCommand::Restart);State->Journey.world.armies[3].tile=Campaign::At(10,10);
+    State->Journey.world.armies[0].troops=510;State->Journey.RefreshIntelligence();Refresh();
     Issue(ETacticalCommand::RealtimePause);AdvanceRealtime(12);Issue(ETacticalCommand::RealtimeAlertPause);AdvancePresentation(10);
     if (!Check(!bPauseOnBattleAlert && !RealtimePaused() && !Presentation().BattleNotices.IsEmpty(),
         TEXT("disabling pause during playback preserves reports and continued execution"))) return false;
 
     FirstMission=0;EnemyPolicy=0;State->bNoPlayback=true;bPauseOnBattleAlert=true;Issue(ETacticalCommand::Restart);
-    State->Journey.world.armies[0].troops=510;Refresh();Issue(ETacticalCommand::Sample);Issue(ETacticalCommand::Execute);
+    State->Journey.world.armies[3].tile=Campaign::At(10,10);
+    State->Journey.world.armies[0].troops=510;State->Journey.RefreshIntelligence();Refresh();Issue(ETacticalCommand::Sample);Issue(ETacticalCommand::Execute);
     Issue(ETacticalCommand::RealtimePause);AdvanceRealtime(.1f);
     if (!Check(State->Journey.lastChain.completed==3 && RealtimePaused() && !Presentation().BattleNotices.IsEmpty(),
         TEXT("the lure's real sacrifice also triggers a report through normal chain execution"))) return false;

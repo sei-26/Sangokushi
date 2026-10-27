@@ -17,6 +17,15 @@ void ATacticalField::BuildMapWater()
         const auto T=J.world.tiles[Tile].terrain;
         if (T==Terrain::River || T==Terrain::Bridge) Tiles.Add(Tile);
     }
+    auto ChannelCenter=[&](int Tile)
+    {
+        FVector P=TileLocation(Tile);
+        if (J.mission==2) P.Y+=8*FMath::Sin(P.X*.004);
+        return P;
+    };
+    // Consecutive east/west hexes share a narrower throat at their corners.
+    // Leave room for the bend without painting water on a dry neighboring cell.
+    auto RadiusAt=[&](FVector P) { return (J.mission==2 ? 44. : 48.)+4*FMath::Sin(P.Y*.008); };
     auto Tint=[&](int Tile)
     { return J.intelligence[0].visible[Tile] ? 1.f : .4f; };
     auto BankTint=[&](float Shade) { return FLinearColor(.19f,.15f,.085f)*Shade; };
@@ -36,14 +45,15 @@ void ATacticalField::BuildMapWater()
     };
     for (int I=0;I<Tiles.Num()-1;++I)
     {
-        const FVector P=TileLocation(Tiles[I]),Q=TileLocation(Tiles[I+1]);
+        const FVector P=ChannelCenter(Tiles[I]),Q=ChannelCenter(Tiles[I+1]);
         if (FVector::DistSquared2D(P,Q)>250*250) continue;
-        const FVector Previous=I>0 ? TileLocation(Tiles[I-1]) : P*2-Q;
-        const FVector Next=I+2<Tiles.Num() ? TileLocation(Tiles[I+2]) : Q*2-P;
-        // Virtual end controls continue the vertical valley instead of
-        // overshooting the edge of the first/last wet cell on a diagonal.
-        const FVector TangentP=I>0 ? (Q-Previous)*.5 : FVector(0,Q.Y-P.Y,0);
-        const FVector TangentQ=I+2<Tiles.Num() ? (Next-P)*.5 : FVector(0,Q.Y-P.Y,0);
+        const FVector Previous=I>0 ? ChannelCenter(Tiles[I-1]) : P*2-Q;
+        const FVector Next=I+2<Tiles.Num() ? ChannelCenter(Tiles[I+2]) : Q*2-P;
+        // Average two segments at the ends too: odd-row hex centers zigzag.
+        // Pointing an end tangent along just one diagonal spills water onto
+        // the dry neighbor. The same averaging supports east/west channels.
+        const FVector TangentP=I>0 ? (Q-Previous)*.5 : Tiles.Num()>2 ? (ChannelCenter(Tiles[2])-P)*.5 : Q-P;
+        const FVector TangentQ=I+2<Tiles.Num() ? (Next-P)*.5 : Tiles.Num()>2 ? (Q-ChannelCenter(Tiles[Tiles.Num()-3]))*.5 : Q-P;
         auto Channel=[&](double T)
         {
             FVector C=FMath::CubicInterp(P,TangentP,Q,TangentQ,T); C.Z=-9;
@@ -53,7 +63,7 @@ void ATacticalField::BuildMapWater()
         {
             const FVector C=Channel(T);
             const FVector D=(Channel(T+.002)-Channel(T-.002)).GetSafeNormal2D();
-            const double Radius=48+4*FMath::Sin(C.Y*.008);
+            const double Radius=RadiusAt(C);
             return C+FVector(-D.Y,D.X,0)*Side*Radius;
         };
         constexpr int Detail=12;
@@ -101,9 +111,9 @@ void ATacticalField::BuildMapWater()
     }
     if (!Tiles.IsEmpty())
     {
-        const FVector First=TileLocation(Tiles[0]),Last=TileLocation(Tiles.Last());
-        Cap(First,48+4*FMath::Sin(First.Y*.008),Tint(Tiles[0]),FVector(0,-1,0));
-        Cap(Last,48+4*FMath::Sin(Last.Y*.008),Tint(Tiles.Last()),FVector(0,1,0));
+        const FVector First=ChannelCenter(Tiles[0]),Last=ChannelCenter(Tiles.Last());
+        Cap(First,RadiusAt(First),Tint(Tiles[0]),Tiles.Num()>1 ? First-ChannelCenter(Tiles[FMath::Min(2,Tiles.Num()-1)]) : FVector(0,-1,0));
+        Cap(Last,RadiusAt(Last),Tint(Tiles.Last()),Tiles.Num()>1 ? Last-ChannelCenter(Tiles[FMath::Max(0,Tiles.Num()-3)]) : FVector(0,1,0));
     }
     Water.Submit(Ground,2); Shore.Submit(Ground,5);
     Ground->SetMaterial(5,TerrainMaterial);

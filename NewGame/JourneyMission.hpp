@@ -34,23 +34,23 @@ namespace frontline
 		      {{9 + 10 * Width, 8 + 9 * Width, 8 + 10 * Width, 10 + 10 * Width, 14 + 11 * Width}}},
 		     {U"第二策 / 糧車を守り抜け",
 		      U"糧車を東端へ護送し、積荷1,200以上を残す",
-		      U"先鋒を倒しても護送は終わらない。糧車の道を空け、敵の別働隊から守ろう。",
+		      U"川は橋でのみ渡れる。北橋で回り込み、南橋の橋頭堡を崩して糧車の道を空けよう。",
 		      JourneyObjective::Escort,
-		      10,
+		      12,
 		      12 + 11 * Width,
 		      -1,
 		      1200,
-		      {{9 + 10 * Width, 8 + 9 * Width, 8 + 10 * Width, 10 + 10 * Width, 14 + 11 * Width}}},
+		      {{9 + 10 * Width, 8 + 9 * Width, 8 + 10 * Width, 12 + 11 * Width, 12 + 7 * Width}}},
 		     {U"第三策 / 二つの烽火を守れ",
 		      U"二つの烽火を同時に確保し、３指揮を耐える",
-		      U"両拠点を３指揮維持。固守（兵500以上・士気40以上）なら隣接敵１隊まで維持。２隊に囲まれると中断"
+		      U"川の南北にある二つの烽火を３指揮維持。橋を使って救援。固守（兵500以上・士気40以上）なら隣接敵１隊まで維持"
 		      U"。",
 		      JourneyObjective::HoldPositions,
 		      12,
-		      7 + 9 * Width,
-		      8 + 11 * Width,
+		      7 + 6 * Width,
+		      8 + 9 * Width,
 		      3,
-		      {{7 + 10 * Width, 7 + 8 * Width, 8 + 11 * Width, 11 + 10 * Width, 12 + 7 * Width}}}}};
+		      {{7 + 7 * Width, 7 + 5 * Width, 8 + 9 * Width, 11 + 9 * Width, 10 + 5 * Width}}}}};
 		return missions[std::clamp(index, 0, 2)];
 	}
 } // namespace frontline

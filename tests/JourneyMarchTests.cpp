@@ -55,9 +55,9 @@ int main()
         assert(rt.Resolve(*j) && rt.orders[0].kind==JourneyDirective::Hold);
         assert(rt.Queue(*j,0,JourneyDirective::Attack,3)==false);
         rt.Cancel(0);assert(rt.orders[0].waypoints.empty() && rt.orders[0].arrival==JourneyArrival::Wait);
-        j->world.armies[1].tile=Campaign::At(6,7);j->RefreshIntelligence();
-        assert(rt.AppendWaypoint(*j,1,Campaign::At(6,8)) && rt.SetArrival(*j,1,JourneyArrival::Ambush));
-        assert(!rt.AppendWaypoint(*j,1,Campaign::At(3,3))); // An ambush destination must stay in the forest.
+        j->world.armies[1].tile=Campaign::At(7,7);j->RefreshIntelligence();
+        assert(rt.AppendWaypoint(*j,1,Campaign::At(7,8)) && rt.SetArrival(*j,1,JourneyArrival::Ambush));
+        assert(!rt.AppendWaypoint(*j,1,Campaign::At(6,6))); // An ambush destination must stay in the forest.
         assert(rt.Resolve(*j) && rt.orders[1].kind==JourneyDirective::Ambush && !j->chain.concealed[1]);
         assert(rt.Resolve(*j) && j->chain.concealed[1]); // No free preparation on the movement cycle.
         rt.Reset();assert(rt.orders[1].kind==JourneyDirective::None);

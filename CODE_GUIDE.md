@@ -360,3 +360,7 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 連鎖の戦術記録（2026-10-27）
 
 `TacticalChainReview` は実行イベントから各手の役割・成果・つながりを作り、`TacticalChainReviewRead.cpp` は現在の段階と観測情報から表示可能な記録を読む。`TacticalChainReviewMenu.cpp` は停止と開閉、`Rows` / `Interface` は画面、`Tests` / `UiTests` は保存・実連鎖・排他の確認を担当する。既存のlastChainを使い、保存形式を増やさない。[仕様と25検証群](CHAIN_REVIEW_UPGRADE.md)。
+
+## 任務別の戦場構成（2026-10-28）
+
+`NewGame/JourneyBattlefield.hpp` は三つの地形を文字の表で定義し、`JourneyMission.hpp` は任務・拠点・期限・配置を定義する。`StrategistJourneyObjectives.cpp` が出陣時に適用するので、移動・射線・AI・行軍・描画は同じ地形を使う。Unrealの配色・尾根高・樹木の縮尺は `TacticalBattlefieldStyle.h`、水と橋の方向は `TacticalMapWater.cpp` / `TacticalMapScenery.cpp`、烽火台は `TacticalFortifications.cpp`。共有検証は `tests/JourneyBattlefieldTests.cpp`、実描画と選択レイの検証は `TacticalVisualTests.cpp`。追加・編集の説明は [任務別の戦場構成](BATTLEFIELD_VARIETY.md)。
