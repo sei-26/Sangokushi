@@ -10,7 +10,7 @@ void ATacticalController::OpenEpisode()
     IgnoreMapInputThroughFrame=Frames+1;
 }
 void ATacticalController::CloseEpisode()
-{ bEpisodeOpen=false;bNovelPlan=bNovelHistory=false;IgnoreMapInputThroughFrame=Frames+1; }
+{ bEpisodeOpen=false;bNovelPlan=bNovelHistory=bNovelAdvice=false;IgnoreMapInputThroughFrame=Frames+1; }
 void ATacticalController::StepEpisode(int Direction)
 {
     if(!bEpisodeOpen || bNovelHistory || bNovelPlan) return;
@@ -25,6 +25,7 @@ void ATacticalController::HandleEpisodeKey(FKey Key)
     if(bNovelPlan)
     {
         if(Key==EKeys::Escape) bNovelPlan=false;
+        else if(Key==EKeys::A) bNovelAdvice=!bNovelAdvice;
         else if(Key==EKeys::One) SelectNovelPlan(0);
         else if(Key==EKeys::Two) SelectNovelPlan(1);
         else if(Key==EKeys::D) DeployNovelPlan();
@@ -50,7 +51,7 @@ bool ATacticalController::UpdateEpisodeInput()
     if(!bEpisodeOpen && !bSaveMenuOpen && Field->Presentation().Journey.bPreparation && WasInputKeyJustPressed(EKeys::Enter))
     { OpenEpisode();OpenNovelPlan();return true; }
     if(!bEpisodeOpen) return WasOpen || Toggle;
-    for(const FKey& Key:{EKeys::Escape,EKeys::L,EKeys::Left,EKeys::Enter,EKeys::SpaceBar,EKeys::Right,EKeys::One,EKeys::Two,EKeys::D})
+    for(const FKey& Key:{EKeys::Escape,EKeys::L,EKeys::Left,EKeys::Enter,EKeys::SpaceBar,EKeys::Right,EKeys::One,EKeys::Two,EKeys::D,EKeys::A})
         if(WasInputKeyJustPressed(Key)) { HandleEpisodeKey(Key);break; }
     return true;
 }

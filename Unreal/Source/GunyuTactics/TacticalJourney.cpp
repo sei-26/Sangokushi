@@ -85,20 +85,7 @@ void ATacticalField::BuildJourneyPresentation()
         if (J.IsRescue()) P.Outcome = TEXT("期限10指揮 / 季安の避難車を６区間先の東の出口へ。敵将を倒すより、車の進路と護衛の配置が目的になる。");
         if (J.mission > 0)
             P.Outcome = FString::Printf(TEXT("前戦の帰還兵 %d・損失 %dを引き継いでいます。\n%s"), J.survivors, J.casualties, *P.Outcome);
-        for (int Choice = 0; Choice < 2; ++Choice)
-        {
-            const auto Cost = J.PreparationCosts(Choice);
-            const int Deployed = FMath::Max(0, FMath::Min(4200, Camp.troops - 1000 - Cost.escort));
-            FPreparationPresentation Plan;
-            Plan.Title = Choice == 0 ? TEXT("伏兵の段取り") : TEXT("兵糧を厚くする");
-            Plan.Description = Choice == 0 ? TEXT("士気90。森林で関羽の伏兵準備を試みる。敵の配置によっては露見する。") : TEXT("士気100。携行兵糧を増やす。伏兵は戦場で別途準備する。");
-            Plan.Cost = FString::Printf(TEXT("出陣 %d%s\n兵糧 %d / 資金 %d"), Deployed, Cost.escort ? TEXT(" ＋護衛600") : TEXT(""), Cost.TotalFood(), Cost.gold);
-            Plan.Remaining = FString::Printf(TEXT("残兵 %d / 糧 %d\n残資金 %d"), Camp.troops - Deployed - Cost.escort, Camp.food - Cost.TotalFood(), Camp.gold - Cost.gold);
-            if (Cost.cargo) Plan.Description += TEXT(" 糧車の積荷2,000と護衛用の糧900を含む。");
-            Plan.bSelected = Choice == State->PreparationChoice; Plan.bAffordable = J.CanPrepare(Choice);
-            if (!Plan.bAffordable) Plan.Remaining = TEXT("資源不足。必要な兵・兵糧・軍資金を確認してください。");
-            P.Plans.Add(MoveTemp(Plan));
-        }
+        BuildPreparationPresentation();
     }
     else if (P.bDebrief)
     {

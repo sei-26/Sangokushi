@@ -26,7 +26,9 @@ struct FOrderPresentation
 };
 struct FPreparationPresentation
 {
-    FString Title, Description, Cost, Remaining;
+    FString Title, Description, Cost, Remaining, MoraleText, Shortage;
+    int Food=0,Gold=0,MinimumTroops=0,MissingFood=0,MissingGold=0,MissingTroops=0;
+    TArray<int> Morale;
     bool bSelected = false, bAffordable = false;
 };
 struct FTacticOptionPresentation
@@ -51,6 +53,8 @@ struct FJourneyPresentation
     TArray<FDialoguePresentation> Conversation;
     FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
     FJourneyEpisodePresentation Episode;
+    FString PlanDifference,PlanReadiness,PlanObjective,PlanRoute;
+    TArray<FDialoguePresentation> PlanAdvice;
     bool bNeedsReply=false;
     bool bChooseRoute=false,bSouthernRoute=false;
     bool bVisible = false, bPreparation = false, bDebrief = false, bComplete = false, bChoosePromise = false, bRescue = false;

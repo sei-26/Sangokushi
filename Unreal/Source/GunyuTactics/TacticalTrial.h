@@ -239,6 +239,7 @@ private:
     void BuildOfficerConversation();
     void BuildStoryPresentation();
     void BuildEpisodePresentation();
+    void BuildPreparationPresentation();
     bool BattleStorySmokeTest();
     void BuildOpeningPresentation();
     void IssueJourney(ETacticalCommand Command);
@@ -337,6 +338,8 @@ private:
     void SelectNovelPlan(int Index);
     void DeployNovelPlan();
     bool NovelFlowSmokeTest();
+    bool PreparationReadSmokeTest();
+    bool bNovelAdvice=false;
     FLinearColor NovelPortraitTone(int Speaker) const;
     const struct FSlateBrush* NovelPortraitBrush(int Speaker) const;
     UPROPERTY() TArray<TObjectPtr<class UTexture2D>> ConversationTextures;

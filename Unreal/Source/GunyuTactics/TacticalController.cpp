@@ -19,6 +19,7 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Styling/CoreStyle.h"
 #include "StrategistJourney.hpp"
+#include "JourneySave.hpp"
 #include "GameFramework/GameUserSettings.h"
 #include "Widgets/SWindow.h"
 #include "ProfilingDebugging/CsvProfiler.h"
@@ -329,6 +330,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=EpisodeInterfaceSmokeTest();
         if(bPassed) bPassed=NovelInterfaceSmokeTest();
         if(bPassed) bPassed=NovelFlowSmokeTest();
+        if(bPassed) bPassed=PreparationReadSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -354,6 +356,16 @@ void ATacticalController::PlayerTick(float Delta)
         NovelStageTime=NovelLineTime=1;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelHistory"))) bNovelHistory=true;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelPlan"))) OpenNovelPlan();
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdvice"))) bNovelAdvice=true;
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanShortage")))
+        {
+            std::vector<std::uint8_t> Bytes;auto Snapshot=MakeUnique<frontline::JourneySaveData>();
+            if(Field->ExportSession(Bytes) && frontline::DecodeJourneySave(Bytes,*Snapshot))
+            {
+                auto& Camp=Snapshot->journey.world.cities[0];Camp.food=0;Camp.gold=0;Camp.troops=0;
+                if(frontline::EncodeJourneySave(*Snapshot,Bytes)) Field->ImportSession(Bytes);
+            }
+        }
     }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }
