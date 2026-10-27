@@ -129,4 +129,5 @@ void ATacticalField::BuildJourneyPresentation()
     BuildOfficerConversation();
     BuildOpeningPresentation();
     BuildStoryPresentation();
+    BuildEpisodePresentation();
 }

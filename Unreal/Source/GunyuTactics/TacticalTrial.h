@@ -238,6 +238,7 @@ private:
     void BuildJourneyPresentation();
     void BuildOfficerConversation();
     void BuildStoryPresentation();
+    void BuildEpisodePresentation();
     bool BattleStorySmokeTest();
     void BuildOpeningPresentation();
     void IssueJourney(ETacticalCommand Command);
@@ -326,6 +327,18 @@ private:
     void FocusBattleNotice(int Index);
     void BuildJourneyInterface(TSharedRef<class SCanvas> Canvas);
     TSharedRef<class SWidget> StoryConversationWidget();
+    void BuildEpisodeInterface(TSharedRef<class SCanvas> Canvas);
+    void OpenEpisode();
+    void CloseEpisode();
+    void StepEpisode(int Direction);
+    bool UpdateEpisodeInput();
+    void HandleEpisodeKey(FKey Key);
+    bool EpisodeInterfaceSmokeTest();
+    FDialoguePresentation CurrentEpisodeLine() const;
+    FJourneyEpisodePresentation EpisodeSnapshot;
+    FString EpisodeSeenKey;
+    int EpisodePage=0;
+    bool bEpisodeOpen=false;
     void BuildEncounterInterface(TSharedRef<class SCanvas> Canvas);
     void BuildTacticInterface(TSharedRef<class SCanvas> Canvas);
     void BuildEnemyInterface(TSharedRef<class SCanvas> Canvas);

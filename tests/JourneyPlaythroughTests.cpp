@@ -1,4 +1,5 @@
 ﻿#include "JourneyTestFlow.hpp"
+#include "../NewGame/JourneyEpisode.hpp"
 #include "../NewGame/StrategistJourney.hpp"
 #include <cassert>
 #include <cstdlib>
@@ -108,6 +109,15 @@ int main()
 	}
 	assert(j->won && j->stage == JourneyStage::Debrief && j->trust == 30);
 	assert(ContinueJourneyWithPledge(*j) && j->stage == JourneyStage::Complete);
+    const auto ending=BuildJourneyEpisode(*j);
+    assert(ending.title.find(U"終幕")!=std::u32string::npos && ending.lines.back().speaker==-1);
+    std::u32string endingText;for(const auto& l:ending.lines) endingText+=l.text;
+    assert(endingText.find(U"道を開いたあの日")!=std::u32string::npos);
+    assert(endingText.find(U"あの時、車を待った軍師")==std::u32string::npos); // This run chose the road objective.
+    auto single=std::make_unique<StrategistJourney>(*j);single->history[0]={};single->history[1]={};
+    const auto singleEnding=BuildJourneyEpisode(*single);std::u32string singleText;
+    for(const auto& l:singleEnding.lines) singleText+=l.text;
+    assert(singleText.find(U"三度とも")==std::u32string::npos && singleText.find(U"三つの采配")==std::u32string::npos);
 	j->Reset();
 	j->Meet();
 	j->mission = 2;

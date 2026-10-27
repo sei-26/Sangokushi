@@ -16,6 +16,7 @@ void ATacticalController::ToggleSaveMenu()
     bSaveMenuOpen=!bSaveMenuOpen;PendingSaveSlot=-1;
     if(bSaveMenuOpen)
     {
+        CloseEpisode();
         CloseChainReview();
         bInterfaceVisible=true;bBattleLogOpen=bMarchPlanOpen=bTacticPickerOpen=false;
         if(Field->bRealtimeCommand && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);

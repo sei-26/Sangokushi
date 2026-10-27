@@ -36,7 +36,12 @@ struct FTacticOptionPresentation
     bool bSelected = false, bUnique = false, bUsed = false;
 };
 struct FDialoguePresentation
-{ int Speaker=0;FString Name,Text;bool bProtagonist=false; };
+{ int Speaker=0;FString Name,Text,Direction;bool bProtagonist=false; };
+struct FJourneyEpisodePresentation
+{
+    FString Key,Title,Place,Setting,Question;
+    TArray<FDialoguePresentation> Lines;
+};
 struct FJourneyPresentation
 {
     FString Heading, Speaker, Dialogue, Resources, Outcome, Relationships, Context, PrimaryLabel, PromiseText, History;
@@ -45,6 +50,7 @@ struct FJourneyPresentation
     FString ConvoyRouteInfo,ReviewFacts,ReviewLesson;
     TArray<FDialoguePresentation> Conversation;
     FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
+    FJourneyEpisodePresentation Episode;
     bool bNeedsReply=false;
     bool bChooseRoute=false,bSouthernRoute=false;
     bool bVisible = false, bPreparation = false, bDebrief = false, bComplete = false, bChoosePromise = false, bRescue = false;

@@ -98,8 +98,9 @@ void ATacticalController::PlayerTick(float Delta)
 {
     Super::PlayerTick(Delta);
     if (!Field || !BattleCamera) return;
-    const bool bReviewInputBlocked=bChainReviewOpen || WasInputKeyJustPressed(EKeys::Y);
-    UpdateChainReviewInput();
+    const bool bEpisodeInputBlocked=UpdateEpisodeInput();
+    const bool bReviewInputBlocked=bEpisodeInputBlocked || bChainReviewOpen || WasInputKeyJustPressed(EKeys::Y);
+    if(!bEpisodeInputBlocked) UpdateChainReviewInput();
     const bool bModalInputBlocked=bSaveMenuOpen || bReviewInputBlocked || WasInputKeyJustPressed(EKeys::F6);
     if(WasInputKeyJustPressed(EKeys::F6)) ToggleSaveMenu();
     if(bSaveMenuOpen && WasInputKeyJustPressed(EKeys::Escape)) ToggleSaveMenu();
@@ -324,6 +325,7 @@ void ATacticalController::PlayerTick(float Delta)
         }
         if(bPassed) bPassed=CameraPresentationSmokeTest();
         if(bPassed) bPassed=ChainReviewInterfaceSmokeTest();
+        if(bPassed) bPassed=EpisodeInterfaceSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -342,6 +344,11 @@ void ATacticalController::PlayerTick(float Delta)
     }
     if (bCapture && Frames == 130)
         FScreenshotRequest::RequestScreenshot(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / TEXT("trial.png")), true, false);
+    if(bCapture && Frames==7 && FParse::Param(FCommandLine::Get(),TEXT("GunyuEpisode")))
+    {
+        OpenEpisode();int Page=0;FParse::Value(FCommandLine::Get(),TEXT("EpisodePage="),Page);
+        EpisodePage=FMath::Clamp(Page,0,FMath::Max(0,EpisodeSnapshot.Lines.Num()-1));
+    }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }
 

@@ -98,6 +98,7 @@ void ATacticalController::BuildInterface()
     BuildJourneyInterface(Canvas);
     BuildEncounterInterface(Canvas);
     BuildChainReviewInterface(Canvas);
+    BuildEpisodeInterface(Canvas);
     BuildSaveInterface(Canvas);
     Overlay = SNew(SOverlay)
         + SOverlay::Slot()

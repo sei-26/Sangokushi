@@ -1,4 +1,5 @@
 ﻿#include "../NewGame/JourneySave.hpp"
+#include "../NewGame/JourneyEpisode.hpp"
 #include <cassert>
 #include <filesystem>
 #include <fstream>
@@ -31,7 +32,31 @@ static void DeliverWithoutFighting(StrategistJourney& j)
 }
 int main()
 {
+    auto council=std::make_unique<StrategistJourney>();council->Reset();council->Meet();council->SelectPromise(JourneyPromise::EscortRefugees);
+    const auto firstEpisode=BuildJourneyEpisode(*council);assert(firstEpisode.lines.size()>=10);
+    assert(firstEpisode.title.find(U"泥の道")!=std::u32string::npos);
+    std::u32string firstText;for(const auto& l:firstEpisode.lines) firstText+=l.text;
+    assert(firstText.find(U"天下より、今晩")!=std::u32string::npos);
+    assert(firstText.find(U"車ごと送り届ける")!=std::u32string::npos);
+    council->SelectPromise(JourneyPromise::OpenRoad);
+    const auto roadEpisode=BuildJourneyEpisode(*council);
+    assert(roadEpisode.lines.back().text.find(U"終わったとは言わない")!=std::u32string::npos);
     auto careful=Win(),costly=Win(1200),linked=Win(0,true);
+    const auto quiet=BuildJourneyEpisode(*careful),heavy=BuildJourneyEpisode(*costly);
+    std::u32string quietText,heavyText;
+    for(const auto& l:quiet.lines) quietText+=l.text;
+    for(const auto& l:heavy.lines) heavyText+=l.text;
+    assert(quietText.find(U"道が空いた")!=std::u32string::npos && quietText.find(U"最後の所で")==std::u32string::npos);
+    assert(heavyText.find(U"余るはず")!=std::u32string::npos && quietText!=heavyText);
+    auto legacyCostly=std::make_unique<StrategistJourney>(*costly);legacyCostly->history[0].story={};
+    const auto legacyEpisode=BuildJourneyEpisode(*legacyCostly);
+    assert(legacyEpisode.lines[1].text==heavy.lines[1].text); // Old saves still know their real casualties.
+    // A chapter is derived from public/settled facts, not from hidden enemy positions or plans.
+    auto hidden=std::make_unique<StrategistJourney>(*careful);
+    hidden->world.armies[4].tile=Campaign::At(12,3);hidden->enemyPolicy=2;
+    const auto hiddenEpisode=BuildJourneyEpisode(*hidden);assert(hiddenEpisode.lines.size()==quiet.lines.size());
+    for(size_t i=0;i<quiet.lines.size();++i) assert(hiddenEpisode.lines[i].text==quiet.lines[i].text);
+
     assert(careful->history[0].story.lowLoss && costly->history[0].story.costly);
     assert(costly->officerTrust[1]<0 && careful->officerTrust[1]>costly->officerTrust[1]);
     assert(linked->history[0].story.coordinatedOfficers==7 && linked->officerTrust[2]>careful->officerTrust[2]);
@@ -53,7 +78,11 @@ int main()
     }
     // A player's words affect the next real mission, rather than granting points on click.
     assert(careful->Continue() && careful->CurrentPledge()==JourneyPledge::Preserve);
+    const auto nextEpisode=BuildJourneyEpisode(*careful);
+    std::u32string nextText;for(const auto& l:nextEpisode.lines) nextText+=l.text;
+    assert(nextText.find(U"九割")!=std::u32string::npos && nextEpisode.title!=firstEpisode.title);
     const auto prior=careful->officerTrust;assert(careful->Prepare(0,1));
+    assert(BuildJourneyEpisode(*careful).lines.empty());
     for(int i=0;i<3;++i) assert(careful->world.armies[i].morale==90+careful->StoryMoraleBonus(i));
     DeliverWithoutFighting(*careful);
     assert(careful->history[1].story.pledgeKept && careful->officerTrust[1]>prior[1]);
@@ -97,6 +126,9 @@ int main()
     const auto trust=restored->journey.officerTrust;assert(restored->journey.ChooseStoryReply(JourneyPledge::Coordinate));
     assert(EncodeJourneySave(*restored,bytes) && DecodeJourneySave(bytes,*save));
     assert(save->journey.officerTrust==trust && !save->journey.NeedsStoryReply() && !save->journey.ChooseStoryReply(JourneyPledge::Preserve));
+    std::vector<std::uint8_t> readBefore,readAfter;assert(EncodeJourneySave(*save,readBefore));
+    for(int i=0;i<3;++i) assert(!BuildJourneyEpisode(save->journey).lines.empty());
+    assert(EncodeJourneySave(*save,readAfter) && readBefore==readAfter);
     save->journey.officerTrust[0]=101;assert(!EncodeJourneySave(*save,bytes));
     std::cout<<"Battle story PASS: distinct victories, officer-specific trust, protagonist dialogue, real vows, morale carryover, immutable previews, v1/v2/v3 saves, one-shot reply\n";
 }

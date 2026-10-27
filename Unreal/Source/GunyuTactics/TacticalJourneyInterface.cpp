@@ -45,6 +45,14 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
             + SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 8, 0)[Command(ETacticalCommand::PromiseRoad, [this] { return Field->Presentation().Journey.bRescue ? TEXT("○ 退路を開く") : TEXT("● 退路を開く"); })]
             + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::PromiseRescue, [this] { return Field->Presentation().Journey.bRescue ? TEXT("● 避難車まで送り届ける") : TEXT("○ 避難車まで送り届ける"); })] ]
          + SVerticalBox::Slot().AutoHeight().Padding(0, 8, 0, 12)[Label([this] { return Field->Presentation().Journey.PromiseText; }, 15)] ];
+    Text->AddSlot().AutoHeight().Padding(0,0,0,12)
+        [SNew(STacticalChrome).Padding(12).Accent(FLinearColor(.58f,.23f,.12f))
+         [SNew(SVerticalBox)
+          + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
+             + SHorizontalBox::Slot().FillWidth(1)[Label([this] { return Field->Presentation().Journey.Episode.Title; },23,Gold)]
+             + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("本幕を読む / H"); },[this] { OpenEpisode(); })]]
+          + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this] { return Field->Presentation().Journey.Episode.Setting; },15)]
+          + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.Episode.Question; },16,Gold)]]];
     Text->AddSlot().AutoHeight()[OpeningRouteChoices()];
     Text->AddSlot().AutoHeight()[People];
     Text->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().Journey.Speaker; }, 25, Gold)];

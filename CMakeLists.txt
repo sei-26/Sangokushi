@@ -24,6 +24,9 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyBattleStory.cpp
     NewGame/JourneyDrama.cpp
     NewGame/JourneyCouncilDrama.cpp
+    NewGame/JourneyEpisode.cpp
+    NewGame/JourneyEpisodeCouncil.cpp
+    NewGame/JourneyEpisodeAftermath.cpp
     NewGame/JourneyChainSignal.cpp
     NewGame/JourneyBattleWatch.cpp
     NewGame/JourneyOrderRead.cpp
