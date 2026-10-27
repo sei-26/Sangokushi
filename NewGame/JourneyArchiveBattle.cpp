@@ -13,7 +13,11 @@ namespace frontline
     void JourneyArchive::IO(ChainUnitChange& v)
     { (*this)(v.army,v.tile,v.troops,v.morale,v.concealed,v.disordered,v.pressured,v.inspired); }
     void JourneyArchive::IO(ChainEvent& v)
-    { (*this)(v.army,v.enemy,v.from,v.to,v.damage,v.tactic,v.success,v.reason,v.changes); }
+    {
+        (*this)(v.army,v.enemy,v.from,v.to,v.damage,v.tactic,v.success,v.reason,v.changes);
+        if(version>=2) (*this)(v.combo,v.comboPercent,v.setupPercent);
+        else if(reading) { v.combo=0;v.comboPercent=v.setupPercent=100; }
+    }
     void JourneyArchive::IO(ChainResult& v)
     { (*this)(v.events,v.completed,v.prediction); }
     void JourneyArchive::IO(JourneyBattleReview& v)

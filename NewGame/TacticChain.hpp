@@ -35,6 +35,7 @@ namespace frontline
 	struct ChainEvent
 	{
 		int army = -1, enemy = -1, from = -1, to = -1, damage = 0;
+		int combo = 0, comboPercent = 100, setupPercent = 100; // Zero combo identifies legacy records.
 		ChainTactic tactic = ChainTactic::Lure;
 		bool success = false;
 		std::u32string reason;
@@ -63,6 +64,7 @@ namespace frontline
 		                    const std::vector<ChainOrder>& orders) const;
 		ChainResult Execute(Campaign& world, const BattleIntelligence& known,
 		                    const std::vector<ChainOrder>& orders);
+		static int ComboPercent(int combo);
 		static const char32_t* Name(ChainTactic tactic);
 		static const ChainTacticDefinition& Definition(ChainTactic tactic);
 		static std::vector<ChainTactic> Loadout(const Campaign& world, int army);
@@ -73,6 +75,6 @@ namespace frontline
 
 	private:
 		ChainResult Resolve(Campaign& world, const std::vector<ChainOrder>& orders);
-		ChainEvent Apply(Campaign& world, const ChainOrder& order);
+		ChainEvent Apply(Campaign& world, const ChainOrder& order, int combo);
 	};
 } // namespace frontline

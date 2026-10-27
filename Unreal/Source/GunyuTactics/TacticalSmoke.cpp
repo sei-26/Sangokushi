@@ -18,14 +18,14 @@ bool ATacticalField::SmokeTest()
     SelectOfficer(2); Issue(ETacticalCommand::QueueTactic);
     if (Presentation().Predicted != 3 || State->Orders.size() != 3) { UE_LOG(LogTemp, Error, TEXT("GUNYU_RULES_SMOKE: FAIL at line %d; predicted=%d; orders=%d; report=%s"), __LINE__, Presentation().Predicted, static_cast<int>(State->Orders.size()), *State->Report); return false; }
     const int EnemyTroops = State->Journey.world.armies[3].troops;
-    EditOrder(2, -1); // Lure -> Breakthrough -> Ambush must stop after the lure.
+    State->Journey.world.armies[2].morale=5;
+    EditOrder(2, -1); // Insufficient morale stops the second hand, preserving later officers.
     if (Presentation().Predicted != 1 || State->Journey.world.armies[3].troops != EnemyTroops || State->Journey.chain.spent[0]) { UE_LOG(LogTemp, Error, TEXT("GUNYU_RULES_SMOKE: FAIL at line %d; predicted=%d; orders=%d; report=%s"), __LINE__, Presentation().Predicted, static_cast<int>(State->Orders.size()), *State->Report); return false; }
     Issue(ETacticalCommand::Execute);
     if (State->Journey.lastChain.completed != 1 || State->Orders.size() != 2 || State->Journey.chain.spent[1]) { UE_LOG(LogTemp, Error, TEXT("GUNYU_RULES_SMOKE: FAIL at line %d; predicted=%d; orders=%d; report=%s"), __LINE__, Presentation().Predicted, static_cast<int>(State->Orders.size()), *State->Report); return false; }
     EditOrder(1, -1);
-    // Stopping gives the enemy time to spot the adjacent ambush. Reordering
-    // cannot restore concealment; the unspent officer can choose a normal attack.
-    if (Presentation().Predicted != 0 || State->Journey.chain.concealed[1]) { UE_LOG(LogTemp, Error, TEXT("GUNYU_RULES_SMOKE: FAIL: stopped ambush was not re-evaluated")); return false; }
+    // An exposed ambush still works as a weaker solo attack; the low-morale successor waits.
+    if (Presentation().Predicted != 1 || State->Journey.chain.concealed[1]) { UE_LOG(LogTemp, Error, TEXT("GUNYU_RULES_SMOKE: FAIL: stopped ambush was not re-evaluated")); return false; }
     EditOrder(0, 0);
     SelectOfficer(1); Issue(ETacticalCommand::Strike);
     if (!State->Journey.chain.spent[1] || State->Journey.world.armies[3].troops >= EnemyTroops) { UE_LOG(LogTemp, Error, TEXT("GUNYU_RULES_SMOKE: FAIL: unused officer could not attack after partial chain")); return false; }
@@ -60,6 +60,7 @@ bool ATacticalField::SmokeTest()
     if (!JourneySmokeTest()) return false;
     if (!StoryPromiseSmokeTest()) return false;
     if (!TacticRepertoireSmokeTest()) return false;
+    if (!ComboSmokeTest()) return false;
     if (!TacticCinemaSmokeTest()) return false;
     if (!SpectacleSmokeTest()) return false;
     if (!ChainReviewSmokeTest()) return false;

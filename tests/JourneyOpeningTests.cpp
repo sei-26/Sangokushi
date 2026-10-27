@@ -89,7 +89,7 @@ int main()
                     const std::vector<ChainOrder> chain{{0,3,ChainTactic::Feint,-1},{1,3,ChainTactic::Disrupt,-1},{2,3,ChainTactic::Breakthrough,-1}};
                     assert(j->Execute(chain).completed==3);
                 }
-                for (int army=0;army<3 && j->stage==JourneyStage::Battle;++army) FightVisible(*j,army);
+                if (phase>=2) for (int army=0;army<3 && j->stage==JourneyStage::Battle;++army) FightVisible(*j,army);
             }
             else
             {
@@ -105,7 +105,7 @@ int main()
                 if (reserve && reserve->current && j->world.CanStrike(2,reserve->observed.tile))
                 {
                     const std::vector<ChainOrder> push{{2,4,ChainTactic::Breakthrough,-1}};
-                    if (j->Preview(push).completed==1) { j->Execute(push);reserveHandled=true; }
+                    if (j->Preview(push).completed==1 && j->Preview(push).events[0].from!=j->Preview(push).events[0].to) { j->Execute(push);reserveHandled=true; }
                     else if (!j->chain.signatureUsed[2])
                     {
                         const std::vector<ChainOrder> stop{{0,4,ChainTactic::Feint,-1},{2,4,ChainTactic::SerpentRoar,-1}};

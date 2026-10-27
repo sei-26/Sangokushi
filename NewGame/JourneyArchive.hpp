@@ -12,6 +12,7 @@ namespace frontline
         bool reading;
         std::vector<std::uint8_t>& bytes;
         std::size_t offset=0;
+        unsigned version=2;
         void Require(bool value) { if (!value) throw std::runtime_error("Invalid journey archive"); }
         template<class... T> void operator()(T&... values) { (IO(values),...); }
         template<class T> void IO(T& value)

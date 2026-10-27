@@ -50,7 +50,7 @@ bool ATacticalField::SpectacleSmokeTest()
     AdvancePresentation(5.95f);C=ReadTacticCinema();
     if(!Check(CurrentBeat()->ChainStep==3 && C.NextActor==-1 && C.Relay==0,TEXT("last step invents no extra relay"))) return false;
     Issue(ETacticalCommand::Skip);
-    Issue(ETacticalCommand::Restart);Issue(ETacticalCommand::Sample);EditOrder(2,-1);Issue(ETacticalCommand::Execute);AdvancePresentation(5.2f);C=ReadTacticCinema();
+    Issue(ETacticalCommand::Restart);Issue(ETacticalCommand::Sample);State->Journey.world.armies[2].morale=5;EditOrder(2,-1);Issue(ETacticalCommand::Execute);AdvancePresentation(5.2f);C=ReadTacticCinema();
     if(!Check(CurrentBeat()->Kind==EBattleCue::Stop && C.Relay==0,TEXT("failed current step cannot relay onward"))) return false;
     Issue(ETacticalCommand::Skip);
     FirstMission=SavedMission;EnemyPolicy=SavedPolicy;bStartWithCouncil=SavedCouncil;bRealtimeCommand=SavedRealtime;State->bNoPlayback=SavedNoPlayback;PlaybackSpeed=SavedSpeed;Issue(ETacticalCommand::Restart);

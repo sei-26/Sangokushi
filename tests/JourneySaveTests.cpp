@@ -46,7 +46,7 @@ int main()
     for(std::size_t size:{std::size_t(0),std::size_t(10),good.size()/2,good.size()-1})
     { bad.assign(good.begin(),good.begin()+size);assert(!DecodeJourneySave(bad,*debrief));assert(Bytes(*debrief)==original); }
     bad=good;bad.back()^=1;assert(!DecodeJourneySave(bad,*debrief));
-    bad=good;bad[4]=2;assert(!DecodeJourneySave(bad,*debrief));
+    bad=good;bad[4]=99;assert(!DecodeJourneySave(bad,*debrief));
     bad=good;bad.push_back(0);assert(!DecodeJourneySave(bad,*debrief));
     auto invalid=std::make_unique<JourneySaveData>(*loaded);invalid->journey.world.armies[0].general=1000;
     assert(!EncodeJourneySave(*invalid,bad));invalid->journey.world.armies[0].general=0;

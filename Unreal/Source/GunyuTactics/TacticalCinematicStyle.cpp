@@ -20,7 +20,7 @@ namespace gunyucinema
         switch(K)
         {
         case EBattleCue::Lure:return TEXT("退くと見せて、敵を動かす。今だ！");
-        case EBattleCue::Ambush:return TEXT("待ち伏せは成った。一斉にかかれ！");
+        case EBattleCue::Ambush:return TEXT("機を逃すな。一斉にかかれ！");
         case EBattleCue::Breakthrough:return TEXT("道を開くぞ。この一撃に続け！");
         case EBattleCue::Feint:return TEXT("こちらを見ろ。守りに隙を作れ！");
         case EBattleCue::Disrupt:return TEXT("乱れを逃すな。敵の構えを崩せ！");

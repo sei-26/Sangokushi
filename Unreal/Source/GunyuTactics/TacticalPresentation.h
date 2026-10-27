@@ -20,7 +20,7 @@ struct FOfficerPresentation
 };
 struct FOrderPresentation
 {
-    FString Title, Detail, ActorName, TacticName;
+    FString Title, Detail, ActorName, TacticName, Combo;
     int Actor = -1, Target = -1;
     bool bSuccess = false, bEvaluated = false;
 };
@@ -79,7 +79,7 @@ struct FBattleBeat
     FString Title, Reason;
     float Duration = 2.4f;
     bool bSignature = false;
-    int ChainStep=0;
+    int ChainStep=0, Combo=0, ComboPercent=100;
 };
 struct FTacticCinematicRead
 {

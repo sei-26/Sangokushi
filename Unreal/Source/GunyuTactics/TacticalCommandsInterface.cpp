@@ -29,9 +29,9 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
          + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::QueueTactic, [] { return TEXT("予約"); })]];
     Orders->AddSlot().AutoHeight().Padding(0, 8, 0, 4)
         [Label([this] { const auto& H = Field->Presentation(); return H.bBusy ? TEXT("予約時の予測 / 行動を再生中") : H.Orders.IsEmpty() ? FString(TEXT("連鎖の段取り")) : FString::Printf(TEXT("連鎖  /  成立見込み %d / %d"), H.Predicted, H.Orders.Num()); }, 16, Gold)];
-    Orders->AddSlot().AutoHeight().Padding(0,0,0,5)[Label([] { return TEXT("観測に基づく予測 / 点線は戦法の対象"); },10,FLinearColor(.56f,.67f,.67f))];
+    Orders->AddSlot().AutoHeight().Padding(0,0,0,5)[Label([] { return TEXT("単独100％ → 2コンボ125％ → 3コンボ150％"); },10,FLinearColor(.56f,.67f,.67f))];
     Orders->AddSlot().FillHeight(1)[ChainPlannerWidget()];
-    Orders->AddSlot().AutoHeight().Padding(0, 8, 0, 4)[Command(ETacticalCommand::Execute, [this] { return Field->bRealtimeCommand ? TEXT("連鎖を発動 / C") : TEXT("予約した連鎖を実行 / C"); })];
+    Orders->AddSlot().AutoHeight().Padding(0, 8, 0, 4)[Command(ETacticalCommand::Execute, [this] { return Field->Presentation().Orders.Num()==1 ? FString(TEXT("単独戦法を発動 / C")) : FString(TEXT("連鎖を発動 / C")); })];
     Orders->AddSlot().AutoHeight()
         [ SNew(SHorizontalBox)
           + SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 4, 0)[Command(ETacticalCommand::Sample, [] { return TEXT("連鎖の見本"); })]

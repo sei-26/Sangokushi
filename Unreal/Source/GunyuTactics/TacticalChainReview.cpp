@@ -22,11 +22,11 @@ namespace gunyureview
             switch(Tactic)
             {
             case T::Lure:return TEXT("敵が追撃し、位置が動いた。次の担当との隣接を作戦に組み込もう。");
-            case T::Ambush:return TEXT("森林での伏兵準備と、対象への隣接が成立した。");
-            case T::Breakthrough:return TEXT("敵の混乱、または士気60以下と、押し出す先の空きから成立した。");
+            case T::Ambush:return TEXT("隣接敵を急襲。準備した伏兵なら、威力と妨害が強まる。");
+            case T::Breakthrough:return TEXT("単独でも突撃できる。敵が崩れていれば、威力と位置を動かす効果が強まる。");
             case T::Feint:return TEXT("敵に隙を作った。この指揮の崩しや青龍偃月につなげられる。");
-            case T::Disrupt:return TEXT("敵の隙から成立。固守を解除し、混乱へつなげた。");
-            case T::AzureDragon:return TEXT("敵の隙・混乱、または士気60以下から成立。押し出す空きがなくても斬り込める。");
+            case T::Disrupt:return TEXT("敵の構えを崩した。先行する隙があれば、威力と妨害も強まる。");
+            case T::AzureDragon:return TEXT("単独でも斬り込める。隙・混乱・低士気の相手なら、さらに威力が上がる。");
             case T::SerpentRoar:return TEXT("事前の隙を必要とせず、敵の固守を崩して混乱へつなげた。");
             case T::Oath:return TEXT("周囲の味方を支援。士気回復は上限まで、鼓舞は次の攻撃につながる。");
             default:return FString();
@@ -45,7 +45,8 @@ namespace gunyureview
             Row.Actor=E.army;Row.bSuccess=E.success;Row.Damage=E.success ? FMath::Max(0,E.damage):0;
             Row.Officer=Names.IsValidIndex(E.army) && !Names[E.army].IsEmpty() ? Names[E.army]:TEXT("担当武将");
             Row.Tactic=JourneyText(frontline::TacticChain::Name(E.tactic));Row.Role=Role(E.tactic);
-            Row.Subject=E.tactic==T::Oath ? TEXT("周囲の味方") : Names.IsValidIndex(E.enemy) && !Names[E.enemy].IsEmpty() ? Names[E.enemy]:TEXT("対象の敵");
+            if(E.success && E.combo>0) Row.Role=FString::Printf(TEXT("%dコンボ / 火力%d％%s"),E.combo,E.comboPercent,E.setupPercent>100 ? TEXT(" / 仕込み+25％"):TEXT(""));
+            Row.Subject=E.tactic==T::Oath ? (E.combo>0 ? TEXT("自隊と周囲の味方"):TEXT("周囲の味方")) : Names.IsValidIndex(E.enemy) && !Names[E.enemy].IsEmpty() ? Names[E.enemy]:TEXT("対象の敵");
             Row.Reason=E.tactic==T::Oath && E.success ? TEXT("士気上限の味方にも鼓舞は付く。実際に変化した味方を記録している。"):JourneyText(E.reason);
             Row.Link=E.success ? Basis(E.tactic):TEXT("ここで停止。残った行動権と敵の現在の状態を確認し、次の命令を選び直そう。");
             if(!E.success) { Row.Outcome=TEXT("この手で停止");R.bStopped=true; }
@@ -56,7 +57,7 @@ namespace gunyureview
                 if(E.tactic==T::Lure && E.from>=0 && E.to>=0 && E.from!=E.to) Row.Outcome=TEXT("敵を移動させた");
                 if(E.tactic==T::Oath)
                 {
-                    int Count=0;for(const auto& C:E.changes) if(C.army>=0 && C.army<3 && C.army!=E.army) ++Count;
+                    int Count=0;for(const auto& C:E.changes) if(C.army>=0 && C.army<3 && (E.combo>0 || C.army!=E.army)) ++Count;
                     Row.Outcome=FString::Printf(TEXT("味方の状態変化 %d隊"),Count);
                 }
                 for(int P=I-1;P>=0;--P)
@@ -64,7 +65,7 @@ namespace gunyureview
                     const auto& Earlier=Result.events[P];if(!Earlier.success || Earlier.enemy!=E.enemy || E.enemy<0) continue;
                     if(E.tactic==T::Ambush && Earlier.tactic==T::Lure && Earlier.to==E.from && Earlier.from!=Earlier.to)
                         Row.Link=FString::Printf(TEXT("第%d手で動いた同じ敵へ、伏兵を重ねた。"),P+1);
-                    if(E.tactic==T::Breakthrough && State(Earlier,false))
+                    if(E.tactic==T::Breakthrough && E.from!=E.to && State(Earlier,false))
                         Row.Link=FString::Printf(TEXT("第%d手の混乱に続いて突破。空いた場所へ進んだ。"),P+1);
                     if(E.tactic==T::AzureDragon && State(Earlier,false))
                         Row.Link=FString::Printf(TEXT("第%d手で混乱した敵へ、主攻を重ねた。"),P+1);

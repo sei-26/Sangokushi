@@ -16,7 +16,7 @@ namespace frontline
             auto copy=std::make_unique<JourneySaveData>(source);
             std::vector<std::uint8_t> bytes;
             JourneyArchive writer{false,bytes};
-            unsigned magic=0x53594e47,version=1,checksum=0;
+            unsigned magic=0x53594e47,version=2,checksum=0;
             writer(magic,version,checksum);writer(*copy);
             checksum=Checksum(bytes,12);
             for(int i=0;i<4;++i) bytes[8+i]=static_cast<std::uint8_t>(checksum>>(i*8));
@@ -31,7 +31,8 @@ namespace frontline
         {
             auto bytes=input;JourneyArchive reader{true,bytes};
             unsigned magic=0,version=0,checksum=0;reader(magic,version,checksum);
-            if(magic!=0x53594e47 || version!=1 || checksum!=Checksum(bytes,12)) return false;
+            if(magic!=0x53594e47 || (version!=1 && version!=2) || checksum!=Checksum(bytes,12)) return false;
+            reader.version=version;
             auto candidate=std::make_unique<JourneySaveData>();reader(*candidate);
             if(reader.offset!=bytes.size() || !ValidJourneySave(*candidate)) return false;
             output=std::move(*candidate);output.realtime.paused=true;return true;

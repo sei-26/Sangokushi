@@ -23,14 +23,14 @@ bool ATacticalField::PlaybackSmokeTest()
     AdvancePresentation(.8f);
     if (!Check(State->Units[0].Position != Initial && State->Units[0].Position != SurfaceLocation(State->Journey.world.armies[0].tile), TEXT("lure is interpolated"))) return false;
     AdvancePresentation(4.2f);
-    if (!Check(CurrentBeat() && CurrentBeat()->Kind == EBattleCue::Ambush && State->Units[3].Loss == 413 && State->Units[3].Troops == 1387, TEXT("ambush reveals only its own step damage"))) return false;
+    if (!Check(CurrentBeat() && CurrentBeat()->Kind == EBattleCue::Ambush && State->Units[3].Loss == 553 && State->Units[3].Troops == 1247, TEXT("ambush reveals only its own step damage"))) return false;
     if (!Check(State->Journey.world.armies[3].troops == ResolvedTroops, TEXT("animation never reapplies damage"))) return false;
     Issue(ETacticalCommand::Skip);
     if (!Check(!IsPlaying() && State->Units[3].Troops == ResolvedTroops && State->Journey.turn == ResolvedTurn, TEXT("skip changes presentation only"))) return false;
     Issue(ETacticalCommand::Restart); Issue(ETacticalCommand::Sample); Issue(ETacticalCommand::Execute);
     AdvancePresentation(100.f);
     if (!Check(!IsPlaying() && State->Journey.world.armies[3].troops == ResolvedTroops, TEXT("natural completion equals skip"))) return false;
-    Issue(ETacticalCommand::Restart); Issue(ETacticalCommand::Sample); EditOrder(2, -1); Issue(ETacticalCommand::Execute);
+    Issue(ETacticalCommand::Restart); Issue(ETacticalCommand::Sample); State->Journey.world.armies[2].morale=5; EditOrder(2, -1); Issue(ETacticalCommand::Execute);
     if (!Check(State->Beats.Num() == 2 && State->Beats[1].Kind == EBattleCue::Stop, TEXT("failed step stops playback without inventing later attacks"))) return false;
     Issue(ETacticalCommand::Skip);
     if (!Check(State->Orders.size() == 2, TEXT("failed and unexecuted reservations retained"))) return false;

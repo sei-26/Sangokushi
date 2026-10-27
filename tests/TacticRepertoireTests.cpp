@@ -25,8 +25,8 @@ int main()
 	}
 	{
 		auto j = Formation();
-		const auto fail = j->Execute({{1, 3, ChainTactic::Disrupt, -1}});
-		assert(fail.completed == 0 && !j->chain.spent[1] && !j->chain.disordered[3]);
+		const auto solo = j->Preview({{1, 3, ChainTactic::Disrupt, -1}});
+		assert(solo.completed == 1 && solo.events[0].setupPercent == 100 && !j->chain.spent[1]);
 		const std::vector<ChainOrder> orders{{0,3,ChainTactic::Feint,-1},{1,3,ChainTactic::Disrupt,-1},{2,3,ChainTactic::Breakthrough,-1}};
 		const int before = j->world.armies[3].troops;
 		const auto predicted = j->Preview(orders);
@@ -44,8 +44,8 @@ int main()
 		assert(preview.completed == 3 && !j->chain.signatureUsed[0] && !j->chain.inspired[1]);
 		const auto actual = j->Execute(orders);
 		assert(actual.completed == 3 && actual.events[0].enemy == -1 && actual.events[0].changes.size() == 3);
-		assert(actual.events[1].damage == (140 + 92)*120/100);
-		assert(actual.events[2].damage == (350 + 270)*120/100);
+		assert(actual.events[1].damage == (140 + 92)*120/100*125/100);
+		assert(actual.events[2].damage == (350 + 270)*125/100*120/100*150/100);
 		for (int i = 0; i < 3; ++i) assert(j->chain.signatureUsed[i]);
 		assert(!j->chain.inspired[1] && !j->chain.inspired[2]);
 		j->chain.BeginTurn(j->world);
@@ -65,11 +65,11 @@ int main()
 		std::u32string reason;
 		assert(j->chain.Strike(j->world,j->intelligence[0],1,3,reason));
 		assert(before-j->world.armies[3].troops == (100+1400/12)*120/100 && !j->chain.inspired[1]);
-		j->chain.BeginTurn(j->world); assert(!j->chain.inspired[2]);
+		j->chain.BeginTurn(j->world); assert(j->chain.inspired[2]); // Unused inspiration persists until an attack consumes it.
 	}
 	{
 		auto j = Formation();
-		assert(j->Execute({{1,3,ChainTactic::AzureDragon,-1}}).completed == 0 && !j->chain.signatureUsed[1]);
+		assert(j->Preview({{1,3,ChainTactic::AzureDragon,-1}}).completed == 1 && !j->chain.signatureUsed[1]);
 		assert(j->Execute({{0,3,ChainTactic::Feint,-1},{1,3,ChainTactic::AzureDragon,-1}}).completed == 2);
 		assert(j->world.armies[3].tile == Campaign::At(9,8)); // Big strike needs no push destination.
 	}
@@ -93,8 +93,8 @@ int main()
 	{
 		auto j = Formation();
 		j->world.armies[1].troops = j->world.armies[2].troops = 0;
-		assert(j->Execute({{0,-1,ChainTactic::Oath,-1}}).completed == 0);
-		assert(j->world.armies[0].morale == 100 && !j->chain.signatureUsed[0] && !j->chain.spent[0]);
+		assert(j->Execute({{0,-1,ChainTactic::Oath,-1}}).completed == 1);
+		assert(j->world.armies[0].morale == 93 && j->chain.signatureUsed[0] && j->chain.spent[0] && j->chain.inspired[0]);
 		j->chain.signatureUsed[0] = true; j->chain.pressured[3] = true;
 		j->chain.BeginTurn(j->world);
 		assert(j->chain.signatureUsed[0] && !j->chain.pressured[3]);

@@ -15,6 +15,8 @@ bool ATacticalField::ChainPresentationSmokeTest()
         if(!Check(O[I].Actor==I && O[I].Target==3 && O[I].bEvaluated && O[I].bSuccess && !O[I].ActorName.IsEmpty() && !O[I].TacticName.IsEmpty(),TEXT("cards have actual actor, observed target and evaluated forecast"))) return false;
     const int EnemyTroops=State->Journey.world.armies[3].troops;
     EditOrder(2,-1);
+    if(!Check(Presentation().Predicted==3 && Presentation().Orders[1].Combo.Contains(TEXT("125")),TEXT("reordered solo-capable tactics still resolve with their own combo slots"))) return false;
+    State->Journey.world.armies[2].morale=5;Refresh();
     const auto& Failed=Presentation().Orders;
     if(!Check(Presentation().Predicted==1 && Failed[0].bSuccess && Failed[1].bEvaluated && !Failed[1].bSuccess && !Failed[2].bEvaluated && Failed[1].Actor==2 && Failed[2].Actor==1,TEXT("reorder distinguishes success, first stop and unevaluated successor"))) return false;
     if(!Check(gunyuchainui::Status(Failed[1])!=gunyuchainui::Status(Failed[2]) && State->Journey.world.armies[3].troops==EnemyTroops && !State->Journey.chain.spent[0],TEXT("forecast consumes no morale, action or enemy soldiers"))) return false;

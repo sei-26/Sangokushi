@@ -11,7 +11,7 @@ TSharedRef<SWidget> ATacticalController::ChainReviewRow(int Index)
       + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,12,0)[Label([Index] { return FString::FromInt(Index+1); },30,Gold)]
       + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,12,0)[PortraitWidget([Read] { return Read().Actor; },48,62)]
       + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0,0,16,0)
-        [SNew(SBox).WidthOverride(178)[SNew(SVerticalBox)
+        [SNew(SBox).WidthOverride(218)[SNew(SVerticalBox)
          + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Officer; },18,Gold)]
          + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Tactic; },21)]
          + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([Read] { return Read().Role; },12)]]]

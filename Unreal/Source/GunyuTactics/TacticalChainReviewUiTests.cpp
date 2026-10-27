@@ -18,7 +18,11 @@ void ATacticalController::PrepareChainReviewCapture()
         for(int I=0;I<3;++I) { Field->SelectOfficer(Actors[I]);Field->SelectTactic(int(Tactics[I]));Field->Issue(ETacticalCommand::QueueTactic); }
     }
     else Field->Issue(ETacticalCommand::Sample);
-    if(FParse::Param(FCommandLine::Get(),TEXT("GunyuChainReviewStop"))) Field->EditOrder(2,-1);
+    if(FParse::Param(FCommandLine::Get(),TEXT("GunyuChainReviewStop")))
+    {
+        Field->SelectOfficer(2);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(7,10));Field->Issue(ETacticalCommand::Skip);
+        Field->EditOrder(2,-1); // Out of range after lure; no fabricated state for captures.
+    }
     Field->Issue(ETacticalCommand::Execute);Field->Issue(ETacticalCommand::Skip);
     if(FParse::Param(FCommandLine::Get(),TEXT("GunyuChainReviewDebrief")))
     { Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Skip); }

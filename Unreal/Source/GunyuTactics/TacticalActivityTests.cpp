@@ -36,7 +36,7 @@ bool ATacticalField::ActivityReadSmokeTest()
     AdvancePresentation(2.1f);
     if(!Check(CurrentBeat()->Kind==EBattleCue::Ambush && ReadUnitActivity(1).Caption.Contains(TEXT("構え")) && State->Units[3].Troops==1800,TEXT("next step starts without borrowing the later damage"))) return false;
     AdvancePresentation(1.5f);
-    if(!Check(State->Units[3].Loss==413 && ReadUnitActivity(3).Caption==TEXT("被弾・混乱") && State->HUD.Officers[1].Status.Contains(TEXT("伏兵")),TEXT("map and roster describe the current ambush, not the later breakthrough"))) return false;
+    if(!Check(State->Units[3].Loss==553 && ReadUnitActivity(3).Caption==TEXT("被弾・混乱") && State->HUD.Officers[1].Status.Contains(TEXT("伏兵")),TEXT("map and roster describe the current ambush, not the later breakthrough"))) return false;
     // The player save API intentionally rejects an in-flight replay. Snapshot
     // simulation copies in memory here without changing that production guard.
     auto Snapshot=[&]()

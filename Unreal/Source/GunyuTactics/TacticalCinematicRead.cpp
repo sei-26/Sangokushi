@@ -21,6 +21,8 @@ FTacticCinematicRead ATacticalField::ReadTacticCinema() const
         if(Id>=0 && Id<3 && VisualUnits().IsValidIndex(Id) && VisualUnits()[Id].Id==Id && VisualUnits()[Id].Troops>0)
         { R.NextActor=Id;R.NextOfficer=VisualUnits()[Id].Name;R.Relay=FMath::SmoothStep(.81f,.90f,P)*(1-FMath::SmoothStep(.97f,1.f,P)); }
     }
+    if(R.bResolved && B->Kind!=EBattleCue::Stop && B->Combo>0)
+        R.Chain=FString::Printf(TEXT("%dコンボ / 火力%d％%s"),B->Combo,B->ComboPercent,B->bSignature ? TEXT(" ・ 固有"):TEXT(""));
     if(!R.bResolved) return R; // Never report future damage or state changes before impact.
     if(B->Kind==EBattleCue::Stop) { R.Primary=TEXT("連鎖停止");R.Secondary=TEXT("条件を作り直し、次の指揮へ");return R; }
     if(B->Kind==EBattleCue::Rally)

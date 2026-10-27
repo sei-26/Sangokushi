@@ -68,6 +68,7 @@ void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
         const auto& Event = Events[Index];
         FBattleBeat Beat;
         Beat.Before = Display;Beat.ChainStep=Index+1;
+        Beat.Combo=Event.combo;Beat.ComboPercent=Event.comboPercent;
         Beat.Actor = Event.army; Beat.Target = Event.enemy;
         switch (Event.tactic)
         {

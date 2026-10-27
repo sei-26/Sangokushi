@@ -113,7 +113,8 @@ void ATacticalController::PlayerTick(float Delta)
     if (bBattleLogOpen && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
     if (bMarchPlanOpen && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
     const bool bSignatureCapture = bCapture && FParse::Param(FCommandLine::Get(), TEXT("GunyuSignature"));
-    const bool bCinemaCapture = bCapture && (FParse::Param(FCommandLine::Get(), TEXT("GunyuCinema")) || bSignatureCapture);
+    const bool bSoloCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuSolo"));
+    const bool bCinemaCapture = bCapture && (FParse::Param(FCommandLine::Get(), TEXT("GunyuCinema")) || bSignatureCapture || bSoloCapture);
     const bool bSignalCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuChainSignal"));
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
     if (!bCinemaCapture)
@@ -252,7 +253,13 @@ void ATacticalController::PlayerTick(float Delta)
     { Field->PrepareOpeningPreview(false);Field->bRealtimeCommand=true;Field->Issue(ETacticalCommand::Deploy); }
     if (bCinemaCapture && Frames == 3)
     {
-        if (bSignatureCapture)
+        if(bSoloCapture)
+        {
+            Field->SelectOfficer(0);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(9,11));Field->Issue(ETacticalCommand::Skip);
+            Field->SelectOfficer(2);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(9,10));Field->Issue(ETacticalCommand::Skip);
+            Field->SelectTactic(int(frontline::ChainTactic::Breakthrough));Field->Issue(ETacticalCommand::QueueTactic);
+        }
+        else if (bSignatureCapture)
         {
             const int Destinations[] = {frontline::Campaign::At(9,11), frontline::Campaign::At(9,9), frontline::Campaign::At(9,10)};
             for (int Id = 0; Id < 3; ++Id)
@@ -265,10 +272,14 @@ void ATacticalController::PlayerTick(float Delta)
         else
         {
             Field->Issue(ETacticalCommand::Sample);
-            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuCinemaStop"))) Field->EditOrder(2,-1);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuCinemaStop")))
+            {
+                Field->SelectOfficer(2);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(7,10));Field->Issue(ETacticalCommand::Skip);
+                Field->EditOrder(2,-1);
+            }
         }
         Field->Issue(ETacticalCommand::Execute);
-        float Time = bSignatureCapture ? 9.5f : 4.7f;
+        float Time = bSoloCapture ? 1.7f : bSignatureCapture ? 9.5f : 4.7f;
         FParse::Value(FCommandLine::Get(), TEXT("CueTime="), Time);
         Field->AdvancePresentation(Time);
     }

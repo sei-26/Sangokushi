@@ -96,14 +96,17 @@ void ATacticalField::BuildPresentation()
             const auto& Event = Preview.events[Index];
             Card.bEvaluated=true;
             Card.bSuccess = Event.success;
+            if(Event.success) Card.Combo=FString::Printf(TEXT("%dコンボ / %d％"),Event.combo,Event.comboPercent);
             const TCHAR* Effect = Order.tactic == ChainTactic::Feint ? TEXT("士気-12・隙")
-                : Order.tactic == ChainTactic::Breakthrough ? TEXT("押し返す")
+                : Order.tactic == ChainTactic::Breakthrough ? (Event.from!=Event.to ? TEXT("押し返す"):TEXT("正面突撃"))
                 : Order.tactic == ChainTactic::SerpentRoar ? TEXT("固守解除・混乱")
-                : Order.tactic == ChainTactic::Disrupt || Order.tactic == ChainTactic::AzureDragon ? TEXT("固守解除・混乱") : TEXT("混乱");
+                : Order.tactic == ChainTactic::Disrupt ? (Event.setupPercent>100 ? TEXT("固守解除・混乱"):TEXT("固守解除"))
+                : Order.tactic == ChainTactic::AzureDragon ? TEXT("固守解除・混乱") : Event.setupPercent>100 ? TEXT("混乱"):TEXT("隙");
             Card.Detail = !Event.success ? JourneyText(Event.reason)
                 : Order.tactic == ChainTactic::Lure ? TEXT("成立 / 敵を誘導・囮の兵60を消耗")
-                : Order.tactic == ChainTactic::Oath ? TEXT("成立 / 周囲2マス 士気+18・次撃+20％")
+                : Order.tactic == ChainTactic::Oath ? TEXT("成立 / 自隊・味方鼓舞 / 次撃+20％")
                 : FString::Printf(TEXT("成立 / 敵兵 -%d・%s"), Event.damage, Effect);
+            if(Event.success && Event.setupPercent>100) Card.Detail+=TEXT(" / 仕込み+25％");
             if (Event.success && Event.from != Event.to && StrategistJourney::OnMap(Event.from) && StrategistJourney::OnMap(Event.to))
                 HUD.Routes.Add({Event.from, Event.to});
             if (Event.success && Order.tactic == ChainTactic::Lure)

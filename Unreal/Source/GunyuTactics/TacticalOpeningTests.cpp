@@ -27,7 +27,7 @@ void ATacticalField::PrepareOpeningPreview(bool bDebrief)
         if (Seen && Seen->current && J.world.CanStrike(2,Seen->observed.tile))
         {
             const std::vector<ChainOrder> Push{{2,4,ChainTactic::Breakthrough,-1}};
-            if (J.Preview(Push).completed==1)
+            if (J.Preview(Push).completed==1 && J.Preview(Push).events[0].from!=J.Preview(Push).events[0].to)
             { ReserveTactic(2,ChainTactic::Breakthrough,Seen->observed.tile);Issue(ETacticalCommand::Execute);reserveHandled=true; }
             else if (!J.chain.signatureUsed[2])
             {

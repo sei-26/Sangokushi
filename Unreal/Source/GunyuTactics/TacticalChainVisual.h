@@ -3,7 +3,7 @@
 namespace gunyuchainui
 {
     inline FString Status(const FOrderPresentation& Order)
-    { return !Order.bEvaluated ? TEXT("先行待ち") : Order.bSuccess ? TEXT("成立見込") : TEXT("ここで停止"); }
+    { return !Order.bEvaluated ? TEXT("先行待ち") : Order.bSuccess ? (Order.Combo.IsEmpty() ? FString(TEXT("成立見込")):Order.Combo) : TEXT("ここで停止"); }
     inline FLinearColor Color(const FOrderPresentation& Order)
     { return !Order.bEvaluated ? FLinearColor(.50f,.57f,.61f) : Order.bSuccess ? FLinearColor(.38f,.83f,.66f) : FLinearColor(1.f,.48f,.25f); }
     inline FString Number(int Index)

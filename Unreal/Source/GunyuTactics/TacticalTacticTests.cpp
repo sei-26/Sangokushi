@@ -40,9 +40,9 @@ bool ATacticalField::TacticRepertoireSmokeTest()
     AdvancePresentation(1.9f);
     if (!Check(State->Units[1].bInspired && State->Units[3].Troops == 1800, TEXT("support is shown before future enemy damage"))) return false;
     AdvancePresentation(3.8f);
-    if (!Check(CurrentBeat()->Kind == EBattleCue::SerpentRoar && State->Units[3].Troops == 1522 && State->Units[3].bDisordered, TEXT("roar shows only its own damage and disorder"))) return false;
+    if (!Check(CurrentBeat()->Kind == EBattleCue::SerpentRoar && State->Units[3].Troops == 1453 && State->Units[3].bDisordered, TEXT("roar shows only its own damage and disorder"))) return false;
     AdvancePresentation(3.8f);
-    if (!Check(CurrentBeat()->Kind == EBattleCue::AzureDragon && State->Units[3].Loss == 744 && State->Units[3].Troops == FinalTroops, TEXT("hero attack uses the exact inspired damage"))) return false;
+    if (!Check(CurrentBeat()->Kind == EBattleCue::AzureDragon && State->Units[3].Loss == 1395 && State->Units[3].Troops == FinalTroops, TEXT("hero attack uses the exact inspired damage"))) return false;
     Issue(ETacticalCommand::Skip); SelectOfficer(0);
     if (!Check(!CanIssue(ETacticalCommand::QueueTactic) && State->Journey.chain.signatureUsed[0], TEXT("used signature cannot be queued again"))) return false;
     Issue(ETacticalCommand::EndTurn); Issue(ETacticalCommand::Skip);
@@ -53,7 +53,7 @@ bool ATacticalField::TacticRepertoireSmokeTest()
     { SelectOfficer(I); SelectTactic(static_cast<int>(Tactics[I])); Issue(ETacticalCommand::QueueTactic); }
     if (!Check(Presentation().Predicted == 3, TEXT("alternative common chain counters guarding enemy"))) return false;
     EditOrder(1,-1);
-    if (!Check(Presentation().Predicted == 0 && !State->Journey.chain.pressured[3], TEXT("wrong order fails without leaking preview state"))) return false;
+    if (!Check(Presentation().Predicted == 3 && !State->Journey.chain.pressured[3], TEXT("unprepared order still works without leaking preview state"))) return false;
     EditOrder(0,1); Issue(ETacticalCommand::Execute); Issue(ETacticalCommand::Skip);
     if (!Check(State->Journey.lastChain.completed == 3 && !State->Journey.chain.signatureUsed[1], TEXT("common chain works without consuming signature uses"))) return false;
     FirstMission = SavedMission; EnemyPolicy = SavedPolicy; bStartWithCouncil = SavedCouncil;

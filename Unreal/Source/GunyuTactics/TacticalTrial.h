@@ -100,6 +100,7 @@ public:
     bool JourneySmokeTest();
     bool StoryPromiseSmokeTest();
     bool TacticRepertoireSmokeTest();
+    bool ComboSmokeTest();
     bool EnemyReadSmokeTest();
     bool VisualGeometrySmokeTest();
     bool BackdropSmokeTest();

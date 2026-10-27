@@ -27,7 +27,7 @@ bool ATacticalField::ChainReviewSmokeTest()
     Issue(ETacticalCommand::Sample);Issue(ETacticalCommand::Execute);
     if(!Check(!HasChainReview() && ReadChainReview().Rows.IsEmpty(),TEXT("in-flight replay cannot reveal the resolved future"))) return false;
     Issue(ETacticalCommand::Skip);R=ReadChainReview();
-    if(!Check(R.Completed==3 && R.Damage==969 && R.Rows.Num()==3,TEXT("public chain yields its completed real review"))) return false;
+    if(!Check(R.Completed==3 && R.Damage==1334 && R.Rows.Num()==3,TEXT("public chain yields its completed real review"))) return false;
     std::vector<std::uint8_t> Before,After;
     if(!Check(ExportSession(Before),TEXT("stable completed session"))) return false;
     for(int N=0;N<12;++N) ReadChainReview();
@@ -47,7 +47,7 @@ bool ATacticalField::ChainReviewSmokeTest()
     FirstMission=0;bStartWithCouncil=false;Issue(ETacticalCommand::Restart);
     State->Journey.world.armies[1].morale=State->Journey.world.armies[2].morale=100;
     SelectOfficer(0);SelectTactic(int(T::Oath));Issue(ETacticalCommand::QueueTactic);Issue(ETacticalCommand::Execute);Issue(ETacticalCommand::Skip);R=ReadChainReview();
-    if(!Check(R.Completed==1 && R.Damage==0 && R.Rows[0].Subject==TEXT("周囲の味方") && R.Rows[0].Outcome.Contains(TEXT("2隊")) && !R.Rows[0].Reason.Contains(TEXT("18")),TEXT("capped support records actual state changes without invented healing"))) return false;
+    if(!Check(R.Completed==1 && R.Damage==0 && R.Rows[0].Subject==TEXT("自隊と周囲の味方") && R.Rows[0].Outcome.Contains(TEXT("3隊")) && !R.Rows[0].Reason.Contains(TEXT("18")),TEXT("capped support records actual state changes without invented healing"))) return false;
     bStartWithCouncil=true;Issue(ETacticalCommand::Restart);
     for(int I=0;I<3;++I) Issue(ETacticalCommand::Dialogue);
     Issue(ETacticalCommand::PromiseRoad);Issue(ETacticalCommand::PlanSupplies);Issue(ETacticalCommand::Deploy);
@@ -60,7 +60,7 @@ bool ATacticalField::ChainReviewSmokeTest()
     const int Actors[]={0,2,1};const T Tactics[]={T::Oath,T::SerpentRoar,T::AzureDragon};
     for(int I=0;I<3;++I) { SelectOfficer(Actors[I]);SelectTactic(int(Tactics[I]));Issue(ETacticalCommand::QueueTactic); }
     Issue(ETacticalCommand::Execute);Issue(ETacticalCommand::Skip);R=ReadChainReview();
-    if(!Check(R.Completed==3 && R.Damage==1022 && R.Rows[1].Link.Contains(TEXT("第1手")) && R.Rows[2].Link.Contains(TEXT("第1手")) && R.Rows[2].Link.Contains(TEXT("第2手")),TEXT("actual signature chain records both prior disruption and consumed inspiration"))) return false;
+    if(!Check(R.Completed==3 && R.Damage==1742 && R.Rows[1].Link.Contains(TEXT("第1手")) && R.Rows[2].Link.Contains(TEXT("第1手")) && R.Rows[2].Link.Contains(TEXT("第2手")),TEXT("actual signature chain records both prior disruption and consumed inspiration"))) return false;
     FirstMission=SavedMission;EnemyPolicy=SavedPolicy;bStartWithCouncil=SavedCouncil;bRealtimeCommand=SavedRealtime;State->bNoPlayback=SavedNoPlayback;PlaybackSpeed=SavedSpeed;Issue(ETacticalCommand::Restart);
     UE_LOG(LogTemp,Display,TEXT("GUNYU_CHAIN_REVIEW: PASS (causal links, actual damage, stop, hidden names, playback guard, immutable reads, save reconstruction, debrief/retry, capped support)"));return true;
 }

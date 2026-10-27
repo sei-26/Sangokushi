@@ -41,11 +41,30 @@ namespace frontline
                 Range(r.trafficStops,0,100) && Range(r.tacticAttempts,0,1000) &&
                 Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3);
         }
+        bool ChainRecord(const ChainResult& r)
+        {
+            if(r.prediction || r.events.size()>3) return false;
+            int completed=0;
+            for(std::size_t i=0;i<r.events.size();++i)
+            {
+                const auto& e=r.events[i];
+                if(!Enum(e.tactic,7) || !Range(e.damage,0,100000) || !Range(e.combo,0,3) ||
+                   (e.setupPercent!=100 && e.setupPercent!=125)) return false;
+                if(e.success)
+                {
+                    ++completed;
+                    if(e.combo!=0 && (e.combo!=completed || e.comboPercent!=TacticChain::ComboPercent(e.combo))) return false;
+                    if(e.combo==0 && (e.comboPercent!=100 || e.setupPercent!=100)) return false;
+                }
+                else if(i+1!=r.events.size() || e.combo!=0 || e.damage!=0 || e.comboPercent!=100) return false;
+            }
+            return r.completed==completed;
+        }
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
             if(!Enum(j.stage,4) || !Range(j.mission,0,2) || !Range(j.turn,1,12) || !Range(j.enemyPolicy,0,2) ||
-               !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
+               !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
                !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) ||
                w.cities.size()!=2 || w.generals.size()<5 || w.generals.size()>6 || n>6 ||
                ((j.stage==JourneyStage::Battle || j.stage==JourneyStage::Debrief) && n!=(j.HasConvoy()?6u:5u)) ||

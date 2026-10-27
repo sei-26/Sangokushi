@@ -32,7 +32,7 @@ UEの会話・軍議・戦後は `TacticalJourney.cpp`、その画面は `Tactic
 | StrategistJourneyAI.cpp | 観測に基づく敵の移動、伏兵と通常交戦、指揮区切り |
 | JourneyMission.hpp | 突破・護送・防衛の任務データ、期限、配置と目的地 |
 | StrategistJourneyObjectives.cpp | 固守、糧車の進行、二拠点の維持、目的ごとの勝敗 |
-| TacticChain.hpp / .cpp | 戦法の状態、順次発動、途中停止、観測コピーでの予測 |
+| TacticChain.hpp / .cpp | 戦法の状態、単独発動、成功順の100/125/150％、途中停止、観測コピーでの予測 |
 | TacticCatalog.cpp | 得意・共通・固有戦法の担当、説明、士気費用 |
 | TacticChainActions.cpp | 各戦法の成立条件、効果、支払い、１戦１回、段階ごとの変化記録 |
 | JourneyEnemyPlan.hpp / .cpp | 観測盤面からの敵の進軍・護送車への接近・固守・混乱、推定攻撃圏 |

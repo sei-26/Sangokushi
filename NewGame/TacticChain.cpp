@@ -3,6 +3,10 @@
 
 namespace frontline
 {
+	int TacticChain::ComboPercent(int combo)
+	{
+		return 100 + 25 * (std::clamp(combo, 1, 3) - 1);
+	}
 	bool TacticChain::Living(const Campaign& world, int army)
 	{
 		return army >= 0 && army < static_cast<int>(world.armies.size()) && world.armies[army].troops > 0;
@@ -33,6 +37,7 @@ namespace frontline
 	{
 		concealed.assign(world.armies.size(), false);
 		signatureUsed.assign(world.armies.size(), false);
+		inspired.assign(world.armies.size(), false);
 		BeginTurn(world);
 	}
 	void TacticChain::BeginTurn(const Campaign& world)
@@ -41,7 +46,7 @@ namespace frontline
 		spent.assign(world.armies.size(), false);
 		disordered.assign(world.armies.size(), false);
 		pressured.assign(world.armies.size(), false);
-		inspired.assign(world.armies.size(), false);
+		inspired.resize(world.armies.size(), false); // Inspiration lasts until the next attack, including a solo rally.
 		signatureUsed.resize(world.armies.size(), false);
 		concealed.resize(world.armies.size(), false);
 		for (int i = 0; i < static_cast<int>(world.armies.size()); ++i)
@@ -131,7 +136,7 @@ namespace frontline
 		for (auto* flags : {&concealed, &moved, &spent, &disordered, &pressured, &inspired, &signatureUsed}) flags->resize(count, false);
 		for (const auto& order : orders)
 		{
-			auto event = Apply(world, order);
+			auto event = Apply(world, order, result.completed + 1);
 			result.events.push_back(event);
 			if (!event.success)
 				break; // Unspent followers remain available for a new plan.

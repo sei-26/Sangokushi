@@ -61,11 +61,11 @@ int main()
 		auto j = Battle(1);
 		assert(!j->chain.concealed[1]);
 		const auto result = j->Execute(Standard());
-		assert(result.completed == 1 && result.events.size() == 2);
-		assert(j->chain.spent[0] && !j->chain.spent[1] && !j->chain.spent[2]);
-		assert(j->world.armies[3].tile == Campaign::At(9, 10));
+		assert(result.completed == 3 && result.events.size() == 3);
+		assert(j->chain.spent[0] && j->chain.spent[1] && j->chain.spent[2]);
+		assert(j->world.armies[3].tile == Campaign::At(9, 10)); // Unprepared ambush creates pressure; healthy target is not pushed.
 		const auto again = j->Execute({{2, 3, ChainTactic::Breakthrough, -1}});
-		assert(again.completed == 0); // A healthy formation cannot be pushed by stacking buttons.
+		assert(again.completed == 0); // The same actor cannot act twice in one command interval.
 	}
 	{
 		auto j = Battle();
@@ -73,7 +73,7 @@ int main()
 		assert(j->EndTurn());
 		assert(j->Move(1, Campaign::At(7, 9)) && !j->chain.concealed[1]);
 		const auto reordered = j->Preview({{2, 3, ChainTactic::Breakthrough, -1}});
-		assert(reordered.completed == 0);
+		assert(reordered.completed == 0); // Still outside the target's adjacency range.
 	}
 	{
 		auto j = Battle();
@@ -103,7 +103,7 @@ int main()
 		auto j = Battle();
 		j->Execute(Standard());
 		assert(j->EndTurn());
-		assert(j->Execute({{2, 3, ChainTactic::Breakthrough, -1}}).completed == 1);
+		if (j->stage == JourneyStage::Battle) assert(j->Execute({{2, 3, ChainTactic::Breakthrough, -1}}).completed == 1);
 		assert(j->stage == JourneyStage::Debrief && j->won);
 		assert(j->casualties > 0 && j->survivors == j->deployed - j->casualties);
 		assert(j->world.cities[0].troops == 6000 - j->casualties);
@@ -121,7 +121,7 @@ int main()
 	}
 	{
 		auto j = Battle(0, 2);
-		assert(!j->chain.concealed[1] && j->Preview(Standard()).completed == 1);
+		assert(!j->chain.concealed[1] && j->Preview(Standard()).completed == 3);
 	}
 	{
 		auto j = Battle();

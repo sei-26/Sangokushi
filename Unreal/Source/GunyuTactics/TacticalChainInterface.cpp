@@ -43,7 +43,7 @@ TSharedRef<SWidget> ATacticalController::ChainPlannerWidget()
              [SNew(SBorder).Padding(6).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
               .BorderBackgroundColor_Lambda([this,Index] { const auto& H=Field->Presentation();return H.Orders.IsValidIndex(Index) && H.Orders[Index].Actor==H.Selected ? FLinearColor(.045f,.095f,.09f,.98f) : FLinearColor(.014f,.029f,.035f,.95f); })
               .ToolTipText_Lambda([this,Index]
-              { const auto& H=Field->Presentation();return FText::FromString(H.Orders.IsValidIndex(Index) ? H.Orders[Index].Title+TEXT("\n")+gunyuchainui::Status(H.Orders[Index])+TEXT("\n")+H.Orders[Index].Detail+TEXT("\n戦法名を押すと担当武将を選択。↑↓で順序を変更。") : TEXT("武将と戦法を選んで予約。先行する手で後続の成立条件を作ります。")); })[Content]]];
+              { const auto& H=Field->Presentation();return FText::FromString(H.Orders.IsValidIndex(Index) ? H.Orders[Index].Title+TEXT("\n")+gunyuchainui::Status(H.Orders[Index])+TEXT("\n")+H.Orders[Index].Detail+TEXT("\n戦法名を押すと担当武将を選択。↑↓で順序を変更。") : TEXT("武将と戦法を選んで予約。1手でも発動できます。成功を重ねると火力100・125・150％。")); })[Content]]];
     }
     return List;
 }
