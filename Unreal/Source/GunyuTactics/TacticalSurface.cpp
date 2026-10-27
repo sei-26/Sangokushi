@@ -6,11 +6,13 @@ void ATacticalField::UpdateLandscapeTopology()
 {
     const auto& J=State->Journey;
     TArray<int32> Snapshot;
+    Snapshot.Append({J.mission,int(J.convoyRoute),J.HasConvoy() ? 1:0});
     for (int Y=1;Y<frontline::StrategistJourney::Rows-1;++Y)
         for (int X=1;X<frontline::StrategistJourney::Columns-1;++X)
             Snapshot.Add(static_cast<int32>(J.world.tiles[frontline::Campaign::At(X,Y)].terrain));
     if (Snapshot==State->LandscapeSnapshot) return;
     State->LandscapeSnapshot=MoveTemp(Snapshot);
+    UpdateRoadTopology();
     State->LandscapePeaks.Reset(); State->LandscapeRidges.Reset(); State->LandscapeRivers.Reset();
     for (int Y=1;Y<frontline::StrategistJourney::Rows-1;++Y)
         for (int X=1;X<frontline::StrategistJourney::Columns-1;++X)
@@ -66,11 +68,8 @@ float ATacticalField::SurfaceHeight(FVector P) const
         BankDistance=FMath::Min(BankDistance,Outside);
     }
     Height=FMath::Lerp(-9.f,Height,static_cast<float>(FMath::SmoothStep(0.,200.,BankDistance)));
-    if (J.HasConvoy())
-    {
-        const float RoadY = TileLocation(frontline::Campaign::At(6,11)).Y;
-        Height *= FMath::SmoothStep(35.f, 95.f, static_cast<float>(FMath::Abs(P.Y - RoadY)));
-    }
+    // Flatten only the real public route, including the chosen woodland detour.
+    Height *= FMath::SmoothStep(30.f,85.f,RoadDistance(P));
     // The water is a flat, lower surface. This affects art and picking only.
     if (Cell.first >= 1 && Cell.first < frontline::StrategistJourney::Columns - 1 && Cell.second >= 1 && Cell.second < frontline::StrategistJourney::Rows - 1)
     {

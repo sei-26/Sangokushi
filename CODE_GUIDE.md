@@ -364,3 +364,5 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 任務別の戦場構成（2026-10-28）
 
 `NewGame/JourneyBattlefield.hpp` は三つの地形を文字の表で定義し、`JourneyMission.hpp` は任務・拠点・期限・配置を定義する。`StrategistJourneyObjectives.cpp` が出陣時に適用するので、移動・射線・AI・行軍・描画は同じ地形を使う。Unrealの配色・尾根高・樹木の縮尺は `TacticalBattlefieldStyle.h`、水と橋の方向は `TacticalMapWater.cpp` / `TacticalMapScenery.cpp`、烽火台は `TacticalFortifications.cpp`。共有検証は `tests/JourneyBattlefieldTests.cpp`、実描画と選択レイの検証は `TacticalVisualTests.cpp`。追加・編集の説明は [任務別の戦場構成](BATTLEFIELD_VARIETY.md)。
+
+地表の細部は `TacticalGroundDetail.h`、共通の護送経路から道・轍を作る処理は `TacticalMapRoads.cpp`。道の整地と部隊の足元・選択は `TacticalSurface.cpp` の同じ高さを使う。`TacticalMapDetailTests.cpp` が南の林道と街道の表示一致・キャッシュ更新・描画の不変性を確認する。川岸は `TacticalMapWater.cpp` に分離している。

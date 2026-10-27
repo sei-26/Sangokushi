@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalBattlefieldStyle.h"
+#include "TacticalGroundDetail.h"
 #include "TacticalMapMesh.h"
 using TacticalMap::FSurface;
 #include "ProceduralMeshComponent.h"
@@ -24,7 +25,7 @@ void ATacticalField::BuildTerrain()
     const auto& J = State->Journey;
     const auto Style = TacticalMap::BattlefieldStyle(J.mission);
     TArray<int32> Snapshot;
-    Snapshot.Append({J.mission, J.goal, J.Definition().secondGoal, J.HasConvoy() ? 1 : 0});
+    Snapshot.Append({J.mission, int(J.convoyRoute), J.goal, J.Definition().secondGoal, J.HasConvoy() ? 1 : 0});
     for (int Y = 1; Y < frontline::StrategistJourney::Rows - 1; ++Y)
         for (int X = 1; X < frontline::StrategistJourney::Columns - 1; ++X)
         {
@@ -53,7 +54,10 @@ void ATacticalField::BuildTerrain()
             const float Weight=FMath::Square(FMath::Max(0.f,1.f-static_cast<float>(FVector::DistSquared2D(P,TileLocation(Tile)))/50000.f));
             Total+=Weight; if (J.intelligence[0].visible[Tile]) Seen+=Weight;
         }
-        return Total>0 ? .4f+.6f*Seen/Total : .4f;
+        // At the board edge, a vanishing sample weight must also fade its
+        // influence. Normalizing it to full visibility exposed a jagged hex rim.
+        const float Coverage=FMath::SmoothStep(0.f,.8f,Total);
+        return .4f+.6f*Coverage*(Total>.0001f ? Seen/Total:0.f);
     };
     auto ColorAt = [&](FVector P, FLinearColor Base, bool)
     {
@@ -73,18 +77,7 @@ void ATacticalField::BuildTerrain()
             }
             if (Total>0) Base=Sum/Total;
         }
-        const float V = .93f + .10f * FMath::Sin(P.X * .013 + P.Y * .021);
-        Base *= V;
-        if (J.HasConvoy())
-        {
-            const FVector Start = TileLocation(frontline::Campaign::At(6, 11));
-            const FVector End = TileLocation(frontline::Campaign::At(12, 11));
-            if (P.X > Start.X - 140 && P.X < End.X + 160)
-            {
-                const float Road = 1 - FMath::SmoothStep(26., 72., FMath::Abs(P.Y - Start.Y));
-                Base = FMath::Lerp(Base, Style.Road, Road);
-            }
-        }
+        Base=TacticalMap::GroundTint(P,Base,Style.Road,RoadDistance(P));
         return Base * VisibilityShade(P);
     };
     for (int Y = 1; Y < frontline::StrategistJourney::Rows - 1; ++Y)
@@ -161,12 +154,17 @@ void ATacticalField::BuildTerrain()
                         Trees->AddInstance(FTransform(FRotator(Crown*9+N*8,N*360,Crown*7-7),Root+Twist.RotateVector(FVector((Crown-1)*23,(Crown%2)*18,126+Crown*24)*Size),FVector(.95*Breadth,.85*Breadth,.66+N*.17)*Size));
                 }
             if (bRock)
-                for (int Rock = 0; Rock < 1; ++Rock)
+                for (int Rock=0;Rock<2;++Rock)
                 {
-                    const float N = Grain(X + Rock * 9, Y * 3);
-                    FVector P = Center + FVector(FMath::Cos(Rock * 2.4), FMath::Sin(Rock * 2.4), 0) * (45 + Rock * 19);
-                    P.Z = Height(P) - 12;
-                    Rocks->AddInstance(FTransform(FRotator(20 + N * 55, N * 360, 12), P, FVector(1.1 + N * .4, 1.4 + N * .6, .4 + N * .2)));
+                    const float N=Grain(X*7+Rock*13,Y*3);
+                    if(Rock==1 && N<.45f) continue;
+                    const float Angle=N*2*PI+Rock*2.4f;
+                    FVector P=Center+FVector(FMath::Cos(Angle),FMath::Sin(Angle),0)*(25+N*46);
+                    // Sink the broad base into the common surface; vary the
+                    // silhouette without putting a standing stone on each hex.
+                    P.Z=Height(P)-21;
+                    Rocks->AddInstance(FTransform(FRotator(5+N*15,N*360,8-N*16),P,
+                        FVector(.85+N*.72,.72+N*.55,.50+N*.36)*(Rock==0 ? 1.:.58)));
                 }
             if (!bWater && !bRock)
                 for (int Tuft = 0; Tuft < 12; ++Tuft)
@@ -174,25 +172,12 @@ void ATacticalField::BuildTerrain()
                     const float N = Grain(X * 17 + Tuft, Y * 7);
                     const FVector P = Center + FVector(FMath::Cos(Tuft * 2.4), FMath::Sin(Tuft * 2.4), 0) * (35 + N * 61);
                     // Keep the travelled road and the center of every formation clear.
-                    const float RoadY = TileLocation(frontline::Campaign::At(6, 11)).Y;
-                    if (J.HasConvoy() && FMath::Abs(P.Y - RoadY) < 55) continue;
+                    if (RoadDistance(P)<57) continue;
                     Grass->AddInstance(FTransform(FRotator(0, N * 360, 0), P + FVector(0, 0, Height(P) + 8), FVector(.045, .09, .16 + N * .12)));
                 }
 
         }
-    if (J.HasConvoy())
-    {
-        // Subtle physical wheel ruts follow the shared, levelled road surface.
-        const FVector Start=TileLocation(frontline::Campaign::At(6,11));
-        const FVector End=TileLocation(frontline::Campaign::At(12,11));
-        for (float X=Start.X-80;X<End.X+80;X+=40) for (int Side : {-1,1})
-        {
-            FVector A(X,Start.Y+Side*21,0), B(X+40,Start.Y+Side*21,0);
-            A.Z=Height(A)+.7f; B.Z=Height(B)+.7f;
-            const FLinearColor Rut=FLinearColor(.10f,.095f,.065f)*VisibilityShade(A);
-            Land.Line(A,B,3.f,Rut);
-        }
-    }
+    BuildRoadRuts(Land);
     // The battlefield sits in a landscape, without exposing the edge of a board.
     // Continue the analytic ground across the actual jagged hex perimeter.
     // These extra hexes are scenery only: no grid, visibility or movement cells.

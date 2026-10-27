@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalMapMesh.h"
+#include "TacticalGroundDetail.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
 // A continuous channel inside the existing river/bridge cells. The wet banks
@@ -25,7 +26,7 @@ void ATacticalField::BuildMapWater()
     };
     // Consecutive east/west hexes share a narrower throat at their corners.
     // Leave room for the bend without painting water on a dry neighboring cell.
-    auto RadiusAt=[&](FVector P) { return (J.mission==2 ? 44. : 48.)+4*FMath::Sin(P.Y*.008); };
+    auto RadiusAt=[&](FVector P) { return (J.mission==2 ? 42. : 46.)+3*FMath::Sin(P.Y*.008+P.X*.006)+2*FMath::Sin(P.X*.021-P.Y*.003); };
     auto Tint=[&](int Tile)
     { return J.intelligence[0].visible[Tile] ? 1.f : .4f; };
     auto BankTint=[&](float Shade) { return FLinearColor(.19f,.15f,.085f)*Shade; };
@@ -38,7 +39,7 @@ void ATacticalField::BuildMapWater()
             const double A=Facing-PI*.5+Side*PI/24,B=A+PI/24;
             const FVector U=P+FVector(FMath::Cos(A)*Radius,FMath::Sin(A)*Radius,0);
             const FVector V=P+FVector(FMath::Cos(B)*Radius,FMath::Sin(B)*Radius,0);
-            const FLinearColor Deep=FLinearColor(.021f,.085f,.11f)*Shade,Edge=FLinearColor(.075f,.19f,.17f)*Shade;
+            const FLinearColor Deep=FLinearColor(.028f,.095f,.10f)*Shade,Edge=FLinearColor(.10f,.205f,.17f)*Shade;
             Water.Triangle(P,U,V,Deep,Edge,Edge);
             Shore.Line(U+FVector(0,0,.25),V+FVector(0,0,.25),8,BankTint(Shade));
         }
@@ -74,17 +75,27 @@ void ATacticalField::BuildMapWater()
             const float Shade=FMath::Lerp(Tint(Tiles[I]),Tint(Tiles[I+1]),static_cast<float>(T));
             const float EndShade=FMath::Lerp(Tint(Tiles[I]),Tint(Tiles[I+1]),static_cast<float>(U));
             const FVector Mid=Channel(T),EndMid=Channel(U);
-            const FLinearColor Shallow=FLinearColor(.075f,.19f,.17f)*Shade,EndShallow=FLinearColor(.075f,.19f,.17f)*EndShade;
-            const FLinearColor Deep=FLinearColor(.021f,.085f,.11f)*Shade,EndDeep=FLinearColor(.021f,.085f,.11f)*EndShade;
+            const FLinearColor Shallow=FLinearColor(.10f,.205f,.17f)*Shade,EndShallow=FLinearColor(.10f,.205f,.17f)*EndShade;
+            const FLinearColor Deep=FLinearColor(.028f,.095f,.10f)*Shade,EndDeep=FLinearColor(.028f,.095f,.10f)*EndShade;
             Water.Triangle(A,Mid,EndMid,Shallow,Deep,EndDeep);Water.Triangle(A,EndMid,D,Shallow,EndDeep,EndShallow);
             Water.Triangle(Mid,B,C,Deep,Shallow,EndShallow);Water.Triangle(Mid,C,EndMid,Deep,EndShallow,EndDeep);
             for (int Side : {-1,1})
             {
                 FVector Start=Edge(T,Side),End=Edge(U,Side);
-                Start.Z+=.25;End.Z+=.25;
-                Shore.Line(Start,End,11,BankTint(Shade));
                 if (J.world.tiles[Tiles[I]].terrain==Terrain::Bridge || J.world.tiles[Tiles[I+1]].terrain==Terrain::Bridge) continue;
                 const FVector Across=(Start-Channel(T)).GetSafeNormal2D();
+                const FVector EndAcross=(End-Channel(U)).GetSafeNormal2D();
+                // Soft wet mud, a broken gravel margin, then the dry bank.
+                // Follow the same analytic surface as the selectable ground.
+                FVector OuterStart=Start+Across*(14+TacticalMap::GroundNoise(Start,95.f)*10);
+                FVector OuterEnd=End+EndAcross*(14+TacticalMap::GroundNoise(End,95.f)*10);
+                FVector MiddleStart=FMath::Lerp(Start,OuterStart,.42),MiddleEnd=FMath::Lerp(End,OuterEnd,.42);
+                for(FVector* BankPoint : {&Start,&End,&MiddleStart,&MiddleEnd,&OuterStart,&OuterEnd}) BankPoint->Z=SurfaceHeight(*BankPoint)+.35f;
+                const FLinearColor Wet=FLinearColor(.105f,.105f,.065f)*Shade,EndWet=FLinearColor(.105f,.105f,.065f)*EndShade;
+                const FLinearColor Gravel=FLinearColor(.23f,.215f,.145f)*Shade,EndGravel=FLinearColor(.23f,.215f,.145f)*EndShade;
+                const FLinearColor Dry=FLinearColor(.18f,.16f,.095f)*Shade,EndDry=FLinearColor(.18f,.16f,.095f)*EndShade;
+                Shore.Triangle(Start,End,MiddleEnd,Wet,EndWet,EndGravel);Shore.Triangle(Start,MiddleEnd,MiddleStart,Wet,EndGravel,Gravel);
+                Shore.Triangle(MiddleStart,MiddleEnd,OuterEnd,Gravel,EndGravel,EndDry);Shore.Triangle(MiddleStart,OuterEnd,OuterStart,Gravel,EndDry,Dry);
                 if ((Step+I*3)%5==0)
                 {
                     FVector R=Start+Across*(13+(Step%3)*4);R.Z=SurfaceHeight(R)+14;

@@ -27,7 +27,7 @@ struct FJourneyState
     TArray<int> Reachable;
     TArray<FLinearColor> FoliageClearings;
     TArray<int32> TerrainSnapshot, LandscapeSnapshot, BackdropSnapshot;
-    TArray<FVector> LandscapePeaks, LandscapeRivers;
+    TArray<FVector> LandscapePeaks, LandscapeRivers, LandscapeRoad;
     TArray<TPair<FVector,FVector>> LandscapeRidges;
     FString Report;
     TArray<FBattleBeat> Beats;

@@ -16,6 +16,7 @@ class ACameraActor;
 struct FJourneyState;
 struct FChainReview;
 namespace frontline { struct JourneyWatchSnapshot; }
+namespace TacticalMap { struct FSurface; }
 struct FJourneyDeleter
 {
     void operator()(FJourneyState* Value) const;
@@ -107,6 +108,7 @@ public:
     void PrepareBattleStoryPreview(bool bCostly);
     bool EnemyReadSmokeTest();
     bool VisualGeometrySmokeTest();
+    bool MapDetailSmokeTest();
     bool BackdropSmokeTest();
     bool InfantryMotionSmokeTest();
     bool ActivityReadSmokeTest();
@@ -210,6 +212,9 @@ private:
     void BuildFortifications();
     void UpdateFoliageReadability();
     void BuildMapWater();
+    void UpdateRoadTopology();
+    float RoadDistance(FVector Point) const;
+    void BuildRoadRuts(TacticalMap::FSurface& Land);
     void UpdateLandscapeTopology();
     void RenderEffects();
     void PlayCueSound(bool bImpact);

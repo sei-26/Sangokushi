@@ -32,6 +32,20 @@ bool ATacticalField::BackdropSmokeTest()
     if(!Check(Surroundings && Surroundings->ProcVertexBuffer.Num()>12000 && Surroundings->ProcVertexBuffer.Num()<26000,TEXT("continuous ground replaces the overlapping underlay"))) return false;
     for(FVector P:{FVector(2200,-300,0),FVector(-300,900,0),FVector(3300,900,0)})
         if(!Check(FMath::IsNearlyEqual(BackdropGroundHeight(P),SurfaceHeight(P),.01f),TEXT("outer field and backdrop heights join without a ledge"))) return false;
+    // The playable apron and distant ground must use the same palette/noise.
+    // Their shared edge exposed a hard hex silhouette after only one was upgraded.
+    TMap<FIntPoint,FColor> ApronColors;
+    for(const auto& V:Ground->GetProcMeshSection(0)->ProcVertexBuffer)
+        ApronColors.Add(FIntPoint(FMath::RoundToInt(V.Position.X*100),FMath::RoundToInt(V.Position.Y*100)),V.Color);
+    int Matched=0;
+    for(const auto& V:Surroundings->ProcVertexBuffer)
+        if(const FColor* Color=ApronColors.Find(FIntPoint(FMath::RoundToInt(V.Position.X*100),FMath::RoundToInt(V.Position.Y*100))))
+        {
+            ++Matched;
+            if(!Check(FMath::Abs(int(Color->R)-V.Color.R)<=2 && FMath::Abs(int(Color->G)-V.Color.G)<=2 && FMath::Abs(int(Color->B)-V.Color.B)<=2,
+                TEXT("near and distant ground colors join at the shared edge"))) return false;
+        }
+    if(!Check(Matched>30,TEXT("color continuity is checked at actual shared border vertices"))) return false;
     const int Count=CityWalls->GetInstanceCount();const auto Snapshot=State->BackdropSnapshot;
     SelectOfficer(1);Issue(ETacticalCommand::Move);Issue(ETacticalCommand::Cancel);
     if(!Check(CityWalls->GetInstanceCount()==Count && State->BackdropSnapshot==Snapshot,TEXT("selection and reachable overlays retain static scenery"))) return false;
