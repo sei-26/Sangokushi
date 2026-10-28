@@ -11,6 +11,7 @@ void ATacticalController::TogglePlanningMap()
 {
     if(!bEpisodeOpen || !bNovelPlan || !Field->Presentation().Journey.bPreparation) return;
     bNovelMap=!bNovelMap;bNovelAdvice=false;
+    if(bNovelMap) bPlanningDuties=true;
     const auto& Map=Field->Presentation().Journey.Map;
     if(!Map.Cells.ContainsByPredicate([this](const FPlanningCell& Cell) { return Cell.Tile==PlanningTile; }))
         PlanningTile=Map.Sites.IsEmpty() ? -1:Map.Sites[0].Tile;
@@ -19,7 +20,8 @@ void ATacticalController::TogglePlanningMap()
 void ATacticalController::SelectPlanningTile(int Tile)
 {
     if(!bNovelMap || !bNovelPlan || !bEpisodeOpen) return;
-    if(Field->Presentation().Journey.Map.Cells.ContainsByPredicate([Tile](const FPlanningCell& Cell) { return Cell.Tile==Tile; })) PlanningTile=Tile;
+    if(Field->Presentation().Journey.Map.Cells.ContainsByPredicate([Tile](const FPlanningCell& Cell) { return Cell.Tile==Tile; }))
+    { PlanningTile=Tile;bPlanningLocationChosen=true;PlanningNotice.Empty(); }
     if(PlanningWidget) PlanningWidget->Invalidate(EInvalidateWidgetReason::Paint);
 }
 void ATacticalController::TogglePlanningRoute()

@@ -9,6 +9,8 @@ public:
     SLATE_BEGIN_ARGS(SPlanningMap) {}
         SLATE_ATTRIBUTE(const FPreparationMap*,Map)
         SLATE_ATTRIBUTE(int32,SelectedTile)
+        SLATE_ATTRIBUTE(int32,SelectedOfficer)
+        SLATE_ATTRIBUTE(TArray<int>,PreviewRoute)
         SLATE_EVENT(FOnPlanningTile,OnTile)
     SLATE_END_ARGS()
     void Construct(const FArguments& Args);
@@ -19,6 +21,7 @@ public:
     static int TileAt(FVector2D Point,FVector2D Size);
 private:
     TAttribute<const FPreparationMap*> Map;
-    TAttribute<int32> SelectedTile;
+    TAttribute<int32> SelectedTile,SelectedOfficer;
+    TAttribute<TArray<int>> PreviewRoute;
     FOnPlanningTile OnTile;
 };

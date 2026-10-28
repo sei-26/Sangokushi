@@ -358,6 +358,14 @@ private:
     TSharedRef<class SWidget> BuildPlanningDuties();
     void SetPlanningDuty(int Kind);
     int PlanningOfficer=0;
+    bool bPlanningLocationChosen=false;
+    FString PlanningNotice;
+    void SelectPlanningOfficer(int Officer);
+    FString PlanningDutyReason(int Kind) const;
+    FString PlanningOrder(int Officer) const;
+    FString PlanningExecution() const;
+    TArray<int> PlanningPreviewRoute() const;
+    bool PlanningGuideSmokeTest();
     bool bPlanningDuties=false;
     bool bNovelMap=false;
     int PlanningTile=-1;

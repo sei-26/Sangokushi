@@ -379,3 +379,8 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 軍議の担当と配置（2026-10-28）
 
 `JourneyAssignment.hpp/.cpp` は指定条件と配置成立、`JourneyAssignmentOrders.cpp` は既存行軍への変換。`TacticalPlanningDuty.cpp` は公開操作、`TacticalPlanningDutyInterface.cpp` は担当パネル。戦後は `JourneyBattleStory.cpp` / `JourneyDrama.cpp`、保存は版4。`JourneyAssignmentTests.cpp` と `TacticalPlanningDutyTests.cpp` が実行と再開を検証する。[範囲と操作](COUNCIL_DUTIES.md)。
+
+
+## 作戦立案の案内（2026-10-28）
+
+`TacticalPlanningGuide.h/.cpp` は公開地形だけから地点名・命令の文章・仮経路を作る。`TacticalPlanningGuideRead.cpp` は武将選択・理由・確認文の接続、`TacticalPlanningDutyInterface.cpp` は①誰→②どこ→③何の手順、`TacticalPlanningMapInterface.cpp` は地図と確定済み三人の一覧。選択と確定は別操作。`TacticalPlanningGuideTests.cpp` は公開情報の分離、全地点へのHEX経路、選択時の不変性と誤確定の防止を確認する。

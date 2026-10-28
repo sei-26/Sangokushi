@@ -18,6 +18,6 @@ struct FPreparationMap
     TArray<FPlanningStart> Starts;
     TArray<FPlanningDuty> Duties;
     TArray<FPlanningSite> Sites;
-    TArray<int> ConvoyRoute;
+    TArray<int> ConvoyRoute,Blocked;
     bool bChooseRoute=false,bSouthern=false;
 };

@@ -333,6 +333,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=PreparationReadSmokeTest();
         if(bPassed) bPassed=PlanningMapSmokeTest();
         if(bPassed) bPassed=PlanningDutySmokeTest();
+        if(bPassed) bPassed=PlanningGuideSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -373,6 +374,9 @@ void ATacticalController::PlayerTick(float Delta)
             int Site=0;FParse::Value(FCommandLine::Get(),TEXT("PlanningSite="),Site);
             const auto& Sites=Field->Presentation().Journey.Map.Sites;
             if(Sites.IsValidIndex(Site)) SelectPlanningTile(Sites[Site].Tile);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuideEmpty"))) SelectPlanningOfficer(0);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuidePreview"))) { SelectPlanningOfficer(0);SelectPlanningTile(frontline::Campaign::At(7,6)); }
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuideBlocked"))) { SelectPlanningOfficer(2);SelectPlanningTile(frontline::Campaign::At(9,7)); }
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyBattle"))) { Field->bRealtimeCommand=true;DeployNovelPlan(); }
         }
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanShortage")))

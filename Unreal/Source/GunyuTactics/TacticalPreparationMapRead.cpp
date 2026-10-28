@@ -18,6 +18,7 @@ void ATacticalField::BuildPreparationMap()
     }
     for(int I=0;I<3;++I)
         Map.Duties.Add({J.assignments[I].tile,I,int(J.assignments[I].duty),JourneyText(J.AssignmentStatus(I))});
+    Map.Blocked={Campaign::At(2,J.mission==2 ? 6:10),Campaign::At(14,3)};
     Map.bChooseRoute=J.IsRescue();Map.bSouthern=J.convoyRoute==JourneyConvoyRoute::SouthernWood;
     auto Add=[&](int Tile,const TCHAR* Name,const TCHAR* Description,std::initializer_list<FString> Hints)
     { FPlanningSite Site;Site.Tile=Tile;Site.Name=Name;Site.Description=Description;for(const auto& H:Hints) Site.Hints.Add(H);Map.Sites.Add(MoveTemp(Site)); };

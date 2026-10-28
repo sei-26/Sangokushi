@@ -22,7 +22,7 @@ namespace
     }
 }
 void SPlanningMap::Construct(const FArguments& Args)
-{ Map=Args._Map;SelectedTile=Args._SelectedTile;OnTile=Args._OnTile;SetCanTick(false); }
+{ Map=Args._Map;SelectedTile=Args._SelectedTile;SelectedOfficer=Args._SelectedOfficer;PreviewRoute=Args._PreviewRoute;OnTile=Args._OnTile;SetCanTick(false); }
 FVector2D SPlanningMap::TilePosition(int Tile,FVector2D Size)
 {
     const auto P=hexgrid::Center(Tile%frontline::Width,Tile/frontline::Width);
@@ -90,6 +90,21 @@ int32 SPlanningMap::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRec
         const FVector2f A=Point(Data->ConvoyRoute[I-1]),B=Point(Data->ConvoyRoute[I]),D=(B-A).GetSafeNormal();
         Line({A,B},Gold,2.5f,3);const FVector2f P=FMath::Lerp(A,B,.65f),N(-D.Y,D.X);
         Line({P-D*6+N*3,P,P-D*6-N*3},Gold,1.5f,3);
+    }
+    const auto Route=PreviewRoute.Get(TArray<int>());
+    for(int I=1;I<Route.Num();++I)
+    {
+        const FVector2f A=Point(Route[I-1]),B=Point(Route[I]),D=(B-A).GetSafeNormal(),N(-D.Y,D.X);
+        Line({A,B},Teal,3.f,3);
+        const FVector2f Mid=FMath::Lerp(A,B,.55f);
+        Line({Mid-D*5+N*3,Mid,Mid-D*5-N*3},Teal,1.5f,3);
+    }
+    const int Officer=SelectedOfficer.Get(-1);
+    if(const auto* Start=Data->Starts.FindByPredicate([Officer](const FPlanningStart& S) { return S.Officer==Officer && Officer>=0; }))
+    {
+        const FVector2f C=Point(Start->Tile);TArray<FVector2f> Ring;
+        for(int Side=0;Side<=6;++Side) { const float Angle=FMath::DegreesToRadians(30.f+Side*60.f);Ring.Add(C+FVector2f(FMath::Cos(Angle),FMath::Sin(Angle))*Scale*hexgrid::Radius); }
+        Line(MoveTemp(Ring),Teal,3.f,4);
     }
     const int Selected=SelectedTile.Get(-1);
     if(Selected>=0)
