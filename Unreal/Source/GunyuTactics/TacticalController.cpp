@@ -72,7 +72,7 @@ void ATacticalController::BeginPlay()
     { BeforeVistaFocus=Focus;Focus=FVector(2100,650,0);Distance=5500;CameraYaw=90;CameraElevation=32;CameraPreset=3; }
     if (bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuDenseForest"))) Field->bReadableFoliage=false;
     bSmoke = FParse::Param(FCommandLine::Get(), TEXT("GunyuSmoke"));
-    if(bSmoke) { Field->bStartOnStandardDifficulty=true;Field->Issue(ETacticalCommand::Restart); }
+    if(bSmoke) { Field->bStartOnStandardDifficulty=true;Field->bLegacyJourney=true;Field->Issue(ETacticalCommand::Restart); }
     bTacticCinema=!FParse::Param(FCommandLine::Get(),TEXT("GunyuNoTacticCinema"));
     // Respect editor PIE and explicit capture/windowed runs. Standalone play
     // opens borderless at the desktop resolution, including existing configs.
@@ -291,6 +291,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCampaignOnly")))
+    { const bool bPassed=CampaignPacingSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if (bSmoke && Frames == 2)
     {
         bool bPassed = Field->SmokeTest();
@@ -340,6 +342,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=PlanningDutySmokeTest();
         if(bPassed) bPassed=PlanningGuideSmokeTest();
         if(bPassed) bPassed=AccessibilitySmokeTest();
+        if(bPassed) bPassed=CampaignPacingSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -386,6 +389,18 @@ void ATacticalController::PlayerTick(float Delta)
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuideEmpty"))) SelectPlanningOfficer(0);
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuidePreview"))) { SelectPlanningOfficer(0);SelectPlanningTile(frontline::Campaign::At(7,6)); }
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuideBlocked"))) { SelectPlanningOfficer(2);SelectPlanningTile(frontline::Campaign::At(9,7)); }
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuCampaignAftermath")))
+            {
+                DeployNovelPlan();Field->Issue(ETacticalCommand::Skip);
+                std::vector<std::uint8_t> Bytes;auto Settled=MakeUnique<frontline::JourneySaveData>();
+                if(Field->ExportSession(Bytes) && frontline::DecodeJourneySave(Bytes,*Settled))
+                {
+                    Settled->journey.world.armies[3].troops=Settled->journey.world.armies[4].troops=0;
+                    Settled->journey.world.armies[0].tile=Settled->journey.goal;
+                    Settled->journey.RefreshIntelligence();Settled->journey.EndTurn();
+                    if(frontline::EncodeJourneySave(*Settled,Bytes)) { Field->ImportSession(Bytes);CloseEpisode();OpenJourneyEntry(); }
+                }
+            }
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyBattle"))) { Field->bRealtimeCommand=true;DeployNovelPlan(); }
         }
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanShortage")))

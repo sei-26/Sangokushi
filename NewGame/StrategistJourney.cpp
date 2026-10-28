@@ -56,7 +56,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
-        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;
+        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=false;
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -305,7 +305,7 @@ namespace frontline
 		casualties = deployed + convoyEscort - survivors;
         CompleteBattleReview(success);
 		history[mission] = {true, success, withdrawn, success && IsRescue(), survivors, casualties};
-        history[mission].review=battleReview;history[mission].route=convoyRoute;history[mission].assignments=assignments;history[mission].difficulty=difficulty;
+        history[mission].review=battleReview;history[mission].route=convoyRoute;history[mission].assignments=assignments;history[mission].difficulty=difficulty;history[mission].campaignFlow=campaignFlow;
         CompleteBattleStory(success);
 		if (success)
 		{
@@ -329,11 +329,12 @@ namespace frontline
 		else
 		{
 			++mission;turn=1;
+            if(campaignFlow) world.day+=mission==1 ? 7:21; // Campaign montage; no unearned income or replenishment.
             convoyRoute=JourneyConvoyRoute::Road;assignments={};
 			stage = JourneyStage::Preparation;
 			reinforced = false;
 			enemyPolicy = 1;
-			Report(U"前の戦果を受けて、新たな退路の確保を任された。残った兵・兵糧・信頼で次の軍議へ。");
+			Report(campaignFlow ? U"戦役が次の局面へ進む。前戦の生存兵・糧・人物の信頼を持って、新しい役目へ。":U"前の戦果を受けて、新たな退路の確保を任された。残った兵・兵糧・信頼で次の軍議へ。");
 		}
 		return true;
 	}

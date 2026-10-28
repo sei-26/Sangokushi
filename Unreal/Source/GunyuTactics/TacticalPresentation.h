@@ -57,7 +57,8 @@ struct FJourneyPresentation
     FString PlanDifference,PlanReadiness,PlanObjective,PlanRoute;
     FString DifficultyName,DifficultyDetail,ExampleName,ExamplePurpose,ExampleManual,ExampleCaution;
     TArray<FString> ExampleOrders;
-    bool bStoryDifficulty=false;
+    bool bStoryDifficulty=false,bCampaignFlow=false;
+    FString CampaignPhase,CampaignChange,CampaignNext,CampaignStanding;
     FPreparationMap Map;
     TArray<FDialoguePresentation> PlanAdvice;
     bool bNeedsReply=false;

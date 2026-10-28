@@ -22,7 +22,9 @@ bool ATacticalField::ImportSession(const std::vector<std::uint8_t>& Bytes)
     auto Save=std::make_unique<JourneySaveData>();
     if(!DecodeJourneySave(Bytes,*Save)) return false;
     auto Restored=TUniquePtr<FJourneyState,FJourneyDeleter>(new FJourneyState);
-    Restored->Journey=std::move(Save->journey);Restored->Realtime=std::move(Save->realtime);
+    Restored->Journey=std::move(Save->journey);
+    if(!bLegacyJourney) Restored->Journey.UpgradeCampaignAtCouncil();
+    Restored->Realtime=std::move(Save->realtime);
     Restored->ChainSignal=std::move(Save->signal);Restored->BattleWatch=std::move(Save->watch);
     Restored->Orders=std::move(Save->orders);Restored->SelectedTactics=Save->tactics;
     Restored->Selected=Save->selected;Restored->Target=Save->target;

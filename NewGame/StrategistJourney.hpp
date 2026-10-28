@@ -32,6 +32,7 @@ namespace frontline
         JourneyConvoyRoute route=JourneyConvoyRoute::Road;
         JourneyBattleStory story;
         JourneyDifficulty difficulty=JourneyDifficulty::Standard;
+        bool campaignFlow=false;
         std::array<JourneyAssignment,3> assignments{};
 	};
 	// One persistent campaign for the first playable historical-background slice.
@@ -56,6 +57,7 @@ namespace frontline
         JourneyConvoyRoute convoyRoute=JourneyConvoyRoute::Road;
         JourneyBattleReview battleReview;
         JourneyDifficulty difficulty=JourneyDifficulty::Standard;
+        bool campaignFlow=false;
         bool SelectDifficulty(JourneyDifficulty);
         bool ApplyPlanExample();
         std::array<JourneyAssignment,3> assignments{};
@@ -68,6 +70,8 @@ namespace frontline
 		std::vector<Chronicle> reports;
 		std::u32string message;
 		void Reset();
+        void ResetCampaign();
+        bool UpgradeCampaignAtCouncil();
 		void Meet();
 		bool Reinforce();
 		JourneySupplies PreparationCosts(int choice) const;
@@ -80,7 +84,11 @@ namespace frontline
 		bool Withdraw();
 		bool IsRescue() const { return mission == 0 && promise == JourneyPromise::EscortRefugees; }
 		bool HasConvoy() const { return IsRescue() || Definition().kind == JourneyObjective::Escort; }
-		int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles; }
+        int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles+
+            (campaignFlow && mission==1 && history[0].rescued ? 2:0); }
+        int RequiredHoldTurns() const
+        { const int mask=history[1].review.coordinatedOfficers;return campaignFlow && mission==2 && history[1].won && (mask&(mask-1)) ? 2:Definition().requiredProgress; }
+        std::u32string ObjectiveBrief() const;
 		bool Prepare(int choice, int policy);
 		bool Move(int army, int tile);
 		bool Ambush(int army);
@@ -88,7 +96,7 @@ namespace frontline
 		bool Hold(int army);
 		const JourneyMission& Definition() const
 		{
-			return MissionDefinition(mission);
+			return campaignFlow ? CampaignMissionDefinition(mission,CurrentPledge()==JourneyPledge::Preserve):MissionDefinition(mission);
 		}
 		bool PositionSecured(int tile) const;
 		std::u32string ObjectiveProgress() const;

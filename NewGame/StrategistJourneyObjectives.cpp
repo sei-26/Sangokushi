@@ -89,8 +89,9 @@ namespace frontline
 			return U"糧車 " + Number(convoyStep) + U" / 6区間・積荷 " +
 			       Number(world.armies[ConvoyArmy].cargoFood) + U" / 1,200";
 		}
+        if(Definition().kind==JourneyObjective::CaptureCamp) return U"指揮所へ一隊を入れ、隣接する敵を退けて占領。護送・残敵掃討は不要";
 		if (Definition().kind == JourneyObjective::HoldPositions)
-			return U"二拠点の維持 " + Number(heldTurns) + U" / 3指揮・Gで固守：隣接敵１隊まで維持";
+			return U"二拠点の維持 " + Number(heldTurns) + U" / "+Number(RequiredHoldTurns())+U"指揮・Gで固守：隣接敵１隊まで維持";
 		return U"先鋒の兵450以下・士気30以下、または出口を確保";
 	}
 	void StrategistJourney::AdvanceObjective()
@@ -151,11 +152,20 @@ namespace frontline
 				return;
 			}
 		}
+        else if(kind==JourneyObjective::CaptureCamp)
+        {
+            if(PositionSecured(goal))
+            {
+                world.tiles[goal].owner=world.player;++world.revision;
+                Finish(true,U"河港の指揮所を占領。敵の連絡路が断たれ、義勇軍は官軍の共同作戦へ合流する。残敵を追う必要はない。");
+                return;
+            }
+        }
 		else if (kind == JourneyObjective::HoldPositions)
 		{
-			if (heldTurns >= Definition().requiredProgress)
+			if (heldTurns >= RequiredHoldTurns())
 			{
-				Finish(true, U"二つの烽火を３指揮守り抜いた。守備と支援の配分で本隊の退路をつないだ。");
+				Finish(true, campaignFlow ? U"両翼の烽火を守り、本隊の包囲が完成。主人公の采配が決戦を動かし、義勇軍の正式な軍師として迎えられた。":U"二つの烽火を３指揮守り抜いた。守備と支援の配分で本隊の退路をつないだ。");
 				return;
 			}
 		}

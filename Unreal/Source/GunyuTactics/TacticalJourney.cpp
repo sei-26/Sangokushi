@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyCampaign.hpp"
 
 using namespace frontline;
 
@@ -39,6 +40,7 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
         break;
     case ETacticalCommand::Retry:
         J = *State->BeforeBattle;
+        if(!bLegacyJourney) J.UpgradeCampaignAtCouncil();
         State->Orders.clear(); State->Selected = 0; State->Target = 3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
         State->Report = TEXT("戦い直前の軍議へ戻りました。前回の出陣費用と損耗を戻し、準備方針を見直せます。");
@@ -55,6 +57,8 @@ void ATacticalField::BuildJourneyPresentation()
     const auto& J = State->Journey;
     auto& P = State->HUD.Journey;
     P = {};
+    P.bCampaignFlow=J.campaignFlow;
+    const auto Beat=CampaignBeat(J);P.CampaignPhase=JourneyText(Beat.phase);P.CampaignChange=JourneyText(Beat.change);P.CampaignNext=JourneyText(Beat.next);P.CampaignStanding=JourneyText(Beat.standing);
     P.bStoryDifficulty=J.difficulty==JourneyDifficulty::Story;P.DifficultyName=JourneyText(DifficultyName(J.difficulty));
     const auto Settings=CombatSettings(J.difficulty);
     P.DifficultyDetail=FString::Printf(TEXT("敵の初期兵力%d％ ／ 期限＋%d指揮 ／ 軍議で変更可"),Settings.enemyPercent,Settings.extraCycles);
@@ -129,4 +133,16 @@ void ATacticalField::BuildJourneyPresentation()
     BuildOpeningPresentation();
     BuildStoryPresentation();
     BuildEpisodePresentation();
+    if(J.campaignFlow && P.bPreparation)
+    {
+        P.PrimaryLabel=TEXT("作戦書へ進む ／ Enter");P.Outcome=P.CampaignChange+TEXT("\n")+P.CampaignNext;
+        if(J.mission==1) P.Dialogue=TEXT("今回は河港への急襲。指揮所を占領して官軍の共同作戦へ進む。車の護送はしない。");
+    }
+    if(J.campaignFlow && P.bDebrief)
+    {
+        P.Heading=J.won ? TEXT("戦役が動いた ／ 次の局面へ"):TEXT("再挑戦 ／ 次に変える一手");
+        P.Dialogue=P.CampaignChange;P.Outcome=P.CampaignNext+TEXT("\n")+P.ReviewFacts;
+        if(P.bNeedsReply) P.ReplyPrompt=TEXT("次戦の方針を会話で決める。返答は次戦の方針・約束につながり、実行結果で関係が分かれる。選ばず進むこともできる。");
+        P.PrimaryLabel=J.won ? (J.mission==2 ? TEXT("正式な軍師として、終幕へ"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
+    }
 }

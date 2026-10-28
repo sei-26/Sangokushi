@@ -17,10 +17,10 @@ void ATacticalField::BuildPreparationPresentation()
         P.ExampleOrders.Add(A.duty==JourneyDuty::None ? FString(TEXT("固定せず、戦場で自分で指揮")):
             planningguide::Place(P.Map,A.tile)+(A.duty==JourneyDuty::Hold ? TEXT(" → 固守"):TEXT(" → 伏兵準備")));
     }
-    P.PlanObjective=(J.IsRescue() ? FString(TEXT("季安の避難車を出口まで護送")):JourneyText(J.Definition().objective))+
+    P.PlanObjective=(J.IsRescue() ? FString(TEXT("季安の避難車を出口まで護送")):JourneyText(J.ObjectiveBrief()))+
         FString::Printf(TEXT(" / 期限%d指揮"),J.TurnBudget());
     const auto& Field=BattlefieldDefinition(J.mission);
-    P.PlanRoute=JourneyText(Field.name)+TEXT(" / ")+JourneyText(Field.reading);
+    P.PlanRoute=JourneyText(Field.name)+TEXT(" / ")+(J.Definition().kind==JourneyObjective::CaptureCamp ? FString(TEXT("二つの橋から指揮所へ急襲。護送と残敵掃討は不要")):JourneyText(Field.reading));
     if(J.IsRescue())
     {
         const auto Route=J.IsRescue() ? J.convoyRoute:JourneyConvoyRoute::Road;const auto& Path=ConvoyPlan(Route);
@@ -56,6 +56,7 @@ void ATacticalField::BuildPreparationPresentation()
         P.PlanReadiness+=FString::Printf(TEXT("　案%dなら現在の資源で出陣できる。"),2-State->PreparationChoice);
     const TCHAR* Names[]={TEXT("劉備"),TEXT("関羽"),TEXT("張飛")};
     const FString Liu=J.IsRescue() ? TEXT("敵の旗が倒れても、季安の車が着くまでは終わらない。道に残す隊を、先に決めよう。"):
+        J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("北橋か南橋を渡り、指揮所を取る。勝利後は本隊との共同作戦へ進む。二隊連鎖も成せば、決戦の合図が早くなる。"):
         J.mission==1 ? TEXT("積荷は1,200以上残して届ける。追撃より先に、糧車が通る場所を考えてほしい。"):
         J.mission==2 ? TEXT("二つの烽火を、同時に三指揮守る。片方に全員を集めず、誰を信じて残すか決めよう。"):
         TEXT("先鋒を崩すか、安全な出口を確保して道を開く。敵を倒すことと、役目を果たすことを一緒に考えよう。");

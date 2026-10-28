@@ -248,10 +248,14 @@ void ATacticalField::Issue(ETacticalCommand Command)
         State->Input = ETacticalInput::Select;
         State->Report = TEXT("対象指定を取り消しました。予約済みの戦法は保持しています。"); break;
     case ETacticalCommand::Continue:
-        if (J.Continue() && J.stage == JourneyStage::Preparation && !bStartWithCouncil)
+        if(J.Continue())
         {
-            State->BeforeBattle = std::make_unique<StrategistJourney>(J);
-            J.Prepare(0, FMath::Clamp(EnemyPolicy, 0, 2));
+            if(!bLegacyJourney) J.UpgradeCampaignAtCouncil();
+            if(J.stage==JourneyStage::Preparation && !bStartWithCouncil && !J.campaignFlow)
+            {
+                State->BeforeBattle=std::make_unique<StrategistJourney>(J);
+                J.Prepare(0,FMath::Clamp(EnemyPolicy,0,2));
+            }
         }
         State->Orders.clear(); State->Input = ETacticalInput::Select; State->Target = 3;
         State->Report = JourneyText(J.message); break;

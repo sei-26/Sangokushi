@@ -22,7 +22,21 @@ namespace frontline
                 JourneyAssignment{JourneyDuty::Ambush,j.Definition().positions[1]},
                 JourneyAssignment{JourneyDuty::Hold,j.Definition().secondGoal}};
             p.manualTask=U"まず両拠点の配置を待つ。敵が隣接したら、関羽の戦法や他隊の単独戦法で守りを助ける。";
-            p.caution=U"両方を同時に３指揮維持する。固守でも隣接敵が２隊になると維持できない。救援に出れば元の拠点が空く。";
+            p.caution=j.RequiredHoldTurns()==2 ? U"河港での連携が効き、両方を２指揮維持すれば包囲が完成する。敵２隊の隣接や救援で守りを空ける判断には注意。":U"両方を同時に３指揮維持する。固守でも隣接敵が２隊になると維持できない。救援に出れば元の拠点が空く。";
+        }
+        else if(j.Definition().kind==JourneyObjective::CaptureCamp)
+        {
+            p.name=U"南橋から突破し、河港を奪う";
+            p.purpose=U"劉備が南橋手前を支え、関羽は森林で援護。張飛を自分で橋へ進め、敵を崩した後に指揮所を占領する。";
+            p.assignments={JourneyAssignment{JourneyDuty::Hold,Campaign::At(10,10)},JourneyAssignment{JourneyDuty::Ambush,Campaign::At(9,9)},JourneyAssignment{}};
+            if(j.CurrentPledge()==JourneyPledge::Preserve)
+            {
+                p.name=U"北橋を回り、兵を守って河港へ";
+                p.assignments[0].tile=Campaign::At(10,8);p.assignments[1].tile=Campaign::At(9,8);
+                p.purpose=U"兵を守るという返答に沿い、北橋近くから迂回する配置。劉備が橋手前を支え、関羽は森、張飛は突破役として自分で指揮する。";
+            }
+            p.manualTask=U"見えた敵へ単独戦法か連鎖で突破し、指揮所へ一隊を入れる。二隊連鎖も成立させて勝てば、本隊との連携が次の決戦を早める。";
+            p.caution=U"敵を倒すだけでは指揮所を占領したことにならない。安全を確かめて入城する。車の護送と残敵掃討は不要。";
         }
         else if(j.mission==1)
         {

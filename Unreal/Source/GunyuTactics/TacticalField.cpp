@@ -114,7 +114,7 @@ void ATacticalField::StartTrial()
     State->bRealtimeChainRequested=false;State->bRealtimePauseAfterPlayback=false;State->RealtimeRoutes.Reset();
     State->TerrainSnapshot.Reset();State->BackdropSnapshot.Reset();
     State->Beats.Reset(); State->BeatIndex = 0; State->BeatTime = 0;
-    State->Journey.Reset();
+    if(bLegacyJourney) State->Journey.Reset();else State->Journey.ResetCampaign();
     if(!bStartOnStandardDifficulty) State->Journey.SelectDifficulty(frontline::JourneyDifficulty::Story);
     State->Journey.mission = FMath::Clamp(FirstMission, 0, 2);
     State->Journey.enemyPolicy = FMath::Clamp(EnemyPolicy, 0, 2);

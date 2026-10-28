@@ -42,7 +42,7 @@ namespace frontline
     bool StrategistJourney::NeedsStoryReply() const
     { return stage==JourneyStage::Debrief && won && mission<2 && history[mission].story.recorded && history[mission].story.reply==JourneyPledge::None; }
     bool StrategistJourney::CanContinue() const
-    { return stage==JourneyStage::Debrief && won && !NeedsStoryReply(); }
+    { return stage==JourneyStage::Debrief && won && (campaignFlow || !NeedsStoryReply()); }
     bool StrategistJourney::ChooseStoryReply(JourneyPledge pledge)
     {
         if(!NeedsStoryReply() || (pledge!=JourneyPledge::Preserve && pledge!=JourneyPledge::Coordinate)) return false;

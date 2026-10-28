@@ -8,7 +8,8 @@ namespace frontline
 	{
 		Breakout,
 		Escort,
-		HoldPositions
+		HoldPositions,
+        CaptureCamp
 	};
 	struct JourneyMission
 	{
@@ -53,4 +54,14 @@ namespace frontline
 		      {{7 + 7 * Width, 7 + 5 * Width, 8 + 9 * Width, 11 + 9 * Width, 10 + 5 * Width}}}}};
 		return missions[std::clamp(index, 0, 2)];
 	}
+    inline const JourneyMission& CampaignMissionDefinition(int index,bool northApproach=false)
+    {
+        static const JourneyMission port{U"第二策 / 河港の指揮所を奪え",
+            U"川を渡り、敵の指揮所を安全に占領する",
+            U"北橋で回り込むか南橋から突破。敵を退け、指揮所へ一隊を入れて確保すれば決着。護送と残敵掃討は不要。",
+            JourneyObjective::CaptureCamp,10,12+11*Width,-1,0,
+            {{9+10*Width,8+9*Width,8+10*Width,12+11*Width,12+7*Width}}};
+        static const JourneyMission north=[] { auto m=port;m.positions[0]=9+8*Width;m.positions[1]=8+8*Width;m.positions[2]=9+9*Width;return m; }();
+        return index==1 ? (northApproach ? north:port):MissionDefinition(index);
+    }
 } // namespace frontline

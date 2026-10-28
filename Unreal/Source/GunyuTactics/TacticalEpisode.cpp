@@ -9,6 +9,14 @@ void ATacticalController::OpenEpisode()
     bBattleLogOpen=bMarchPlanOpen=bTacticPickerOpen=false;CloseChainReview();
     IgnoreMapInputThroughFrame=Frames+1;
 }
+void ATacticalController::OpenJourneyEntry()
+{
+    const auto& P=Field->Presentation().Journey;
+    if(!P.bCampaignFlow) { OpenEpisode();return; }
+    if(P.bPreparation) { OpenEpisode();OpenNovelPlan(); }
+    else if(P.bDebrief) { CloseEpisode();EpisodeSeenKey=P.Episode.Key; }
+    else OpenEpisode();
+}
 void ATacticalController::CloseEpisode()
 { bEpisodeOpen=false;bNovelPlan=bNovelMap=bNovelHistory=bNovelAdvice=false;IgnoreMapInputThroughFrame=Frames+1; }
 void ATacticalController::StepEpisode(int Direction)
@@ -47,9 +55,9 @@ bool ATacticalController::UpdateEpisodeInput()
     if(E.Key.IsEmpty()) { if(bEpisodeOpen) CloseEpisode();EpisodeSeenKey.Reset();return WasOpen; }
     if(bEpisodeOpen && EpisodeSnapshot.Key!=E.Key) CloseEpisode();
     // Show each newly entered council/aftermath once. QA captures opt in explicitly.
-    if(!bCapture && !bSmoke && !bSaveMenuOpen && E.Key!=EpisodeSeenKey) OpenEpisode();
+    if(!bCapture && !bSmoke && !bSaveMenuOpen && E.Key!=EpisodeSeenKey) OpenJourneyEntry();
     const bool Toggle=WasInputKeyJustPressed(EKeys::H) && !bSaveMenuOpen;
-    if(Toggle) { if(bEpisodeOpen) CloseEpisode();else OpenEpisode(); }
+    if(Toggle) { if(bEpisodeOpen && bNovelPlan) bNovelPlan=false;else if(bEpisodeOpen) CloseEpisode();else OpenEpisode(); }
     if(!bEpisodeOpen && !bSaveMenuOpen && Field->Presentation().Journey.bPreparation && WasInputKeyJustPressed(EKeys::Enter))
     { OpenEpisode();OpenNovelPlan();return true; }
     if(!bEpisodeOpen) return WasOpen || Toggle;

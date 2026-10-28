@@ -31,7 +31,7 @@ void ATacticalField::BuildOfficerConversation()
                 TEXT("俺が前へ出れば、敵もこっちを見る。その隙に出口を取る手もあるんだろ？ 斬り込むばかりが仕事じゃねえのは、分かってる。")};
             Line = Lines[Who];
         }
-        else if (J.mission == 1 && J.history[0].rescued)
+        else if (!J.campaignFlow && J.mission == 1 && J.history[0].rescued)
         {
             const TCHAR* Lines[] = {
                 TEXT("季安が、今度は糧を運ぶ役を引き受けてくれた。あの時送り届けた車が、次に皆を食わせる車になる。今度も、帰るところまで任せたい。"),

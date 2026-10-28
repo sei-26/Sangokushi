@@ -38,7 +38,7 @@ namespace frontline
         }
         bool Review(const JourneyBattleReview& r)
         {
-            return Enum(r.resolution,8) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
+            return Enum(r.resolution,9) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
                 Range(r.trafficStops,0,100) && Range(r.tacticAttempts,0,1000) &&
                 Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3) && Range(r.coordinatedOfficers,0,7);
         }

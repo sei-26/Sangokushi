@@ -21,7 +21,7 @@ namespace frontline
     {
         auto& r=battleReview;r.endedAt=turn;
         if (withdrawn) r.resolution=JourneyResolution::Withdrawn;
-        else if (success) r.resolution=HasConvoy() ? JourneyResolution::Delivered :
+        else if (success) r.resolution=Definition().kind==JourneyObjective::CaptureCamp ? JourneyResolution::Captured:HasConvoy() ? JourneyResolution::Delivered :
             Definition().kind==JourneyObjective::HoldPositions ? JourneyResolution::Held :
             world.armies[3].troops<=450 || world.armies[3].morale<=30 ? JourneyResolution::EnemyBroken : JourneyResolution::ExitSecured;
         else r.resolution=world.armies[0].troops+world.armies[1].troops+world.armies[2].troops<1800 ? JourneyResolution::ForceLost :
@@ -29,6 +29,7 @@ namespace frontline
     }
     std::u32string StrategistJourney::BattleReviewLesson() const
     {
+        if(battleReview.resolution==JourneyResolution::Captured) return U"敵の撃破から指揮所の占領へつなげた。戦役の目的が済んだ所で追撃を止め、生存兵を次の決戦へ回す。";
         if (battleReview.resolution==JourneyResolution::ConvoyLost)
             return U"車の護衛か積荷を失った。追撃する隊に加え、出口や車の近くを守る隊を残してみよう。";
         if (battleReview.resolution==JourneyResolution::ForceLost || casualties>900)
@@ -46,6 +47,7 @@ namespace frontline
     {
         switch (battleReview.resolution)
         {
+        case JourneyResolution::Captured:return U"河港を奪取し、官軍の共同作戦へ";
         case JourneyResolution::EnemyBroken:return U"先鋒を崩して退路を確保";
         case JourneyResolution::ExitSecured:return U"出口を押さえて退路を確保";
         case JourneyResolution::Delivered:return U"護送の約束を達成";

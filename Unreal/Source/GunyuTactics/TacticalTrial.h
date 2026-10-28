@@ -159,6 +159,8 @@ public:
     UPROPERTY(EditAnywhere, Category="Trial|Scenario")
     bool bStartOnStandardDifficulty = false;
     UPROPERTY(EditAnywhere, Category="Trial|Scenario")
+    bool bLegacyJourney = false;
+    UPROPERTY(EditAnywhere, Category="Trial|Scenario")
     bool bPauseOnBattleAlert = true;
 private:
     TUniquePtr<FJourneyState, FJourneyDeleter> State;
@@ -404,6 +406,8 @@ private:
     bool bNovelHistory=false,bNovelInstant=false;
     float NovelElapsed=0;
     void OpenEpisode();
+    void OpenJourneyEntry();
+    bool CampaignPacingSmokeTest();
     void CloseEpisode();
     void StepEpisode(int Direction);
     bool UpdateEpisodeInput();
