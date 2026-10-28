@@ -12,7 +12,7 @@ namespace frontline
         bool reading;
         std::vector<std::uint8_t>& bytes;
         std::size_t offset=0;
-        unsigned version=3;
+        unsigned version=4;
         void Require(bool value) { if (!value) throw std::runtime_error("Invalid journey archive"); }
         template<class... T> void operator()(T&... values) { (IO(values),...); }
         template<class T> void IO(T& value)
@@ -82,6 +82,7 @@ namespace frontline
         void IO(ChainResult&);
         void IO(JourneyBattleReview&);
         void IO(JourneyResult&);
+        void IO(JourneyAssignment&);
         void IO(JourneyBattleStory&);
         void IO(StrategistJourney&);
         void IO(JourneyStandingOrder&);

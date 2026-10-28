@@ -17,6 +17,7 @@ namespace frontline
 		    (value != JourneyPromise::OpenRoad && value != JourneyPromise::EscortRefugees)) return false;
 		promise = value;
         if (!IsRescue()) convoyRoute=JourneyConvoyRoute::Road;
+        for(int i=0;i<3;++i) if(!AssignmentProblem(i,assignments[i].tile,assignments[i].duty).empty()) assignments[i]={};
 		message = IsRescue() ? U"避難車まで送り届けると約束した。護衛600と、その兵糧900を出陣費用に加える。"
 		                    : U"任務は退路を開くこと。先鋒を崩すか出口を確保し、民の通れる道を残す。";
 		return true;
@@ -49,6 +50,7 @@ namespace frontline
 		chain.concealed[army] = false;
 		unit.stance = battle::Stance::Guard;
 		++world.revision;
+        RecordAssignment(army);
 		Report(world.generals[army].name + U"隊が固守。今の攻撃を使い、次の交戦で被害を抑える。");
 		RefreshIntelligence();
 		return true;

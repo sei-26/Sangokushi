@@ -1,4 +1,5 @@
 ﻿#include "JourneyArchive.hpp"
+#include "JourneyBattlefield.hpp"
 #include <cmath>
 
 namespace frontline
@@ -67,12 +68,29 @@ namespace frontline
             if(!s.recorded && (s.reply!=JourneyPledge::None || s.pledge!=JourneyPledge::None)) return false;
             return true;
         }
+        bool Assignments(const std::array<JourneyAssignment,3>& assignments,int mission,bool rescue,bool preparation=false)
+        {
+            for(int i=0;i<3;++i)
+            {
+                const auto& a=assignments[i];if(!Enum(a.duty,2)) return false;
+                if(a.duty==JourneyDuty::None) { if(a.tile!=-1 || a.completed) return false; }
+                else if(!Cell(a.tile) || (a.duty==JourneyDuty::Ambush && i!=1)) return false;
+                if(a.duty!=JourneyDuty::None)
+                {
+                    const auto terrain=BattlefieldTerrain(mission,a.tile%Width,a.tile/Width,rescue);
+                    if(terrain==Terrain::Sea || terrain==Terrain::River || (a.duty==JourneyDuty::Ambush && terrain!=Terrain::Forest) ||
+                       a.tile==Campaign::At(14,3) || a.tile==Campaign::At(2,mission==2 ? 6:10) || (preparation && a.completed)) return false;
+                }
+                for(int k=0;k<i;++k) if(a.duty!=JourneyDuty::None && assignments[k].duty!=JourneyDuty::None && a.tile==assignments[k].tile) return false;
+            }
+            return true;
+        }
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
             if(!Enum(j.stage,4) || !Range(j.mission,0,2) || !Range(j.turn,1,12) || !Range(j.enemyPolicy,0,2) ||
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
-               !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) ||
+               !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.IsRescue(),j.stage==JourneyStage::Preparation) ||
                w.cities.size()!=2 || w.generals.size()<5 || w.generals.size()>6 || n>6 ||
                ((j.stage==JourneyStage::Battle || j.stage==JourneyStage::Debrief) && n!=(j.HasConvoy()?6u:5u)) ||
                !w.hexMap || w.player!=0 || !Range(w.day,0,10000)) return false;
@@ -93,8 +111,13 @@ namespace frontline
                     !ArmyValid(c.observed,static_cast<int>(w.generals.size()))) return false;
             }
             for(int t:j.officerTrust) if(!Range(t,-20,100)) return false;
-            for(const auto& h:j.history) if(!Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
-                (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
+            for(int m=0;m<3;++m)
+            {
+                const auto& h=j.history[m];
+                // Mission 0 history lacks a failed escort's promise; both authored woodland variants are valid there.
+                if(!Assignments(h.assignments,m,m==0) || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
+                   (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
+            }
             return true;
         }
     }

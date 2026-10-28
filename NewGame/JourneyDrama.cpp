@@ -169,6 +169,16 @@ namespace frontline
             lines.push_back({3,s.reply==JourneyPledge::Preserve ? U"次は、みんなを連れて帰る。そのために戦う場所を俺が決める。":U"次は一人で片づけさせない。俺が合図を出して、皆をつなぐ。"});
             lines.push_back({who,who==0 ? U"うん。私は、君が守ると決めたものを一緒に守る。":who==1 ? U"言葉は預かった。次の戦場で、答えを見せてもらう。":U"おう！ 約束だぞ。俺もその策に数えとけよ！"});
         }
+        const auto& duty=j.history[j.mission].assignments[who];
+        if(duty.duty!=JourneyDuty::None)
+        {
+            lines.push_back({3,U"地図でお前に任せた場所のことも、聞いておきたい。"});
+            if(duty.completed)
+                lines.push_back({who,who==0 ? U"あの場所で待てたから、皆の旗が見えた。次は、そこから誰を助けるかも一緒に決めよう。":who==1 ? U"配置は成った。だが、そこへ至る時間も策の一部だ。次は合図の時まで決めておけ。":U"着いたぜ、言われた場所に！ で、次は誰を走らせる？ 俺を置くなら、その先まで考えとけよ！"});
+            else
+                lines.push_back({who,who==0 ? U"そこまで進めなかったね。出す場所だけでなく、戻る道も一緒に見直そう。":who==1 ? U"任された場所で、構えを作るには至らなかった。進路か時機か。次はそこを詰める。":U"あそこへ行けって話、果たせなかったな。途中で変えるなら呼べよ。俺にも次の策を教えろ！"});
+            lines.push_back({3,j.won && duty.completed ? U"配置が次の一手につながった。任せた役目も、今日の勝ち方として残しておく。":U"配置だけで勝てるわけじゃない。そこで何をするかまで、次は俺がつなぐ。"});
+        }
         return lines;
     }
 }

@@ -124,6 +124,8 @@ public:
     bool SaveSessionSmokeTest();
     bool ChainPresentationSmokeTest();
     bool TacticCinemaSmokeTest();
+    FString PlanningDutyProblem(int Officer,int Tile,int Kind) const;
+    bool AssignPlanningDuty(int Officer,int Tile,int Kind);
     bool ExportSession(std::vector<std::uint8_t>&) const;
     bool ImportSession(const std::vector<std::uint8_t>&);
     void CheckpointJourney(bool bForce=false);
@@ -352,6 +354,11 @@ private:
     FString PlanningDescription() const;
     FString PlanningHint(int Officer) const;
     bool PlanningMapSmokeTest();
+    bool PlanningDutySmokeTest();
+    TSharedRef<class SWidget> BuildPlanningDuties();
+    void SetPlanningDuty(int Kind);
+    int PlanningOfficer=0;
+    bool bPlanningDuties=false;
     bool bNovelMap=false;
     int PlanningTile=-1;
     TSharedPtr<class SPlanningMap> PlanningWidget;

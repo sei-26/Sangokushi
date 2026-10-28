@@ -2,7 +2,7 @@
 void ATacticalController::OpenNovelPlan()
 {
     if(!bEpisodeOpen || bSaveMenuOpen || bNovelHistory || !Field->Presentation().Journey.bPreparation) return;
-    bNovelPlan=true;bNovelAdvice=bNovelMap=false;
+    bNovelPlan=true;bNovelAdvice=bNovelMap=false;bPlanningDuties=false;PlanningOfficer=0;
     const auto& Sites=Field->Presentation().Journey.Map.Sites;PlanningTile=Sites.IsEmpty() ? -1:Sites[0].Tile;
 }
 void ATacticalController::SelectNovelPlan(int Index)

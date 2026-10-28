@@ -75,6 +75,12 @@ void ATacticalField::BuildPresentation()
                     J.chain.concealed[Id] ? TEXT(" / 予約済") : TEXT("\n戦法予約済");
                 break;
             }
+        if(J.assignments[Id].duty!=JourneyDuty::None)
+        {
+            Officer.Duty=JourneyText(J.AssignmentStatus(Id));
+            Officer.Status+=TEXT("\n")+FString(J.assignments[Id].duty==JourneyDuty::Hold ? TEXT("守備"):TEXT("伏兵"))+
+                (J.assignments[Id].completed ? TEXT("○"):TEXT("未"));
+        }
         HUD.Officers.Add(MoveTemp(Officer));
     }
     const auto* Contact = J.intelligence[0].Find(State->Target);

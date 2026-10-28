@@ -26,7 +26,11 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     case ETacticalCommand::Deploy:
         CheckpointJourney(true);
         State->BeforeBattle = std::make_unique<StrategistJourney>(J);
-        J.Prepare(State->PreparationChoice, J.enemyPolicy);
+        if(!J.Prepare(State->PreparationChoice, J.enemyPolicy)) { Refresh();return; }
+        State->Realtime.Reset();State->bRealtimeInBattle=bRealtimeCommand;
+        State->bRealtimeStepping=false;State->bRealtimeChainRequested=false;State->bRealtimePauseAfterPlayback=false;
+        State->ChainSignal.Cancel();State->BattleWatch.Reset();State->bWatchPending=State->bWatchPauseAfterPlayback=false;
+        if(bRealtimeCommand) State->Realtime.ApplyAssignments(J);
         State->Orders.clear(); State->Selected = 0; State->Target = 3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
         break;
@@ -99,6 +103,8 @@ void ATacticalField::BuildJourneyPresentation()
         else P.Dialogue = TEXT("大切なのは、敵を倒し尽くすことではなく、守るべきものを守ることだ。君が開いた道を、次の任務へつなごう。");
         P.Outcome = FString::Printf(TEXT("%s\n帰還兵 %d / 損失 %d / 最大連鎖 %d / 信頼 %d"), *JourneyText(J.message), J.survivors, J.casualties, J.bestChain, J.trust);
         if (J.Definition().kind == JourneyObjective::Escort) P.Outcome += FString::Printf(TEXT("\n持ち帰った積荷 %d"), J.recoveredCargo);
+        for(int I=0;I<3;++I) if(J.assignments[I].duty!=JourneyDuty::None)
+            P.Outcome+=TEXT("\n")+JourneyText(J.world.generals[I].name)+TEXT("：")+JourneyText(J.AssignmentStatus(I));
         P.Outcome += J.won ? TEXT("\n生存兵と残りの兵糧は野営地へ精算済み。共に生還した武将の絆が深まる。") : TEXT("\n再挑戦では今回の出陣直前の状態へ戻り、準備を選び直せます。");
     }
     else if (P.bComplete)

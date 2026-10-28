@@ -374,3 +374,8 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 軍議の戦場見取り図（2026-10-28）
 
 `TacticalPreparationMap.h` は公開情報だけの表示データ、`TacticalPreparationMapRead.cpp` は次の任務の読み取り、`TacticalPlanningMap.h/.cpp` は地図とクリック座標、`TacticalPlanningMapInterface.cpp` は画面、`TacticalPlanningSelection.cpp` は地点・経路の選択を担当する。既存の作戦書とキーの接続は `TacticalNovelPlanInterface.cpp` / `TacticalEpisode.cpp`。`TacticalPlanningMapTests.cpp` は実出陣との一致、敵方針の非表示、4,536通りの座標、クリック、閲覧の不変性、案内料と出陣への引き継ぎを確認する。[操作と範囲](COUNCIL_MAP.md)。
+
+
+## 軍議の担当と配置（2026-10-28）
+
+`JourneyAssignment.hpp/.cpp` は指定条件と配置成立、`JourneyAssignmentOrders.cpp` は既存行軍への変換。`TacticalPlanningDuty.cpp` は公開操作、`TacticalPlanningDutyInterface.cpp` は担当パネル。戦後は `JourneyBattleStory.cpp` / `JourneyDrama.cpp`、保存は版4。`JourneyAssignmentTests.cpp` と `TacticalPlanningDutyTests.cpp` が実行と再開を検証する。[範囲と操作](COUNCIL_DUTIES.md)。

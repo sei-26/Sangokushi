@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+﻿cmake_minimum_required(VERSION 3.20)
 project(SangokushiRules LANGUAGES CXX)
 
 # Portable simulation target: no Siv3D SDK, textures, audio or windowing required.
@@ -22,6 +22,8 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyArchiveSession.cpp
     NewGame/JourneyOpening.cpp
     NewGame/JourneyBattleStory.cpp
+    NewGame/JourneyAssignment.cpp
+    NewGame/JourneyAssignmentOrders.cpp
     NewGame/JourneyDrama.cpp
     NewGame/JourneyCouncilDrama.cpp
     NewGame/JourneyEpisode.cpp
@@ -89,6 +91,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_realtime tests/JourneyRealtimeTests.cpp)
     add_rules_test(journey_march tests/JourneyMarchTests.cpp)
     add_rules_test(journey_save tests/JourneySaveTests.cpp)
+    add_rules_test(journey_assignments tests/JourneyAssignmentTests.cpp)
     add_rules_test(journey_opening tests/JourneyOpeningTests.cpp)
     add_rules_test(journey_chain_signal tests/JourneyChainSignalTests.cpp)
     add_rules_test(journey_battle_watch tests/JourneyBattleWatchTests.cpp)

@@ -15,7 +15,7 @@ enum class ETacticalInput : uint8 { Select, Move, Lure };
 
 struct FOfficerPresentation
 {
-    FString Name, Status, Tactic, Command;
+    FString Name, Status, Tactic, Command, Duty;
     bool bLiving = false, bSelected = false;
     int Tile = -1;
 };

@@ -101,13 +101,28 @@ int32 SPlanningMap::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRec
     const TCHAR* Names[]={TEXT("劉"),TEXT("関"),TEXT("張")};
     for(const auto& Start:Data->Starts)
     {
+        if(Data->Duties.ContainsByPredicate([&Start](const FPlanningDuty& D) { return D.Kind>0 && D.Tile==Start.Tile && D.Officer==Start.Officer; })) continue;
         const FVector2f P=Point(Start.Tile)+FVector2f(0,.22f)*Scale;
         Box(P,FVector2f(18,18),FLinearColor(.025f,.21f,.22f),4);
         Text(Start.Officer<0 ? TEXT("車"):Names[Start.Officer],P-FVector2f(7,9),Teal);
     }
+    for(const auto& Duty:Data->Duties)
+    {
+        if(Duty.Kind==0 || Duty.Officer<0 || Duty.Officer>=3) continue;
+        const FVector2f P=Point(Duty.Tile);
+        const int Site=Data->Sites.IndexOfByPredicate([&Duty](const FPlanningSite& S) { return S.Tile==Duty.Tile; });
+        const FString Caption=(Site>=0 ? FString::FromInt(Site+1):FString())+Names[Duty.Officer]+(Duty.Kind==1 ? TEXT("守"):TEXT("伏"));
+        const FVector2f Badge(Site>=0 ? 38.f:30.f,19.f);
+        const bool StartsHere=Data->Starts.ContainsByPredicate([&Duty](const FPlanningStart& S) { return S.Officer==Duty.Officer && S.Tile==Duty.Tile; });
+        if(StartsHere) Box(P,Badge+FVector2f(3,3),Teal,4);
+        Box(P,Badge,FLinearColor(.32f,.065f,.035f),4);
+        Text(Caption,P-FVector2f(Site>=0 ? 18.f:13.f,9),FLinearColor(1.f,.76f,.55f));
+    }
     for(int I=0;I<Data->Sites.Num();++I)
     {
-        const FVector2f P=Point(Data->Sites[I].Tile)+FVector2f(.25f,-.28f)*Scale;
+        const int Tile=Data->Sites[I].Tile;
+        if(Data->Duties.ContainsByPredicate([Tile](const FPlanningDuty& D) { return D.Kind>0 && D.Tile==Tile; })) continue;
+        const FVector2f P=Point(Tile)+FVector2f(.25f,-.28f)*Scale;
         Box(P,FVector2f(16,16),FLinearColor(.24f,.17f,.06f),4);
         Text(FString::FromInt(I+1),P-FVector2f(4,9),Gold);
     }

@@ -4,6 +4,7 @@
 #include "JourneyEnemyPlan.hpp"
 #include "JourneyOpening.hpp"
 #include "JourneyStory.hpp"
+#include "JourneyAssignment.hpp"
 
 namespace frontline
 {
@@ -29,6 +30,7 @@ namespace frontline
         JourneyBattleReview review;
         JourneyConvoyRoute route=JourneyConvoyRoute::Road;
         JourneyBattleStory story;
+        std::array<JourneyAssignment,3> assignments{};
 	};
 	// One persistent campaign for the first playable historical-background slice.
 	// Character conversations and these three local engagements are original fiction.
@@ -51,6 +53,10 @@ namespace frontline
 		JourneyPromise promise = JourneyPromise::OpenRoad;
         JourneyConvoyRoute convoyRoute=JourneyConvoyRoute::Road;
         JourneyBattleReview battleReview;
+        std::array<JourneyAssignment,3> assignments{};
+        std::u32string AssignmentProblem(int officer,int tile,JourneyDuty) const;
+        bool AssignDuty(int officer,int tile,JourneyDuty);
+        std::u32string AssignmentStatus(int officer) const;
 		bool withdrawn = false;
 		std::array<JourneyResult, 3> history{};
 		ChainResult lastChain;
@@ -111,6 +117,7 @@ namespace frontline
         void CompleteBattleReview(bool success);
         void CompleteBattleStory(bool success);
         void RecordCooperation(const ChainResult&);
+        void RecordAssignment(int officer);
 		void Report(const std::u32string& text);
 	};
 } // namespace frontline

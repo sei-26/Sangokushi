@@ -56,7 +56,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
-        officerTrust={};
+        officerTrust={};assignments={};
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -101,6 +101,7 @@ namespace frontline
 	{
 		if (stage != JourneyStage::Preparation || choice < 0 || choice > 1 || world.cities.empty())
 			return false;
+		for(int i=0;i<3;++i) if(!AssignmentProblem(i,assignments[i].tile,assignments[i].duty).empty()) return false;
 		const auto cost = PreparationCosts(choice);
 		const auto& camp = world.cities[0];
 		return camp.food >= cost.TotalFood() && camp.gold >= cost.gold && camp.troops >= cost.MinimumTroops();
@@ -133,6 +134,7 @@ namespace frontline
 		lastChain = {};
 		heldTurns = convoyStep = recoveredCargo = 0;
         battleReview={};
+        for(auto& a:assignments) a.completed=false;
 		guarding = {};
 		goal = IsRescue() ? Campaign::At(12, 11) : Definition().goal;
 		world.armies.clear();
@@ -181,6 +183,7 @@ namespace frontline
 		for (auto& known : intelligence)
 			known.Reset(world);
 		RefreshIntelligence();
+        for(int i=0;i<3;++i) RecordAssignment(i);
 		Report(mission > 0 ? Definition().briefing
 		       : choice == 0
 		           ? (chain.concealed[1]
@@ -240,7 +243,7 @@ namespace frontline
 			return false;
 		const bool result = chain.ArmAmbush(world, army, message);
 		if (result)
-			RefreshIntelligence();
+        { RecordAssignment(army);RefreshIntelligence(); }
 		return result;
 	}
 	bool StrategistJourney::Strike(int army, int enemy)
@@ -301,7 +304,7 @@ namespace frontline
 		casualties = deployed + convoyEscort - survivors;
         CompleteBattleReview(success);
 		history[mission] = {true, success, withdrawn, success && IsRescue(), survivors, casualties};
-        history[mission].review=battleReview;history[mission].route=convoyRoute;
+        history[mission].review=battleReview;history[mission].route=convoyRoute;history[mission].assignments=assignments;
         CompleteBattleStory(success);
 		if (success)
 		{
@@ -325,7 +328,7 @@ namespace frontline
 		else
 		{
 			++mission;
-            convoyRoute=JourneyConvoyRoute::Road;
+            convoyRoute=JourneyConvoyRoute::Road;assignments={};
 			stage = JourneyStage::Preparation;
 			reinforced = false;
 			enemyPolicy = 1;

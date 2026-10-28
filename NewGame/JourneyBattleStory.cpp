@@ -94,6 +94,7 @@ namespace frontline
         }
         for(int i=0;i<3;++i)
         {
+            if(success && assignments[i].completed && TacticChain::Living(world,i)) delta[i]+=2;
             const int old=officerTrust[i];officerTrust[i]=std::clamp(old+delta[i],-20,100);
             story.trustDelta[i]=officerTrust[i]-old;
         }

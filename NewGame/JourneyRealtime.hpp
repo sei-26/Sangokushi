@@ -31,6 +31,7 @@ namespace frontline
         int pulses = 0;
         std::array<JourneyStandingOrder,3> orders{};
         void Reset();
+        void ApplyAssignments(const StrategistJourney&);
         void Advance(double seconds);
         bool Due() const { return elapsed + 1e-7 >= Period; }
         void Consume(bool singleStep = false);
