@@ -9,7 +9,7 @@ enum class ETacticalCommand : uint8
     Dialogue, Reinforce, PlanAmbush, PlanSupplies, Deploy, Retry,
     PromiseRoad, PromiseRescue, Withdraw, TalkLiu, TalkGuan, TalkZhang,
     RealtimeMode, RealtimePause, RealtimeSpeed, RealtimeStep, RealtimeStop, RealtimeChainSignal, RealtimeAlertPause,
-    RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate, DifficultyStory, DifficultyStandard, PlanExample
+    RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate, DifficultyStory, DifficultyStandard, PlanExample, Resupply
 };
 enum class ETacticalInput : uint8 { Select, Move, Lure };
 
@@ -27,7 +27,7 @@ struct FOrderPresentation
 };
 struct FPreparationPresentation
 {
-    FString Title, Description, Cost, Remaining, MoraleText, Shortage;
+    FString Title, Description, Tradeoff, Cost, Remaining, MoraleText, Shortage;
     int Food=0,Gold=0,MinimumTroops=0,MissingFood=0,MissingGold=0,MissingTroops=0;
     TArray<int> Morale;
     bool bSelected = false, bAffordable = false;
@@ -115,7 +115,8 @@ struct FTacticalPresentation
 {
     FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;
     FString ClockLabel, StandingOrderLabel, SpeedLabel;
-    FString ChainSignalLabel;
+    FString ChainSignalLabel,ResupplyLabel;
+    bool bHasResupplyPlan=false;
     bool bChainSignalArmed=false,bChainSignalReady=false;
     float ClockProgress=0;
     bool bRealtime=false,bRealtimePaused=true;

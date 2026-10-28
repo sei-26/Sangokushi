@@ -1,5 +1,7 @@
 ﻿# コードを読むための地図
 
+先遣の開始位置・初期士気・予備糧と一度の補給は `NewGame/JourneyPreparation.cpp`。準備の仕様は [PREPARATION_TRADEOFFS.md](PREPARATION_TRADEOFFS.md)。
+
 作戦の費用差・不足・実際の士気・武将の助言は `TacticalPreparationRead.cpp`。改善の経緯と次の候補は [IMPROVEMENT_LOG.md](IMPROVEMENT_LOG.md)。
 
 会話から作戦書・出陣への接続は `TacticalNovelPlan.cpp` / `TacticalNovelPlanInterface.cpp`。[仕様](NOVEL_OPERATION_FLOW.md)。

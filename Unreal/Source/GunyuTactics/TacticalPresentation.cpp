@@ -21,6 +21,8 @@ void ATacticalField::BuildPresentation()
     HUD.SecondGoalTile = J.Definition().secondGoal;
     HUD.GoalLabel = J.mission == 0 ? TEXT("脱出地点") : J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("河港の指揮所"):J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("北の烽火");
     HUD.SecondGoalLabel=J.mission==2 ? TEXT("南の烽火"):HUD.GoalLabel;
+    HUD.bHasResupplyPlan=J.campaignFlow && J.preparation==1;
+    HUD.ResupplyLabel=J.CanResupply() ? TEXT("全軍へ補給  ／ 残り１回"):TEXT("予備糧なし ／ 補給できない");
     HUD.Difficulty=JourneyText(DifficultyName(J.difficulty));
     HUD.Title = FString::Printf(TEXT("%s  /  %s    更新 %d / %d"), *JourneyText(BattlefieldDefinition(J.mission).name), *JourneyText(J.MissionName()),FMath::Max(0,J.turn-1), J.TurnBudget());
     HUD.Objective = JourneyText(J.ObjectiveProgress());

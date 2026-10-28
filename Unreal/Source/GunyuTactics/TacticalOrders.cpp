@@ -28,6 +28,7 @@ bool ATacticalField::CanIssue(ETacticalCommand Command) const
     if (Command==ETacticalCommand::RouteRoad || Command==ETacticalCommand::RouteSouthernWood) return J.stage==JourneyStage::Preparation && J.IsRescue();
     if (Command == ETacticalCommand::TalkLiu || Command == ETacticalCommand::TalkGuan || Command == ETacticalCommand::TalkZhang)
         return J.stage == JourneyStage::Preparation || J.stage == JourneyStage::Debrief;
+    if(Command==ETacticalCommand::Resupply) return J.CanResupply();
     if (J.stage != JourneyStage::Battle) return false;
     if (Command == ETacticalCommand::EndTurn || Command == ETacticalCommand::Withdraw) return true;
     if (Command == ETacticalCommand::Clear) return !State->Orders.empty();
@@ -170,6 +171,11 @@ void ATacticalField::Issue(ETacticalCommand Command)
     if (Command != ETacticalCommand::EndTurn) State->bConfirmEndTurn = false;
     switch (Command)
     {
+    case ETacticalCommand::Resupply:
+        State->Realtime.paused=true;
+        if(J.Resupply())
+        { State->Report=JourneyText(J.message);QueueAction(EBattleCue::Rally,0,-1,Before);State->bSupplyPlayback=IsPlaying(); }
+        break;
     case ETacticalCommand::Move:
         State->Input = ETacticalInput::Move;
         State->Report = TEXT("水色のマスをクリックして移動。各隊１指揮に１マス。Escで取消。");

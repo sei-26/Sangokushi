@@ -48,6 +48,7 @@ namespace frontline
 		int mission = 0, turn = 1, enemyPolicy = 0, trust = 0, bestChain = 0;
         std::array<int,3> officerTrust{}; // Each officer's trust in the protagonist, separate from pair affinity.
 		int preparation = 0, deployed = 0, casualties = 0, survivors = 0;
+        int reserveFood=0; // Paid, unissued supply. Never reconstructed for a loaded battle.
 		int goal = Campaign::At(12, 10);
 		static constexpr int ConvoyArmy = 5;
 		int heldTurns = 0, convoyStep = 0, convoyEscort = 0, recoveredCargo = 0;
@@ -75,6 +76,10 @@ namespace frontline
 		void Meet();
 		bool Reinforce();
 		JourneySupplies PreparationCosts(int choice) const;
+        std::array<int,3> PreparationPositions(int choice) const;
+        int PreparationMorale(int choice,int officer) const;
+        bool CanResupply() const;
+        bool Resupply();
 		bool CanPrepare(int choice) const;
 		bool SelectPromise(JourneyPromise value);
         bool SelectConvoyRoute(JourneyConvoyRoute);

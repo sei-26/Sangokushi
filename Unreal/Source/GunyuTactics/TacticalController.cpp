@@ -176,8 +176,10 @@ void ATacticalController::PlayerTick(float Delta)
         if (bCouncil || bBattle)
             for (int Step = 0; Step < 3; ++Step) Field->Action(EKeys::Enter);
         if (bDebrief) Field->Issue(ETacticalCommand::PromiseRoad);
-        if (bSignatureCapture) Field->Issue(ETacticalCommand::PlanSupplies);
+        if (bSignatureCapture || FParse::Param(FCommandLine::Get(),TEXT("GunyuReserve"))) Field->Issue(ETacticalCommand::PlanSupplies);
         if (bBattle) Field->Action(EKeys::Enter);
+        if(bCapture && bBattle && FParse::Param(FCommandLine::Get(),TEXT("GunyuUseReserve")))
+        { Field->Issue(ETacticalCommand::Resupply);Field->Issue(ETacticalCommand::Skip); }
         if (bCapture && bBattle && FParse::Param(FCommandLine::Get(), TEXT("GunyuReadAdvance")))
         { Field->SelectOfficer(0); Field->Issue(ETacticalCommand::Move); Field->CommandAt(frontline::Campaign::At(8,11)); Field->Issue(ETacticalCommand::Skip); }
         if (bCapture && bBattle && FParse::Param(FCommandLine::Get(), TEXT("GunyuReadScout"))) Field->SelectAt(frontline::Campaign::At(7,11));
@@ -291,6 +293,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPreparationOnly")))
+    { const bool bPassed=PreparationMeaningSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCampaignOnly")))
     { const bool bPassed=CampaignPacingSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if (bSmoke && Frames == 2)
@@ -338,6 +342,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=NovelInterfaceSmokeTest();
         if(bPassed) bPassed=NovelFlowSmokeTest();
         if(bPassed) bPassed=PreparationReadSmokeTest();
+        if(bPassed) bPassed=PreparationMeaningSmokeTest();
         if(bPassed) bPassed=PlanningMapSmokeTest();
         if(bPassed) bPassed=PlanningDutySmokeTest();
         if(bPassed) bPassed=PlanningGuideSmokeTest();

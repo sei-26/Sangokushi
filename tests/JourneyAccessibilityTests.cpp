@@ -9,7 +9,7 @@ static std::unique_ptr<StrategistJourney> Council(int mission,JourneyDifficulty 
 { auto j=std::make_unique<StrategistJourney>();j->Reset();assert(j->SelectDifficulty(difficulty));j->Meet();j->mission=mission;return j; }
 static void Round(JourneySaveData& s)
 {
-    std::vector<std::uint8_t> bytes;assert(EncodeJourneySave(s,bytes) && bytes[4]==6);
+    std::vector<std::uint8_t> bytes;assert(EncodeJourneySave(s,bytes) && bytes[4]==7);
     auto loaded=std::make_unique<JourneySaveData>();assert(DecodeJourneySave(bytes,*loaded));
     assert(loaded->journey.difficulty==s.journey.difficulty && loaded->journey.turn==s.journey.turn);
     assert(loaded->journey.assignments[1].tile==s.journey.assignments[1].tile);

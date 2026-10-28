@@ -56,7 +56,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
-        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=false;
+        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=false;reserveFood=0;
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -90,12 +90,6 @@ namespace frontline
 		reinforced = true;
 		Report(U"軍資金250・兵糧500を使い、義勇兵1,200を集めた。今回はこれ以上募れない。");
 		return true;
-	}
-	JourneySupplies StrategistJourney::PreparationCosts(int choice) const
-	{
-		const bool escort = Definition().kind == JourneyObjective::Escort;
-		return {(choice == 0 ? 3000 : 4800) + (HasConvoy() ? 900 : 0), (choice == 0 ? 200 : 80)+(IsRescue() ? ConvoyPlan(convoyRoute).guideGold : 0),
-		        escort ? 2000 : 0, HasConvoy() ? 600 : 0};
 	}
 	bool StrategistJourney::CanPrepare(int choice) const
 	{
@@ -137,20 +131,21 @@ namespace frontline
         for(auto& a:assignments) a.completed=false;
 		guarding = {};
 		goal = IsRescue() ? Campaign::At(12, 11) : Definition().goal;
+        reserveFood=campaignFlow && choice==1 ? 1800:0;
+        const auto starts=PreparationPositions(choice);
 		world.armies.clear();
 		for (int i = 0; i < 5; ++i)
 		{
 			Army army;
 			army.general = i;
 			army.faction = i < 3 ? 0 : 1;
-			army.tile = army.target = Definition().positions[i];
+			army.tile = army.target = i<3 ? starts[i]:Definition().positions[i];
 			if (i == 4 && policy == 2 && mission < 2)
 				army.tile = army.target = mission == 1 ? Campaign::At(12, 8) : Campaign::At(7, 11);
 			army.troops = i < 3 ? deployed / 3 + (i < deployed % 3 ? 1 : 0) : i == 3 ? 1800 : 1300;
 			if(i>=3) army.troops=army.troops*CombatSettings(difficulty).enemyPercent/100;
-			army.food = i < 3 ? (food - (escort ? 900 : 0)) / 3 : 3000;
-			army.morale = choice == 1 && i < 3 ? 100 : 90;
-            if(i<3) army.morale=std::clamp(army.morale+StoryMoraleBonus(i),0,100);
+			army.food = i < 3 ? (food - (escort ? 900 : 0) - reserveFood) / 3 : 3000;
+			army.morale = i<3 ? PreparationMorale(choice,i):90;
 			army.stance = i >= 3 && policy == 1 ? battle::Stance::Guard : battle::Stance::Balanced;
 			army.scouting = i == 4 && policy == 2;
 			world.armies.push_back(army);
@@ -180,7 +175,10 @@ namespace frontline
 		stage = JourneyStage::Battle;
 		chain.Reset(world);
 		if (choice == 0)
-			chain.ArmAmbush(world, 1, message);
+        {
+            const bool armed=chain.ArmAmbush(world,1,message);
+            if(campaignFlow && armed) chain.moved[1]=false; // Paid preparation happened before the first command.
+        }
 		for (auto& known : intelligence)
 			known.Reset(world);
 		RefreshIntelligence();
@@ -191,6 +189,7 @@ namespace frontline
 		                  ? U"関羽隊が森林で伏兵を準備。劉備の誘導 → 関羽の伏兵 → 張飛の突破を狙える。"
 		                  : U"敵の斥候が接近し、伏兵を見破った。斥候を退けるか、別の森林へ配置し直そう。")
 		           : U"多めの兵糧で出陣。関羽を選び「伏兵準備」をすれば連鎖を組める。");
+        if(campaignFlow) Report(choice==0 ? (chain.concealed[1] ? U"先遣伏兵：関羽は指定した近距離の森林で準備済み。初手の移動・戦法は残る。動けば隠蔽は解除。":U"先遣伏兵が露見。敵の接近・斥候への対処を優先しよう。追加の予備糧はない。") : U"陣中補給：予備糧1,800を確保。戦闘中の「全軍へ補給」で主力の糧と士気を一度だけ回復。戦法を使った後の立て直しにも使える。");
 		if (IsRescue())
 			Report(U"季安の避難車を東の出口へ護送する。先鋒を崩すだけでは終わらない。車の道を空け、追撃と護衛を分担しよう。");
 		return true;
@@ -302,6 +301,7 @@ namespace frontline
 			world.cities[0].food += cart.food + cart.cargoFood;
 			cart.food = cart.cargoFood = 0;
 		}
+        world.cities[0].food+=reserveFood;reserveFood=0; // Unissued reserve remains ours, including withdrawal.
 		casualties = deployed + convoyEscort - survivors;
         CompleteBattleReview(success);
 		history[mission] = {true, success, withdrawn, success && IsRescue(), survivors, casualties};

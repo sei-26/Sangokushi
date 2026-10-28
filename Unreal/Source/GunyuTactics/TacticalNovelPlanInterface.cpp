@@ -28,8 +28,6 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
     Contents->AddSlot().AutoHeight().Padding(0,0,0,7)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bCampaignFlow && !bNovelMap ? EVisibility::Visible:EVisibility::Collapsed; })
        [SNew(SVerticalBox)
-        + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.CampaignPhase+TEXT(" ／ ")+Field->Presentation().Journey.CampaignStanding; },18,Gold)]
-        + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.CampaignChange; },15)]
         + SVerticalBox::Slot().AutoHeight()[Button([] { return TEXT("この局面の物語を読む ／ H"); },[this] { bNovelPlan=false; })]]];
     auto Body=SNew(SVerticalBox);
     Body->AddSlot().AutoHeight()[Label([] { return TEXT("果たすべき役目"); },18,Gold)];
@@ -46,11 +44,16 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
              [SNew(SVerticalBox)
               + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? FString::Printf(TEXT("%d　%s %s"),Index+1,P[Index].bSelected ? TEXT("●"):TEXT("○"),*P[Index].Title):FString(); },24,Gold)]
               + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Description:FString(); },16)]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,7)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].MoraleText:FString(); },14,Gold)]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,6)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Cost:FString(); },18,Gold)]
-              + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Remaining:FString(); },16)]]];
+              + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Tradeoff:FString(); },13,Gold)]
+              + SVerticalBox::Slot().AutoHeight().Padding(0,5)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].MoraleText:FString(); },12,Gold)]
+              + SVerticalBox::Slot().AutoHeight().Padding(0,6)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Cost:FString(); },15,Gold)]
+              + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Remaining:FString(); },13)]]];
     }
     Body->AddSlot().AutoHeight().Padding(0,8,0,12)[SNew(SBox).Visibility_Lambda([this] { return bNovelAdvice ? EVisibility::Collapsed:EVisibility::Visible; })[Plans]];
+    Body->AddSlot().AutoHeight().Padding(0,0,0,8)
+      [SNew(SBox).Visibility_Lambda([this] { const auto& J=Field->Presentation().Journey;return J.bCampaignFlow && !bNovelAdvice && J.Plans.IsValidIndex(0) && J.Plans[0].bSelected ? EVisibility::Visible:EVisibility::Collapsed; })
+       [Button([] { return TEXT("関羽の先遣地点を地図で決める ／ 通常位置から陸路２歩以内"); },[this]
+        { TogglePlanningMap();SelectPlanningOfficer(1);PlanningNotice=TEXT("森林のマス → 伏兵を指定。２歩以内なら、その位置へ先行して開戦できる。"); })]];
     auto Advice=SNew(SVerticalBox).Visibility_Lambda([this] { return bNovelAdvice ? EVisibility::Visible:EVisibility::Collapsed; });
     for(int I=0;I<3;++I)
     {
@@ -72,6 +75,5 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(360).HeightOverride(48)
           [Button([this] { return Field->CanIssue(ETacticalCommand::Deploy) ? TEXT("この作戦で出陣する / D"):TEXT("出陣できない：資源を確認"); },[this] { DeployNovelPlan(); },[this] { return Field->CanIssue(ETacticalCommand::Deploy); })]]];
     auto Panel=SNew(STacticalChrome).Padding(28).Opacity(1.f).Accent(gunyustyle::Brass).Visibility_Lambda(Visible)[Contents];
-    Canvas->AddSlot().Position_Lambda([this] { return bNovelMap ? FVector2D(150,50):FVector2D(210,96); })
-        .Size_Lambda([this] { return bNovelMap ? FVector2D(1300,800):FVector2D(1180,712); })[Panel];InputPanels.Add(Panel);
+    Canvas->AddSlot().Position(FVector2D(150,50)).Size(FVector2D(1300,800))[Panel];InputPanels.Add(Panel);
 }

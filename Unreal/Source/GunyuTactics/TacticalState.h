@@ -22,6 +22,7 @@ struct FJourneyState
     int Selected = 0, Target = 3;
     ETacticalInput Input = ETacticalInput::Select;
     bool bConfirmEndTurn = false, bConfirmWithdrawal = false;
+    bool bSupplyPlayback=false; // Supply feedback advances while the tactical clock stays paused.
     bool bThreatOverlay = true;
     FTacticalPresentation HUD;
     TArray<int> Reachable;

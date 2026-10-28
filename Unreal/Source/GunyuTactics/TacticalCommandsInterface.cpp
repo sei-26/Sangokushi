@@ -40,5 +40,9 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
         [ SNew(SHorizontalBox)
           + SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 4, 0)[Command(ETacticalCommand::Sample, [] { return TEXT("連鎖の見本"); })]
           + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::Clear, [] { return TEXT("全取消"); })] ];
+    Orders->AddSlot().AutoHeight().Padding(0,6,0,0)
+      [SNew(SVerticalBox).Visibility_Lambda([this] { return Field->Presentation().bHasResupplyPlan ? EVisibility::Visible:EVisibility::Collapsed; })
+       + SVerticalBox::Slot().AutoHeight()[Command(ETacticalCommand::Resupply,[this] { return Field->Presentation().ResupplyLabel; })]
+       + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("主力へ糧1,800を分配・士気＋20。行動権は戻らない"); },11,Gold)]];
     AddBattlePanel(Canvas,gunyulayout::CommandOrigin,gunyulayout::CommandSize,Orders);
 }

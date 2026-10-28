@@ -48,8 +48,9 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
     FBattleBeat Beat;
     Beat.Before = Before; Beat.After = ObserveUnits();
     Beat.Actor = Actor; Beat.Target = Target; Beat.Kind = Kind;
-    const TCHAR* Names[] = {TEXT("進軍"), TEXT("通常攻撃"), TEXT("誘導"), TEXT("伏兵"), TEXT("突破"), TEXT("固守"), TEXT("伏兵準備"), TEXT("敵の指揮 / 交戦と補給"), TEXT("連鎖停止"), TEXT("全軍撤収 / 生存兵と残りの糧を回収")};
+    const TCHAR* Names[] = {TEXT("進軍"), TEXT("通常攻撃"), TEXT("誘導"), TEXT("伏兵"), TEXT("突破"), TEXT("固守"), TEXT("伏兵準備"), TEXT("敵の指揮 / 交戦と補給"), TEXT("連鎖停止"), TEXT("全軍撤収 / 生存兵と残りの糧を回収"), TEXT("牽制"), TEXT("攪乱"), TEXT("全軍へ補給"), TEXT("青龍"), TEXT("咆哮")};
     Beat.Title = (Before.IsValidIndex(Actor) ? Before[Actor].Name + TEXT("  ―  ") : FString()) + Names[static_cast<int>(Kind)];
+    if(Kind==EBattleCue::Rally) Beat.Title=TEXT("主人公の采配  ―  全軍へ補給 / 士気＋20");
     Beat.Reason = State->Report;
     Beat.Duration = Kind == EBattleCue::Enemy ? 3.4f : Kind == EBattleCue::March ? 1.8f : 2.4f;
     State->Beats = {MoveTemp(Beat)};
@@ -107,6 +108,7 @@ void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
 
 void ATacticalField::BeginPlayback()
 {
+    State->bSupplyPlayback=false;
     State->BeatIndex = 0; State->BeatTime = 0; State->bImpactPlayed = false;
     State->Reachable.Reset(); State->Input = ETacticalInput::Select;
     if (!IsPlaying()) return;
@@ -119,6 +121,8 @@ void ATacticalField::BeginPlayback()
 void ATacticalField::FinishPlayback()
 {
     if (CueAudio) CueAudio->Stop();
+    if(State->bSupplyPlayback && bRealtimeCommand) State->Realtime.paused=true;
+    State->bSupplyPlayback=false;
     State->Beats.Reset(); State->BeatIndex = 0; State->BeatTime = 0;
     if (bRealtimeCommand && (State->bRealtimePauseAfterPlayback || (State->bWatchPauseAfterPlayback && bPauseOnBattleAlert)))
     { State->Realtime.paused=true;State->bRealtimePauseAfterPlayback=false; }
@@ -130,7 +134,7 @@ void ATacticalField::FinishPlayback()
 void ATacticalField::AdvancePresentation(float Delta)
 {
     float Elapsed=FMath::Max(0.f,Delta);
-    if (bRealtimeCommand)
+    if (bRealtimeCommand && !State->bSupplyPlayback)
         Elapsed=State->Realtime.paused && !State->bRealtimeStepping ? 0.f : Elapsed*State->Realtime.speed;
     State->VisualTime += Elapsed;
     if (IsPlaying())

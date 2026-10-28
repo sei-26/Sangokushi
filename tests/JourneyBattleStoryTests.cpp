@@ -121,7 +121,7 @@ int main()
     // Pending and committed responses, and trust, survive actual save/load without re-awarding.
     auto save=std::make_unique<JourneySaveData>();save->journey.Reset();save->journey.Meet();save->beforeBattle=save->journey;
     auto fresh=Win();save->journey=*fresh;
-    std::vector<std::uint8_t> bytes;assert(EncodeJourneySave(*save,bytes) && bytes[4]==6);
+    std::vector<std::uint8_t> bytes;assert(EncodeJourneySave(*save,bytes) && bytes[4]==7);
     auto restored=std::make_unique<JourneySaveData>();assert(DecodeJourneySave(bytes,*restored) && restored->journey.NeedsStoryReply());
     const auto trust=restored->journey.officerTrust;assert(restored->journey.ChooseStoryReply(JourneyPledge::Coordinate));
     assert(EncodeJourneySave(*restored,bytes) && DecodeJourneySave(bytes,*save));

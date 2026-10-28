@@ -383,6 +383,7 @@ private:
     void DeployNovelPlan();
     bool NovelFlowSmokeTest();
     bool PreparationReadSmokeTest();
+    bool PreparationMeaningSmokeTest();
     bool bNovelAdvice=false;
     FLinearColor NovelPortraitTone(int Speaker) const;
     const struct FSlateBrush* NovelPortraitBrush(int Speaker) const;

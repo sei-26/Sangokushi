@@ -38,5 +38,6 @@ namespace frontline
       if(version>=3) IO(v.officerTrust);else if(reading) v.officerTrust={};
       if(version>=4) IO(v.assignments);else if(reading) v.assignments={};
       if(version>=5) IO(v.difficulty);else if(reading) v.difficulty=JourneyDifficulty::Standard;
-      if(version>=6) IO(v.campaignFlow);else if(reading) v.campaignFlow=false; }
+      if(version>=6) IO(v.campaignFlow);else if(reading) v.campaignFlow=false;
+      if(version>=7) IO(v.reserveFood);else if(reading) v.reserveFood=0; }
 }

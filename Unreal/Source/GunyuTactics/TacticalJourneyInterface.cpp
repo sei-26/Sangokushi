@@ -82,7 +82,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
           + SVerticalBox::Slot().AutoHeight().Padding(0, 7)[Label([this, Index] { const auto& P = Field->Presentation().Journey.Plans; return P.IsValidIndex(Index) ? P[Index].Cost : FString(); }, 15, Gold)]
           + SVerticalBox::Slot().AutoHeight()[Label([this, Index] { const auto& P = Field->Presentation().Journey.Plans; return P.IsValidIndex(Index) ? P[Index].Remaining : FString(); }, 14)] ] ];
     }
-    Text->AddSlot().AutoHeight()[Label([this] { for (const auto& P : Field->Presentation().Journey.Plans) if (P.bSelected) return TEXT("選んだ準備: ") + P.Description; return FString(); }, 16, Gold)];
+    Text->AddSlot().AutoHeight()[Label([this] { for (const auto& P : Field->Presentation().Journey.Plans) if (P.bSelected) return TEXT("選んだ準備: ") + P.Description+TEXT("\n")+P.Tradeoff; return FString(); }, 16, Gold)];
     Text->AddSlot().AutoHeight().Padding(0, 16, 0, 0)[Label([this] { return Field->Presentation().Journey.bDebrief ? FString() : Field->Presentation().Report; }, 15)];
     Contents->AddSlot().FillHeight(1)
         [SNew(SHorizontalBox)

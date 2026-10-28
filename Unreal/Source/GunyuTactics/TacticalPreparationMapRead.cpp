@@ -10,7 +10,8 @@ void ATacticalField::BuildPreparationMap()
     Map.Objective=(J.IsRescue() ? FString(TEXT("季安の車を出口へ送り届ける")):JourneyText(J.ObjectiveBrief()))+FString::Printf(TEXT(" ／ 期限%d指揮"),J.TurnBudget());
     for(int Y=1;Y<StrategistJourney::Rows-1;++Y) for(int X=1;X<StrategistJourney::Columns-1;++X)
         Map.Cells.Add({Campaign::At(X,Y),uint8(BattlefieldTerrain(J.mission,X,Y,J.IsRescue()))});
-    for(int I=0;I<3;++I) Map.Starts.Add({J.Definition().positions[I],I});
+    const auto Starts=J.PreparationPositions(State->PreparationChoice);
+    for(int I=0;I<3;++I) Map.Starts.Add({Starts[I],I});
     if(J.HasConvoy())
     {
         Map.Starts.Add({J.ConvoyPath().front(),-1});
@@ -55,7 +56,7 @@ void ATacticalField::BuildPreparationMap()
         }
     if(J.mission==0)
     {
-        Add(J.Definition().positions[1],TEXT("伏兵の森"),TEXT("関羽の出陣位置。森林で伏兵を準備し、敵を近づける配置を考える。敵が動かない場合の手も残す。"),
+        Add(J.Definition().positions[1],TEXT("伏兵の森"),J.campaignFlow ? FString(TEXT("関羽の通常出陣位置。先遣伏兵なら、ここから陸路２歩以内の森へ開戦前に入れる。関羽を選び、森林と伏兵を指定しよう。")):FString(TEXT("関羽の出陣位置。森林で伏兵を準備し、敵を近づける配置を考える。敵が動かない場合の手も残す。")),
             {TEXT("敵の目を引くなら、戻る場所も残しておきたい。"),TEXT("森で備える。敵が寄らぬ時の手も考えておけ。"),TEXT("敵が崩れたら俺だ。飛び出す道は空けとけよ！")});
         if(J.IsRescue())
             Add(Campaign::At(9,12),TEXT("南の林道"),TEXT("街道を避ける護送路。案内料120と、１区間多くかかる時間を比べて選ぶ。"),
