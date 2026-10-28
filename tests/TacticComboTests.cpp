@@ -96,7 +96,7 @@ int main()
         auto s=std::make_unique<JourneySaveData>();assert(DecodeJourneySave(bytes,*s));
         assert(s->journey.lastChain.completed==3 && s->journey.lastChain.events[1].damage==413);
         for(const auto& e:s->journey.lastChain.events) assert(e.combo==0 && e.comboPercent==100);
-        std::vector<std::uint8_t> modern;assert(EncodeJourneySave(*s,modern) && modern[4]==7);
+        std::vector<std::uint8_t> modern;assert(EncodeJourneySave(*s,modern) && modern[4]==8);
         auto round=std::make_unique<JourneySaveData>();assert(DecodeJourneySave(modern,*round));
         assert(round->journey.lastChain.events[1].damage==413 && round->journey.lastChain.events[1].combo==0);
         s->journey.chain.BeginTurn(s->journey.world);

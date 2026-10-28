@@ -22,7 +22,8 @@ namespace frontline
     { (*this)(v.events,v.completed,v.prediction); }
     void JourneyArchive::IO(JourneyBattleReview& v)
     { (*this)(v.resolution,v.endedAt,v.enemyStops,v.trafficStops,v.tacticAttempts,v.tacticSteps,v.longestChain);
-      if(version>=3) IO(v.coordinatedOfficers);else if(reading) v.coordinatedOfficers=0; }
+      if(version>=3) IO(v.coordinatedOfficers);else if(reading) v.coordinatedOfficers=0;
+      if(version>=8) (*this)(v.preparationTracked,v.openingAmbushes,v.resupplyTurn,v.resupplyMorale,v.postSupplySteps); }
     void JourneyArchive::IO(JourneyAssignment& v)
     { (*this)(v.duty,v.tile,v.completed); }
     void JourneyArchive::IO(JourneyResult& v)

@@ -8,7 +8,7 @@ void ATacticalField::BuildStoryPresentation()
     P.PersonalTrust=FString::Printf(TEXT("主人公への信頼  劉備 %d / 関羽 %d / 張飛 %d"),J.officerTrust[0],J.officerTrust[1],J.officerTrust[2]);
     if(P.bPreparation)
     {
-        const int Base=State->PreparationChoice==1 ? 100:90;
+        const int Base=!J.campaignFlow && State->PreparationChoice==1 ? 100:90;
         const int L=FMath::Clamp(Base+J.StoryMoraleBonus(0),0,100)-Base;
         const int G=FMath::Clamp(Base+J.StoryMoraleBonus(1),0,100)-Base;
         const int Z=FMath::Clamp(Base+J.StoryMoraleBonus(2),0,100)-Base;
@@ -24,6 +24,15 @@ void ATacticalField::BuildStoryPresentation()
             P.StoryFacts=FString::Printf(TEXT("この戦いでの主人公への信頼：劉備 %+d / 関羽 %+d / 張飛 %+d"),Story.trustDelta[0],Story.trustDelta[1],Story.trustDelta[2]);
             if(Story.pledge!=JourneyPledge::None) P.StoryFacts+=TEXT("\n出陣前の約束：")+JourneyText(PledgeName(Story.pledge))+(Story.pledgeKept ? TEXT(" → 果たした"):TEXT(" → 果たせなかった"));
             if(Story.reply!=JourneyPledge::None) P.PledgeText=TEXT("次の戦いで交わした約束：")+JourneyText(PledgeName(Story.reply));
+        }
+        const auto& R=J.history[J.mission].review;
+        if(R.preparationTracked)
+        {
+            P.StoryFacts+=TEXT("\n采配の振り返り：");
+            if(J.preparation==0) P.StoryFacts+=R.openingAmbushes>0 ? TEXT("初手の森林伏兵が成功。仕込みの威力・混乱を戦法に乗せた。"):
+                TEXT("初手の森林伏兵は未成立。先遣位置・敵との距離・斥候への対処を次の配置で見直そう。");
+            else if(R.resupplyTurn==0) P.StoryFacts+=TEXT("予備糧1,800を使わず持ち帰った。必要な局面がなければ、温存も次戦の備えになる。");
+            else P.StoryFacts+=FString::Printf(TEXT("第%d指揮で補給。主力の士気を合計%d回復し、その後に戦法%d手が成功。"),R.resupplyTurn,R.resupplyMorale,R.postSupplySteps);
         }
         P.bNeedsReply=J.NeedsStoryReply();
         if(P.bNeedsReply)

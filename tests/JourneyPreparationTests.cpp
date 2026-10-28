@@ -22,6 +22,11 @@ static int TotalFood(const StrategistJourney& j)
 }
 int main()
 {
+    auto opening=Council();opening->beforeBattle=opening->journey;assert(opening->journey.Prepare(0,0));
+    const std::vector<ChainOrder> chain{{0,3,ChainTactic::Lure,Campaign::At(8,11)},{1,3,ChainTactic::Ambush,-1},{2,3,ChainTactic::Breakthrough,-1}};
+    opening->journey.Preview(chain);assert(opening->journey.battleReview.openingAmbushes==0);
+    opening->journey.Execute(chain);assert(opening->journey.battleReview.openingAmbushes==1);
+    assert(Round(*opening)->journey.battleReview.openingAmbushes==1);
     // The player's actual forest order changes the opening, without paying a battle action.
     auto v=Council();auto& a=v->journey;
     assert(a.AssignDuty(1,Campaign::At(9,8),JourneyDuty::Ambush));
@@ -56,6 +61,7 @@ int main()
     assert(TotalFood(j)==camp.food && j.world.cities[0].gold==camp.gold-80);
     auto loaded=Round(*s);assert(loaded->journey.CanResupply());
     // Morale unlocks an ordinary solo tactic; spending the reserve does not reset action/signature state.
+    j.battleReview.preparationTracked=false; // A v7 in-flight reserve must become trackable on actual use.
     j.world.armies[0].morale=5;
     const std::vector<ChainOrder> solo{{0,3,ChainTactic::Disrupt,-1}};
     assert(j.Preview(solo).completed==0);
@@ -65,9 +71,11 @@ int main()
     assert(j.Resupply() && j.world.armies[0].morale==25 && j.world.armies[2].food==1600);
     assert(j.world.day==day && j.turn==turn && j.battleReview.tacticAttempts==review.tacticAttempts);
     assert(j.chain.spent==spent && j.chain.moved==moved && j.chain.signatureUsed==used);
+    assert(j.battleReview.resupplyTurn==turn && j.battleReview.resupplyMorale==40);
     assert(j.Preview(solo).completed==1 && !j.CanResupply() && !j.Resupply() && TotalFood(j)==camp.food);
-    loaded=Round(*s);assert(!loaded->journey.CanResupply() && loaded->journey.reserveFood==0);
-    assert(j.Withdraw() && TotalFood(j)==camp.food && !j.Resupply()); // Neither issued nor unused food disappears.
+    assert(j.Execute(solo).completed==1 && j.battleReview.postSupplySteps==1);
+    loaded=Round(*s);assert(loaded->journey.battleReview.postSupplySteps==1 && !loaded->journey.CanResupply() && loaded->journey.reserveFood==0);
+    assert(j.Withdraw() && j.history[j.mission].review.postSupplySteps==1 && TotalFood(j)==camp.food && !j.Resupply()); // Neither issued nor unused food disappears.
     auto withdrawn=Round(*s);assert(withdrawn->journey.reserveFood==0);
     s=Council();s->beforeBattle=s->journey;assert(s->journey.Prepare(1,0));
     assert(s->journey.Withdraw() && s->journey.world.cities[0].food==18000);Round(*s);

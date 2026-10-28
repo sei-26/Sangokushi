@@ -52,6 +52,8 @@ namespace frontline
         if(!CanResupply()) return false;
         int living=0;for(int i=0;i<3;++i) if(TacticChain::Living(world,i)) ++living;
         const int portion=reserveFood/living;
+        battleReview.preparationTracked=true;battleReview.resupplyTurn=turn;
+        for(int i=0;i<3;++i) if(TacticChain::Living(world,i)) battleReview.resupplyMorale+=std::min(20,100-world.armies[i].morale);
         for(int i=0;i<3;++i) if(TacticChain::Living(world,i))
         { world.armies[i].food+=portion;world.armies[i].morale=std::min(100,world.armies[i].morale+20); }
         reserveFood=0;++world.revision;

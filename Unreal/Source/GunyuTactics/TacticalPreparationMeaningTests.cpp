@@ -36,7 +36,9 @@ bool ATacticalController::PreparationMeaningSmokeTest()
     if(!Check(Save->realtime.elapsed==PreviousElapsed && Save->journey.world.day==Day && Save->journey.turn==Turn && Save->journey.world.cities[0].food==Food && Save->journey.chain.spent[0] && Save->journey.chain.signatureUsed[1] && Field->RealtimePaused(),TEXT("support pauses for review without granting extra actions, signatures or time"))) return false;
     if(!Check(!Field->CanIssue(ETacticalCommand::Resupply) && Save->journey.reserveFood==0 && Field->Presentation().ResupplyLabel.Contains(TEXT("なし")),TEXT("used reserve has visible feedback and cannot be reused"))) return false;
     if(!Check(Field->ImportSession(Bytes) && !Field->CanIssue(ETacticalCommand::Resupply),TEXT("save/load cannot recreate a spent reserve"))) return false;
-    Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Skip);Field->Issue(ETacticalCommand::Retry);
+    Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Skip);
+    if(!Check(Field->Presentation().Journey.StoryFacts.Contains(TEXT("合計45回復")) && Field->Presentation().Journey.StoryFacts.Contains(TEXT("戦法0手")),TEXT("aftermath reports real capped recovery without inventing later tactics"))) return false;
+    Field->Issue(ETacticalCommand::Retry);
     Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*Save);
     if(!Check(Save->journey.stage==JourneyStage::Preparation && Save->journey.reserveFood==0 && Save->journey.world.cities[0].food==Save->beforeBattle->world.cities[0].food,TEXT("retry restores unpaid council, not a second supply reward"))) return false;
     Field->bLegacyJourney=true;CloseEpisode();

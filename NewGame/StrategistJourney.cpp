@@ -127,7 +127,7 @@ namespace frontline
 		survivors = casualties = 0;
 		lastChain = {};
 		heldTurns = convoyStep = recoveredCargo = 0;
-        battleReview={};
+        battleReview={};battleReview.preparationTracked=campaignFlow;
         for(auto& a:assignments) a.completed=false;
 		guarding = {};
 		goal = IsRescue() ? Campaign::At(12, 11) : Definition().goal;
@@ -268,6 +268,11 @@ namespace frontline
 			return {};
 		lastChain = chain.Execute(world, intelligence[0], orders);
         RecordCooperation(lastChain);
+        if(battleReview.preparationTracked)
+        {
+            if(battleReview.resupplyTurn>0) battleReview.postSupplySteps+=lastChain.completed;
+            for(const auto& e:lastChain.events) if(preparation==0 && turn==1 && e.success && e.army==1 && e.tactic==ChainTactic::Ambush && e.setupPercent==125) ++battleReview.openingAmbushes;
+        }
         ++battleReview.tacticAttempts;battleReview.tacticSteps+=lastChain.completed;
         battleReview.longestChain=std::max(battleReview.longestChain,lastChain.completed);
 		bestChain = std::max(bestChain, lastChain.completed);

@@ -38,7 +38,9 @@ namespace frontline
         }
         bool Review(const JourneyBattleReview& r)
         {
-            return Enum(r.resolution,9) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
+            return Range(r.openingAmbushes,0,1) && Range(r.resupplyTurn,0,16) && Range(r.resupplyMorale,0,60) && Range(r.postSupplySteps,0,r.tacticSteps) &&
+                (r.preparationTracked || (!r.openingAmbushes && !r.resupplyTurn && !r.resupplyMorale && !r.postSupplySteps)) &&
+                (r.resupplyTurn || (!r.resupplyMorale && !r.postSupplySteps)) && Enum(r.resolution,9) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
                 Range(r.trafficStops,0,100) && Range(r.tacticAttempts,0,1000) &&
                 Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3) && Range(r.coordinatedOfficers,0,7);
         }
