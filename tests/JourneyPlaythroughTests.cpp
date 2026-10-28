@@ -54,7 +54,7 @@ static void Fight(StrategistJourney& j, int army, bool avoidRoad)
 	Approach(j, army, target, avoidRoad);
 	AttackVisible(j, army);
 }
-int main()
+int main(int argc,char**)
 {
 #ifdef _MSC_VER
 	_set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
@@ -62,6 +62,7 @@ int main()
 	std::cout << std::unitbuf;
 	auto j = std::make_unique<StrategistJourney>();
 	j->Reset();
+    if(argc>1) assert(j->SelectDifficulty(JourneyDifficulty::Story));
 	j->Meet();
 	assert(j->Prepare(0, 0));
 	assert(j->Execute({{0, 3, ChainTactic::Lure, Campaign::At(8, 11)},
@@ -72,7 +73,7 @@ int main()
 	j->Execute({{2, 3, ChainTactic::Breakthrough, -1}});
 	assert(j->won && ContinueJourneyWithPledge(*j) && j->mission == 1);
 	assert(j->Prepare(0, 1));
-	for (int phase = 1; phase <= j->Definition().limit && j->stage == JourneyStage::Battle; ++phase)
+	for (int phase = 1; phase <= j->TurnBudget() && j->stage == JourneyStage::Battle; ++phase)
 	{
 		if (phase == 1)
 		{
@@ -103,7 +104,7 @@ int main()
 	}
 	assert(j->won && j->stage == JourneyStage::Debrief && j->recoveredCargo >= 1200);
 	assert(ContinueJourneyWithPledge(*j) && j->mission == 2 && j->Prepare(0, 0));
-	for (int phase = 1; phase <= j->Definition().limit && j->stage == JourneyStage::Battle; ++phase)
+	for (int phase = 1; phase <= j->TurnBudget() && j->stage == JourneyStage::Battle; ++phase)
 	{
 		for (int army = 0; army < 3 && j->stage == JourneyStage::Battle; ++army)
 		{
@@ -134,6 +135,7 @@ int main()
     for(const auto& l:singleEnding.lines) singleText+=l.text;
     assert(singleText.find(U"三度とも")==std::u32string::npos && singleText.find(U"三つの采配")==std::u32string::npos);
 	j->Reset();
+    if(argc>1) assert(j->SelectDifficulty(JourneyDifficulty::Story));
 	j->Meet();
 	j->mission = 2;
 	assert(j->Prepare(0, 0));

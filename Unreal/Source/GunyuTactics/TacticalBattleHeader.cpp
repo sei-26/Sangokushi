@@ -8,7 +8,7 @@ using namespace gunyuui;
 void ATacticalController::BuildBattleHeader(TSharedRef<SCanvas> Canvas)
 {
     auto Text=SNew(SVerticalBox)
-        + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("群雄戦線    ―    軍師の一策"); },11,Gold)]
+        + SVerticalBox::Slot().AutoHeight()[Label([this] { return TEXT("群雄戦線    ―    軍師の一策 ／ ")+Field->Presentation().Difficulty; },11,Gold)]
         + SVerticalBox::Slot().AutoHeight().Padding(0,3)[SNew(SBox).WidthOverride(1090)
           [Label([this] { return Field->Presentation().Title.Replace(TEXT("群雄戦線  /  "),TEXT("")); },23)]]
         + SVerticalBox::Slot().AutoHeight()[SNew(SBox).WidthOverride(1090)[Label([this] { return Field->Presentation().Objective; },15,Gold)]];

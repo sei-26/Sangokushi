@@ -11,6 +11,9 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     case ETacticalCommand::Dialogue:
         if (++State->DialogueIndex >= 3) J.Meet();
         break;
+    case ETacticalCommand::DifficultyStory:J.SelectDifficulty(JourneyDifficulty::Story);break;
+    case ETacticalCommand::DifficultyStandard:J.SelectDifficulty(JourneyDifficulty::Standard);break;
+    case ETacticalCommand::PlanExample:J.ApplyPlanExample();break;
     case ETacticalCommand::PlanAmbush: State->PreparationChoice = 0; break;
     case ETacticalCommand::PlanSupplies: State->PreparationChoice = 1; break;
     case ETacticalCommand::PromiseRoad: J.SelectPromise(JourneyPromise::OpenRoad); break;
@@ -52,6 +55,9 @@ void ATacticalField::BuildJourneyPresentation()
     const auto& J = State->Journey;
     auto& P = State->HUD.Journey;
     P = {};
+    P.bStoryDifficulty=J.difficulty==JourneyDifficulty::Story;P.DifficultyName=JourneyText(DifficultyName(J.difficulty));
+    const auto Settings=CombatSettings(J.difficulty);
+    P.DifficultyDetail=FString::Printf(TEXT("敵の初期兵力%d％ ／ 期限＋%d指揮 ／ 軍議で変更可"),Settings.enemyPercent,Settings.extraCycles);
     P.bVisible = J.stage != JourneyStage::Battle;
     if (!P.bVisible) return;
     P.bPreparation = J.stage == JourneyStage::Preparation;
@@ -86,7 +92,7 @@ void ATacticalField::BuildJourneyPresentation()
         P.bChoosePromise = J.mission == 0; P.bRescue = J.IsRescue();
         P.PromiseText = J.IsRescue() ? TEXT("季安の避難車を東の出口まで護送。護衛600と兵糧900を追加で確保する。先鋒を崩しても護送は終わらない。")
             : TEXT("先鋒を崩すか出口を確保し、退路を開く。避難車を最後まで護送する約束はしない。追加の護衛と兵糧は使わない。");
-        if (J.IsRescue()) P.Outcome = TEXT("期限10指揮 / 季安の避難車を６区間先の東の出口へ。敵将を倒すより、車の進路と護衛の配置が目的になる。");
+        if (J.IsRescue()) P.Outcome = FString::Printf(TEXT("期限%d指揮 / 季安の避難車を出口へ。敵将を倒すより、車の進路と護衛の配置が目的になる。"),J.TurnBudget());
         if (J.mission > 0)
             P.Outcome = FString::Printf(TEXT("前戦の帰還兵 %d・損失 %dを引き継いでいます。\n%s"), J.survivors, J.casualties, *P.Outcome);
         BuildPreparationPresentation();

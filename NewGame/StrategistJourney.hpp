@@ -5,6 +5,7 @@
 #include "JourneyOpening.hpp"
 #include "JourneyStory.hpp"
 #include "JourneyAssignment.hpp"
+#include "JourneyDifficulty.hpp"
 
 namespace frontline
 {
@@ -30,6 +31,7 @@ namespace frontline
         JourneyBattleReview review;
         JourneyConvoyRoute route=JourneyConvoyRoute::Road;
         JourneyBattleStory story;
+        JourneyDifficulty difficulty=JourneyDifficulty::Standard;
         std::array<JourneyAssignment,3> assignments{};
 	};
 	// One persistent campaign for the first playable historical-background slice.
@@ -53,6 +55,9 @@ namespace frontline
 		JourneyPromise promise = JourneyPromise::OpenRoad;
         JourneyConvoyRoute convoyRoute=JourneyConvoyRoute::Road;
         JourneyBattleReview battleReview;
+        JourneyDifficulty difficulty=JourneyDifficulty::Standard;
+        bool SelectDifficulty(JourneyDifficulty);
+        bool ApplyPlanExample();
         std::array<JourneyAssignment,3> assignments{};
         std::u32string AssignmentProblem(int officer,int tile,JourneyDuty) const;
         bool AssignDuty(int officer,int tile,JourneyDuty);
@@ -75,7 +80,7 @@ namespace frontline
 		bool Withdraw();
 		bool IsRescue() const { return mission == 0 && promise == JourneyPromise::EscortRefugees; }
 		bool HasConvoy() const { return IsRescue() || Definition().kind == JourneyObjective::Escort; }
-		int TurnBudget() const { return IsRescue() ? 10 : Definition().limit; }
+		int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles; }
 		bool Prepare(int choice, int policy);
 		bool Move(int army, int tile);
 		bool Ambush(int army);

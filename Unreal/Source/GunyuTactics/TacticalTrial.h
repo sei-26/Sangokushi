@@ -157,6 +157,8 @@ public:
     UPROPERTY(EditAnywhere, Category="Trial|Scenario")
     bool bRealtimeCommand = false;
     UPROPERTY(EditAnywhere, Category="Trial|Scenario")
+    bool bStartOnStandardDifficulty = false;
+    UPROPERTY(EditAnywhere, Category="Trial|Scenario")
     bool bPauseOnBattleAlert = true;
 private:
     TUniquePtr<FJourneyState, FJourneyDeleter> State;
@@ -356,6 +358,11 @@ private:
     bool PlanningMapSmokeTest();
     bool PlanningDutySmokeTest();
     TSharedRef<class SWidget> BuildPlanningDuties();
+    TSharedRef<class SWidget> BuildPlanningExample();
+    TSharedRef<class SWidget> BuildDifficultyChoice();
+    void ApplyPlanningExample();
+    bool AccessibilitySmokeTest();
+    bool bPlanningExample=false;
     void SetPlanningDuty(int Kind);
     int PlanningOfficer=0;
     bool bPlanningLocationChosen=false;

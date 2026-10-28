@@ -115,6 +115,7 @@ void ATacticalField::StartTrial()
     State->TerrainSnapshot.Reset();State->BackdropSnapshot.Reset();
     State->Beats.Reset(); State->BeatIndex = 0; State->BeatTime = 0;
     State->Journey.Reset();
+    if(!bStartOnStandardDifficulty) State->Journey.SelectDifficulty(frontline::JourneyDifficulty::Story);
     State->Journey.mission = FMath::Clamp(FirstMission, 0, 2);
     State->Journey.enemyPolicy = FMath::Clamp(EnemyPolicy, 0, 2);
     State->Journey.promise = bStartWithCouncil ? frontline::JourneyPromise::EscortRefugees : frontline::JourneyPromise::OpenRoad;

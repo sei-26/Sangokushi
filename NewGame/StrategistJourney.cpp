@@ -56,7 +56,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
-        officerTrust={};assignments={};
+        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -147,6 +147,7 @@ namespace frontline
 			if (i == 4 && policy == 2 && mission < 2)
 				army.tile = army.target = mission == 1 ? Campaign::At(12, 8) : Campaign::At(7, 11);
 			army.troops = i < 3 ? deployed / 3 + (i < deployed % 3 ? 1 : 0) : i == 3 ? 1800 : 1300;
+			if(i>=3) army.troops=army.troops*CombatSettings(difficulty).enemyPercent/100;
 			army.food = i < 3 ? (food - (escort ? 900 : 0)) / 3 : 3000;
 			army.morale = choice == 1 && i < 3 ? 100 : 90;
             if(i<3) army.morale=std::clamp(army.morale+StoryMoraleBonus(i),0,100);
@@ -304,7 +305,7 @@ namespace frontline
 		casualties = deployed + convoyEscort - survivors;
         CompleteBattleReview(success);
 		history[mission] = {true, success, withdrawn, success && IsRescue(), survivors, casualties};
-        history[mission].review=battleReview;history[mission].route=convoyRoute;history[mission].assignments=assignments;
+        history[mission].review=battleReview;history[mission].route=convoyRoute;history[mission].assignments=assignments;history[mission].difficulty=difficulty;
         CompleteBattleStory(success);
 		if (success)
 		{
@@ -327,7 +328,7 @@ namespace frontline
 		}
 		else
 		{
-			++mission;
+			++mission;turn=1;
             convoyRoute=JourneyConvoyRoute::Road;assignments={};
 			stage = JourneyStage::Preparation;
 			reinforced = false;

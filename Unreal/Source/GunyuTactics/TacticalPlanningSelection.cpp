@@ -11,7 +11,7 @@ void ATacticalController::TogglePlanningMap()
 {
     if(!bEpisodeOpen || !bNovelPlan || !Field->Presentation().Journey.bPreparation) return;
     bNovelMap=!bNovelMap;bNovelAdvice=false;
-    if(bNovelMap) bPlanningDuties=true;
+    if(bNovelMap) { bPlanningDuties=true;bPlanningExample=false; }
     const auto& Map=Field->Presentation().Journey.Map;
     if(!Map.Cells.ContainsByPredicate([this](const FPlanningCell& Cell) { return Cell.Tile==PlanningTile; }))
         PlanningTile=Map.Sites.IsEmpty() ? -1:Map.Sites[0].Tile;

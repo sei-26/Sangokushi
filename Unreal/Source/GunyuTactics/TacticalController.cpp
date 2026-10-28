@@ -72,6 +72,7 @@ void ATacticalController::BeginPlay()
     { BeforeVistaFocus=Focus;Focus=FVector(2100,650,0);Distance=5500;CameraYaw=90;CameraElevation=32;CameraPreset=3; }
     if (bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuDenseForest"))) Field->bReadableFoliage=false;
     bSmoke = FParse::Param(FCommandLine::Get(), TEXT("GunyuSmoke"));
+    if(bSmoke) { Field->bStartOnStandardDifficulty=true;Field->Issue(ETacticalCommand::Restart); }
     bTacticCinema=!FParse::Param(FCommandLine::Get(),TEXT("GunyuNoTacticCinema"));
     // Respect editor PIE and explicit capture/windowed runs. Standalone play
     // opens borderless at the desktop resolution, including existing configs.
@@ -286,6 +287,10 @@ void ATacticalController::PlayerTick(float Delta)
         FParse::Value(FCommandLine::Get(), TEXT("CueTime="), Time);
         Field->AdvancePresentation(Time);
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAccessibilityOnly")))
+    {
+        const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
+    }
     if (bSmoke && Frames == 2)
     {
         bool bPassed = Field->SmokeTest();
@@ -334,6 +339,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=PlanningMapSmokeTest();
         if(bPassed) bPassed=PlanningDutySmokeTest();
         if(bPassed) bPassed=PlanningGuideSmokeTest();
+        if(bPassed) bPassed=AccessibilitySmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -374,6 +380,9 @@ void ATacticalController::PlayerTick(float Delta)
             int Site=0;FParse::Value(FCommandLine::Get(),TEXT("PlanningSite="),Site);
             const auto& Sites=Field->Presentation().Journey.Map.Sites;
             if(Sites.IsValidIndex(Site)) SelectPlanningTile(Sites[Site].Tile);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuStandardDifficulty"))) Field->Issue(ETacticalCommand::DifficultyStandard);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanExample"))) bPlanningExample=true;
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuApplyExample"))) { bPlanningExample=true;ApplyPlanningExample(); }
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuideEmpty"))) SelectPlanningOfficer(0);
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuidePreview"))) { SelectPlanningOfficer(0);SelectPlanningTile(frontline::Campaign::At(7,6)); }
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuideBlocked"))) { SelectPlanningOfficer(2);SelectPlanningTile(frontline::Campaign::At(9,7)); }

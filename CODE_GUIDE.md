@@ -384,3 +384,8 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 ## 作戦立案の案内（2026-10-28）
 
 `TacticalPlanningGuide.h/.cpp` は公開地形だけから地点名・命令の文章・仮経路を作る。`TacticalPlanningGuideRead.cpp` は武将選択・理由・確認文の接続、`TacticalPlanningDutyInterface.cpp` は①誰→②どこ→③何の手順、`TacticalPlanningMapInterface.cpp` は地図と確定済み三人の一覧。選択と確定は別操作。`TacticalPlanningGuideTests.cpp` は公開情報の分離、全地点へのHEX経路、選択時の不変性と誤確定の防止を確認する。
+
+
+## 難易度と作戦の見本（2026-10-28）
+
+`JourneyDifficulty.hpp` に敵兵率と期限追加、`JourneyPlanExample.hpp/.cpp` に三戦の見本と軍議での変更を集約。実際の出陣は `StrategistJourney.cpp`、難易度の保存は版5。UEの新規開始の初期値は `TacticalField.cpp`、操作は `TacticalAccessibilityInterface.cpp` / `TacticalPlanningExample.cpp`。`JourneyAccessibilityTests.cpp` と `TacticalAccessibilityTests.cpp`、両難易度の `JourneyPlaythroughTests.cpp` が実行と継続を確認する。[仕様](BATTLE_ACCESSIBILITY.md)。

@@ -9,7 +9,7 @@ enum class ETacticalCommand : uint8
     Dialogue, Reinforce, PlanAmbush, PlanSupplies, Deploy, Retry,
     PromiseRoad, PromiseRescue, Withdraw, TalkLiu, TalkGuan, TalkZhang,
     RealtimeMode, RealtimePause, RealtimeSpeed, RealtimeStep, RealtimeStop, RealtimeChainSignal, RealtimeAlertPause,
-    RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate
+    RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate, DifficultyStory, DifficultyStandard, PlanExample
 };
 enum class ETacticalInput : uint8 { Select, Move, Lure };
 
@@ -55,6 +55,9 @@ struct FJourneyPresentation
     FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
     FJourneyEpisodePresentation Episode;
     FString PlanDifference,PlanReadiness,PlanObjective,PlanRoute;
+    FString DifficultyName,DifficultyDetail,ExampleName,ExamplePurpose,ExampleManual,ExampleCaution;
+    TArray<FString> ExampleOrders;
+    bool bStoryDifficulty=false;
     FPreparationMap Map;
     TArray<FDialoguePresentation> PlanAdvice;
     bool bNeedsReply=false;
@@ -109,7 +112,7 @@ struct FTacticCinematicRead
 // UI receives observed information and cached predictions only.
 struct FTacticalPresentation
 {
-    FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel;
+    FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;
     FString ClockLabel, StandingOrderLabel, SpeedLabel;
     FString ChainSignalLabel;
     bool bChainSignalArmed=false,bChainSignalReady=false;

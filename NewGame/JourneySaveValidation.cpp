@@ -88,7 +88,7 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
-            if(!Enum(j.stage,4) || !Range(j.mission,0,2) || !Range(j.turn,1,12) || !Range(j.enemyPolicy,0,2) ||
+            if(!Enum(j.stage,4) || !Range(j.mission,0,2) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
                !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.IsRescue(),j.stage==JourneyStage::Preparation) ||
                w.cities.size()!=2 || w.generals.size()<5 || w.generals.size()>6 || n>6 ||
@@ -115,7 +115,7 @@ namespace frontline
             {
                 const auto& h=j.history[m];
                 // Mission 0 history lacks a failed escort's promise; both authored woodland variants are valid there.
-                if(!Assignments(h.assignments,m,m==0) || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
+                if(!Enum(h.difficulty,1) || !Assignments(h.assignments,m,m==0) || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
                    (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
             }
             return true;
@@ -137,7 +137,7 @@ namespace frontline
         for(const auto& o:s.watch.lastOrders) if(!Order(o)) return false;
         for(int count:s.watch.stalled) if(!Range(count,0,10000)) return false;
         if(s.watch.history.size()>JourneyBattleWatch::HistoryLimit) return false;
-        for(const auto& h:s.watch.history) if(!Enum(h.kind,5) || !Range(h.army,0,5) || !Cell(h.tile) || !Range(h.turn,0,12)) return false;
+        for(const auto& h:s.watch.history) if(!Enum(h.kind,5) || !Range(h.army,0,5) || !Cell(h.tile) || !Range(h.turn,0,16)) return false;
         return true;
     }
     bool ValidJourneySave(const JourneySaveData& s) { return JourneyArchive::SessionValid(s); }

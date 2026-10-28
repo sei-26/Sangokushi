@@ -18,7 +18,12 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelAdvice ? TEXT("案を比較 / A"):TEXT("武将の見立て / A"); },[this] { bNovelMap=false;bNovelAdvice=!bNovelAdvice; })]
         + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelMap ? TEXT("作戦の比較 / M"):TEXT("配置を考える / M"); },[this] { TogglePlanningMap(); })]
         + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("軍議に戻る"); },[this] { CloseEpisode(); })]];
-    Contents->AddSlot().AutoHeight().Padding(0,4,0,14)[Label([this] { return Field->Presentation().Journey.Episode.Title+TEXT("　／　出陣前の決断"); },14)];
+    Contents->AddSlot().AutoHeight().Padding(0,4,0,8)
+      [SNew(SHorizontalBox)
+       + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
+         [Label([this] { return Field->Presentation().Journey.Episode.Title+TEXT(" ／ 出陣前の決断"); },14)]
+       + SHorizontalBox::Slot().AutoWidth()[BuildDifficultyChoice()]];
+    Contents->AddSlot().AutoHeight().Padding(0,0,0,8)[Label([this] { return TEXT("難易度：")+Field->Presentation().Journey.DifficultyName+TEXT(" ／ ")+Field->Presentation().Journey.DifficultyDetail; },13,Gold)];
     Contents->AddSlot().AutoHeight()[SNew(SBox).Padding(FMargin(0,0,0,12)).Visibility_Lambda([this] { return bNovelMap ? EVisibility::Collapsed:EVisibility::Visible; })[Label([this] { return Field->Presentation().Journey.PlanDifference; },15,Gold)]];
     auto Body=SNew(SVerticalBox);
     Body->AddSlot().AutoHeight()[Label([] { return TEXT("果たすべき役目"); },18,Gold)];

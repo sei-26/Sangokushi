@@ -21,9 +21,10 @@ FString ATacticalController::PlanningDutyReason(int Kind) const
 FString ATacticalController::PlanningOrder(int Officer) const
 { return planningguide::Order(Field->Presentation().Journey.Map,Officer); }
 TArray<int> ATacticalController::PlanningPreviewRoute() const
-{ return bNovelMap && bPlanningDuties && bPlanningLocationChosen ? planningguide::Route(Field->Presentation().Journey.Map,PlanningOfficer,PlanningTile):TArray<int>(); }
+{ return bNovelMap && bPlanningDuties && !bPlanningExample && bPlanningLocationChosen ? planningguide::Route(Field->Presentation().Journey.Map,PlanningOfficer,PlanningTile):TArray<int>(); }
 FString ATacticalController::PlanningExecution() const
 {
+    if(bPlanningExample) return TEXT("右の見本を確認し、「この見本で担当を配置する」で反映。");
     if(!PlanningNotice.IsEmpty()) return PlanningNotice;
     if(!bPlanningLocationChosen)
     {

@@ -24,6 +24,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyBattleStory.cpp
     NewGame/JourneyAssignment.cpp
     NewGame/JourneyAssignmentOrders.cpp
+    NewGame/JourneyPlanExample.cpp
     NewGame/JourneyDrama.cpp
     NewGame/JourneyCouncilDrama.cpp
     NewGame/JourneyEpisode.cpp
@@ -92,6 +93,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_march tests/JourneyMarchTests.cpp)
     add_rules_test(journey_save tests/JourneySaveTests.cpp)
     add_rules_test(journey_assignments tests/JourneyAssignmentTests.cpp)
+    add_rules_test(journey_accessibility tests/JourneyAccessibilityTests.cpp)
     add_rules_test(journey_opening tests/JourneyOpeningTests.cpp)
     add_rules_test(journey_chain_signal tests/JourneyChainSignalTests.cpp)
     add_rules_test(journey_battle_watch tests/JourneyBattleWatchTests.cpp)
@@ -99,6 +101,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_missions tests/JourneyMissionTests.cpp)
     add_rules_test(journey_battlefields tests/JourneyBattlefieldTests.cpp)
     add_rules_test(journey_playthrough tests/JourneyPlaythroughTests.cpp)
+    add_test(NAME journey_story_playthrough COMMAND journey_playthrough --story)
     add_rules_test(campaign_regression tests/CampaignTests.cpp)
     add_rules_test(observation_and_operations tests/StrategistOperationsTests.cpp)
 endif()

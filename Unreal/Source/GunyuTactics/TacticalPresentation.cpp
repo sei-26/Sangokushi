@@ -21,6 +21,7 @@ void ATacticalField::BuildPresentation()
     HUD.SecondGoalTile = J.Definition().secondGoal;
     HUD.GoalLabel = J.mission == 0 ? TEXT("脱出地点") : J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("北の烽火");
     HUD.SecondGoalLabel=J.mission==2 ? TEXT("南の烽火"):HUD.GoalLabel;
+    HUD.Difficulty=JourneyText(DifficultyName(J.difficulty));
     HUD.Title = FString::Printf(TEXT("%s  /  %s    更新 %d / %d"), *JourneyText(BattlefieldDefinition(J.mission).name), *JourneyText(J.MissionName()),FMath::Max(0,J.turn-1), J.TurnBudget());
     HUD.Objective = JourneyText(J.ObjectiveProgress());
     if(J.stage==JourneyStage::Battle && J.CurrentPledge()!=JourneyPledge::None)
@@ -43,7 +44,7 @@ void ATacticalField::BuildPresentation()
             ? FString::Printf(TEXT("%s  帰還兵 %d / 損失 %d / 信頼 %d"), J.won ? TEXT("勝利") : J.withdrawn ? TEXT("任務中止・撤収") : TEXT("敗北"), J.survivors, J.casualties, J.trust)
             : J.stage == JourneyStage::Complete ? TEXT("突破・護送・防衛の３戦を完了") : JourneyText(J.Definition().objective);
         if (J.stage == JourneyStage::Encounter) HUD.Objective = TEXT("出会いから、任された一つの仕事へ");
-        if (J.stage == JourneyStage::Preparation && J.IsRescue()) HUD.Objective = TEXT("作戦の約束: 季安の避難車を東の出口へ護送 / 全軍更新10回まで");
+        if (J.stage == JourneyStage::Preparation && J.IsRescue()) HUD.Objective = FString::Printf(TEXT("作戦の約束: 季安の避難車を東の出口へ護送 / 全軍更新%d回まで"),J.TurnBudget());
         State->Reachable.Reset();
         return;
     }
