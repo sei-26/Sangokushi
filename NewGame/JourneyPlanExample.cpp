@@ -11,6 +11,7 @@ namespace frontline
         message=std::u32string(U"難易度：")+DifficultyName(value)+U"。兵力と期限は出陣時に適用する。";
         return true;
     }
+    void AdaptPlanExample(const StrategistJourney&,JourneyPlanExample&);
     JourneyPlanExample PlanExample(const StrategistJourney& j)
     {
         JourneyPlanExample p;
@@ -57,7 +58,7 @@ namespace frontline
                 U"まず張飛の単独戦法を使ってよい。連鎖を狙う時は守備の指示をXで解除し、使いたい戦法と配置を決め直す。";
             p.caution=U"守備は攻撃の行動権を使う。敵の斥候や接近で伏兵が失敗することもある。固守中の隊を攻めに使う時は指示を変える。";
         }
-        return p;
+        AdaptPlanExample(j,p);return p;
     }
     bool StrategistJourney::ApplyPlanExample()
     {
@@ -67,7 +68,7 @@ namespace frontline
         for(int i=0;i<3;++i)
             if(!candidate->AssignDuty(i,plan.assignments[i].tile,plan.assignments[i].duty)) return false;
         assignments=candidate->assignments;
-        message=U"見本を配置："+plan.name+U"。戦場の進行・戦法発動は、自分で指揮する。";
+        message=std::u32string(plan.reason.empty() ? U"見本を配置：":U"提案を採用：")+plan.name+U"。戦場の進行・戦法発動は、自分で指揮する。";
         return true;
     }
 }

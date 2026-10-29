@@ -363,6 +363,8 @@ private:
     TSharedRef<class SWidget> BuildPlanningExample();
     TSharedRef<class SWidget> BuildDifficultyChoice();
     void ApplyPlanningExample();
+    void OpenPlanningExample();
+    bool PlanAdviceSmokeTest();
     bool AccessibilitySmokeTest();
     bool bPlanningExample=false;
     void SetPlanningDuty(int Kind);

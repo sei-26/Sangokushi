@@ -398,3 +398,5 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 現行UEの新規本編は `ResetCampaign()`。`JourneyCampaign.cpp` が進展と役目、`JourneyCampaignDrama.cpp` が短い本幕と河港での人物別会話、`CampaignMissionDefinition` が北橋／南橋の配置を扱う。新戦役の二戦目は `CaptureCamp`、旧Escortは旧セーブの継続用。`RequiredHoldTurns` と `TurnBudget` は実績を次の条件へ反映する。UEの `OpenJourneyEntry` は軍議を作戦書へ、戦後を短い結果へ接続。`JourneyCampaignPacingTests.cpp` / `TacticalCampaignPacingTests.cpp` が通し・会話分岐・実戦果・移行を検証する。[批評調査と仕様](PACING_REVIEW.md)。
 
 戦後の準備実績に応じる短い掛け合いは `NewGame/JourneyPreparationDrama.cpp`。既存の撤退・損耗・約束の会話を保ち、その後へ実績に沿う３行を足す。
+
+前戦の実績から次戦の配置案を選ぶ処理は `NewGame/JourneyPlanAdvice.cpp`。理由・担当は `PlanExample` の同じデータで表示と採用に使う。未採用案の紫マーカーは `TacticalPlanningMap.cpp`。[条件・操作・制約](TACTICAL_PLAN_ADVICE.md)。

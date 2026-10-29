@@ -385,6 +385,7 @@
     <ClCompile Include="NewGame\StrategistJourney.cpp" />
     <ClCompile Include="NewGame\JourneyPreparation.cpp" />
     <ClCompile Include="NewGame\JourneyPreparationDrama.cpp" />
+    <ClCompile Include="NewGame\JourneyPlanAdvice.cpp" />
     <ClCompile Include="NewGame\StrategistJourneyAI.cpp" />
     <ClCompile Include="NewGame\JourneyEnemyPlan.cpp" />
     <ClCompile Include="NewGame\StrategistJourneyScene.cpp" />

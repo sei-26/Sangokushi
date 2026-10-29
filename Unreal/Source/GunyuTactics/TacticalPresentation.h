@@ -55,7 +55,9 @@ struct FJourneyPresentation
     FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
     FJourneyEpisodePresentation Episode;
     FString PlanDifference,PlanReadiness,PlanObjective,PlanRoute;
-    FString DifficultyName,DifficultyDetail,ExampleName,ExamplePurpose,ExampleManual,ExampleCaution;
+    FString DifficultyName,DifficultyDetail,ExampleName,ExamplePurpose,ExampleManual,ExampleCaution,ExampleReason;
+    int ExampleAdviser=-1;
+    TArray<FPlanningDuty> ExampleDuties;
     TArray<FString> ExampleOrders;
     bool bStoryDifficulty=false,bCampaignFlow=false;
     FString CampaignPhase,CampaignChange,CampaignNext,CampaignStanding;

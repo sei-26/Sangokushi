@@ -9,11 +9,13 @@ void ATacticalField::BuildPreparationPresentation()
     BuildPreparationMap();
     const auto& J=State->Journey;auto& P=State->HUD.Journey;const auto& Camp=J.world.cities[0];
     const auto Example=PlanExample(J);
+    P.ExampleReason=JourneyText(Example.reason);P.ExampleAdviser=Example.adviser;
     P.ExampleName=JourneyText(Example.name);P.ExamplePurpose=JourneyText(Example.purpose);
     P.ExampleManual=JourneyText(Example.manualTask);P.ExampleCaution=JourneyText(Example.caution);
     for(int I=0;I<3;++I)
     {
         const auto& A=Example.assignments[I];
+        P.ExampleDuties.Add({A.tile,I,int(A.duty),TEXT("未採用の案")});
         P.ExampleOrders.Add(A.duty==JourneyDuty::None ? FString(TEXT("固定せず、戦場で自分で指揮")):
             planningguide::Place(P.Map,A.tile)+(A.duty==JourneyDuty::Hold ? TEXT(" → 固守"):TEXT(" → 伏兵準備")));
     }

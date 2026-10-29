@@ -24,7 +24,7 @@ TArray<int> ATacticalController::PlanningPreviewRoute() const
 { return bNovelMap && bPlanningDuties && !bPlanningExample && bPlanningLocationChosen ? planningguide::Route(Field->Presentation().Journey.Map,PlanningOfficer,PlanningTile):TArray<int>(); }
 FString ATacticalController::PlanningExecution() const
 {
-    if(bPlanningExample) return TEXT("右の見本を確認し、「この見本で担当を配置する」で反映。");
+    if(bPlanningExample) return Field->Presentation().Journey.ExampleReason.IsEmpty() ? TEXT("右の見本を確認し、「この見本で担当を配置する」で反映。"):TEXT("紫は未採用の案。右の提案を確認し、採用ボタンで担当へ反映。");
     if(!PlanningNotice.IsEmpty()) return PlanningNotice;
     if(!bPlanningLocationChosen)
     {

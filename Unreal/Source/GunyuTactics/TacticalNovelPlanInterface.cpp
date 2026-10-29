@@ -27,8 +27,11 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
     Contents->AddSlot().AutoHeight()[SNew(SBox).Padding(FMargin(0,0,0,12)).Visibility_Lambda([this] { return bNovelMap ? EVisibility::Collapsed:EVisibility::Visible; })[Label([this] { return Field->Presentation().Journey.PlanDifference; },15,Gold)]];
     Contents->AddSlot().AutoHeight().Padding(0,0,0,7)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bCampaignFlow && !bNovelMap ? EVisibility::Visible:EVisibility::Collapsed; })
-       [SNew(SVerticalBox)
-        + SVerticalBox::Slot().AutoHeight()[Button([] { return TEXT("この局面の物語を読む ／ H"); },[this] { bNovelPlan=false; })]]];
+       [SNew(SHorizontalBox)
+        + SHorizontalBox::Slot().FillWidth(1)[Button([] { return TEXT("この局面の物語を読む ／ H"); },[this] { bNovelPlan=false; })]
+        + SHorizontalBox::Slot().FillWidth(1).Padding(8,0,0,0)
+          [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+           [Button([] { return TEXT("前戦からの配置案を地図で見る"); },[this] { OpenPlanningExample(); })]]]];
     auto Body=SNew(SVerticalBox);
     Body->AddSlot().AutoHeight()[Label([] { return TEXT("果たすべき役目"); },18,Gold)];
     Body->AddSlot().AutoHeight().Padding(0,7)[Label([this] { return Field->Presentation().Journey.PlanObjective; },20)];

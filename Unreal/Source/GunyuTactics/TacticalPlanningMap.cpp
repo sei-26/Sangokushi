@@ -22,7 +22,7 @@ namespace
     }
 }
 void SPlanningMap::Construct(const FArguments& Args)
-{ Map=Args._Map;SelectedTile=Args._SelectedTile;SelectedOfficer=Args._SelectedOfficer;PreviewRoute=Args._PreviewRoute;OnTile=Args._OnTile;SetCanTick(false); }
+{ Map=Args._Map;SelectedTile=Args._SelectedTile;SelectedOfficer=Args._SelectedOfficer;PreviewRoute=Args._PreviewRoute;Proposal=Args._Proposal;OnTile=Args._OnTile;SetCanTick(false); }
 FVector2D SPlanningMap::TilePosition(int Tile,FVector2D Size)
 {
     const auto P=hexgrid::Center(Tile%frontline::Width,Tile/frontline::Width);
@@ -51,8 +51,8 @@ int32 SPlanningMap::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRec
     { FSlateDrawElement::MakeLines(E,Layer+Offset,G.ToPaintGeometry(),MoveTemp(P),ESlateDrawEffect::None,Color,true,Thickness); };
     auto Box=[&](FVector2f P,FVector2f Extent,FLinearColor Color,int Offset)
     { FSlateDrawElement::MakeBox(E,Layer+Offset,G.ToPaintGeometry(Extent,FSlateLayoutTransform(P-Extent*.5f)),White,ESlateDrawEffect::None,Color); };
-    auto Text=[&](FString Value,FVector2f P,FLinearColor Color,int Offset=5)
-    { FSlateDrawElement::MakeText(E,Layer+Offset,G.ToPaintGeometry(FVector2f(80,24),FSlateLayoutTransform(P)),Value,gunyustyle::Font(14,true),ESlateDrawEffect::None,Color); };
+    auto Text=[&](FString Value,FVector2f P,FLinearColor Color,int Offset=5,int FontSize=14)
+    { FSlateDrawElement::MakeText(E,Layer+Offset,G.ToPaintGeometry(FVector2f(80,24),FSlateLayoutTransform(P)),Value,gunyustyle::Font(FontSize,true),ESlateDrawEffect::None,Color); };
     TArray<FSlateVertex> Vertices;TArray<SlateIndex> Indices;
     for(const auto& Cell:Data->Cells)
     {
@@ -141,6 +141,18 @@ int32 SPlanningMap::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRec
         Box(P,FVector2f(16,16),FLinearColor(.24f,.17f,.06f),4);
         Text(FString::FromInt(I+1),P-FVector2f(4,9),Gold);
     }
+    const FLinearColor Purple(.80f,.57f,1.f);
+    const auto Suggestions=Proposal.Get(TArray<FPlanningDuty>());
+    for(const auto& Suggested:Suggestions)
+    {
+        if(Suggested.Kind==0 || Suggested.Officer<0 || Suggested.Officer>=3) continue;
+        const FVector2f C=Point(Suggested.Tile);TArray<FVector2f> Outline;
+        for(int Side=0;Side<=6;++Side) { const float A=FMath::DegreesToRadians(30.f+Side*60.f);Outline.Add(C+FVector2f(FMath::Cos(A),FMath::Sin(A))*Scale*hexgrid::Radius*.85f); }
+        Line(MoveTemp(Outline),Purple,2.5f,6);
+        const FVector2f Badge=C+FVector2f(0,-.24f)*Scale;
+        Box(Badge,FVector2f(32,17),FLinearColor(.16f,.06f,.23f),6);
+        Text(FString(Names[Suggested.Officer])+(Suggested.Kind==1 ? TEXT("守"):TEXT("伏")),Badge-FVector2f(14,8),Purple,7,11);
+    }
     Text(TEXT("北 ↑"),FVector2f(12,8),Gold);
-    return Layer+6;
+    return Layer+8;
 }

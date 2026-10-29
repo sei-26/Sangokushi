@@ -25,6 +25,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyAssignment.cpp
     NewGame/JourneyAssignmentOrders.cpp
     NewGame/JourneyPlanExample.cpp
+    NewGame/JourneyPlanAdvice.cpp
     NewGame/JourneyPreparation.cpp
     NewGame/JourneyCampaign.cpp
     NewGame/JourneyCampaignDrama.cpp
@@ -98,6 +99,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_save tests/JourneySaveTests.cpp)
     add_rules_test(journey_assignments tests/JourneyAssignmentTests.cpp)
     add_rules_test(journey_accessibility tests/JourneyAccessibilityTests.cpp)
+    add_rules_test(journey_plan_advice tests/JourneyPlanAdviceTests.cpp)
     add_rules_test(journey_campaign_pacing tests/JourneyCampaignPacingTests.cpp)
     add_rules_test(journey_preparation tests/JourneyPreparationTests.cpp)
     add_rules_test(journey_opening tests/JourneyOpeningTests.cpp)

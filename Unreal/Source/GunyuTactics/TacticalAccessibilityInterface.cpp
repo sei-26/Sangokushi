@@ -15,8 +15,12 @@ TSharedRef<SWidget> ATacticalController::BuildDifficultyChoice()
 TSharedRef<SWidget> ATacticalController::BuildPlanningExample()
 {
     auto Panel=SNew(SVerticalBox);
-    Panel->AddSlot().AutoHeight()[Label([] { return TEXT("作戦の見本 ／ 出陣前のたたき台"); },15,Gold)];
-    Panel->AddSlot().AutoHeight().Padding(0,6)[Label([this] { return Field->Presentation().Journey.ExampleName; },22,Gold)];
+    Panel->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? TEXT("作戦の見本 ／ 出陣前のたたき台"):TEXT("前戦を生かす提案 ／ 未採用"); },15,Gold)];
+    Panel->AddSlot().AutoHeight().Padding(0,6)
+      [SNew(SHorizontalBox).Visibility_Lambda([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+       + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([this] { return Field->Presentation().Journey.ExampleAdviser; },34,40)]
+       + SHorizontalBox::Slot().FillWidth(1).Padding(8,0)[Label([this] { return Field->Presentation().Journey.ExampleReason; },14,Gold)]];
+    Panel->AddSlot().AutoHeight().Padding(0,6)[Label([this] { return Field->Presentation().Journey.ExampleName; },18,Gold)];
     Panel->AddSlot().AutoHeight().Padding(0,4)[Label([this] { return Field->Presentation().Journey.ExamplePurpose; },15)];
     const TCHAR* Names[]={TEXT("劉備"),TEXT("関羽"),TEXT("張飛")};
     for(int I=0;I<3;++I)

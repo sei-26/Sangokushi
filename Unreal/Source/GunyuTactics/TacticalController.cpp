@@ -293,6 +293,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdviceOnly")))
+    { const bool bPassed=PlanAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPreparationOnly")))
     { const bool bPassed=PreparationMeaningSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCampaignOnly")))
@@ -348,6 +350,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=PlanningGuideSmokeTest();
         if(bPassed) bPassed=AccessibilitySmokeTest();
         if(bPassed) bPassed=CampaignPacingSmokeTest();
+        if(bPassed) bPassed=PlanAdviceSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -368,6 +371,20 @@ void ATacticalController::PlayerTick(float Delta)
         FScreenshotRequest::RequestScreenshot(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / TEXT("trial.png")), true, false);
     if(bCapture && Frames==7 && FParse::Param(FCommandLine::Get(),TEXT("GunyuEpisode")))
     {
+        int AdviceFixture=0;
+        if(FParse::Value(FCommandLine::Get(),TEXT("CouncilAdvice="),AdviceFixture))
+        {
+            // Presentation-only settled-history fixture, never a claimed combat playthrough.
+            std::vector<std::uint8_t> Bytes;auto Fixture=MakeUnique<frontline::JourneySaveData>();
+            if(Field->ExportSession(Bytes) && frontline::DecodeJourneySave(Bytes,*Fixture) && Fixture->journey.mission>0 && Fixture->journey.stage==frontline::JourneyStage::Preparation)
+            {
+                auto& J=Fixture->journey;J.campaignFlow=true;auto& H=J.history[J.mission-1];H={};H.completed=H.won=H.campaignFlow=true;H.survivors=4200;H.review.preparationTracked=true;
+                if(AdviceFixture==1) H.review.openingAmbushes=1;
+                else if(AdviceFixture==3) { H.survivors=3000;H.casualties=1200; }
+                else { H.review.resupplyTurn=2;H.review.postSupplySteps=H.review.tacticSteps=AdviceFixture==2 ? 1:0; }
+                if(frontline::EncodeJourneySave(*Fixture,Bytes)) Field->ImportSession(Bytes);
+            }
+        }
         OpenEpisode();int Page=0;FParse::Value(FCommandLine::Get(),TEXT("EpisodePage="),Page);
         EpisodePage=FMath::Clamp(Page,0,FMath::Max(0,EpisodeSnapshot.Lines.Num()-1));NovelElapsed=1000;
         NovelStageTime=NovelLineTime=1;
