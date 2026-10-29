@@ -418,6 +418,13 @@ void ATacticalController::PlayerTick(float Delta)
             }
         }
     }
+    int AftermathOfficer=-1;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("AftermathOfficer="),AftermathOfficer) && Field->Presentation().Journey.bDebrief)
+    {
+        const ETacticalCommand Talk[]={ETacticalCommand::TalkLiu,ETacticalCommand::TalkGuan,ETacticalCommand::TalkZhang};
+        Field->Issue(Talk[FMath::Clamp(AftermathOfficer,0,2)]);OpenOfficerNovel();
+        EpisodePage=FMath::Max(0,EpisodeSnapshot.Lines.Num()-3);NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+    }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }
 

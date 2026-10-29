@@ -33,7 +33,8 @@ void ATacticalController::OpenOfficerNovel()
     if(!Field || Field->Presentation().Journey.Conversation.IsEmpty()) return;
     OpenEpisode();if(!bEpisodeOpen) return;bNovelPersonal=true;
     const auto& P=Field->Presentation().Journey;
-    EpisodeSnapshot.Lines=P.Conversation;EpisodeSnapshot.Title+=TEXT(" / ")+P.Speaker;
+    EpisodeSnapshot.Lines=P.Conversation;
+    EpisodeSnapshot.Title=(P.bPreparation ? FString(TEXT("軍議の語らい ／ ")):FString(TEXT("帰陣の語らい ／ ")))+P.Speaker;
 }
 void ATacticalController::ChooseNovelReply(bool Preserve)
 {

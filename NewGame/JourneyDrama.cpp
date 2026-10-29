@@ -3,7 +3,7 @@ namespace frontline
 {
     std::vector<JourneyDialogueLine> CampaignPortConversation(const StrategistJourney&,int);
     std::vector<JourneyDialogueLine> JourneyCouncilConversation(const StrategistJourney&,int);
-    std::vector<JourneyDialogueLine> JourneyConversation(const StrategistJourney& j,int officer)
+    std::vector<JourneyDialogueLine> BaseJourneyConversation(const StrategistJourney& j,int officer)
     {
         const int who=std::clamp(officer,0,2);using Lines=std::vector<JourneyDialogueLine>;
         if(j.campaignFlow && j.mission==1) return CampaignPortConversation(j,who);

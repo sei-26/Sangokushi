@@ -29,6 +29,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyCampaign.cpp
     NewGame/JourneyCampaignDrama.cpp
     NewGame/JourneyDrama.cpp
+    NewGame/JourneyPreparationDrama.cpp
     NewGame/JourneyCouncilDrama.cpp
     NewGame/JourneyEpisode.cpp
     NewGame/JourneyEpisodeCouncil.cpp

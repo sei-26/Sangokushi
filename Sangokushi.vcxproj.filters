@@ -737,6 +737,7 @@
     <ClCompile Include="NewGame\TacticChainActions.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
     <ClCompile Include="NewGame\StrategistJourney.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
     <ClCompile Include="NewGame\JourneyPreparation.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
+    <ClCompile Include="NewGame\JourneyPreparationDrama.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
     <ClCompile Include="NewGame\StrategistJourneyAI.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
     <ClCompile Include="NewGame\JourneyEnemyPlan.cpp"><Filter>Source Files\自由戦略\ルール</Filter></ClCompile>
     <ClCompile Include="NewGame\StrategistJourneyScene.cpp"><Filter>Source Files\自由戦略\画面</Filter></ClCompile>

@@ -97,5 +97,24 @@ int main()
     loaded->journey.reserveFood=600;assert(!ValidJourneySave(*loaded));
     auto legacy=std::make_unique<StrategistJourney>();legacy->Reset();legacy->Meet();assert(legacy->Prepare(1,0));
     assert(legacy->reserveFood==0 && legacy->world.armies[0].food==1600 && legacy->world.armies[0].morale==100 && !legacy->Resupply());
+    // Optional conversations react to settled facts, not chosen plan alone; reading is immutable.
+    auto dialogue=Council();dialogue->beforeBattle=dialogue->journey;assert(dialogue->journey.Prepare(1,0));
+    assert(dialogue->journey.Resupply() && dialogue->journey.Withdraw());
+    auto text=[](const StrategistJourney& value,int who) { std::u32string all;for(const auto& line:JourneyConversation(value,who)) all+=line.text;return all; };
+    std::vector<std::uint8_t> before,after;assert(EncodeJourneySave(*dialogue,before));
+    assert(text(dialogue->journey,0).find(U"帳消し")!=std::u32string::npos);
+    assert(text(dialogue->journey,2).find(U"戦法にはつながらなかった")!=std::u32string::npos);
+    assert(EncodeJourneySave(*dialogue,after) && before==after);
+    auto& record=dialogue->journey.history[0];record.review.postSupplySteps=record.review.tacticSteps=2;
+    assert(text(dialogue->journey,2).find(U"戦法を使えた")!=std::u32string::npos);
+    record.review.resupplyMorale=0;
+    assert(text(dialogue->journey,0).find(U"その先の行軍")!=std::u32string::npos);
+    assert(text(dialogue->journey,0).find(U"早く出せば") == std::u32string::npos);
+    record.review.resupplyTurn=record.review.postSupplySteps=0;
+    assert(text(dialogue->journey,0).find(U"封を切らず")!=std::u32string::npos);
+    dialogue->journey.preparation=0;record.review.openingAmbushes=1;
+    assert(text(dialogue->journey,1).find(U"一手だけ")!=std::u32string::npos);
+    record.review.preparationTracked=false;record.review.openingAmbushes=0;
+    assert(text(dialogue->journey,1).find(U"初手の伏兵") == std::u32string::npos);
     std::cout<<"Preparation PASS: real forward forest deployment, counter-scouting, opening action, public preview, reserve unlocks solo tactics, one use, food conservation, dead/escort exclusions, exact save/retry and v6 compatibility\n";
 }
