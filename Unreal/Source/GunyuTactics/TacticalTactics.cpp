@@ -13,6 +13,7 @@ void ATacticalField::BuildTacticsPresentation()
     BuildGuardPresentation();
     BuildTacticTargets();
     BuildTacticAvailability();
+    BuildTacticPositions();
     H.Hint = JourneyText(Definition.description);
     if (!Definition.targetsEnemy) H.Target = TEXT("対象: 自隊と周囲2マスの味方\n荷車を除く / 敵の指定は不要");
     for (const auto Tactic : TacticChain::Loadout(J.world, State->Selected))

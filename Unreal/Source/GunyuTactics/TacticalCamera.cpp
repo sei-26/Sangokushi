@@ -96,6 +96,6 @@ void ATacticalController::BuildCameraInterface(TSharedRef<SCanvas> Canvas)
           + SHorizontalBox::Slot().FillWidth(1)[Button([this] { return bTacticCinema ? TEXT("演出ON O") : TEXT("演出OFF O"); },[this] { bTacticCinema=!bTacticCinema; },[] { return true; },true)]]
         + SVerticalBox::Slot().AutoHeight().Padding(0,5,0,0)[Label([] { return TEXT("中ドラッグで回転 ／ ホイールで拡大"); },11)];
     auto Panel=SNew(STacticalChrome).Padding(8)
-        .Visibility_Lambda([this] { return Field->Presentation().bBattle && !Field->IsPlaying() ? EVisibility::Visible : EVisibility::Collapsed; })[Controls];
-    InputPanels.Add(Panel);Canvas->AddSlot().Position(FVector2D(1268,704)).Size(FVector2D(316,104))[Panel];
+        .Visibility_Lambda([this] { return Field->Presentation().bBattle && !Field->IsPlaying() && !bTacticPickerOpen ? EVisibility::Visible : EVisibility::Collapsed; })[Controls];
+    InputPanels.Add(Panel);Canvas->AddSlot().Position_Lambda([this] { return Field->bRealtimeCommand ? FVector2D(936,174):FVector2D(1268,704); }).Size(FVector2D(316,104))[Panel];
 }

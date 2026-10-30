@@ -10,6 +10,7 @@ void ATacticalController::LayoutMapLabels()
     const auto& Units=Field->VisualUnits();const FVector2D Size(132,86);
     const FVector2D Min=gunyulayout::MapOrigin,Max=Min+gunyulayout::MapSize;
     TArray<FSlateRect> Occupied;
+    if(Field->Presentation().Position.bVisible) Occupied.Add(FSlateRect(16,174,368,534));
     // Leave the displayed formations and cart themselves readable, too.
     for(const auto& U:Units)
         if(U.Id>=0 && (U.Troops>0 || Field->IsPlaying()))
@@ -17,7 +18,8 @@ void ATacticalController::LayoutMapLabels()
             const auto P=MapLabelPosition(U.Position+FVector(0,0,35),FVector2D(100,66));
             Occupied.Add(FSlateRect(P.X,P.Y,P.X+100,P.Y+66));
         }
-    Occupied.Add(FSlateRect(16,Field->bRealtimeCommand ? 486:586,246,704));
+    if(!Field->Presentation().Position.bVisible) Occupied.Add(FSlateRect(16,Field->bRealtimeCommand ? 486:586,246,704));
+    if(Field->bRealtimeCommand && !Field->IsPlaying() && !bTacticPickerOpen) Occupied.Add(FSlateRect(936,174,1252,278));
     if(Field->IsPlaying())
     {
         const auto C=Field->ReadTacticCinema();

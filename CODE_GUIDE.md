@@ -405,3 +405,6 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 
 
 戦法の捕捉対象と単独／連鎖後の成立見込みは `Unreal/Source/GunyuTactics/TacticalTacticTargets.cpp`。敵札と足元の共通色は `TacticalTargetVisual.h`、切替操作は `TacticalTacticTargetInterface.cpp`。[操作・予測の境界・検証](TACTIC_TARGET_READ.md)。
+
+
+隣接1歩の仮配置と移動後の戦法は `Unreal/Source/GunyuTactics/TacticalTacticPositions.cpp`。操作の確定は `TacticalPositionCommands.cpp`、番号付きの地図と比較欄は `TacticalPositionInterface.cpp`。[通常移動との一致・観測の境界・保存](TACTIC_POSITION_COMPARE.md)。

@@ -99,6 +99,7 @@ void ATacticalField::ClickTile(int Tile)
 
 void ATacticalField::CommandAt(int Tile)
 {
+    if(State->Input==ETacticalInput::Position) { SelectTacticPosition(Tile);return; }
     if (bRealtimeCommand && State->Journey.stage==JourneyStage::Battle && State->Input!=ETacticalInput::Lure)
     {
         for (const auto& Unit : State->Units)
@@ -163,6 +164,7 @@ void ATacticalField::Issue(ETacticalCommand Command)
 {
     auto& J = State->Journey;
     if (!CanIssue(Command)) return;
+    if(State->Input==ETacticalInput::Position) State->Input=ETacticalInput::Select;
     if (IsRealtimeAction(Command)) { IssueRealtime(Command);return; }
     if (Command==ETacticalCommand::DifficultyStory || Command==ETacticalCommand::DifficultyStandard || Command==ETacticalCommand::PlanExample || Command == ETacticalCommand::Dialogue || Command == ETacticalCommand::Reinforce || Command == ETacticalCommand::PlanAmbush || Command == ETacticalCommand::PlanSupplies || Command == ETacticalCommand::Deploy || Command == ETacticalCommand::Retry || Command == ETacticalCommand::PromiseRoad || Command == ETacticalCommand::PromiseRescue || Command == ETacticalCommand::TalkLiu || Command == ETacticalCommand::TalkGuan || Command == ETacticalCommand::TalkZhang || Command==ETacticalCommand::RouteRoad || Command==ETacticalCommand::RouteSouthernWood || Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate)
     { IssueJourney(Command); return; }

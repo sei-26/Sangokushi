@@ -116,6 +116,11 @@ void ATacticalController::PlayerTick(float Delta)
     if (bBattleLogOpen && (!Field->bRealtimeCommand || !Field->Presentation().bBattle || WasInputKeyJustPressed(EKeys::Escape))) bBattleLogOpen=false;
     if (bBattleLogOpen && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
     if (bMarchPlanOpen && !Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
+    if(Field->Presentation().Position.bVisible)
+    {
+        bEnemyDetailsOpen=false;
+        if(bMarchPlanOpen || bBattleLogOpen) Field->Issue(ETacticalCommand::Cancel);
+    }
     const bool bSignatureCapture = bCapture && FParse::Param(FCommandLine::Get(), TEXT("GunyuSignature"));
     const bool bSoloCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuSolo"));
     const bool bCinemaCapture = bCapture && (FParse::Param(FCommandLine::Get(), TEXT("GunyuCinema")) || bSignatureCapture || bSoloCapture);
@@ -293,6 +298,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPositionOnly")))
+    { const bool bPassed=Field->TacticPositionSmokeTest() && TacticPositionInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetOnly")))
     { const bool bPassed=Field->TacticTargetSmokeTest() && TacticTargetInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardOnly")))
@@ -358,6 +365,8 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=Field->GuardControlSmokeTest();
         if(bPassed) bPassed=Field->TacticTargetSmokeTest();
         if(bPassed) bPassed=TacticTargetInterfaceSmokeTest();
+        if(bPassed) bPassed=Field->TacticPositionSmokeTest();
+        if(bPassed) bPassed=TacticPositionInterfaceSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -459,6 +468,12 @@ void ATacticalController::PlayerTick(float Delta)
     {
         Field->PrepareTacticTargetPreview(TargetPreview);CloseEpisode();
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetDestination"))) Field->Issue(ETacticalCommand::Move);
+    }
+    int PositionPreview=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("TacticPosition="),PositionPreview))
+    {
+        Field->PrepareTacticPositionPreview(PositionPreview);CloseEpisode();bEnemyDetailsOpen=false;
+        Focus=Field->VisualUnits()[Field->Presentation().Selected].Position;LabelLayoutFrame=MAX_uint64;
     }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }

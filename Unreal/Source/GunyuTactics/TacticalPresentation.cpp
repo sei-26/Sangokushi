@@ -136,6 +136,7 @@ void ATacticalField::BuildPresentation()
     State->Reachable.Reset();
     if (!HUD.bBattle || !TacticChain::Living(J.world, State->Selected)) return;
     if (State->Input == ETacticalInput::Select) return;
+    if(State->Input==ETacticalInput::Position) { HUD.Hint=TEXT("番号のマスを比較。確定するまで移動・戦法は消費しません。");return; }
     if (bRealtimeCommand && State->Input==ETacticalInput::Move)
     {
         for (int Y=1;Y<StrategistJourney::Rows-1;++Y) for (int X=1;X<StrategistJourney::Columns-1;++X)

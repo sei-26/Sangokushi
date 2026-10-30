@@ -11,7 +11,7 @@ enum class ETacticalCommand : uint8
     RealtimeMode, RealtimePause, RealtimeSpeed, RealtimeStep, RealtimeStop, RealtimeChainSignal, RealtimeAlertPause,
     RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate, DifficultyStory, DifficultyStandard, PlanExample, Resupply, ReleaseGuard
 };
-enum class ETacticalInput : uint8 { Select, Move, Lure };
+enum class ETacticalInput : uint8 { Select, Move, Lure, Position };
 
 struct FOfficerPresentation
 {
@@ -30,6 +30,19 @@ struct FTacticTargetPresentation
     int Army=-1, Tile=-1, Step=0, ComboPercent=0, Damage=0, RetreatChoices=0;
     FString Badge, Detail;
     bool bReady=false, bSelected=false;
+};
+struct FTacticPositionCell
+{
+    int Tile=-1, Step=0, Damage=0, ComboPercent=0;
+    bool bMoveAllowed=false, bReady=false;
+    FString Result, Risk;
+};
+struct FTacticPositionComparison
+{
+    bool bVisible=false, bCanCommit=false;
+    int SelectedTile=-1;
+    FString Title, Result, Risk, Timing, ConfirmLabel;
+    TArray<FTacticPositionCell> Cells;
 };
 struct FPreparationPresentation
 {
@@ -146,6 +159,7 @@ struct FTacticalPresentation
     bool bThreatOverlay = true;
     FString SelectedTacticName, TacticAvailability;
     bool bTacticUnavailable=false;
+    FTacticPositionComparison Position;
     TArray<FTacticTargetPresentation> TacticTargets;
     FString TacticTargetSummary;
     int ReadyTacticTargets=0;

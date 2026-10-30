@@ -2,6 +2,7 @@
 #include "TacticalTacticEffects.h"
 #include "TacticalState.h"
 #include "TacticalTargetVisual.h"
+#include "TacticalPositionEffects.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "Components/AudioComponent.h"
@@ -105,6 +106,7 @@ void ATacticalField::RenderEffects()
                 Quad(V-Side,V+Side,W+Side,W-Side,Color);
             }
         }
+    if(!Beat) gunyupositionfx::Draw(H.Position,[this](int Tile) { return SurfaceLocation(Tile); },[this](FVector Point) { return SurfaceHeight(Point); },Quad);
     // Soft formation footprint and a segmented facing-independent selection halo.
     for (const auto& Unit : State->Units)
     {
