@@ -293,6 +293,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetOnly")))
+    { const bool bPassed=Field->TacticTargetSmokeTest() && TacticTargetInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardOnly")))
     { const bool bPassed=Field->GuardControlSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdviceOnly")))
@@ -354,6 +356,8 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=CampaignPacingSmokeTest();
         if(bPassed) bPassed=PlanAdviceSmokeTest();
         if(bPassed) bPassed=Field->GuardControlSmokeTest();
+        if(bPassed) bPassed=Field->TacticTargetSmokeTest();
+        if(bPassed) bPassed=TacticTargetInterfaceSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -449,6 +453,12 @@ void ATacticalController::PlayerTick(float Delta)
     {
         Field->PrepareGuardControlPreview(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardSpent")));CloseEpisode();
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardReleased"))) Field->Issue(ETacticalCommand::ReleaseGuard);
+    }
+    int TargetPreview=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("TacticTargets="),TargetPreview))
+    {
+        Field->PrepareTacticTargetPreview(TargetPreview);CloseEpisode();
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetDestination"))) Field->Issue(ETacticalCommand::Move);
     }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }

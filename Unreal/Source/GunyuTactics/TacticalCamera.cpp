@@ -86,14 +86,16 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
 }
 void ATacticalController::BuildCameraInterface(TSharedRef<SCanvas> Canvas)
 {
-    auto Controls=SNew(SHorizontalBox)
-        + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([] { return TEXT("中ドラッグ回転"); },11)]
-        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,6,0)[Button([this]
-          { const TCHAR* Names[]={TEXT("標準"),TEXT("臨場"),TEXT("俯瞰"),TacticalMap::SceneryLayout(Field->Presentation().Mission).ViewName};return FString(TEXT("視点 "))+(CameraPreset<0 ? TEXT("自由") : Names[CameraPreset])+TEXT(" / K"); },[this] { CycleCameraView(); },[] { return true; },true)]
-        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,6,0)[Button([] { return TEXT("選択隊へ J"); },[this] { FocusSelectedOfficer(); },[] { return true; },true)]
-        + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("全景 Home"); },[this] { ResetBattleCamera(); },[] { return true; },true)];
-    Controls->AddSlot().AutoWidth().Padding(5,0,0,0)[Button([this] { return bTacticCinema ? TEXT("演出ON O") : TEXT("演出OFF O"); },[this] { bTacticCinema=!bTacticCinema; },[] { return true; },true)];
+    auto Controls=SNew(SVerticalBox)
+        + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
+          + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,6,0)[Button([this]
+            { const TCHAR* Names[]={TEXT("標準"),TEXT("臨場"),TEXT("俯瞰"),TacticalMap::SceneryLayout(Field->Presentation().Mission).ViewName};return FString(TEXT("視点 "))+(CameraPreset<0 ? TEXT("自由") : Names[CameraPreset])+TEXT(" / K"); },[this] { CycleCameraView(); },[] { return true; },true)]
+          + SHorizontalBox::Slot().FillWidth(1)[Button([] { return TEXT("選択隊へ J"); },[this] { FocusSelectedOfficer(); },[] { return true; },true)]]
+        + SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SHorizontalBox)
+          + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,6,0)[Button([] { return TEXT("全景 Home"); },[this] { ResetBattleCamera(); },[] { return true; },true)]
+          + SHorizontalBox::Slot().FillWidth(1)[Button([this] { return bTacticCinema ? TEXT("演出ON O") : TEXT("演出OFF O"); },[this] { bTacticCinema=!bTacticCinema; },[] { return true; },true)]]
+        + SVerticalBox::Slot().AutoHeight().Padding(0,5,0,0)[Label([] { return TEXT("中ドラッグで回転 ／ ホイールで拡大"); },11)];
     auto Panel=SNew(STacticalChrome).Padding(8)
         .Visibility_Lambda([this] { return Field->Presentation().bBattle && !Field->IsPlaying() ? EVisibility::Visible : EVisibility::Collapsed; })[Controls];
-    InputPanels.Add(Panel);Canvas->AddSlot().Position(FVector2D(716,116)).Size(FVector2D(540,50))[Panel];
+    InputPanels.Add(Panel);Canvas->AddSlot().Position(FVector2D(1268,704)).Size(FVector2D(316,104))[Panel];
 }

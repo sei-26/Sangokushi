@@ -35,8 +35,18 @@ void ATacticalField::BuildTacticAvailability()
     H.bTacticUnavailable=!H.TacticAvailability.IsEmpty();
     if(H.bTacticUnavailable) return;
     const auto& J=State->Journey;const auto Tactic=State->SelectedTactics[State->Selected];
-    if(Tactic==ChainTactic::Lure)
-    { H.TacticAvailability=TEXT("予約から後退先を指定。固守する敵は誘えません。");return; }
+    if(TacticChain::Definition(Tactic).targetsEnemy)
+    {
+        for(const auto& Read:H.TacticTargets) if(Read.bSelected)
+        {
+            H.bTacticUnavailable=!Read.bReady;
+            H.TacticAvailability=Read.bReady ? (Tactic==ChainTactic::Lure ? TEXT("後退先あり。予約から水色の候補を指定。"):
+                Read.Step==1 ? TEXT("単独で発動できます。予約 → 発動 / C。"):
+                FString::Printf(TEXT("第%d手の成立見込み / 火力%d％"),Read.Step,Read.ComboPercent)):
+                Read.Detail.Left(Read.Detail.Find(TEXT("\n"))<0 ? Read.Detail.Len():Read.Detail.Find(TEXT("\n")));
+            return;
+        }
+    }
     auto Orders=State->Orders;
     Orders.push_back({State->Selected,TacticChain::Definition(Tactic).targetsEnemy ? State->Target:-1,Tactic,-1});
     const auto Preview=J.Preview(Orders);

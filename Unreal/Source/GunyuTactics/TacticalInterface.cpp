@@ -94,6 +94,7 @@ void ATacticalController::BuildInterface()
     BuildRealtimeInterface(Canvas);
     BuildTacticInterface(Canvas);
     BuildEnemyInterface(Canvas);
+    BuildTacticTargetInterface(Canvas);
     BuildBattleWatchInterface(Canvas);
     BuildMarchInterface(Canvas);
     BuildJourneyInterface(Canvas);

@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalTacticEffects.h"
 #include "TacticalState.h"
+#include "TacticalTargetVisual.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "Components/AudioComponent.h"
@@ -86,6 +87,24 @@ void ATacticalField::RenderEffects()
             Ring(B, 23, 4, Threat,true);
         }
     }
+    if(!Beat && H.bBattle && H.bTacticTargetOverlay)
+        for(const auto& Read:H.TacticTargets)
+        {
+            if(!Read.bReady) continue;
+            const auto Center=SurfaceLocation(Read.Tile);auto Color=gunyutargetui::Color(Read);
+            Color.A=Read.bSelected ? .95f:.65f;
+            // Outside the team ring: dashed corners mark a prediction, not a hit.
+            for(int Edge=0;Edge<6;++Edge) for(int Segment=0;Segment<2;++Segment)
+            {
+                const float A=(Edge*60.f+30.f)*PI/180.f,B=((Edge+1)*60.f+30.f)*PI/180.f;
+                const auto P=Center+FVector(FMath::Cos(A),FMath::Sin(A),0)*117;
+                const auto Q=Center+FVector(FMath::Cos(B),FMath::Sin(B),0)*117;
+                auto V=FMath::Lerp(P,Q,Segment==0 ? 0.f:.74f),W=FMath::Lerp(P,Q,Segment==0 ? .26f:1.f);
+                V.Z=SurfaceHeight(V)+18;W.Z=SurfaceHeight(W)+18;
+                const auto Side=FVector::CrossProduct((W-V).GetSafeNormal(),FVector::UpVector)*(Read.bSelected ? 3.5f:2.f);
+                Quad(V-Side,V+Side,W+Side,W-Side,Color);
+            }
+        }
     // Soft formation footprint and a segmented facing-independent selection halo.
     for (const auto& Unit : State->Units)
     {

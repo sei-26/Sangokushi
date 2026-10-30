@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalChrome.h"
 #include "Campaign.hpp"
+#include "TacticalTargetVisual.h"
 
 void ATacticalController::LayoutMapLabels()
 {
@@ -74,6 +75,8 @@ FString ATacticalController::UnitMapStatus(int Index) const
     const auto& U=Units[Index];
     if(Field->IsPlaying()) return Field->ReadUnitActivity(Index).Caption;
     if(U.Troops<=0) return TEXT("戦闘不能");
+    if(const auto* Read=gunyutargetui::Find(Field->Presentation(),Index))
+        return Read->Badge+(U.bDisordered ? TEXT(" / 混乱"):U.bPressured ? TEXT(" / 隙"):U.bGuarded ? TEXT(" / 固守"):TEXT(""));
     if(U.bDisordered) return TEXT("混乱");
     if(U.bPressured) return TEXT("隙あり");
     if(U.Motion>.01f) return TEXT("行軍中");

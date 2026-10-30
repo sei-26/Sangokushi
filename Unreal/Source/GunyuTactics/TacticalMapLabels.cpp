@@ -2,6 +2,7 @@
 #include "HexGrid.hpp"
 #include "WorldLayout.hpp"
 #include "TacticalWidgets.h"
+#include "TacticalTargetVisual.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBorder.h"
@@ -36,13 +37,17 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
              [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this,Index] { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) ? FMath::Clamp(U[Index].Morale/100.f,0.f,1.f):0.f; }).FillColorAndOpacity_Lambda([this,Index] { const auto& U=Field->VisualUnits();return FSlateColor(U.IsValidIndex(Index) && U[Index].bEnemy ? FLinearColor(.9f,.35f,.18f) : FLinearColor(.31f,.71f,.62f)); })]]
           + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular",11))
              .Text_Lambda([this,Index] { return FText::FromString(UnitChainNumber(Index)+UnitMapStatus(Index)); })
-             .ColorAndOpacity_Lambda([this,Index] { return FSlateColor(Field->IsPlaying() ? Field->ReadUnitActivity(Index).Color:FLinearColor(.75f,.91f,.75f)); })]
+             .ColorAndOpacity_Lambda([this,Index] { if(const auto* Read=gunyutargetui::Find(Field->Presentation(),Index)) return FSlateColor(gunyutargetui::Color(*Read));return FSlateColor(Field->IsPlaying() ? Field->ReadUnitActivity(Index).Color:FLinearColor(.75f,.91f,.75f)); })]
           + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(2)
              .Visibility_Lambda([this,Index] { return Field->IsPlaying() && Field->ReadUnitActivity(Index).bActive ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
              [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this,Index] { return Field->ReadUnitActivity(Index).Progress; })
               .FillColorAndOpacity_Lambda([this,Index] { return FSlateColor(Field->ReadUnitActivity(Index).Color); })]]
           + SVerticalBox::Slot().AutoHeight()[Label([this, Index] { return Field->VisualUnits().IsValidIndex(Index) && Field->VisualUnits()[Index].Loss > 0 ? FString::Printf(TEXT("−%d"), Field->VisualUnits()[Index].Loss) : FString(); }, 21, FLinearColor(1.f, .35f, .15f))];
-        auto Plate=SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Cursor(EMouseCursor::Hand)
+        auto Plate=SNew(SBorder).Padding(1).BorderImage_Lambda([this,Index]
+            { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return FCoreStyle::Get().GetBrush(Read && Read->bSelected ? "WhiteBrush":"NoBrush"); })
+            .BorderBackgroundColor_Lambda([this,Index] { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return Read ? gunyutargetui::Color(*Read):FLinearColor::Transparent; })
+            .ToolTipText_Lambda([this,Index] { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return FText::FromString(Read ? Field->Presentation().SelectedTacticName+TEXT("\n")+Read->Detail:FString()); })
+            .Cursor(EMouseCursor::Hand)
             .Visibility_Lambda([this,Index]
             { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) && U[Index].Id>=0 && (U[Index].Troops>0 || Field->IsPlaying()) && !Field->Presentation().Journey.bVisible ? EVisibility::Visible : EVisibility::Collapsed; })
             .OnMouseButtonDown_Lambda([this,Index](const FGeometry&,const FPointerEvent& Event)
@@ -56,7 +61,8 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
                     Field->CommandAt(Cell.first+Cell.second*world::Width);IgnoreMapInputThroughFrame=Frames+1;return FReply::Handled();
                 }
                 return FReply::Unhandled();
-            })[Contents];
+            })[SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
+                .BorderBackgroundColor(FLinearColor(.012f,.024f,.026f,.96f))[Contents]];
         InputPanels.Add(Plate);Canvas->AddSlot().Position_Lambda([this,Index] { return LabelPosition(Index); }).Size(FVector2D(132,86))[Plate];
     }
 }

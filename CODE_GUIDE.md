@@ -402,3 +402,6 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 前戦の実績から次戦の配置案を選ぶ処理は `NewGame/JourneyPlanAdvice.cpp`。理由・担当は `PlanExample` の同じデータで表示と採用に使う。未採用案の紫マーカーは `TacticalPlanningMap.cpp`。[条件・操作・制約](TACTICAL_PLAN_ADVICE.md)。
 
 固守の継続解除と現在の行動権の説明は `Unreal/Source/GunyuTactics/TacticalGuardControl.cpp`。操作と資源・行動権の不変性は `TacticalGuardControlTests.cpp` で確認。[操作と制約](GUARD_COMMAND_FLOW.md)。
+
+
+戦法の捕捉対象と単独／連鎖後の成立見込みは `Unreal/Source/GunyuTactics/TacticalTacticTargets.cpp`。敵札と足元の共通色は `TacticalTargetVisual.h`、切替操作は `TacticalTacticTargetInterface.cpp`。[操作・予測の境界・検証](TACTIC_TARGET_READ.md)。

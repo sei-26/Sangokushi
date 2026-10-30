@@ -105,6 +105,9 @@ public:
     bool ComboSmokeTest();
     bool TacticAvailabilitySmokeTest();
     bool GuardControlSmokeTest();
+    bool TacticTargetSmokeTest();
+    void PrepareTacticTargetPreview(int Variant);
+    bool SelectNextTacticTarget();
     void PrepareGuardControlPreview(bool bSpent);
     void PrepareTacticAvailabilityPreview(bool bUsedSignature);
     void PrepareBattleStoryPreview(bool bCostly);
@@ -249,6 +252,8 @@ private:
     void BuildPresentation();
     void BuildTacticsPresentation();
     void BuildTacticAvailability();
+    FTacticTargetPresentation ReadTacticTarget(int Target) const;
+    void BuildTacticTargets();
     bool HasGuardOrder() const;
     void ReleaseGuardOrder();
     void BuildGuardPresentation();
@@ -283,6 +288,9 @@ private:
     void BuildInterface();
     void AddBattlePanel(TSharedRef<class SCanvas>,FVector2D,FVector2D,TSharedRef<class SWidget>,float Inset=12);
     void BuildMapLabels(TSharedRef<class SCanvas>);
+    void BuildTacticTargetInterface(TSharedRef<class SCanvas>);
+    bool FocusNextTacticTarget();
+    bool TacticTargetInterfaceSmokeTest();
     void BuildBattleHeader(TSharedRef<class SCanvas>);
     void BuildCameraInterface(TSharedRef<class SCanvas>);
     void BuildTacticCinema(TSharedRef<class SCanvas>);

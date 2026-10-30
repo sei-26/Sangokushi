@@ -25,6 +25,12 @@ struct FOrderPresentation
     int Actor = -1, Target = -1;
     bool bSuccess = false, bEvaluated = false;
 };
+struct FTacticTargetPresentation
+{
+    int Army=-1, Tile=-1, Step=0, ComboPercent=0, Damage=0, RetreatChoices=0;
+    FString Badge, Detail;
+    bool bReady=false, bSelected=false;
+};
 struct FPreparationPresentation
 {
     FString Title, Description, Tradeoff, Cost, Remaining, MoraleText, Shortage;
@@ -140,6 +146,10 @@ struct FTacticalPresentation
     bool bThreatOverlay = true;
     FString SelectedTacticName, TacticAvailability;
     bool bTacticUnavailable=false;
+    TArray<FTacticTargetPresentation> TacticTargets;
+    FString TacticTargetSummary;
+    int ReadyTacticTargets=0;
+    bool bTacticTargetOverlay=false;
     TArray<TPair<int, int>> Routes;
     FJourneyPresentation Journey;
     int Predicted = 0, Selected = 0;
