@@ -8,6 +8,12 @@ FString ATacticalField::TacticReservationBlockReason() const
     const auto& J=State->Journey;const int Id=State->Selected;
     if(J.stage!=JourneyStage::Battle) return TEXT("戦闘中に戦法を予約できます。");
     if(Id<0 || Id>=3 || !TacticChain::Living(J.world,Id)) return TEXT("生存している味方武将を選んでください。");
+    if(J.chain.spent[Id] && J.guarding[Id])
+    {
+        if(!bRealtimeCommand) return TEXT("固守で行動済み。Spaceで次の指揮へ。");
+        return HasGuardOrder() ? TEXT("固守で行動済み。継続を解除し『1周期』で次の指揮へ。"):
+            TEXT("固守で行動済み。停止中の『1周期』で次の指揮へ。");
+    }
     if(J.chain.spent[Id]) return bRealtimeCommand ? TEXT("この指揮は行動済み。一時停止→「1周期」で回復。") : TEXT("この指揮は行動済み。Spaceで次の指揮へ。");
     const auto Tactic=State->SelectedTactics[Id];
     if(!TacticChain::CanUse(J.world,Id,Tactic)) return TEXT("この武将が使える戦法を選んでください。");

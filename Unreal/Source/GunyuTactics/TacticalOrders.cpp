@@ -29,6 +29,7 @@ bool ATacticalField::CanIssue(ETacticalCommand Command) const
     if (Command == ETacticalCommand::TalkLiu || Command == ETacticalCommand::TalkGuan || Command == ETacticalCommand::TalkZhang)
         return J.stage == JourneyStage::Preparation || J.stage == JourneyStage::Debrief;
     if(Command==ETacticalCommand::Resupply) return J.CanResupply();
+    if(Command==ETacticalCommand::ReleaseGuard) return HasGuardOrder();
     if (J.stage != JourneyStage::Battle) return false;
     if (Command == ETacticalCommand::EndTurn || Command == ETacticalCommand::Withdraw) return true;
     if (Command == ETacticalCommand::Clear) return !State->Orders.empty();
@@ -171,6 +172,8 @@ void ATacticalField::Issue(ETacticalCommand Command)
     if (Command != ETacticalCommand::EndTurn) State->bConfirmEndTurn = false;
     switch (Command)
     {
+    case ETacticalCommand::ReleaseGuard:
+        ReleaseGuardOrder();return;
     case ETacticalCommand::Resupply:
         State->Realtime.paused=true;
         if(J.Resupply())

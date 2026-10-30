@@ -293,6 +293,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardOnly")))
+    { const bool bPassed=Field->GuardControlSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdviceOnly")))
     { const bool bPassed=PlanAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPreparationOnly")))
@@ -351,6 +353,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=AccessibilitySmokeTest();
         if(bPassed) bPassed=CampaignPacingSmokeTest();
         if(bPassed) bPassed=PlanAdviceSmokeTest();
+        if(bPassed) bPassed=Field->GuardControlSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -441,6 +444,11 @@ void ATacticalController::PlayerTick(float Delta)
         const ETacticalCommand Talk[]={ETacticalCommand::TalkLiu,ETacticalCommand::TalkGuan,ETacticalCommand::TalkZhang};
         Field->Issue(Talk[FMath::Clamp(AftermathOfficer,0,2)]);OpenOfficerNovel();
         EpisodePage=FMath::Max(0,EpisodeSnapshot.Lines.Num()-3);NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+    }
+    if(bCapture && Frames==8 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardPreview")))
+    {
+        Field->PrepareGuardControlPreview(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardSpent")));CloseEpisode();
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardReleased"))) Field->Issue(ETacticalCommand::ReleaseGuard);
     }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }

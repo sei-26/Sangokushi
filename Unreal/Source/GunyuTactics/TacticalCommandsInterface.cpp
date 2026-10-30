@@ -22,7 +22,15 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
     Orders->AddSlot().AutoHeight()
         [ SNew(SHorizontalBox)
           + SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 4, 4)[Command(ETacticalCommand::PrepareAmbush, [] { return TEXT("伏兵"); })]
-          + SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 0, 4)[Command(ETacticalCommand::Hold, [] { return TEXT("固守"); })] ];
+          + SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 0, 4)
+            [SNew(SBox).ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().GuardHint); })
+             [Button([this] { const auto& H=Field->Presentation();return H.GuardButtonLabel.IsEmpty() ? FString(TEXT("固守")):H.GuardButtonLabel; },
+               [this] { Field->Issue(Field->Presentation().bGuardOrder ? ETacticalCommand::ReleaseGuard:ETacticalCommand::Hold); },
+               [this] { return Field->CanIssue(Field->Presentation().bGuardOrder ? ETacticalCommand::ReleaseGuard:ETacticalCommand::Hold); },true)]] ];
+    Orders->AddSlot().AutoHeight().Padding(0,2,0,4)
+      [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().GuardContext.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+       .ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().GuardHint); })
+       [Label([this] { return Field->Presentation().GuardContext; },11,Gold)]];
     Orders->AddSlot().AutoHeight()
         [SNew(SHorizontalBox)
          + SHorizontalBox::Slot().FillWidth(3).Padding(0, 0, 4, 0)[SNew(SBox).ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().Hint); })[TacticPickerButton()]]

@@ -400,3 +400,5 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 戦後の準備実績に応じる短い掛け合いは `NewGame/JourneyPreparationDrama.cpp`。既存の撤退・損耗・約束の会話を保ち、その後へ実績に沿う３行を足す。
 
 前戦の実績から次戦の配置案を選ぶ処理は `NewGame/JourneyPlanAdvice.cpp`。理由・担当は `PlanExample` の同じデータで表示と採用に使う。未採用案の紫マーカーは `TacticalPlanningMap.cpp`。[条件・操作・制約](TACTICAL_PLAN_ADVICE.md)。
+
+固守の継続解除と現在の行動権の説明は `Unreal/Source/GunyuTactics/TacticalGuardControl.cpp`。操作と資源・行動権の不変性は `TacticalGuardControlTests.cpp` で確認。[操作と制約](GUARD_COMMAND_FLOW.md)。

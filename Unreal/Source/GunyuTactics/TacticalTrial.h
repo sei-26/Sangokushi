@@ -104,6 +104,8 @@ public:
     bool TacticRepertoireSmokeTest();
     bool ComboSmokeTest();
     bool TacticAvailabilitySmokeTest();
+    bool GuardControlSmokeTest();
+    void PrepareGuardControlPreview(bool bSpent);
     void PrepareTacticAvailabilityPreview(bool bUsedSignature);
     void PrepareBattleStoryPreview(bool bCostly);
     bool EnemyReadSmokeTest();
@@ -247,6 +249,9 @@ private:
     void BuildPresentation();
     void BuildTacticsPresentation();
     void BuildTacticAvailability();
+    bool HasGuardOrder() const;
+    void ReleaseGuardOrder();
+    void BuildGuardPresentation();
     void RetargetObservedEnemy();
     void BuildEnemyPresentation();
     void BuildJourneyPresentation();
