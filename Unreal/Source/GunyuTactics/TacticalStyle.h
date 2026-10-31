@@ -6,7 +6,7 @@
 #include "Styling/CoreStyle.h"
 namespace gunyustyle
 {
-    inline const FLinearColor Paper(.89f,.86f,.78f),Brass(.70f,.55f,.33f),Vermilion(.46f,.105f,.065f);
+    inline const FLinearColor Paper(.98f,.94f,.83f),Brass(.96f,.73f,.35f),Vermilion(.72f,.15f,.12f);
     inline FSlateFontInfo Font(int Size,bool Literary=false)
     {
         if(!Literary) return FCoreStyle::GetDefaultFontStyle("Regular",Size);

@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyAutoBattle.hpp"
 using namespace frontline;
 
 bool ATacticalField::RealtimePaused() const
@@ -142,8 +143,9 @@ void ATacticalField::AdvanceRealtime(float Delta)
 {
     if (!bRealtimeCommand) return;
     if (State->Journey.stage!=JourneyStage::Battle)
-    { if (!IsPlaying()) State->Realtime.paused=true;UpdateRealtimePresentation();return; }
+    { State->bAutoBattle=State->bAutoCyclePending=false;if (!IsPlaying()) State->Realtime.paused=true;UpdateRealtimePresentation();return; }
     State->Realtime.Advance(Delta);
+    if(State->bAutoBattle) State->Realtime.elapsed=FMath::Min(State->Realtime.elapsed,JourneyRealtime::Period);
     if (!RealtimePaused() && !IsPlaying())
     {
         if (State->bRealtimeChainRequested)
@@ -152,7 +154,12 @@ void ATacticalField::AdvanceRealtime(float Delta)
             if (!State->Orders.empty()) { DispatchQueuedChain();Refresh(); }
         }
         else if (DispatchReadySignal()) { }
-        else if (State->Realtime.Due()) RunRealtimeCycle(false);
+        else if (State->Realtime.Due())
+        {
+            if(State->bAutoBattle && !State->bAutoCyclePending && BeginAutoCycle()) { }
+            else
+            { State->bAutoCyclePending=false;if(!State->Realtime.paused) RunRealtimeCycle(false); }
+        }
     }
     UpdateRealtimePresentation();
 }
@@ -170,8 +177,8 @@ void ATacticalField::UpdateRealtimePresentation()
     else H.ChainSignalLabel=FString::Printf(TEXT("%d/%d手成立 / %d手目を待つ\n未成立の条件は右の予約欄。"),State->SignalRead.completed,State->SignalRead.total,State->SignalRead.completed+1);
     H.ClockProgress=FMath::Clamp(static_cast<float>(RT.elapsed/JourneyRealtime::Period),0.f,1.f);
     H.SpeedLabel=FString::Printf(TEXT("%.1f×"),RT.speed);
-    H.ClockLabel=State->bRealtimeStepping ? TEXT("１周期を進行中") :
-        H.bRealtimePaused ? TEXT("指揮停止中 / 命令受付") :
+    H.ClockLabel=State->bRealtimeStepping ? TEXT("戦場が動いている") :
+        H.bRealtimePaused ? TEXT("ひと休み / 指示を出せる") :
         FString::Printf(TEXT("進行中 / 次 %.1f秒"),FMath::Max(0.,JourneyRealtime::Period-RT.elapsed));
     if (!bRealtimeCommand) return;
     H.Selected=State->Selected;
@@ -194,5 +201,5 @@ void ATacticalField::UpdateRealtimePresentation()
     }
     if (State->Input==ETacticalInput::Move) H.Hint=TEXT("停止中。行軍の目的地をクリック。敵を右クリックで追撃。");
     else if (IsPlaying()) H.Hint=TEXT("行軍先・固守は次の更新から。経由地・連鎖の編集は演出完了後。");
-    if (H.bBattle) H.NextLabel=H.bRealtimePaused ? TEXT("作戦を再開 / Space") : TEXT("戦術ポーズ / Space");
+    if (H.bBattle) H.NextLabel=H.bRealtimePaused ? TEXT("戦いを進める / Space") : TEXT("一時停止 / Space");
 }

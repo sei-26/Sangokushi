@@ -4,7 +4,7 @@
 
 enum class ETacticalCommand : uint8
 {
-    Move, Strike, PrepareAmbush, Hold, QueueTactic, Execute, EndTurn,
+    Move, Strike, PrepareAmbush, Hold, QueueTactic, Execute, EndTurn, AutoBattle,
     Sample, Clear, Continue, Restart, Cancel, Skip,
     Dialogue, Reinforce, PlanAmbush, PlanSupplies, Deploy, Retry,
     PromiseRoad, PromiseRescue, Withdraw, TalkLiu, TalkGuan, TalkZhang,

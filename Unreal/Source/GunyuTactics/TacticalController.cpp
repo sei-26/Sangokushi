@@ -86,6 +86,7 @@ void ATacticalController::BeginPlay()
         UE_LOG(LogTemp, Display, TEXT("GUNYU_FULLSCREEN: mode=%d desktop=%dx%d"), static_cast<int>(Settings->GetFullscreenMode()), Settings->GetScreenResolution().X, Settings->GetScreenResolution().Y);
     }
     ViewDistance=Distance;
+    bDetailedBattle=bSmoke || (bCapture && !FParse::Param(FCommandLine::Get(),TEXT("GunyuSimple")));
     BuildInterface();
 }
 
@@ -294,6 +295,9 @@ void ATacticalController::PlayerTick(float Delta)
         FParse::Value(FCommandLine::Get(), TEXT("CueTime="), Time);
         Field->AdvancePresentation(Time);
     }
+    if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAuto"))) Field->Issue(ETacticalCommand::AutoBattle);
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAutoOnly")))
+    { const bool Passed=Field->AutoBattleSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAccessibilityOnly")))
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
@@ -322,7 +326,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=CampaignPacingSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if (bSmoke && Frames == 2)
     {
-        bool bPassed = Field->SmokeTest();
+        bool bPassed = Field->AutoBattleSmokeTest();
+        if(bPassed) bPassed=Field->SmokeTest();
         if (bPassed)
         {
             Field->PrepareBattleWatchPreview();Field->Issue(ETacticalCommand::RealtimePause);bInterfaceVisible=false;ToggleBattleLog();

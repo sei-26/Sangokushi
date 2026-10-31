@@ -7,7 +7,7 @@ using namespace gunyuui;
 void ATacticalController::BuildTacticTargetInterface(TSharedRef<SCanvas> Canvas)
 {
     auto Panel=SNew(STacticalChrome).Padding(FMargin(8,4)).Accent(FLinearColor(.21f,.61f,.55f))
-        .Visibility_Lambda([this] { return Field->Presentation().bBattle && !Field->Presentation().TacticTargetSummary.IsEmpty() && !Field->IsPlaying() && !bTacticPickerOpen ? EVisibility::Visible:EVisibility::Collapsed; })
+        .Visibility_Lambda([this] { return bDetailedBattle && Field->Presentation().bBattle && !Field->Presentation().TacticTargetSummary.IsEmpty() && !Field->IsPlaying() && !bTacticPickerOpen ? EVisibility::Visible:EVisibility::Collapsed; })
         [SNew(SHorizontalBox)
          + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
            [SNew(SVerticalBox)

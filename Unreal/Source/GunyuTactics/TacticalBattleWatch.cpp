@@ -22,9 +22,11 @@ void ATacticalField::RecordBattleWatch(const JourneyWatchSnapshot& Before)
     if (!bRealtimeCommand) return;
     const auto Notices=State->BattleWatch.Record(Before,JourneyBattleWatch::Capture(State->Journey,State->Realtime));
     if (Notices.empty()) return;
-    State->bWatchPending=State->bWatchPauseAfterPlayback=true;
+    State->bWatchPending=true;
+    bool Severe=false;for(const auto& Notice:Notices) Severe|=Notice.kind==JourneyNoticeKind::Critical || Notice.kind==JourneyNoticeKind::Defeated || Notice.kind==JourneyNoticeKind::ConvoyHit || Notice.kind==JourneyNoticeKind::Stalled;
+    State->bWatchPauseAfterPlayback|=!State->bAutoBattle || Severe;
     if (IsPlaying()) return; // Publish only when this movement/damage has been shown.
-    if (bPauseOnBattleAlert) State->Realtime.paused=true;
+    if (bPauseOnBattleAlert && State->bWatchPauseAfterPlayback) State->Realtime.paused=true;
     State->bWatchPauseAfterPlayback=false;
     PublishBattleNotices();
 }

@@ -18,8 +18,8 @@ void ATacticalController::LayoutMapLabels()
             const auto P=MapLabelPosition(U.Position+FVector(0,0,35),FVector2D(100,66));
             Occupied.Add(FSlateRect(P.X,P.Y,P.X+100,P.Y+66));
         }
-    if(!Field->Presentation().Position.bVisible) Occupied.Add(FSlateRect(16,Field->bRealtimeCommand ? 486:586,246,704));
-    if(Field->bRealtimeCommand && !Field->IsPlaying() && !bTacticPickerOpen) Occupied.Add(FSlateRect(936,174,1252,278));
+    if(bDetailedBattle && !Field->Presentation().Position.bVisible) Occupied.Add(FSlateRect(16,Field->bRealtimeCommand ? 486:586,246,704));
+    if(bDetailedBattle && Field->bRealtimeCommand && !Field->IsPlaying() && !bTacticPickerOpen) Occupied.Add(FSlateRect(936,174,1252,278));
     if(Field->IsPlaying())
     {
         const auto C=Field->ReadTacticCinema();

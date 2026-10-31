@@ -26,10 +26,10 @@ namespace gunyuui
     inline const FButtonStyle& CommandStyle()
     {
         static const FButtonStyle Style=FButtonStyle()
-            .SetNormal(FSlateRoundedBoxBrush(FLinearColor(.020f,.025f,.027f),3.f,FLinearColor(.16f,.15f,.12f),1.f))
-            .SetHovered(FSlateRoundedBoxBrush(FLinearColor(.090f,.055f,.040f),3.f,FLinearColor(.55f,.36f,.20f),1.f))
-            .SetPressed(FSlateRoundedBoxBrush(FLinearColor(.13f,.042f,.028f),3.f,FLinearColor(.70f,.49f,.25f),1.f))
-            .SetDisabled(FSlateRoundedBoxBrush(FLinearColor(.017f,.020f,.022f),3.f,FLinearColor(.085f,.09f,.085f),1.f));
+            .SetNormal(FSlateRoundedBoxBrush(FLinearColor(.105f,.037f,.044f),7.f,FLinearColor(.52f,.32f,.13f),1.f))
+            .SetHovered(FSlateRoundedBoxBrush(FLinearColor(.27f,.075f,.065f),7.f,FLinearColor(.98f,.73f,.34f),1.5f))
+            .SetPressed(FSlateRoundedBoxBrush(FLinearColor(.40f,.10f,.07f),7.f,FLinearColor(1.f,.84f,.49f),1.5f))
+            .SetDisabled(FSlateRoundedBoxBrush(FLinearColor(.034f,.026f,.032f),7.f,FLinearColor(.14f,.10f,.08f),1.f));
         return Style;
     }
     inline TSharedRef<SButton> Button(TFunction<FString()> Value, TFunction<void()> Click,

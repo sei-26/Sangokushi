@@ -1,4 +1,6 @@
-﻿# コードを読むための地図
+# コードを読むための地図
+
+華やかな共通フレームは `TacticalChrome.cpp` / `TacticalStyle.h` / `TacticalWidgets.h`、簡単な采配と詳細の切替は `TacticalCommandsInterface.cpp`。軍議の数値の開閉は `TacticalNovelPlanInterface.cpp`。新背景は `Unreal/ArtSource/Novel/*-v2.png` と対応する `/Game/Art/Novel/T_*V2`。自動戦闘の観測に基づく判断は `NewGame/JourneyAutoBattle.cpp`、UEの時計・通常戦法・手動復帰への接続は `TacticalAutoBattle.cpp` / `TacticalRealtime.cpp`。[仕様](HEROIC_UI_AND_AUTO_BATTLE.md)。
 
 先遣の開始位置・初期士気・予備糧と一度の補給は `NewGame/JourneyPreparation.cpp`。準備の仕様は [PREPARATION_TRADEOFFS.md](PREPARATION_TRADEOFFS.md)。
 

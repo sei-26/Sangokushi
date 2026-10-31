@@ -15,6 +15,7 @@ struct FJourneyState
     frontline::JourneyBattleWatch BattleWatch;
     std::array<frontline::JourneyOrderRead,3> OrderReads{};
     bool bWatchPending=false,bWatchPauseAfterPlayback=false;
+    bool bAutoBattle=false,bAutoCyclePending=false; // Explicit delegation; saves resume in manual control.
     bool bRealtimeInBattle=false,bRealtimeStepping=false,bRealtimeChainRequested=false,bRealtimePauseAfterPlayback=false;
     TArray<TPair<int,int>> RealtimeRoutes;
     std::vector<frontline::ChainOrder> Orders;

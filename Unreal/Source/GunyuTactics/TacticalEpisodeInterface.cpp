@@ -8,6 +8,7 @@ using namespace gunyuui;
 void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
 {
     auto Visible=[this] { return bEpisodeOpen ? EVisibility::Visible:EVisibility::Collapsed; };
+    auto DialogueVisible=[this] { return bEpisodeOpen && !bNovelPlan ? EVisibility::Visible:EVisibility::Collapsed; };
     auto Click=[this](const FGeometry&,const FPointerEvent& Event)
     { if(Event.GetEffectingButton()==EKeys::LeftMouseButton) { ReadNextNovel();return FReply::Handled(); }return FReply::Unhandled(); };
     auto Backdrop=SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Visibility_Lambda(Visible)
@@ -20,33 +21,33 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
         const float W=FullBody ? 1020.f:650.f,H=FullBody ? 1530.f:975.f;
         auto Portrait=SNew(SBox).Visibility_Lambda([this,Slot]
             { const bool Match=Slot==0 || (Slot==1 ? NovelOfficer()!=4:NovelOfficer()==4);
-              return bEpisodeOpen && Match && CurrentEpisodeLine().Speaker>=0 ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
+              return bEpisodeOpen && !bNovelPlan && Match && CurrentEpisodeLine().Speaker>=0 ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
             [SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush"))
              [NovelPortraitWidget([this,Slot] { return Slot==0 ? 3:NovelOfficer(); },W,H)]];
         if(Slot>0) { Portrait->SetRenderTransformPivot(FVector2D(.5,.5));Portrait->SetRenderTransform(FSlateRenderTransform(FScale2D(-1,1))); }
         const FVector2D Position=Slot==0 ? FVector2D(-30,-100):Slot==1 ? FVector2D(850,60):FVector2D(640,-100);
         Canvas->AddSlot().Position(Position).Size(FVector2D(W,H))[Portrait];
     }
-    auto Header=SNew(STacticalChrome).Padding(FMargin(22,12)).Opacity(.86f).Visibility_Lambda(Visible)
+    auto Header=SNew(STacticalChrome).Padding(FMargin(22,12)).Opacity(.86f).Visibility_Lambda(DialogueVisible)
         [SNew(SVerticalBox)
          + SVerticalBox::Slot().AutoHeight()[Label([this] { return EpisodeSnapshot.Place; },12,Gold)]
          + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this] { return EpisodeSnapshot.Title; },25)]];
     Canvas->AddSlot().Position(FVector2D(40,28)).Size(FVector2D(820,88))[Header];InputPanels.Add(Header);
-    auto Caption=SNew(SBox).Visibility_Lambda([this] { return bEpisodeOpen && CurrentEpisodeLine().Speaker<0 && !(EpisodePage+1==EpisodeSnapshot.Lines.Num() && Field->Presentation().Journey.bNeedsReply) ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
+    auto Caption=SNew(SBox).Visibility_Lambda([this] { return bEpisodeOpen && !bNovelPlan && CurrentEpisodeLine().Speaker<0 && !(EpisodePage+1==EpisodeSnapshot.Lines.Num() && Field->Presentation().Journey.bNeedsReply) ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
         [SNew(STacticalChrome).Padding(24).Opacity(.72f)
          [SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[Label([this] { return EpisodeSnapshot.Question; },27)]
           + SVerticalBox::Slot().AutoHeight().Padding(0,14)[Label([this] { return EpisodeSnapshot.Setting; },17,Ink)]]];
     Canvas->AddSlot().Position(FVector2D(108,280)).Size(FVector2D(620,218))[Caption];
-    auto Dialogue=SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Visibility_Lambda(Visible).OnMouseButtonDown_Lambda(Click)
-        [SNew(STacticalChrome).Padding(FMargin(34,20)).Opacity(.96f).Accent(gunyustyle::Brass)
+    auto Dialogue=SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Visibility_Lambda(DialogueVisible).OnMouseButtonDown_Lambda(Click)
+        [SNew(STacticalChrome).Padding(FMargin(34,20)).Opacity(.90f).Accent(gunyustyle::Brass)
          [SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
              + SHorizontalBox::Slot().FillWidth(1)[Label([this] { return CurrentEpisodeLine().Name; },29,Gold)]
              + SHorizontalBox::Slot().AutoWidth()[Label([this] { return FString::Printf(TEXT("%02d / %02d"),EpisodePage+1,EpisodeSnapshot.Lines.Num()); },12,Gold)]]
           + SVerticalBox::Slot().FillHeight(1).Padding(0,13)[Label([this] { return VisibleNovelText(); },28)]
           + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
-             + SHorizontalBox::Slot().FillWidth(1)[Label([this] { return CurrentEpisodeLine().Direction; },15,FLinearColor(.57f,.58f,.55f))]
+             + SHorizontalBox::Slot().FillWidth(1)[Label([this] { return CurrentEpisodeLine().Direction; },15,FLinearColor(.78f,.72f,.61f))]
              + SHorizontalBox::Slot().AutoWidth().Padding(16,0)[Label([this] { return NovelTextComplete() ? TEXT("▼"):TEXT(""); },17,Gold)]]]];
     Canvas->AddSlot().Position(FVector2D(64,610)).Size(FVector2D(1472,226))[Dialogue];InputPanels.Add(Dialogue);
     auto Controls=SNew(SBox).Visibility_Lambda([this] { return bEpisodeOpen && !bNovelPlan ? EVisibility::Visible:EVisibility::Collapsed; })[SNew(SHorizontalBox)
@@ -56,7 +57,7 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().FillWidth(1)
         + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("閉じる / Esc"); },[this] { CloseEpisode(); })]
         + SHorizontalBox::Slot().AutoWidth().Padding(18,0,0,0)[SNew(SBox).WidthOverride(280)
-            [Button([this] { return !NovelTextComplete() ? TEXT("全文を表示 / Enter"):EpisodePage+1<EpisodeSnapshot.Lines.Num() ? TEXT("続きを読む / Enter"):Field->Presentation().Journey.bPreparation && !bNovelPersonal ? TEXT("作戦書を開く / Enter"):TEXT("采配へ戻る / Enter"); },[this] { ReadNextNovel(); })]]];
+            [Button([this] { return !NovelTextComplete() ? TEXT("全文を表示 / Enter"):EpisodePage+1<EpisodeSnapshot.Lines.Num() ? TEXT("続きを読む / Enter"):Field->Presentation().Journey.bPreparation && !bNovelPersonal ? TEXT("皆と策を決める / Enter"):TEXT("采配へ戻る / Enter"); },[this] { ReadNextNovel(); })]]];
     Canvas->AddSlot().Position(FVector2D(64,850)).Size(FVector2D(1472,34))[Controls];InputPanels.Add(Controls);
     auto Choices=SNew(SVerticalBox).Visibility_Lambda([this]
         { return bEpisodeOpen && !bNovelHistory && !bNovelPlan && NovelTextComplete() && EpisodePage+1==EpisodeSnapshot.Lines.Num() && Field->Presentation().Journey.bNeedsReply ? EVisibility::Visible:EVisibility::Collapsed; })

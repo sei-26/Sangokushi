@@ -141,6 +141,9 @@ public:
     bool HasChainReview() const;
     FChainReview ReadChainReview() const;
     bool RealtimeSmokeTest();
+    bool AutoBattleSmokeTest();
+    bool IsAutoBattle() const;
+    void StopAutoBattle();
     bool ChainSignalSmokeTest();
     bool BattleWatchSmokeTest();
     bool MarchPlanSmokeTest();
@@ -259,6 +262,7 @@ private:
     void RunRealtimeCycle(bool bSingleStep);
     void SyncRealtime();
     void UpdateRealtimePresentation();
+    bool BeginAutoCycle();
     void RecordBattleWatch(const frontline::JourneyWatchSnapshot& Before);
     void PublishBattleNotices();
     void BuildBattleWatchPresentation();
@@ -436,7 +440,8 @@ private:
     bool NovelFlowSmokeTest();
     bool PreparationReadSmokeTest();
     bool PreparationMeaningSmokeTest();
-    bool bNovelAdvice=false;
+    bool bNovelAdvice=false,bNovelDetails=false;
+    bool bDetailedBattle=false;
     FLinearColor NovelPortraitTone(int Speaker) const;
     const struct FSlateBrush* NovelPortraitBrush(int Speaker) const;
     UPROPERTY() TArray<TObjectPtr<class UTexture2D>> ConversationTextures;

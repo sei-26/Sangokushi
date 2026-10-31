@@ -12,7 +12,7 @@ void ATacticalController::BuildBattleFeed(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(6,0)
           [Button([] { return TEXT("戦法記録 / Y"); },[this] { ToggleChainReview(); },[this] { return Field->HasChainReview(); },true)]
         + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(10,0,6,0)
-          [Button([this] { return Field->Presentation().bAlertPause ? TEXT("警報停止 ON") : TEXT("警報停止 OFF"); },[this] { Field->Issue(ETacticalCommand::RealtimeAlertPause); },[this] { return Field->CanIssue(ETacticalCommand::RealtimeAlertPause); },true)]
+          [Button([this] { return Field->Presentation().bAlertPause ? TEXT("危険で停止 ON") : TEXT("危険で停止 OFF"); },[this] { Field->Issue(ETacticalCommand::RealtimeAlertPause); },[this] { return Field->CanIssue(ETacticalCommand::RealtimeAlertPause); },true)]
         + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
           [Button([this] { return FString::Printf(TEXT("履歴 %d / L"),Field->Presentation().BattleNotices.Num()); },[this] { ToggleBattleLog(); },[this] { return Field->bRealtimeCommand; },true)];
     AddBattlePanel(Canvas,FVector2D(16,718),FVector2D(1240,50),Feed,8);

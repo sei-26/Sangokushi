@@ -10,21 +10,21 @@ using namespace gunyuui;
 void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
 {
     auto Visible=[this] { return bEpisodeOpen && bNovelPlan && Field->Presentation().Journey.bPreparation ? EVisibility::Visible:EVisibility::Collapsed; };
-    auto Shade=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.002f,.004f,.007f,.86f)).Visibility_Lambda(Visible);
+    auto Shade=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.02f,.008f,.025f,.20f)).Visibility_Lambda(Visible);
     Canvas->AddSlot().Position(FVector2D::ZeroVector).Size(FVector2D(1600,900))[Shade];InputPanels.Add(Shade);
     auto Contents=SNew(SVerticalBox);
     Contents->AddSlot().AutoHeight()[SNew(SHorizontalBox)
-        + SHorizontalBox::Slot().FillWidth(1)[Label([] { return TEXT("軍師の作戦書"); },34,Gold)]
-        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelAdvice ? TEXT("案を比較 / A"):TEXT("武将の見立て / A"); },[this] { bNovelMap=false;bNovelAdvice=!bNovelAdvice; })]
+        + SHorizontalBox::Slot().FillWidth(1)[Label([] { return TEXT("さあ、軍議を始めよう"); },34,Gold)]
+        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelAdvice ? TEXT("案を比較 / A"):TEXT("皆の声を聞く / A"); },[this] { bNovelMap=false;bNovelAdvice=!bNovelAdvice; })]
         + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelMap ? TEXT("作戦の比較 / M"):TEXT("配置を考える / M"); },[this] { TogglePlanningMap(); })]
-        + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("軍議に戻る"); },[this] { CloseEpisode(); })]];
+        + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("物語へ戻る"); },[this] { bNovelPlan=false; })]];
     Contents->AddSlot().AutoHeight().Padding(0,4,0,8)
       [SNew(SHorizontalBox)
        + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
          [Label([this] { return Field->Presentation().Journey.Episode.Title+TEXT(" ／ 出陣前の決断"); },14)]
        + SHorizontalBox::Slot().AutoWidth()[BuildDifficultyChoice()]];
-    Contents->AddSlot().AutoHeight().Padding(0,0,0,8)[Label([this] { return TEXT("難易度：")+Field->Presentation().Journey.DifficultyName+TEXT(" ／ ")+Field->Presentation().Journey.DifficultyDetail; },13,Gold)];
-    Contents->AddSlot().AutoHeight()[SNew(SBox).Padding(FMargin(0,0,0,12)).Visibility_Lambda([this] { return bNovelMap ? EVisibility::Collapsed:EVisibility::Visible; })[Label([this] { return Field->Presentation().Journey.PlanDifference; },15,Gold)]];
+    Contents->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this] { return TEXT("難易度：")+Field->Presentation().Journey.DifficultyName+TEXT(" ／ ")+Field->Presentation().Journey.DifficultyDetail; },13,Gold)]];
+    Contents->AddSlot().AutoHeight()[SNew(SBox).Padding(FMargin(0,0,0,12)).Visibility_Lambda([this] { return !bNovelDetails || bNovelMap ? EVisibility::Collapsed:EVisibility::Visible; })[Label([this] { return Field->Presentation().Journey.PlanDifference; },15,Gold)]];
     Contents->AddSlot().AutoHeight().Padding(0,0,0,7)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bCampaignFlow && !bNovelMap ? EVisibility::Visible:EVisibility::Collapsed; })
        [SNew(SHorizontalBox)
@@ -33,9 +33,20 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
           [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
            [Button([] { return TEXT("経験からの配置案を地図で見る"); },[this] { OpenPlanningExample(); })]]]];
     auto Body=SNew(SVerticalBox);
-    Body->AddSlot().AutoHeight()[Label([] { return TEXT("果たすべき役目"); },18,Gold)];
+    auto Companions=SNew(SHorizontalBox);
+    for(int I=0;I<3;++I)
+        Companions->AddSlot().FillWidth(1).Padding(I==2 ? FMargin(0):FMargin(0,0,12,0))
+          [SNew(SButton).ButtonStyle(&CommandStyle()).ContentPadding(12).IsFocusable(false)
+           .OnClicked_Lambda([this] { bNovelMap=false;bNovelAdvice=true;return FReply::Handled(); })
+           [SNew(SHorizontalBox)
+            + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([I] { return I; },54,66)]
+            + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center).Padding(12,0)
+              [Label([I] { return I==0 ? TEXT("劉備\n君の策を聞かせてくれ"):I==1 ? TEXT("関羽\n大任、引き受けよう"):TEXT("張飛\nでかい一手、頼むぜ！"); },17,Gold)]]];
+    Body->AddSlot().AutoHeight().Padding(0,0,0,16)[Companions];
+    Body->AddSlot().AutoHeight()[Label([] { return TEXT("この一戦で、何を成す？"); },20,Gold)];
     Body->AddSlot().AutoHeight().Padding(0,7)[Label([this] { return Field->Presentation().Journey.PlanObjective; },20)];
-    Body->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().Journey.PlanRoute; },15)];
+    Body->AddSlot().AutoHeight().Padding(0,8)[Button([this] { return bNovelDetails ? TEXT("細かな数値を閉じる"):TEXT("詳しく比較する：兵力・士気・物資"); },[this] { bNovelDetails=!bNovelDetails; })];
+    Body->AddSlot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this] { return Field->Presentation().Journey.PlanRoute; },15)]];
     Body->AddSlot().AutoHeight().Padding(0,6,0,10)[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.PledgeText.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
         [Label([this] { return Field->Presentation().Journey.PledgeText; },18,Gold)]];
     auto Plans=SNew(SHorizontalBox);
@@ -46,11 +57,11 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
              .OnClicked_Lambda([this,Index] { SelectNovelPlan(Index);return FReply::Handled(); })
              [SNew(SVerticalBox)
               + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? FString::Printf(TEXT("%d　%s %s"),Index+1,P[Index].bSelected ? TEXT("●"):TEXT("○"),*P[Index].Title):FString(); },24,Gold)]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Description:FString(); },16)]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Tradeoff:FString(); },13,Gold)]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,5)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].MoraleText:FString(); },12,Gold)]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,6)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Cost:FString(); },15,Gold)]
-              + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Remaining:FString(); },13)]]];
+              + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return !P.IsValidIndex(Index) ? FString():bNovelDetails || !Field->Presentation().Journey.bCampaignFlow ? P[Index].Description:Index==0 ? FString(TEXT("開幕の一手を仕込む。関羽を先遣し、森林から伏兵を狙おう。")):FString(TEXT("戦闘中に一度、兵糧を配って士気を立て直せる。使う時は自分で決める。")); },16)]
+              + SVerticalBox::Slot().AutoHeight().Padding(0,4)[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Tradeoff:FString(); },13,Gold)]]
+              + SVerticalBox::Slot().AutoHeight().Padding(0,5)[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].MoraleText:FString(); },12,Gold)]]
+              + SVerticalBox::Slot().AutoHeight().Padding(0,6)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return !P.IsValidIndex(Index) ? FString():bNovelDetails ? P[Index].Cost:FString::Printf(TEXT("消費：兵糧 %d　軍資金 %d"),P[Index].Food,P[Index].Gold); },15,Gold)]
+              + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Remaining:FString(); },13)]]]];
     }
     Body->AddSlot().AutoHeight().Padding(0,8,0,12)[SNew(SBox).Visibility_Lambda([this] { return bNovelAdvice ? EVisibility::Collapsed:EVisibility::Visible; })[Plans]];
     Body->AddSlot().AutoHeight().Padding(0,0,0,8)
@@ -77,6 +88,6 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([this] { return bNovelMap ? (Field->Presentation().Journey.Map.bChooseRoute ? TEXT("1・2：準備案　M：比較　R：経路　Esc：作戦書"):TEXT("1・2：準備案　M：比較　Esc：作戦書")):TEXT("1・2：準備案　A：助言　M：地図　Esc：会話へ"); },14)]
         + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(360).HeightOverride(48)
           [Button([this] { return Field->CanIssue(ETacticalCommand::Deploy) ? TEXT("この作戦で出陣する / D"):TEXT("出陣できない：資源を確認"); },[this] { DeployNovelPlan(); },[this] { return Field->CanIssue(ETacticalCommand::Deploy); })]]];
-    auto Panel=SNew(STacticalChrome).Padding(28).Opacity(1.f).Accent(gunyustyle::Brass).Visibility_Lambda(Visible)[Contents];
+    auto Panel=SNew(STacticalChrome).Padding(28).Opacity(.93f).Accent(gunyustyle::Brass).Visibility_Lambda(Visible)[Contents];
     Canvas->AddSlot().Position(FVector2D(150,50)).Size(FVector2D(1300,800))[Panel];InputPanels.Add(Panel);
 }

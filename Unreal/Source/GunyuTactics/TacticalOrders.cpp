@@ -9,6 +9,7 @@ FString ATacticalField::Detail() const { return State->HUD.Report; }
 
 bool ATacticalField::CanIssue(ETacticalCommand Command) const
 {
+    if(Command==ETacticalCommand::AutoBattle) return State->Journey.stage==JourneyStage::Battle && (State->bAutoBattle || (!IsPlaying() && State->Orders.empty() && !State->ChainSignal.Armed()));
     if (IsRealtimeAction(Command)) return CanRealtimeIssue(Command);
     if (Command == ETacticalCommand::Skip) return IsPlaying();
     if (IsPlaying()) return false;
@@ -99,6 +100,7 @@ void ATacticalField::ClickTile(int Tile)
 
 void ATacticalField::CommandAt(int Tile)
 {
+    if(State->bAutoBattle) StopAutoBattle();
     if(State->Input==ETacticalInput::Position) { SelectTacticPosition(Tile);return; }
     if (bRealtimeCommand && State->Journey.stage==JourneyStage::Battle && State->Input!=ETacticalInput::Lure)
     {
@@ -164,6 +166,19 @@ void ATacticalField::Issue(ETacticalCommand Command)
 {
     auto& J = State->Journey;
     if (!CanIssue(Command)) return;
+    if(Command==ETacticalCommand::AutoBattle)
+    {
+        if(State->bAutoBattle) StopAutoBattle();
+        else
+        {
+            if(!bRealtimeCommand) IssueRealtime(ETacticalCommand::RealtimeMode);
+            State->bAutoBattle=true;State->bAutoCyclePending=false;State->Realtime.paused=false;
+            State->Input=ETacticalInput::Select;
+            State->Report=TEXT("皆に任せよう！ 味方が目標への行軍・攻撃・戦法を判断する。いつでも「自分で指揮」で止められる。");
+        }
+        Refresh();return;
+    }
+    if(State->bAutoBattle && Command!=ETacticalCommand::RealtimePause && Command!=ETacticalCommand::RealtimeSpeed && Command!=ETacticalCommand::RealtimeAlertPause && Command!=ETacticalCommand::Skip) StopAutoBattle();
     if(State->Input==ETacticalInput::Position) State->Input=ETacticalInput::Select;
     if (IsRealtimeAction(Command)) { IssueRealtime(Command);return; }
     if (Command==ETacticalCommand::DifficultyStory || Command==ETacticalCommand::DifficultyStandard || Command==ETacticalCommand::PlanExample || Command == ETacticalCommand::Dialogue || Command == ETacticalCommand::Reinforce || Command == ETacticalCommand::PlanAmbush || Command == ETacticalCommand::PlanSupplies || Command == ETacticalCommand::Deploy || Command == ETacticalCommand::Retry || Command == ETacticalCommand::PromiseRoad || Command == ETacticalCommand::PromiseRescue || Command == ETacticalCommand::TalkLiu || Command == ETacticalCommand::TalkGuan || Command == ETacticalCommand::TalkZhang || Command==ETacticalCommand::RouteRoad || Command==ETacticalCommand::RouteSouthernWood || Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate)

@@ -105,6 +105,20 @@
       "name": "T_ZhangConversationV1",
       "kind": "visual-novel",
       "provenance": "Original conversation-pose variant of the existing cut-in, edited with built-in image_gen on 2026-10-28. Full prompt: Unreal/ArtSource/Novel/conversation-prompts.json."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/command-tent-v2.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_CommandTentV2",
+      "kind": "visual-novel",
+      "provenance": "Original built-in image_gen artwork, 2026-11-01. Exact prompts: Unreal/ArtSource/Novel/HEROIC_V2_PROMPTS.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/night-camp-v2.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_NightCampV2",
+      "kind": "visual-novel",
+      "provenance": "Original built-in image_gen artwork, 2026-11-01. Exact prompts: Unreal/ArtSource/Novel/HEROIC_V2_PROMPTS.md."
     }
   ]
 }

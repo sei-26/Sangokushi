@@ -35,7 +35,7 @@ void ATacticalController::BuildEnemyInterface(TSharedRef<SCanvas> Canvas)
     Reads->AddSlot().AutoWidth().VAlign(VAlign_Center)[Button([this] { return bEnemyDetailsOpen ? TEXT("閉じる I") : TEXT("敵情詳細 I"); },[this] { bEnemyDetailsOpen=!bEnemyDetailsOpen; },[] { return true; },true)];
     Content->AddSlot().AutoHeight()[Reads];
     auto Strip=SNew(STacticalChrome).Padding(FMargin(8,4)).Accent(FLinearColor(.52f,.24f,.12f))
-        .Visibility_Lambda([this] { return Field->Presentation().bBattle && !Field->IsPlaying() && !bTacticPickerOpen ? EVisibility::Visible : EVisibility::Collapsed; })[Content];
+        .Visibility_Lambda([this] { return bDetailedBattle && Field->Presentation().bBattle && !Field->IsPlaying() && !bTacticPickerOpen ? EVisibility::Visible : EVisibility::Collapsed; })[Content];
     InputPanels.Add(Strip);Canvas->AddSlot().Position(FVector2D(16,116)).Size(FVector2D(700,50))[Strip];
     auto Detail=SNew(STacticalChrome).Padding(14).Accent(FLinearColor(.52f,.24f,.12f))
         .Visibility_Lambda([this] { return bEnemyDetailsOpen && Field->Presentation().bBattle && !Field->IsPlaying() && !bTacticPickerOpen ? EVisibility::Visible : EVisibility::Collapsed; })

@@ -7,7 +7,7 @@
 void ATacticalController::LoadNovelArt()
 {
     NovelBackgrounds.Reset();NovelBackgroundBrushes.Reset();
-    for(const TCHAR* Name:{TEXT("T_CommandTentV1"),TEXT("T_NightCampV1"),TEXT("T_JiAnStandingV1"),TEXT("T_StrategistStandingV1")})
+    for(const TCHAR* Name:{TEXT("T_CommandTentV2"),TEXT("T_NightCampV2"),TEXT("T_JiAnStandingV1"),TEXT("T_StrategistStandingV1")})
     {
         auto* Texture=LoadObject<UTexture2D>(nullptr,*(FString(TEXT("/Game/Art/Novel/"))+Name+TEXT(".")+Name));
         if(Texture) Texture->SetForceMipLevelsToBeResident(3600.f);
