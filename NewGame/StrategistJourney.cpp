@@ -127,7 +127,7 @@ namespace frontline
 		survivors = casualties = 0;
 		lastChain = {};
 		heldTurns = convoyStep = recoveredCargo = 0;
-        battleReview={};battleReview.preparationTracked=campaignFlow;
+        battleReview={};battleReview.preparationTracked=campaignFlow;battleReview.reliefTracked=campaignFlow;
         for(auto& a:assignments) a.completed=false;
 		guarding = {};
 		goal = IsRescue() ? Campaign::At(12, 11) : Definition().goal;
@@ -229,9 +229,11 @@ namespace frontline
 	{
 		if (stage != JourneyStage::Battle || !OnMap(tile))
 			return false;
+		const int from=TacticChain::Living(world,army) ? world.armies[army].tile:-1;
 		const bool result = chain.Move(world, intelligence[0], army, tile, message);
 		if (result)
 		{
+            RecordReliefMove(army,from,tile);
 			RefreshIntelligence();
 			Evaluate();
 		}
@@ -266,7 +268,9 @@ namespace frontline
 	{
 		if (stage != JourneyStage::Battle)
 			return {};
+        std::array<int,3> before{};for(int i=0;i<3;++i) before[i]=world.armies[i].tile;
 		lastChain = chain.Execute(world, intelligence[0], orders);
+        for(int i=0;i<3;++i) if(world.armies[i].tile!=before[i]) RecordReliefMove(i,before[i],world.armies[i].tile);
         RecordCooperation(lastChain);
         if(battleReview.preparationTracked)
         {
@@ -308,6 +312,7 @@ namespace frontline
 		}
         world.cities[0].food+=reserveFood;reserveFood=0; // Unissued reserve remains ours, including withdrawal.
 		casualties = deployed + convoyEscort - survivors;
+        FinalizeRelief();
         CompleteBattleReview(success);
 		history[mission] = {true, success, withdrawn, success && IsRescue(), survivors, casualties};
         history[mission].review=battleReview;history[mission].route=convoyRoute;history[mission].assignments=assignments;history[mission].difficulty=difficulty;history[mission].campaignFlow=campaignFlow;

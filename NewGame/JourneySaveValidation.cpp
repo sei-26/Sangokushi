@@ -36,8 +36,31 @@ namespace frontline
                 Range(a.troops,0,100000) && Range(a.food,0,1000000) && Range(a.cargoFood,0,1000000) &&
                 Range(a.morale,0,100) && Enum(a.arm,4) && Enum(a.stance,2) && a.path.size()<=224;
         }
+        bool ReliefReview(const JourneyBattleReview& r)
+        {
+            if(r.relief.size()>32 || (!r.reliefTracked && !r.relief.empty())) return false;
+            for(std::size_t i=0;i<r.relief.size();++i)
+            {
+                const auto& v=r.relief[i];
+                if(!Range(v.outgoing,0,2) || !Range(v.incoming,0,2) || v.outgoing==v.incoming ||
+                    !Cell(v.source) || !Cell(v.destination) || hexgrid::Distance(v.source%Width,v.source/Width,v.destination%Width,v.destination/Width)!=1 ||
+                    !Range(v.issuedTurn,1,16) || !Range(v.departedTurn,0,16) || !Range(v.arrivedTurn,0,16) || !Range(v.checkedTurn,0,16) || !Range(v.gapCycles,0,16) || !Enum(v.outcome,6)) return false;
+                if((v.departedTurn && v.departedTurn<v.issuedTurn) || (v.arrivedTurn && (!v.departedTurn || v.arrivedTurn<v.departedTurn)) ||
+                    (v.checkedTurn && (!v.arrivedTurn || v.checkedTurn<v.arrivedTurn)) || (!v.departedTurn && v.gapCycles)) return false;
+                using O=JourneyReliefOutcome;
+                if(v.outcome==O::Ordered && (v.departedTurn || v.arrivedTurn || v.checkedTurn)) return false;
+                if(v.outcome==O::Departed && (!v.departedTurn || v.arrivedTurn || v.checkedTurn)) return false;
+                if(v.outcome==O::Arrived && (!v.arrivedTurn || v.checkedTurn)) return false;
+                const bool checked=v.outcome==O::Held || v.outcome==O::Recovered || v.outcome==O::Lost;
+                if(checked!=bool(v.checkedTurn) || (v.outcome==O::Held && v.gapCycles) || (v.outcome==O::Recovered && !v.gapCycles) ||
+                    (v.allSecured && v.outcome!=O::Held && v.outcome!=O::Recovered)) return false;
+                for(std::size_t k=0;k<i;++k) if(ReliefPending(v) && ReliefPending(r.relief[k]) && v.source==r.relief[k].source) return false;
+            }
+            return true;
+        }
         bool Review(const JourneyBattleReview& r)
         {
+            if(!ReliefReview(r)) return false;
             return Range(r.openingAmbushes,0,1) && Range(r.resupplyTurn,0,16) && Range(r.resupplyMorale,0,60) && Range(r.postSupplySteps,0,r.tacticSteps) &&
                 (r.preparationTracked || (!r.openingAmbushes && !r.resupplyTurn && !r.resupplyMorale && !r.postSupplySteps)) &&
                 (r.resupplyTurn || (!r.resupplyMorale && !r.postSupplySteps)) && Enum(r.resolution,9) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&

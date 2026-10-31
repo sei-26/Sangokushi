@@ -34,6 +34,7 @@ void ATacticalField::BuildStoryPresentation()
             else if(R.resupplyTurn==0) P.StoryFacts+=TEXT("予備糧1,800を使わず持ち帰った。必要な局面がなければ、温存も次戦の備えになる。");
             else P.StoryFacts+=FString::Printf(TEXT("第%d指揮で補給。主力の士気を合計%d回復し、その後に戦法%d手が成功。"),R.resupplyTurn,R.resupplyMorale,R.postSupplySteps);
         }
+        const auto Relief=ReliefReviewText(J);if(!Relief.empty()) P.StoryFacts+=TEXT("\n")+JourneyText(Relief);
         P.bNeedsReply=J.NeedsStoryReply();
         if(P.bNeedsReply)
         {

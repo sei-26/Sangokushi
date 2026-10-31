@@ -39,6 +39,7 @@ bool ATacticalField::ReliefSmokeTest()
     SelectReliefOfficer(1);SelectReliefOfficer(0);BuildPresentation();RenderEffects();
     if(!Check(Bytes()==Before,TEXT("reading, comparing successor, drawing and predicted control spend nothing"))) return false;
     auto Expected=std::make_unique<JourneySaveData>();DecodeJourneySave(Before,*Expected);
+    Expected->journey.RecordReliefOrder(2,0,Source,Destination,false);
     if(!Check(Expected->journey.Move(2,Destination) && Expected->journey.Move(0,Source),TEXT("reference two normal moves succeed"))) return false;
     std::vector<std::uint8_t> ExpectedBytes;EncodeJourneySave(*Expected,ExpectedBytes);
     if(!Check(CommitRelief() && IsPlaying() && State->Beats.Num()==2 && CurrentBeat()->Actor==2 && !CommitRelief(),TEXT("one explicit handover creates two chronological movement beats and blocks repeated execution"))) return false;
@@ -84,6 +85,7 @@ bool ATacticalField::ReliefSmokeTest()
     State->ChainSignal.Arm(State->Journey,State->Orders);Refresh();const auto RealtimeBefore=Bytes();
     if(!Check(Presentation().Position.Relief.bCanIssue && !Presentation().Position.Relief.bSecured && Presentation().Position.Relief.Detail.Contains(TEXT("最短2周期")),TEXT("RT explicitly predicts an occupied-tile gap rather than a seamless swap"))) return false;
     Expected=std::make_unique<JourneySaveData>();DecodeJourneySave(RealtimeBefore,*Expected);
+    Expected->journey.RecordReliefOrder(2,0,Source,Destination,true);
     Expected->realtime.Queue(Expected->journey,2,JourneyDirective::March,Destination);
     Expected->realtime.Queue(Expected->journey,0,JourneyDirective::March,Source);Expected->realtime.SetArrival(Expected->journey,0,JourneyArrival::Hold);Expected->realtime.paused=true;
     ExpectedBytes.clear();EncodeJourneySave(*Expected,ExpectedBytes);

@@ -118,6 +118,7 @@ public:
     bool CommitRelief();
     bool ReliefSmokeTest();
     void PrepareReliefPreview(int Variant);
+    void PrepareReliefStoryPreview(int Variant);
     void PrepareGuardControlPreview(bool bSpent);
     void PrepareTacticAvailabilityPreview(bool bUsedSignature);
     void PrepareBattleStoryPreview(bool bCostly);
@@ -311,6 +312,7 @@ private:
     bool TacticPositionInterfaceSmokeTest();
     TSharedRef<class SWidget> ReliefChoicesWidget();
     bool ReliefInterfaceSmokeTest();
+    bool ReliefStorySmokeTest();
     void BuildBattleHeader(TSharedRef<class SCanvas>);
     void BuildCameraInterface(TSharedRef<class SCanvas>);
     void BuildTacticCinema(TSharedRef<class SCanvas>);

@@ -34,6 +34,7 @@ namespace frontline
     {
         if (journey.stage!=JourneyStage::Battle) return false;
         const auto previousReports=journey.reports.size();
+        journey.ValidateReliefOrders(*this);
         journey.RefreshIntelligence();
         // Capture enemy decisions before any friendly movement. The player UI
         // receives Route(), never these private plans.
@@ -59,7 +60,8 @@ namespace frontline
         }
         for (int army=0;army<3;++army)
             if (next[army]!=from[army])
-                journey.chain.Move(journey.world,journey.intelligence[0],army,next[army],journey.message);
+                if(journey.chain.Move(journey.world,journey.intelligence[0],army,next[army],journey.message))
+                    journey.RecordReliefMove(army,from[army],next[army]);
         for (auto& plan : enemyPlans) plan.next=next[plan.army];
         journey.ApplyEnemyPlans(enemyPlans);
         for (int army=0;army<3 && journey.stage==JourneyStage::Battle;++army)

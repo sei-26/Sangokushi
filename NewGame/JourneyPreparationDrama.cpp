@@ -2,7 +2,7 @@
 namespace frontline
 {
     std::vector<JourneyDialogueLine> BaseJourneyConversation(const StrategistJourney&,int);
-    std::vector<JourneyDialogueLine> JourneyConversation(const StrategistJourney& j,int officer)
+    std::vector<JourneyDialogueLine> PreparedJourneyConversation(const StrategistJourney& j,int officer)
     {
         auto lines=BaseJourneyConversation(j,officer);
         if(j.stage!=JourneyStage::Debrief && j.stage!=JourneyStage::Complete) return lines;

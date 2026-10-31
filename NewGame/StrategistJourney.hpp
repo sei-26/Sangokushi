@@ -116,6 +116,8 @@ namespace frontline
         std::u32string PledgeProgress() const;
         int StoryMoraleBonus(int officer) const;
 		void RefreshIntelligence();
+        void RecordReliefOrder(int outgoing,int incoming,int source,int destination,bool realtime);
+        void ValidateReliefOrders(const class JourneyRealtime&);
 		// Estimate from current player contacts, never private enemy orders.
 		std::vector<JourneyEnemyPlan> ReadEnemyPlans() const;
 		static bool OnMap(int tile);
@@ -136,6 +138,9 @@ namespace frontline
         void CompleteBattleStory(bool success);
         void RecordCooperation(const ChainResult&);
         void RecordAssignment(int officer);
+        void RecordReliefMove(int army,int from,int to);
+        void CheckReliefOutcome();
+        void FinalizeRelief();
 		void Report(const std::u32string& text);
 	};
 } // namespace frontline

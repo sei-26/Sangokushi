@@ -83,6 +83,7 @@ namespace frontline
         ++turn;
         RefreshIntelligence();
         AdvanceObjective();
+        CheckReliefOutcome();
         RefreshIntelligence();
         Evaluate();
         if (stage == JourneyStage::Battle)

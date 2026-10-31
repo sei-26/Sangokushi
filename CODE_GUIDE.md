@@ -411,3 +411,6 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 
 
 守備の後任と交代後の条件は `Unreal/Source/GunyuTactics/TacticalReliefRead.cpp`、実際の2移動／2件の行軍指示と順次演出は `TacticalReliefCommands.cpp`。選択は `TacticalReliefInterface.cpp`。仮選択は保存せず、実移動・実指揮で守備を評価する。[操作・通常ルールとの関係](TACTICAL_RELIEF.md)。
+
+
+明示した守備交代の実績は `NewGame/JourneyRelief.hpp` / `JourneyRelief.cpp`。通常移動・実戦法・同時進行の実移動から段階を進め、最初の実更新で判定する。戦後会話の追加は `JourneyReliefDrama.cpp`、UEの戦後事実は `TacticalStoryPresentation.cpp`。`tests/JourneyReliefStoryTests.cpp` で段階・互換・閲覧の不変を、`TacticalReliefStoryTests.cpp` で実操作から個別ノベルまでの接続を確認する。[守備交代の記憶](RELIEF_STORY.md)。

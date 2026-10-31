@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "CampaignTypes.hpp"
+#include "JourneyRelief.hpp"
 #include <vector>
 
 namespace frontline
@@ -19,6 +20,8 @@ namespace frontline
         JourneyResolution resolution=JourneyResolution::None;
         int endedAt=0,enemyStops=0,trafficStops=0,tacticAttempts=0,tacticSteps=0,longestChain=0;
         int coordinatedOfficers=0;
+        bool reliefTracked=false;
+        std::vector<JourneyReliefRecord> relief;
         bool preparationTracked=false;
         int openingAmbushes=0,resupplyTurn=0,resupplyMorale=0,postSupplySteps=0;
     };

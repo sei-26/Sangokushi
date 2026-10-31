@@ -16,10 +16,12 @@ bool ATacticalField::CommitRelief()
         if(!Orders.Queue(State->Journey,Out,JourneyDirective::March,To) || !Orders.Queue(State->Journey,In,JourneyDirective::March,From) ||
             !Orders.SetArrival(State->Journey,In,JourneyArrival::Hold)) return false;
         Orders.paused=true;State->Realtime=std::move(Orders);
+        State->Journey.RecordReliefOrder(Out,In,From,To,true);
         State->Input=ETacticalInput::Select;State->bConfirmEndTurn=State->bConfirmWithdrawal=false;
         State->Report=TEXT("2隊の交代行軍を指示して停止。後任は同じ周期に入れず、守備に空白が出る。予約と合図は保持。再開後の状況を確認しよう。");
         Refresh();return true;
     }
+    State->Journey.RecordReliefOrder(Out,In,From,To,false);
     const auto Before=ObserveUnits();
     const bool Departed=State->Journey.Move(Out,To);const auto DepartureReason=JourneyText(State->Journey.message);
     const auto Middle=ObserveUnits();

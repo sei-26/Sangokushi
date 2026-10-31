@@ -45,7 +45,7 @@ int main()
         auto saved=std::make_unique<JourneySaveData>();saved->journey=*j;saved->beforeBattle=*j;
         assert(j->Prepare(1,1) && j->world.armies.size()==5);
         AttackPort(*j);saved->journey=*j;std::vector<std::uint8_t> bytes;
-        assert(EncodeJourneySave(*saved,bytes) && bytes[4]==8);
+        assert(EncodeJourneySave(*saved,bytes) && bytes[4]==9);
         auto restored=std::make_unique<JourneySaveData>();assert(DecodeJourneySave(bytes,*restored) && restored->journey.campaignFlow);
         const int PortDay=restored->journey.world.day;
         assert(restored->journey.CanContinue());assert(restored->journey.Continue() && restored->journey.world.day==PortDay+21);
