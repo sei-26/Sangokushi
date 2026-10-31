@@ -417,3 +417,6 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 
 
 交代の反省からの軍議案は `NewGame/JourneyReliefAdvice.cpp`。`RetryAtCouncil` は出陣前へ巻き戻しつつ、確認済みの交代だけを `retryRelief` に分離する。`AdaptReliefPlanExample` は公開地形と履歴から担当・理由を生成。保存版10、`tests/JourneyReliefAdviceTests.cpp` で巻き戻し・到着・互換、`TacticalReliefAdviceTests.cpp` で実戦後から軍議・地図・採用・再出陣を検証する。[操作と制約](RELIEF_ADVICE.md)。
+
+
+戦闘中の後任の準備と現在の命令は `TacticalReliefReadiness.cpp`。捕捉コピーで現在の守備を評価し、通常の `TacticalReliefRead.cpp` に接続。守備隊の行軍・追撃だけを明示して止める。検証は `TacticalReliefReadinessTests.cpp`。[操作・情報・時間の制約](RELIEF_READINESS.md)。

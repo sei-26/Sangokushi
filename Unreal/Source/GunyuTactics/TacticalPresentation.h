@@ -40,14 +40,16 @@ struct FTacticPositionCell
 struct FReliefOfficerRead
 {
     int Army=-1, Tile=-1;
-    FString Name, Status, Detail;
+    FString Name, Status, Detail, Readiness, Directive;
+    bool bAdjacent=false, bMoveReady=false, bReserved=false;
     bool bCanIssue=false, bSecured=false;
 };
 struct FTacticReliefRead
 {
     bool bVisible=false, bCanIssue=false, bSecured=false;
     int Source=-1, Incoming=-1, IncomingTile=-1;
-    FString Detail, Cost, ConfirmLabel;
+    FString Detail, Cost, ConfirmLabel, CurrentGuard, IncomingReadiness, Decision;
+    bool bCanStopDeparture=false;
     TArray<FReliefOfficerRead> Officers;
 };
 struct FTacticPositionComparison

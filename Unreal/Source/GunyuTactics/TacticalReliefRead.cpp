@@ -15,9 +15,10 @@ FReliefOfficerRead ATacticalField::ReadReliefOfficer(int Officer) const
     if(From<0 || Officer<0 || Officer>=3 || Officer==Out) return Read;
     Read.Army=Officer;Read.Tile=J.world.armies[Officer].tile;
     Read.Name=JourneyText(J.world.generals[J.world.armies[Officer].general].name);Read.Status=TEXT("交代不可");
-    if(!TacticChain::Living(J.world,Officer)) { Read.Detail=TEXT("この隊は戦闘不能。");return Read; }
+    if(!TacticChain::Living(J.world,Officer)) { Read.Status=TEXT("戦闘不能");Read.Detail=TEXT("この隊は戦闘不能。");return Read; }
+    FillReliefReadiness(Read);
     for(const auto& Order:State->Orders) if(Order.army==Officer)
-    { Read.Detail=TEXT("戦法を予約中。先に予約を見直そう。");return Read; }
+    { Read.Status=TEXT("戦法予約中");Read.Detail=TEXT("戦法を予約中。先に予約を見直そう。");return Read; }
     const int Destination=State->ComparedPosition;
     if(!ReadTacticPosition(Destination).bMoveAllowed) { Read.Detail=TEXT("先に、出る隊が移動できる番号を選ぶ。");return Read; }
     if(J.world.MapDistance(Read.Tile,From)!=1)
@@ -80,4 +81,5 @@ void ATacticalField::BuildReliefPresentation()
         TEXT("2隊の移動を各1回消費。失敗・任務終了なら途中で止まる。戦法・固有の使用状況は維持。");
     R.ConfirmLabel=bRealtimeCommand ? TEXT("2隊の前指示を交代行軍に置換"):TEXT("2隊の交代を確定");
     P.ConfirmLabel=bRealtimeCommand ? (State->Realtime.orders[State->Selected].kind==JourneyDirective::None ? TEXT("選択隊だけ行軍を指示"):TEXT("選択隊だけの前指示を置換")):TEXT("選択隊だけを移動");
+    BuildReliefReadiness();
 }

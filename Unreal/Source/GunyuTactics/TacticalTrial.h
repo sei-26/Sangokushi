@@ -116,6 +116,10 @@ public:
     void PrepareTacticPositionPreview(int Variant);
     void SelectReliefOfficer(int Officer);
     bool CommitRelief();
+    bool CanStopReliefDeparture() const;
+    void StopReliefDeparture();
+    bool ReliefReadinessSmokeTest();
+    void PrepareReliefReadinessPreview(int Variant);
     bool ReliefSmokeTest();
     void PrepareReliefPreview(int Variant);
     void PrepareReliefStoryPreview(int Variant);
@@ -270,6 +274,9 @@ private:
     int ReliefSource() const;
     FReliefOfficerRead ReadReliefOfficer(int Officer) const;
     void BuildReliefPresentation();
+    void FillReliefReadiness(FReliefOfficerRead&) const;
+    void BuildReliefReadiness();
+    FString ReliefDirective(int Officer) const;
     bool HasGuardOrder() const;
     void ReleaseGuardOrder();
     void BuildGuardPresentation();
