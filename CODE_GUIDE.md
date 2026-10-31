@@ -420,3 +420,6 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 
 
 戦闘中の後任の準備と現在の命令は `TacticalReliefReadiness.cpp`。捕捉コピーで現在の守備を評価し、通常の `TacticalReliefRead.cpp` に接続。守備隊の行軍・追撃だけを明示して止める。検証は `TacticalReliefReadinessTests.cpp`。[操作・情報・時間の制約](RELIEF_READINESS.md)。
+
+
+後任の待機進路と閉塞の判別は `JourneyRealtimeRouting.cpp` の `ReliefApproach`。通常の行軍の地形・捕捉コピー・探索を使う。UEの表示と後任だけの指示は `TacticalReliefApproach.cpp`、破線・閉塞の印は `TacticalPositionEffects.h`。共通とUEの `*ReliefApproachTests.cpp` が通常移動・厳密な指示置換・霧・保存を確認する。[操作と制約](RELIEF_APPROACH.md)。

@@ -19,6 +19,13 @@ namespace frontline
         std::vector<int> route,points;
         bool complete=true;
     };
+    enum class JourneyApproachState { Unavailable, Adjacent, Clear, AllyBlocked, NoPath };
+    struct JourneyReliefApproach
+    {
+        JourneyApproachState state=JourneyApproachState::Unavailable;
+        int staging=-1,blocker=-1,blockedTile=-1;
+        std::vector<int> route; // AllyBlocked is hypothetical, only if friendly occupants move away.
+    };
     // Engine-independent command clock and persistent orders. A pulse resolves
     // both sides from the same starting observation, preserving story outcomes.
     class JourneyRealtime
@@ -41,6 +48,7 @@ namespace frontline
         bool UndoWaypoint(int army);
         bool SetArrival(const StrategistJourney&, int army, JourneyArrival);
         JourneyMarchPlan MarchPlan(const StrategistJourney&, int army) const;
+        JourneyReliefApproach ReliefApproach(const StrategistJourney&,int army,int source) const;
         std::vector<int> Route(const StrategistJourney& journey, int army) const;
         bool Resolve(StrategistJourney& journey, const std::array<bool,3>& reservedAttacks = {});
     private:

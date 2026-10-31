@@ -117,6 +117,10 @@ public:
     void SelectReliefOfficer(int Officer);
     bool CommitRelief();
     bool CanStopReliefDeparture() const;
+    bool CanQueueReliefApproach() const;
+    bool QueueReliefApproach();
+    bool ReliefApproachSmokeTest();
+    void PrepareReliefApproachPreview(int Variant);
     void StopReliefDeparture();
     bool ReliefReadinessSmokeTest();
     void PrepareReliefReadinessPreview(int Variant);
@@ -276,6 +280,8 @@ private:
     void BuildReliefPresentation();
     void FillReliefReadiness(FReliefOfficerRead&) const;
     void BuildReliefReadiness();
+    FReliefApproachRead ReadReliefApproach(int Officer) const;
+    void BuildReliefApproach();
     FString ReliefDirective(int Officer) const;
     bool HasGuardOrder() const;
     void ReleaseGuardOrder();

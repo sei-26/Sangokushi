@@ -44,6 +44,13 @@ struct FReliefOfficerRead
     bool bAdjacent=false, bMoveReady=false, bReserved=false;
     bool bCanIssue=false, bSecured=false;
 };
+struct FReliefApproachRead
+{
+    bool bVisible=false,bBlocked=false,bCanQueue=false;
+    int Officer=-1,Staging=-1,Blocker=-1,BlockedTile=-1;
+    FString Summary,Warning,ConfirmLabel;
+    TArray<int> Route;
+};
 struct FTacticReliefRead
 {
     bool bVisible=false, bCanIssue=false, bSecured=false;
@@ -51,6 +58,7 @@ struct FTacticReliefRead
     FString Detail, Cost, ConfirmLabel, CurrentGuard, IncomingReadiness, Decision;
     bool bCanStopDeparture=false;
     TArray<FReliefOfficerRead> Officers;
+    FReliefApproachRead Approach;
 };
 struct FTacticPositionComparison
 {

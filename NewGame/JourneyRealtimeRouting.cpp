@@ -77,4 +77,45 @@ namespace frontline
         }
         return plan;
     }
+    JourneyReliefApproach JourneyRealtime::ReliefApproach(const StrategistJourney& journey,int army,int source) const
+    {
+        JourneyReliefApproach result;
+        if(journey.stage!=JourneyStage::Battle || army<0 || army>=3 || !TacticChain::Living(journey.world,army) ||
+            !Ground(journey.world,source)) return result;
+        auto seen=PlayerView(journey);const int start=seen->armies[army].tile;
+        if(!Ground(*seen,start) || start==source) return result;
+        if(seen->MapDistance(start,source)==1)
+        { result.state=JourneyApproachState::Adjacent;result.staging=start;result.route={start};return result; }
+        // Never assume the guard vacates its own post while the successor approaches.
+        seen->tiles[source].terrain=Terrain::River;
+        auto Choose=[&](const Campaign& view)
+        {
+            std::vector<int> best;
+            for(int goal:view.MapNeighbors(source))
+            {
+                if(!Ground(view,goal)) continue;
+                auto path=Path(view,start,goal);
+                if(!path.empty() && (best.empty() || path.size()<best.size())) best=std::move(path);
+            }
+            return best;
+        };
+        result.route=Choose(*seen);
+        if(!result.route.empty())
+        { result.state=JourneyApproachState::Clear;result.staging=result.route.back();return result; }
+        auto open=std::make_unique<Campaign>(*seen);
+        for(int i=0;i<int(open->armies.size());++i)
+            if(i!=army && !open->Hostile(open->player,open->armies[i].faction)) open->armies[i].troops=0;
+        const auto hypothetical=Choose(*open);
+        if(!hypothetical.empty())
+        {
+            for(std::size_t p=1;p<hypothetical.size();++p) for(int i=0;i<int(seen->armies.size());++i)
+                if(i!=army && TacticChain::Living(*seen,i) && !seen->Hostile(seen->player,seen->armies[i].faction) && seen->armies[i].tile==hypothetical[p])
+                {
+                    result.state=JourneyApproachState::AllyBlocked;result.staging=hypothetical.back();result.route=hypothetical;
+                    result.blocker=i;result.blockedTile=hypothetical[p];return result;
+                }
+        }
+        result.state=JourneyApproachState::NoPath;return result;
+    }
+
 }

@@ -22,6 +22,41 @@ namespace gunyupositionfx
             }
         }
         const auto& R=P.Relief;
+        const auto& Path=R.Approach;
+        if(R.bVisible && Path.bVisible)
+        {
+            const FLinearColor Color=Path.bBlocked ? FLinearColor(1.f,.56f,.12f,.95f):FLinearColor(.23f,.82f,1.f,.95f);
+            auto Stroke=[&](FVector A,FVector B)
+            {
+                A.Z=Floor(A)+24;B.Z=Floor(B)+24;
+                const auto Side=FVector::CrossProduct((B-A).GetSafeNormal(),FVector::UpVector)*3.f;
+                Add(A-Side,A+Side,B+Side,B-Side,Color);
+            };
+            for(int I=1;I<Path.Route.Num();++I)
+            {
+                const auto A=Location(Path.Route[I-1]),B=Location(Path.Route[I]);
+                for(int D=0;D<5;++D) Stroke(FMath::Lerp(A,B,D/5.f),FMath::Lerp(A,B,(D+.55f)/5.f));
+            }
+            if(Path.Staging>=0)
+            {
+                const auto C=Location(Path.Staging);
+                for(int Edge=0;Edge<6;++Edge)
+                {
+                    const float A=(Edge*60.f+30.f)*PI/180.f,B=((Edge+1)*60.f+30.f)*PI/180.f;
+                    Stroke(C+FVector(FMath::Cos(A),FMath::Sin(A),0)*76,C+FVector(FMath::Cos(B),FMath::Sin(B),0)*76);
+                }
+            }
+            if(Path.BlockedTile>=0)
+            {
+                const auto C=Location(Path.BlockedTile);
+                for(int Edge=0;Edge<6;++Edge)
+                {
+                    const float A=(Edge*60.f+30.f)*PI/180.f,B=((Edge+1)*60.f+30.f)*PI/180.f;
+                    Stroke(C+FVector(FMath::Cos(A),FMath::Sin(A),0)*120,C+FVector(FMath::Cos(B),FMath::Sin(B),0)*120);
+                }
+                Stroke(C+FVector(-70,-70,0),C+FVector(70,70,0));Stroke(C+FVector(-70,70,0),C+FVector(70,-70,0));
+            }
+        }
         if(R.bVisible && R.bCanIssue && R.IncomingTile>=0 && R.Source>=0)
         {
             const auto A=Location(R.IncomingTile),B=Location(R.Source);

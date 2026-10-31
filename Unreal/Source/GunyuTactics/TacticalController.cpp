@@ -298,6 +298,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefApproachOnly")))
+    { const bool bPassed=Field->ReliefApproachSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefReadinessOnly")))
     { const bool bPassed=Field->ReliefReadinessSmokeTest() && ReliefInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefAdviceOnly")))
@@ -380,6 +382,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=ReliefStorySmokeTest();
         if(bPassed) bPassed=ReliefAdviceSmokeTest();
         if(bPassed) bPassed=Field->ReliefReadinessSmokeTest();
+        if(bPassed) bPassed=Field->ReliefApproachSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -512,6 +515,9 @@ void ATacticalController::PlayerTick(float Delta)
     int ReliefReady=0;
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ReliefReady="),ReliefReady))
     { Field->PrepareReliefReadinessPreview(ReliefReady);CloseEpisode();bEnemyDetailsOpen=false;Focus=Field->VisualUnits()[Field->Presentation().Selected].Position;LabelLayoutFrame=MAX_uint64; }
+    int ReliefRoute=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ReliefRoute="),ReliefRoute))
+    { Field->PrepareReliefApproachPreview(ReliefRoute);CloseEpisode();bEnemyDetailsOpen=false;Focus=Field->VisualUnits()[Field->Presentation().Selected].Position;LabelLayoutFrame=MAX_uint64; }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }
 

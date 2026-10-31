@@ -81,5 +81,5 @@ void ATacticalField::BuildReliefPresentation()
         TEXT("2隊の移動を各1回消費。失敗・任務終了なら途中で止まる。戦法・固有の使用状況は維持。");
     R.ConfirmLabel=bRealtimeCommand ? TEXT("2隊の前指示を交代行軍に置換"):TEXT("2隊の交代を確定");
     P.ConfirmLabel=bRealtimeCommand ? (State->Realtime.orders[State->Selected].kind==JourneyDirective::None ? TEXT("選択隊だけ行軍を指示"):TEXT("選択隊だけの前指示を置換")):TEXT("選択隊だけを移動");
-    BuildReliefReadiness();
+    BuildReliefReadiness();BuildReliefApproach();
 }

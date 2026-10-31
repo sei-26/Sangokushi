@@ -66,7 +66,7 @@ void ATacticalController::BuildTacticPositionInterface(TSharedRef<SCanvas> Canva
       + SScrollBox::Slot()[SNew(SVerticalBox)
         + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Position.Relief.bVisible ? EVisibility::Visible:EVisibility::Collapsed; })
           [SNew(SVerticalBox)
-           + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Position.Relief.Detail; },12,Gold)]
+           + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& R=Field->Presentation().Position.Relief;return R.Approach.bVisible ? TEXT("水色破線＝通れる仮経路 / 橙＝味方が退いた場合\n現在の行軍指示とは別。敵や味方の移動で変化する。"):R.Detail; },12,Gold)]
            + SVerticalBox::Slot().AutoHeight().Padding(0,5)[Label([this] { return Field->Presentation().Position.Relief.Cost; },11)]]]
         + SVerticalBox::Slot().AutoHeight().Padding(0,6,0,0)[Label([this] { return Field->Presentation().Position.Result; },13,Gold)]
         + SVerticalBox::Slot().AutoHeight().Padding(0,7)[Label([this] { return Field->Presentation().Position.Risk; },12,FLinearColor(1.f,.73f,.51f))]
@@ -78,8 +78,13 @@ void ATacticalController::BuildTacticPositionInterface(TSharedRef<SCanvas> Canva
     Texts->AddSlot().AutoHeight().Padding(0,4,0,0)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Position.Relief.bCanStopDeparture ? EVisibility::Visible:EVisibility::Collapsed; })
        [Button([] { return TEXT("守備隊の行軍・追撃を中止"); },[this] { Field->StopReliefDeparture();IgnoreMapInputThroughFrame=Frames+1; },[this] { return Field->CanStopReliefDeparture(); },true)]];
+    Texts->AddSlot().AutoHeight().Padding(0,4,0,0)
+      [SNew(SBox).Visibility_Lambda([this] { const auto& R=Field->Presentation().Position.Relief;return R.Approach.bVisible && Field->bRealtimeCommand ? EVisibility::Visible:EVisibility::Collapsed; })
+       [SNew(SVerticalBox)
+        + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Position.Relief.Approach.Warning; },11,FLinearColor(1.f,.73f,.35f))]
+        + SVerticalBox::Slot().AutoHeight()[Button([this] { return Field->Presentation().Position.Relief.Approach.ConfirmLabel; },[this] { Field->QueueReliefApproach();IgnoreMapInputThroughFrame=Frames+1; },[this] { return Field->CanQueueReliefApproach(); },true)]]];
     Texts->AddSlot().AutoHeight().Padding(0,6,0,0)
-      [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Position.Relief.bVisible ? EVisibility::Visible:EVisibility::Collapsed; })
+      [SNew(SBox).Visibility_Lambda([this] { const auto& R=Field->Presentation().Position.Relief;return R.bVisible && !(R.Approach.bVisible && Field->bRealtimeCommand) ? EVisibility::Visible:EVisibility::Collapsed; })
        [Button([this] { return Field->Presentation().Position.Relief.ConfirmLabel; },[this] { Field->CommitRelief();IgnoreMapInputThroughFrame=Frames+1; },[this] { return !Field->IsPlaying() && Field->Presentation().Position.Relief.bCanIssue; },true)]];
     Texts->AddSlot().AutoHeight().Padding(0,4,0,0)[Button([this] { return Field->Presentation().Position.ConfirmLabel; },[this] { Field->CommitTacticPosition();IgnoreMapInputThroughFrame=Frames+1; },[this] { return !Field->IsPlaying() && Field->Presentation().Position.bCanCommit; },true)];
     Texts->AddSlot().AutoHeight().Padding(0,4,0,0)[Button([] { return TEXT("比較を閉じる / Esc"); },[this] { Field->Issue(ETacticalCommand::Cancel);IgnoreMapInputThroughFrame=Frames+1; },[] { return true; },true)];
