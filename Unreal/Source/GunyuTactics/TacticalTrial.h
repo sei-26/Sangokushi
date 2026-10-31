@@ -114,6 +114,10 @@ public:
     bool CommitTacticPosition();
     bool TacticPositionSmokeTest();
     void PrepareTacticPositionPreview(int Variant);
+    void SelectReliefOfficer(int Officer);
+    bool CommitRelief();
+    bool ReliefSmokeTest();
+    void PrepareReliefPreview(int Variant);
     void PrepareGuardControlPreview(bool bSpent);
     void PrepareTacticAvailabilityPreview(bool bUsedSignature);
     void PrepareBattleStoryPreview(bool bCostly);
@@ -262,6 +266,9 @@ private:
     void BuildTacticTargets();
     FTacticPositionCell ReadTacticPosition(int Tile) const;
     void BuildTacticPositions();
+    int ReliefSource() const;
+    FReliefOfficerRead ReadReliefOfficer(int Officer) const;
+    void BuildReliefPresentation();
     bool HasGuardOrder() const;
     void ReleaseGuardOrder();
     void BuildGuardPresentation();
@@ -302,6 +309,8 @@ private:
     void BuildTacticPositionInterface(TSharedRef<class SCanvas>);
     void OpenTacticPositionComparison();
     bool TacticPositionInterfaceSmokeTest();
+    TSharedRef<class SWidget> ReliefChoicesWidget();
+    bool ReliefInterfaceSmokeTest();
     void BuildBattleHeader(TSharedRef<class SCanvas>);
     void BuildCameraInterface(TSharedRef<class SCanvas>);
     void BuildTacticCinema(TSharedRef<class SCanvas>);

@@ -5,14 +5,14 @@ bool ATacticalField::CanCompareTacticPositions() const
 {
     const auto& J=State->Journey;const int Id=State->Selected;
     if(IsPlaying() || J.stage!=JourneyStage::Battle || State->Input!=ETacticalInput::Select || State->bRealtimeStepping || State->bRealtimeChainRequested ||
-        Id<0 || Id>=3 || !TacticChain::Living(J.world,Id) || !TacticChain::Definition(State->SelectedTactics[Id]).targetsEnemy) return false;
+        Id<0 || Id>=3 || !TacticChain::Living(J.world,Id) || (!TacticChain::Definition(State->SelectedTactics[Id]).targetsEnemy && ReliefSource()<0)) return false;
     for(const auto& Order:State->Orders) if(Order.army==Id) return false;
     return true;
 }
 bool ATacticalField::BeginTacticPositionComparison()
 {
     if(!CanCompareTacticPositions()) return false;
-    State->Input=ETacticalInput::Position;State->ComparedPosition=-1;
+    State->Input=ETacticalInput::Position;State->ComparedPosition=-1;State->ComparedRelief=-1;
     State->Report=TEXT("仮配置を比較中。番号の選択では移動しません。確定するまで潜伏・守備と行動権を保持します。");
     if(bRealtimeCommand) State->Realtime.paused=true;
     Refresh();return true;

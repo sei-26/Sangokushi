@@ -298,6 +298,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefOnly")))
+    { const bool bPassed=Field->ReliefSmokeTest() && ReliefInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPositionOnly")))
     { const bool bPassed=Field->TacticPositionSmokeTest() && TacticPositionInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetOnly")))
@@ -367,6 +369,8 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=TacticTargetInterfaceSmokeTest();
         if(bPassed) bPassed=Field->TacticPositionSmokeTest();
         if(bPassed) bPassed=TacticPositionInterfaceSmokeTest();
+        if(bPassed) bPassed=Field->ReliefSmokeTest();
+        if(bPassed) bPassed=ReliefInterfaceSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -474,6 +478,15 @@ void ATacticalController::PlayerTick(float Delta)
     {
         Field->PrepareTacticPositionPreview(PositionPreview);CloseEpisode();bEnemyDetailsOpen=false;
         Focus=Field->VisualUnits()[Field->Presentation().Selected].Position;LabelLayoutFrame=MAX_uint64;
+    }
+    int ReliefPreview=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ReliefPreview="),ReliefPreview))
+    {
+        Field->PrepareReliefPreview(ReliefPreview);CloseEpisode();bEnemyDetailsOpen=false;
+        Focus=Field->VisualUnits()[Field->Presentation().Selected].Position;LabelLayoutFrame=MAX_uint64;
+        float ReliefBeat=0;
+        if(FParse::Value(FCommandLine::Get(),TEXT("ReliefBeat="),ReliefBeat))
+        { Field->CommitRelief();Field->AdvancePresentation(ReliefBeat); }
     }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }

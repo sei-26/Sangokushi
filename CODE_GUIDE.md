@@ -408,3 +408,6 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 
 
 隣接1歩の仮配置と移動後の戦法は `Unreal/Source/GunyuTactics/TacticalTacticPositions.cpp`。操作の確定は `TacticalPositionCommands.cpp`、番号付きの地図と比較欄は `TacticalPositionInterface.cpp`。[通常移動との一致・観測の境界・保存](TACTIC_POSITION_COMPARE.md)。
+
+
+守備の後任と交代後の条件は `Unreal/Source/GunyuTactics/TacticalReliefRead.cpp`、実際の2移動／2件の行軍指示と順次演出は `TacticalReliefCommands.cpp`。選択は `TacticalReliefInterface.cpp`。仮選択は保存せず、実移動・実指揮で守備を評価する。[操作・通常ルールとの関係](TACTICAL_RELIEF.md)。

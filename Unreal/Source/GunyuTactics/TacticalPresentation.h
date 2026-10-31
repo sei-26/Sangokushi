@@ -37,12 +37,26 @@ struct FTacticPositionCell
     bool bMoveAllowed=false, bReady=false;
     FString Result, Risk;
 };
+struct FReliefOfficerRead
+{
+    int Army=-1, Tile=-1;
+    FString Name, Status, Detail;
+    bool bCanIssue=false, bSecured=false;
+};
+struct FTacticReliefRead
+{
+    bool bVisible=false, bCanIssue=false, bSecured=false;
+    int Source=-1, Incoming=-1, IncomingTile=-1;
+    FString Detail, Cost, ConfirmLabel;
+    TArray<FReliefOfficerRead> Officers;
+};
 struct FTacticPositionComparison
 {
     bool bVisible=false, bCanCommit=false;
     int SelectedTile=-1;
     FString Title, Result, Risk, Timing, ConfirmLabel;
     TArray<FTacticPositionCell> Cells;
+    FTacticReliefRead Relief;
 };
 struct FPreparationPresentation
 {

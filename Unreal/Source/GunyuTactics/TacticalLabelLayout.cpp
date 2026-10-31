@@ -10,7 +10,7 @@ void ATacticalController::LayoutMapLabels()
     const auto& Units=Field->VisualUnits();const FVector2D Size(132,86);
     const FVector2D Min=gunyulayout::MapOrigin,Max=Min+gunyulayout::MapSize;
     TArray<FSlateRect> Occupied;
-    if(Field->Presentation().Position.bVisible) Occupied.Add(FSlateRect(16,174,368,534));
+    if(Field->Presentation().Position.bVisible) Occupied.Add(FSlateRect(16,174,368,Field->Presentation().Position.Relief.bVisible ? 652:534));
     // Leave the displayed formations and cart themselves readable, too.
     for(const auto& U:Units)
         if(U.Id>=0 && (U.Troops>0 || Field->IsPlaying()))
@@ -77,6 +77,7 @@ FString ATacticalController::UnitMapStatus(int Index) const
     const auto& U=Units[Index];
     if(Field->IsPlaying()) return Field->ReadUnitActivity(Index).Caption;
     if(U.Troops<=0) return TEXT("戦闘不能");
+    if(Field->Presentation().Position.Relief.bVisible && Field->Presentation().Position.Relief.Incoming==Index) return TEXT("後任を比較中");
     if(const auto* Read=gunyutargetui::Find(Field->Presentation(),Index))
         return Read->Badge+(U.bDisordered ? TEXT(" / 混乱"):U.bPressured ? TEXT(" / 隙"):U.bGuarded ? TEXT(" / 固守"):TEXT(""));
     if(U.bDisordered) return TEXT("混乱");

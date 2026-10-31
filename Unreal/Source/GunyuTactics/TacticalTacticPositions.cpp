@@ -51,7 +51,7 @@ void ATacticalField::BuildTacticPositions()
     P.bVisible=true;P.SelectedTile=State->ComparedPosition;
     P.Title=JourneyText(J.world.generals[J.world.armies[State->Selected].general].name)+TEXT(" / ")+State->HUD.SelectedTacticName;
     const auto* Seen=J.intelligence[0].Find(State->Target);
-    if(Seen && Seen->current) P.Title+=TEXT(" → ")+JourneyText(J.world.generals[Seen->observed.general].name);
+    if(TacticChain::Definition(State->SelectedTactics[State->Selected]).targetsEnemy && Seen && Seen->current) P.Title+=TEXT(" → ")+JourneyText(J.world.generals[Seen->observed.general].name);
     for(int Tile:J.world.MapNeighbors(J.world.armies[State->Selected].tile))
     { auto Read=ReadTacticPosition(Tile);if(Read.Tile>=0) P.Cells.Add(MoveTemp(Read)); }
     P.Result=TEXT("地図か一覧の番号を選ぶ。移動後の戦法を比較できます。");
@@ -66,4 +66,5 @@ void ATacticalField::BuildTacticPositions()
         P.ConfirmLabel=TEXT("行軍へ切替（前の指示を置換）");
         P.Timing=TEXT("確定で選択隊の継続指示・経由地を置き換えます。 ")+P.Timing;
     }
+    BuildReliefPresentation();
 }

@@ -21,6 +21,7 @@ struct FJourneyState
     std::array<frontline::ChainTactic, 3> SelectedTactics{frontline::ChainTactic::Lure, frontline::ChainTactic::Ambush, frontline::ChainTactic::Breakthrough};
     int Selected = 0, Target = 3;
     ETacticalInput Input = ETacticalInput::Select;
+    int ComparedRelief=-1; // Hypothetical successor; no automatic or persisted handover.
     int ComparedPosition=-1; // Transient map selection; never a saved order.
     bool bConfirmEndTurn = false, bConfirmWithdrawal = false;
     bool bSupplyPlayback=false; // Supply feedback advances while the tactical clock stays paused.

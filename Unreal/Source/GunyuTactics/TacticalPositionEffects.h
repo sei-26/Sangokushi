@@ -21,5 +21,17 @@ namespace gunyupositionfx
                 Add(V-Side,V+Side,W+Side,W-Side,Color);
             }
         }
+        const auto& R=P.Relief;
+        if(R.bVisible && R.bCanIssue && R.IncomingTile>=0 && R.Source>=0)
+        {
+            const auto A=Location(R.IncomingTile),B=Location(R.Source);
+            const auto Side=FVector::CrossProduct((B-A).GetSafeNormal(),FVector::UpVector)*3.f;
+            for(int I=0;I<7;++I)
+            {
+                auto V=FMath::Lerp(A,B,I/7.f),W=FMath::Lerp(A,B,(I+.55f)/7.f);
+                V.Z=Floor(V)+21;W.Z=Floor(W)+21;
+                Add(V-Side,V+Side,W+Side,W-Side,FLinearColor(.25f,.94f,.62f,.9f));
+            }
+        }
     }
 }
