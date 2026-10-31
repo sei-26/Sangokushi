@@ -15,7 +15,7 @@ TSharedRef<SWidget> ATacticalController::BuildDifficultyChoice()
 TSharedRef<SWidget> ATacticalController::BuildPlanningExample()
 {
     auto Panel=SNew(SVerticalBox);
-    Panel->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? TEXT("作戦の見本 ／ 出陣前のたたき台"):TEXT("前戦を生かす提案 ／ 未採用"); },15,Gold)];
+    Panel->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? TEXT("作戦の見本 ／ 出陣前のたたき台"):TEXT("経験を生かす提案 ／ 未採用"); },15,Gold)];
     Panel->AddSlot().AutoHeight().Padding(0,6)
       [SNew(SHorizontalBox).Visibility_Lambda([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
        + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([this] { return Field->Presentation().Journey.ExampleAdviser; },34,40)]

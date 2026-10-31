@@ -44,7 +44,7 @@ int main()
     assert(j->assignments[1].completed && j->assignments[2].completed);
     assert(rt.Resolve(*j) && j->assignments[0].completed);
     save->journey=*j;save->realtime=rt;std::vector<std::uint8_t> bytes;
-    assert(EncodeJourneySave(*save,bytes) && bytes[4]==9);
+    assert(EncodeJourneySave(*save,bytes) && bytes[4]==10);
     auto loaded=std::make_unique<JourneySaveData>();assert(DecodeJourneySave(bytes,*loaded));
     assert(loaded->journey.assignments[0].completed && loaded->beforeBattle->assignments[0].tile==north);
     assert(!loaded->beforeBattle->assignments[0].completed);

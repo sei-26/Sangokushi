@@ -313,6 +313,8 @@ private:
     TSharedRef<class SWidget> ReliefChoicesWidget();
     bool ReliefInterfaceSmokeTest();
     bool ReliefStorySmokeTest();
+    bool ReliefAdviceSmokeTest();
+    void PrepareReliefAdviceCapture(int Variant);
     void BuildBattleHeader(TSharedRef<class SCanvas>);
     void BuildCameraInterface(TSharedRef<class SCanvas>);
     void BuildTacticCinema(TSharedRef<class SCanvas>);

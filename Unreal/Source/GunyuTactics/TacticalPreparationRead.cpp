@@ -11,7 +11,7 @@ void ATacticalField::BuildPreparationPresentation()
     const auto Example=PlanExample(J);
     P.ExampleReason=JourneyText(Example.reason);P.ExampleAdviser=Example.adviser;
     P.ExampleName=JourneyText(Example.name);P.ExamplePurpose=JourneyText(Example.purpose);
-    P.ExampleManual=JourneyText(Example.manualTask);P.ExampleCaution=JourneyText(Example.caution);
+    P.ExampleManual=JourneyText(Example.manualTask);P.ExampleCaution=JourneyText(Example.caution);P.ExampleWarning=JourneyText(Example.warning);
     for(int I=0;I<3;++I)
     {
         const auto& A=Example.assignments[I];

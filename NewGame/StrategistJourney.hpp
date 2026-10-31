@@ -3,6 +3,7 @@
 #include "JourneyMission.hpp"
 #include "JourneyEnemyPlan.hpp"
 #include "JourneyOpening.hpp"
+#include <optional>
 #include "JourneyStory.hpp"
 #include "JourneyAssignment.hpp"
 #include "JourneyDifficulty.hpp"
@@ -57,10 +58,12 @@ namespace frontline
 		JourneyPromise promise = JourneyPromise::OpenRoad;
         JourneyConvoyRoute convoyRoute=JourneyConvoyRoute::Road;
         JourneyBattleReview battleReview;
+        std::optional<JourneyReliefRecord> retryRelief; // Non-canonical lesson, never a settled battle or reward.
         JourneyDifficulty difficulty=JourneyDifficulty::Standard;
         bool campaignFlow=false;
         bool SelectDifficulty(JourneyDifficulty);
         bool ApplyPlanExample();
+        bool RetryAtCouncil(const StrategistJourney& beforeBattle);
         std::array<JourneyAssignment,3> assignments{};
         std::u32string AssignmentProblem(int officer,int tile,JourneyDuty) const;
         bool AssignDuty(int officer,int tile,JourneyDuty);

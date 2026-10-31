@@ -298,6 +298,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefAdviceOnly")))
+    { const bool bPassed=ReliefAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefStoryOnly")))
     { const bool bPassed=ReliefStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefOnly")))
@@ -374,6 +376,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=Field->ReliefSmokeTest();
         if(bPassed) bPassed=ReliefInterfaceSmokeTest();
         if(bPassed) bPassed=ReliefStorySmokeTest();
+        if(bPassed) bPassed=ReliefAdviceSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -500,6 +503,9 @@ void ATacticalController::PlayerTick(float Delta)
         Field->Issue(Talk[FMath::Clamp(Officer,0,2)]);OpenOfficerNovel();
         EpisodePage=FMath::Max(0,EpisodeSnapshot.Lines.Num()-3);NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
     }
+    int ReliefCouncil=1;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ReliefCouncil="),ReliefCouncil))
+    { PrepareReliefAdviceCapture(ReliefCouncil);if(FParse::Param(FCommandLine::Get(),TEXT("GunyuApplyExample"))) ApplyPlanningExample(); }
     if (bCapture && Frames == 150) FPlatformMisc::RequestExit(false);
 }
 

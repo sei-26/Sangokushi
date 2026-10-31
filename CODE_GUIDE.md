@@ -414,3 +414,6 @@ TacticalFortifications.cpp が公開された都市と任務地点の建築・�
 
 
 明示した守備交代の実績は `NewGame/JourneyRelief.hpp` / `JourneyRelief.cpp`。通常移動・実戦法・同時進行の実移動から段階を進め、最初の実更新で判定する。戦後会話の追加は `JourneyReliefDrama.cpp`、UEの戦後事実は `TacticalStoryPresentation.cpp`。`tests/JourneyReliefStoryTests.cpp` で段階・互換・閲覧の不変を、`TacticalReliefStoryTests.cpp` で実操作から個別ノベルまでの接続を確認する。[守備交代の記憶](RELIEF_STORY.md)。
+
+
+交代の反省からの軍議案は `NewGame/JourneyReliefAdvice.cpp`。`RetryAtCouncil` は出陣前へ巻き戻しつつ、確認済みの交代だけを `retryRelief` に分離する。`AdaptReliefPlanExample` は公開地形と履歴から担当・理由を生成。保存版10、`tests/JourneyReliefAdviceTests.cpp` で巻き戻し・到着・互換、`TacticalReliefAdviceTests.cpp` で実戦後から軍議・地図・採用・再出陣を検証する。[操作と制約](RELIEF_ADVICE.md)。

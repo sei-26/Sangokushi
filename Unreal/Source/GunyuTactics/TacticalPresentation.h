@@ -88,7 +88,7 @@ struct FJourneyPresentation
     FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
     FJourneyEpisodePresentation Episode;
     FString PlanDifference,PlanReadiness,PlanObjective,PlanRoute;
-    FString DifficultyName,DifficultyDetail,ExampleName,ExamplePurpose,ExampleManual,ExampleCaution,ExampleReason;
+    FString DifficultyName,DifficultyDetail,ExampleName,ExamplePurpose,ExampleManual,ExampleCaution,ExampleReason,ExampleWarning;
     int ExampleAdviser=-1;
     TArray<FPlanningDuty> ExampleDuties;
     TArray<FString> ExampleOrders;

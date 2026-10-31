@@ -12,6 +12,7 @@ namespace frontline
         return true;
     }
     void AdaptPlanExample(const StrategistJourney&,JourneyPlanExample&);
+    void AdaptReliefPlanExample(const StrategistJourney&,JourneyPlanExample&);
     JourneyPlanExample PlanExample(const StrategistJourney& j)
     {
         JourneyPlanExample p;
@@ -58,7 +59,7 @@ namespace frontline
                 U"まず張飛の単独戦法を使ってよい。連鎖を狙う時は守備の指示をXで解除し、使いたい戦法と配置を決め直す。";
             p.caution=U"守備は攻撃の行動権を使う。敵の斥候や接近で伏兵が失敗することもある。固守中の隊を攻めに使う時は指示を変える。";
         }
-        AdaptPlanExample(j,p);return p;
+        AdaptPlanExample(j,p);AdaptReliefPlanExample(j,p);return p;
     }
     bool StrategistJourney::ApplyPlanExample()
     {

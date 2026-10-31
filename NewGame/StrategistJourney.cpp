@@ -63,7 +63,7 @@ namespace frontline
 		enemyPolicy = 0;
 		won = reinforced = false;
 		withdrawn = false; promise = JourneyPromise::OpenRoad; history = {};
-        convoyRoute=JourneyConvoyRoute::Road;battleReview={};
+        convoyRoute=JourneyConvoyRoute::Road;battleReview={};retryRelief.reset();
 		goal = Campaign::At(12, 10);
 		lastChain = {};
 		reports.clear();
@@ -127,7 +127,7 @@ namespace frontline
 		survivors = casualties = 0;
 		lastChain = {};
 		heldTurns = convoyStep = recoveredCargo = 0;
-        battleReview={};battleReview.preparationTracked=campaignFlow;battleReview.reliefTracked=campaignFlow;
+        battleReview={};battleReview.preparationTracked=campaignFlow;battleReview.reliefTracked=campaignFlow;retryRelief.reset();
         for(auto& a:assignments) a.completed=false;
 		guarding = {};
 		goal = IsRescue() ? Campaign::At(12, 11) : Definition().goal;
@@ -340,7 +340,7 @@ namespace frontline
 		{
 			++mission;turn=1;
             if(campaignFlow) world.day+=mission==1 ? 7:21; // Campaign montage; no unearned income or replenishment.
-            convoyRoute=JourneyConvoyRoute::Road;assignments={};
+            convoyRoute=JourneyConvoyRoute::Road;assignments={};retryRelief.reset();
 			stage = JourneyStage::Preparation;
 			reinforced = false;
 			enemyPolicy = 1;

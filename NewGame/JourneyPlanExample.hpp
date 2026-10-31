@@ -5,7 +5,7 @@ namespace frontline
     class StrategistJourney;
     struct JourneyPlanExample
     {
-        std::u32string name,purpose,manualTask,caution,reason;
+        std::u32string name,purpose,manualTask,caution,reason,warning;
         int adviser=-1;
         std::array<JourneyAssignment,3> assignments{};
     };

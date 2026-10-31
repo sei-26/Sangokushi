@@ -39,11 +39,12 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
         break;
     case ETacticalCommand::Retry:
-        J = *State->BeforeBattle;
+        if(!J.RetryAtCouncil(*State->BeforeBattle)) return;
         if(!bLegacyJourney) J.UpgradeCampaignAtCouncil();
         State->Orders.clear(); State->Selected = 0; State->Target = 3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
-        State->Report = TEXT("戦い直前の軍議へ戻りました。前回の出陣費用と損耗を戻し、準備方針を見直せます。");
+        State->Report = J.retryRelief ? TEXT("出陣前の兵と物資へ戻しました。前回の交代を参考に、配置の提案を確認できます。信頼や戦果は持ち越しません。"):
+            TEXT("戦い直前の軍議へ戻りました。前回の出陣費用と損耗を戻し、準備方針を見直せます。");
         Refresh(); return;
     default: return;
     }

@@ -113,6 +113,11 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
+            if(j.retryRelief)
+            {
+                JourneyBattleReview lesson;lesson.reliefTracked=true;lesson.relief={*j.retryRelief};
+                if(!j.campaignFlow || j.stage!=JourneyStage::Preparation || !ReliefReview(lesson) || !j.retryRelief->checkedTurn || ReliefPending(*j.retryRelief)) return false;
+            }
             if((j.reserveFood!=0 && j.reserveFood!=1800) || (j.reserveFood &&
                 (!j.campaignFlow || j.preparation!=1 || j.stage!=JourneyStage::Battle))) return false;
             if(!Enum(j.stage,4) || !Range(j.mission,0,2) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||

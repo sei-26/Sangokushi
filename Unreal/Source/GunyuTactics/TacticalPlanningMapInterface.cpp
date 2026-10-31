@@ -77,7 +77,7 @@ TSharedRef<SWidget> ATacticalController::BuildPlanningMap()
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)
           [SNew(SHorizontalBox)
            + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,6,0)[Button([this] { return bPlanningDuties ? TEXT("地形・武将の助言"):TEXT("武将の配置"); },[this] { bPlanningDuties=!bPlanningDuties;bPlanningExample=false;if(PlanningWidget) PlanningWidget->Invalidate(EInvalidateWidgetReason::Paint); },[] { return true; },true)]
-           + SHorizontalBox::Slot().FillWidth(1)[Button([this] { return bPlanningExample ? TEXT("案を閉じる"):(Field->Presentation().Journey.ExampleReason.IsEmpty() ? TEXT("作戦の見本"):TEXT("前戦からの提案")); },[this] { bPlanningExample=!bPlanningExample;bPlanningDuties=true;if(PlanningWidget) PlanningWidget->Invalidate(EInvalidateWidgetReason::Paint); },[] { return true; },true)]]
+           + SHorizontalBox::Slot().FillWidth(1)[Button([this] { return bPlanningExample ? TEXT("案を閉じる"):(Field->Presentation().Journey.ExampleReason.IsEmpty() ? TEXT("作戦の見本"):TEXT("経験からの提案")); },[this] { bPlanningExample=!bPlanningExample;bPlanningDuties=true;if(PlanningWidget) PlanningWidget->Invalidate(EInvalidateWidgetReason::Paint); },[] { return true; },true)]]
         + SVerticalBox::Slot().FillHeight(1)
           [SNew(SOverlay)
            + SOverlay::Slot()[SNew(SScrollBox).Visibility_Lambda([this] { return bPlanningDuties || bPlanningExample ? EVisibility::Collapsed:EVisibility::Visible; })+SScrollBox::Slot()[Detail]]
@@ -86,6 +86,9 @@ TSharedRef<SWidget> ATacticalController::BuildPlanningMap()
         + SVerticalBox::Slot().AutoHeight().Padding(0,5,0,0)
           [SNew(SBox).Visibility_Lambda([this] { return bPlanningExample ? EVisibility::Visible:EVisibility::Collapsed; })
            [SNew(SVerticalBox)
+            + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,6)
+              [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.ExampleWarning.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+               [Label([this] { return Field->Presentation().Journey.ExampleWarning; },14,Gold)]]
             + SVerticalBox::Slot().AutoHeight()[Button([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? TEXT("この見本で担当を配置する"):TEXT("この提案を採用して担当を配置"); },[this] { ApplyPlanningExample(); },[this] { return Field->CanIssue(ETacticalCommand::PlanExample); })]
             + SVerticalBox::Slot().AutoHeight().Padding(0,3)[Label([] { return TEXT("三人の担当を置換。費用なし・後から編集可。戦法は自分で指揮する。"); },12)]]];
     return SNew(SHorizontalBox).Visibility_Lambda([this] { return bNovelMap ? EVisibility::Visible:EVisibility::Collapsed; })

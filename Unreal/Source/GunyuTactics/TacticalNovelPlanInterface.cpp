@@ -31,7 +31,7 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().FillWidth(1)[Button([] { return TEXT("この局面の物語を読む ／ H"); },[this] { bNovelPlan=false; })]
         + SHorizontalBox::Slot().FillWidth(1).Padding(8,0,0,0)
           [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.ExampleReason.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
-           [Button([] { return TEXT("前戦からの配置案を地図で見る"); },[this] { OpenPlanningExample(); })]]]];
+           [Button([] { return TEXT("経験からの配置案を地図で見る"); },[this] { OpenPlanningExample(); })]]]];
     auto Body=SNew(SVerticalBox);
     Body->AddSlot().AutoHeight()[Label([] { return TEXT("果たすべき役目"); },18,Gold)];
     Body->AddSlot().AutoHeight().Padding(0,7)[Label([this] { return Field->Presentation().Journey.PlanObjective; },20)];
