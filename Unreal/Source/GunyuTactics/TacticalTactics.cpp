@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticBattlefield.hpp"
 
 using namespace frontline;
 
@@ -15,6 +16,17 @@ void ATacticalField::BuildTacticsPresentation()
     BuildTacticAvailability();
     BuildTacticPositions();
     H.Hint = JourneyText(Definition.description);
+    H.BattlefieldHint.Reset();
+    const auto* Contact=J.intelligence[0].Find(State->Target);
+    if(J.campaignFlow && !IsPlaying() && Contact && Contact->current &&
+       J.world.MapDistance(J.world.armies[State->Selected].tile,Contact->observed.tile)==1)
+    {
+        auto View=std::make_unique<Campaign>(J.world);
+        for(auto& Unit:View->armies) if(Unit.faction!=0) Unit.troops=0;
+        for(const auto& Seen:J.intelligence[0].contacts) if(Seen.current && Seen.id>=0 && Seen.id<int(View->armies.size())) View->armies[Seen.id]=Seen.observed;
+        const auto Read=ReadTacticBattlefield(*View,J.chain.concealed,State->Selected,State->Target);
+        H.BattlefieldHint=JourneyText(Read.Hint());
+    }
     if (!Definition.targetsEnemy) H.Target = TEXT("対象: 自隊と周囲2マスの味方\n荷車を除く / 敵の指定は不要");
     for (const auto Tactic : TacticChain::Loadout(J.world, State->Selected))
     {

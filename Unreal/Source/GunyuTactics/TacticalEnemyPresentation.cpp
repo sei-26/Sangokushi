@@ -25,6 +25,8 @@ void ATacticalField::BuildEnemyPresentation()
         Read.Counter = JourneyText(frontline::EnemyIntentCounter(Plan.intent));
         if (Seen->observed.stance == battle::Stance::Guard && Plan.intent != frontline::JourneyEnemyIntent::Recover)
             Read.Counter = TEXT("固守中は誘導できない。牽制→崩し、または固有戦法で崩そう。");
+        if(J.campaignFlow && Plan.intent==frontline::JourneyEnemyIntent::Guard && Plan.next!=Plan.from)
+        { Read.Intent=TEXT("包囲を避けて再配置する見込み");Read.Counter=TEXT("移動できれば固守が緩む。混乱で足を止め、挟撃する手もある。"); }
         Read.bSelected = Plan.army == State->Target;
         if (Read.bSelected)
         {

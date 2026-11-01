@@ -29,6 +29,14 @@ int main()
     // Only the existing authoritative deployment pays the selected preparation and escort.
     const auto cost=j.PreparationCosts(1);assert(j.Prepare(1,0));assert(j.reserveFood==1800 && j.HasConvoy());
     assert(j.world.cities[0].food==food-cost.TotalFood() && j.world.cities[0].gold==gold-cost.gold);
+    const auto first=j.Execute({{0,3,ChainTactic::Feint,-1}});
+    assert(first.completed==1 && CouncilBattleVoice(j,first.events[0],0).empty());
+    j.chain.BeginTurn(j.world);assert(j.Resupply());
+    const auto supplied=j.Execute({{0,3,ChainTactic::Feint,-1}});
+    assert(supplied.completed==1 && !CouncilBattleVoice(j,supplied.events[0],0).empty());
+    auto failed=supplied.events[0];failed.success=false;assert(CouncilBattleVoice(j,failed,0).empty());
+    j.chain.BeginTurn(j.world);const auto later=j.Execute({{0,3,ChainTactic::Feint,-1}});
+    assert(later.completed==1 && CouncilBattleVoice(j,later.events[0],0).empty());
     assert(BuildCouncilExchange(j,0,1).beats.empty());
     j.stage=JourneyStage::Preparation;j.mission=1;j.history[0].completed=true;j.history[0].casualties=1200;j.history[0].survivors=3000;
     const auto costly=BuildCouncilExchange(j,-1,0);assert(costly.beats.front().dialogue.speaker==1);for(const auto& beat:costly.beats) assert(beat.dialogue.warmMask==0);

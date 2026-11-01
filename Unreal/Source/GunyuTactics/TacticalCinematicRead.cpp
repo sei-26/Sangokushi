@@ -7,7 +7,7 @@ FTacticCinematicRead ATacticalField::ReadTacticCinema() const
     if(!B || !gunyucinema::IsTactic(B->Kind) || !B->Before.IsValidIndex(B->Actor) || B->Before[B->Actor].Id<0) return R;
     const float P=BeatProgress();
     R.bVisible=true;R.Actor=B->Actor;R.Target=B->Target;R.Officer=B->Before[B->Actor].Name;
-    R.Tactic=gunyucinema::Name(B->Kind);R.Voice=gunyucinema::Voice(B->Kind);R.Accent=gunyucinema::Color(B->Kind);
+    R.Tactic=gunyucinema::Name(B->Kind);R.Voice=B->CouncilVoice.IsEmpty() ? gunyucinema::Voice(B->Kind):B->CouncilVoice;R.Accent=gunyucinema::Color(B->Kind);
     R.Chain=B->ChainStep>0 ? FString::Printf(TEXT("連鎖 / 第%d手%s"),B->ChainStep,B->bSignature ? TEXT(" ・ 固有戦法") : TEXT("")) : TEXT("部隊の行動");
     R.Intro=FMath::SmoothStep(0.f,.07f,P)*(1-FMath::SmoothStep(.28f,.43f,P));
     R.CameraWeight=FMath::SmoothStep(.06f,.28f,P)*(1-FMath::SmoothStep(.82f,.99f,P));

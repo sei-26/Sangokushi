@@ -2,6 +2,19 @@
 #include "StrategistJourney.hpp"
 namespace frontline
 {
+    std::u32string CouncilBattleVoice(const StrategistJourney& j,const ChainEvent& e,int step)
+    {
+        if(!j.campaignFlow || !j.battleReview.preparationTracked || !e.success || e.army<0 || e.army>2) return {};
+        if(j.preparation==0 && j.turn==1 && e.army==1 && e.tactic==ChainTactic::Ambush && e.setupPercent==125)
+            return U"軍師の仕込みどおりだ。皆、この一撃につなげ！";
+        if(j.preparation==1 && j.battleReview.resupplyTurn>0 && step==0 &&
+           j.lastChain.completed>0 && j.battleReview.postSupplySteps==j.lastChain.completed)
+        {
+            const char32_t* voices[]={U"君が残した糧を、ここからの一手につなぐ！",U"糧は届いた。今度は、私の一手で応えよう！",U"軍師、あの糧でまだ行ける！ もう一発だ！"};
+            return voices[e.army];
+        }
+        return {};
+    }
     CouncilExchange BuildCouncilExchange(const StrategistJourney& j,int voice,int preparation,CouncilDecision accepted)
     {
         CouncilExchange e;

@@ -4,6 +4,8 @@
 namespace frontline
 {
     class StrategistJourney;
+    struct ChainEvent;
+    std::u32string CouncilBattleVoice(const StrategistJourney&,const ChainEvent&,int step);
     enum class CouncilDecision { None, OpenRoad, Escort, Ambush, Reserves };
     struct CouncilStageBeat
     {

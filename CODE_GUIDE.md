@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+本編の地形・構え・挟撃の計算は `NewGame/TacticBattlefield.cpp`。`StrategistJourney` から呼ぶ戦法と通常攻撃が適用し、旧形式の戦法APIの標準値は保持する。敵の再配置は `StrategistJourneyAI.cpp` の `AdaptivePlans`。軍議を受けた掛け声は `JourneyCouncilStage.cpp` の `CouncilBattleVoice`、UEの接続は `TacticalPlayback.cpp`。[仕様と検証対象](BATTLEFIELD_TACTICS.md)。
+
 通常の軍議の掛け合いは `NewGame/JourneyCouncilStage.cpp`。UEの読取は `TacticalCouncilRead.cpp`、話題・返答・送りは `TacticalCouncilScene.cpp`、画面は `TacticalCouncilSceneInterface.cpp`、三人の構図と登場・寄りは `TacticalEnsemble.cpp`。台詞ごとの表情指定は `JourneyEpisodeLine.warmMask` から `TacticalNovelArt.cpp` へ渡す。会話と実際の準備の接続・原画・残る範囲は [COUNCIL_PERFORMANCE.md](COUNCIL_PERFORMANCE.md)。
 
 華やかな共通フレームは `TacticalChrome.cpp` / `TacticalStyle.h` / `TacticalWidgets.h`、簡単な采配と詳細の切替は `TacticalCommandsInterface.cpp`。軍議の数値の開閉は `TacticalNovelPlanInterface.cpp`。新背景は `Unreal/ArtSource/Novel/*-v2.png` と対応する `/Game/Art/Novel/T_*V2`。自動戦闘の観測に基づく判断は `NewGame/JourneyAutoBattle.cpp`、UEの時計・通常戦法・手動復帰への接続は `TacticalAutoBattle.cpp` / `TacticalRealtime.cpp`。[仕様](HEROIC_UI_AND_AUTO_BATTLE.md)。

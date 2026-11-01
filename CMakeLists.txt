@@ -5,6 +5,7 @@ project(SangokushiRules LANGUAGES CXX)
 # The native game remains in Sangokushi.sln. This library can later be linked
 # into another engine through a deliberately small adapter.
 add_library(sangokushi_rules STATIC
+    NewGame/TacticBattlefield.cpp
     NewGame/TacticChain.cpp
     NewGame/TacticCatalog.cpp
     NewGame/TacticChainActions.cpp
@@ -102,6 +103,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_realtime tests/JourneyRealtimeTests.cpp)
     add_rules_test(journey_auto tests/JourneyAutoBattleTests.cpp)
     add_rules_test(journey_council_stage tests/JourneyCouncilStageTests.cpp)
+    add_rules_test(tactic_battlefield tests/TacticBattlefieldTests.cpp)
     add_rules_test(journey_march tests/JourneyMarchTests.cpp)
     add_rules_test(journey_save tests/JourneySaveTests.cpp)
     add_rules_test(journey_assignments tests/JourneyAssignmentTests.cpp)

@@ -18,7 +18,7 @@ FTacticPositionCell ATacticalField::ReadTacticPosition(int Tile) const
     if(!Read.bMoveAllowed) { Read.Result=JourneyText(Reason);return Read; }
     const auto Tactic=State->SelectedTactics[Id];auto Orders=State->Orders;
     Orders.push_back({Id,State->Target,Tactic,-1});
-    const auto Result=Chain.Preview(*View,J.intelligence[0],Orders);
+    const auto Result=Chain.Preview(*View,J.intelligence[0],Orders,J.campaignFlow);
     Read.bReady=Result.completed==int(Orders.size());
     if(Read.bReady)
     {

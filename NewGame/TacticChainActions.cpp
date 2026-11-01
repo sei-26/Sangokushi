@@ -1,8 +1,9 @@
 ﻿#include "TacticChain.hpp"
+#include "TacticBattlefield.hpp"
 
 namespace frontline
 {
-	ChainEvent TacticChain::Apply(Campaign& world, const ChainOrder& order, int combo)
+	ChainEvent TacticChain::Apply(Campaign& world, const ChainOrder& order, int combo, bool battlefield)
 	{
 		ChainEvent event;
 		event.army = order.army; event.enemy = order.enemy; event.tactic = order.tactic;
@@ -38,6 +39,7 @@ namespace frontline
 			auto& victim = world.armies[order.enemy];
 			if (world.MapDistance(actor.tile, victim.tile) != 1) return fail(U"敵が隣接していない。誘導先と担当の配置を見直そう。");
 			event.from = victim.tile;
+            auto field=ReadTacticBattlefield(world,concealed,order.army,order.enemy);
 			const int leadership = world.generals[actor.general].leadership;
 			int damage = 0, moraleLoss = 0;
 			switch (order.tactic)
@@ -117,7 +119,12 @@ namespace frontline
 			{
 				const int prepared = damage * event.setupPercent / 100;
 				const int supported = prepared * (inspired[order.army] ? 120 : 100) / 100;
-				event.damage = std::min(victim.troops, supported * ComboPercent(combo) / 100);
+				const int raw=supported*ComboPercent(combo)/100;
+                // Cover and pincer are measured at impact's starting positions;
+                // a guard-breaking tactic removes the stance protection first.
+                field.stance=battle::DamagePercent(victim.stance);
+                event.damage=std::min(victim.troops,battlefield ? field.Damage(raw):raw);
+                if(battlefield) event.reason+=field.Describe();
 				if (inspired[order.army]) event.reason += U" 鼓舞の20％強化を消費。";
 				inspired[order.army] = false; victim.troops -= event.damage;
 			}

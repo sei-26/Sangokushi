@@ -59,11 +59,11 @@ namespace frontline
 		bool Move(Campaign& world, const BattleIntelligence& known, int army, int tile,
 		          std::u32string& reason);
 		bool Strike(Campaign& world, const BattleIntelligence& known, int army, int enemy,
-		            std::u32string& reason);
+		            std::u32string& reason, bool battlefield=false);
 		ChainResult Preview(const Campaign& world, const BattleIntelligence& known,
-		                    const std::vector<ChainOrder>& orders) const;
+		                    const std::vector<ChainOrder>& orders, bool battlefield=false) const;
 		ChainResult Execute(Campaign& world, const BattleIntelligence& known,
-		                    const std::vector<ChainOrder>& orders);
+		                    const std::vector<ChainOrder>& orders, bool battlefield=false);
 		static int ComboPercent(int combo);
 		static const char32_t* Name(ChainTactic tactic);
 		static const ChainTacticDefinition& Definition(ChainTactic tactic);
@@ -74,7 +74,7 @@ namespace frontline
 		static int PushTile(const Campaign& world, int attacker, int enemy);
 
 	private:
-		ChainResult Resolve(Campaign& world, const std::vector<ChainOrder>& orders);
-		ChainEvent Apply(Campaign& world, const ChainOrder& order, int combo);
+		ChainResult Resolve(Campaign& world, const std::vector<ChainOrder>& orders, bool battlefield);
+		ChainEvent Apply(Campaign& world, const ChainOrder& order, int combo, bool battlefield);
 	};
 } // namespace frontline

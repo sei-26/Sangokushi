@@ -1,4 +1,5 @@
 ﻿#include "StrategistJourney.hpp"
+#include "TacticBattlefield.hpp"
 #include <memory>
 
 namespace frontline
@@ -18,6 +19,63 @@ namespace frontline
                 if (contact.current && contact.id >= 0 && contact.id < static_cast<int>(view->armies.size()))
                     view->armies[contact.id] = contact.observed;
             return view;
+        }
+        std::vector<JourneyEnemyPlan> AdaptivePlans(const Campaign& observed,const TacticChain& chain,const JourneyEnemyContext& context,bool campaign)
+        {
+            auto plans=PlanJourneyEnemies(observed,chain,context);
+            if(!campaign || context.policy!=1) return plans;
+            for(auto& plan:plans)
+            {
+                if(plan.intent!=JourneyEnemyIntent::Guard ||
+                   (context.objective==JourneyObjective::CaptureCamp && plan.from==context.goal)) continue;
+                int attacker=-1;
+                for(int a=0;a<int(observed.armies.size());++a)
+                    if(observed.armies[a].troops>0 && observed.Hostile(observed.armies[a].faction,observed.armies[plan.army].faction)) { attacker=a;break; }
+                if(attacker<0) continue;
+                // The supplied world already contains only this side's contacts.
+                // Do not re-hide a concealed officer who has actually been spotted.
+                const int pressure=ReadTacticBattlefield(observed,{},attacker,plan.army).directions;
+                if(pressure<2) continue;
+                auto Exposure=[&](const Campaign& position)
+                {
+                    int risk=0;
+                    for(int a=0;a<int(position.armies.size());++a)
+                    {
+                        const auto& opponent=position.armies[a];
+                        if(opponent.troops<=0 || opponent.arm==Arm::Transport || !position.Hostile(opponent.faction,position.armies[plan.army].faction) ||
+                           !position.CanStrike(a,position.armies[plan.army].tile)) continue;
+                        risk+=ReadTacticBattlefield(position,{},a,plan.army).Damage(100+opponent.troops/12);
+                    }
+                    return risk;
+                };
+                const int currentRisk=Exposure(observed);
+                auto trial=std::make_unique<Campaign>(observed);int best=10000000,chosen=plan.from;
+                // Include the cost of losing the brace, not only the number of fronts.
+                trial->armies[plan.army].stance=battle::Stance::Balanced;
+                for(int tile:observed.MapNeighbors(plan.from))
+                {
+                    if(!StrategistJourney::OnMap(tile) || tile%Width<1 || tile/Width<1 ||
+                       observed.CityAt(tile)>=0 || !TacticChain::Free(observed,tile)) continue;
+                    bool reserved=false;
+                    for(const auto& other:plans) if(other.army!=plan.army && (other.from==tile || other.next==tile)) reserved=true;
+                    if(reserved) continue;
+                    trial->armies[plan.army].tile=tile;
+                    const int nextPressure=ReadTacticBattlefield(*trial,{},attacker,plan.army).directions;
+                    if(nextPressure>=pressure) continue;
+                    const int risk=Exposure(*trial);
+                    if(risk>=currentRisk) continue;
+                    const int score=risk*100+observed.MapDistance(tile,context.goal);
+                    if(score<best) { best=score;chosen=tile; }
+                }
+                if(chosen==plan.from) continue;
+                plan.next=chosen;plan.danger.clear();trial->armies[plan.army].tile=chosen;
+                for(int y=1;y<13;++y) for(int x=1;x<15;++x)
+                {
+                    const int tile=Campaign::At(x,y);
+                    if(tile!=chosen && trial->tiles[tile].terrain!=Terrain::Sea && trial->CanStrike(plan.army,tile)) plan.danger.push_back(tile);
+                }
+            }
+            return plans;
         }
     }
     std::vector<JourneyEnemyPlan> StrategistJourney::ReadEnemyPlans() const
@@ -45,12 +103,12 @@ namespace frontline
         BattleIntelligence assumed;
         assumed.Reset(*observed); assumed.Observe(*observed, 1);
         auto view = EnemyView(*observed, assumed);
-        return PlanJourneyEnemies(*view, chain, Context(*this));
+        return AdaptivePlans(*view,chain,Context(*this),campaignFlow);
     }
     std::vector<JourneyEnemyPlan> StrategistJourney::PlanEnemyTurn() const
     {
         auto observed=EnemyView(world,intelligence[1]);
-        return PlanJourneyEnemies(*observed,chain,Context(*this));
+        return AdaptivePlans(*observed,chain,Context(*this),campaignFlow);
     }
     void StrategistJourney::ApplyEnemyPlans(const std::vector<JourneyEnemyPlan>& plans)
     {
@@ -58,6 +116,8 @@ namespace frontline
             if (plan.next!=plan.from && TacticChain::Free(world,plan.next))
             {
                 world.armies[plan.army].tile=world.armies[plan.army].target=plan.next;
+                // Re-forming costs the guard's brace. A blocked move above never pays this cost.
+                if(campaignFlow && plan.intent==JourneyEnemyIntent::Guard) world.armies[plan.army].stance=battle::Stance::Balanced;
                 ++world.revision;
             }
         RefreshIntelligence();

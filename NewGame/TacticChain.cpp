@@ -1,4 +1,5 @@
 ﻿#include "TacticChain.hpp"
+#include "TacticBattlefield.hpp"
 #include <memory>
 
 namespace frontline
@@ -104,7 +105,7 @@ namespace frontline
 		return true;
 	}
 	bool TacticChain::Strike(Campaign& world, const BattleIntelligence& known, int army, int enemy,
-	                         std::u32string& reason)
+	                         std::u32string& reason, bool battlefield)
 	{
 		const auto* contact = known.Find(enemy);
 		if (!Living(world, army) || world.armies[army].faction != world.player || spent[army] || !contact ||
@@ -115,7 +116,9 @@ namespace frontline
 		}
 		auto& victim = world.armies[enemy];
 		const auto& actor = world.armies[army];
-		const int damage = std::min(victim.troops, (100 + actor.troops / 12) * (inspired[army] ? 120 : 100) / 100);
+		const auto field=ReadTacticBattlefield(world,concealed,army,enemy);
+        const int raw=(100+actor.troops/12)*(inspired[army] ? 120:100)/100;
+        const int damage=std::min(victim.troops,battlefield ? field.Damage(raw):raw);
 		victim.troops -= damage;
 		victim.morale = std::max(0, victim.morale - 5);
 		spent[army] = true;
@@ -125,9 +128,10 @@ namespace frontline
 		const auto number = std::to_string(damage);
 		reason = world.generals[actor.general].name + U"隊が攻撃。敵兵を" +
 		         std::u32string(number.begin(), number.end()) + U"減らした。";
+        if(battlefield) reason+=field.Describe();
 		return true;
 	}
-	ChainResult TacticChain::Resolve(Campaign& world, const std::vector<ChainOrder>& orders)
+	ChainResult TacticChain::Resolve(Campaign& world, const std::vector<ChainOrder>& orders, bool battlefield)
 	{
 		ChainResult result;
 		if (orders.empty() || orders.size() > 3)
@@ -136,7 +140,7 @@ namespace frontline
 		for (auto* flags : {&concealed, &moved, &spent, &disordered, &pressured, &inspired, &signatureUsed}) flags->resize(count, false);
 		for (const auto& order : orders)
 		{
-			auto event = Apply(world, order, result.completed + 1);
+			auto event = Apply(world, order, result.completed + 1, battlefield);
 			result.events.push_back(event);
 			if (!event.success)
 				break; // Unspent followers remain available for a new plan.
@@ -145,7 +149,7 @@ namespace frontline
 		return result;
 	}
 	ChainResult TacticChain::Preview(const Campaign& world, const BattleIntelligence& known,
-	                                 const std::vector<ChainOrder>& orders) const
+	                                 const std::vector<ChainOrder>& orders, bool battlefield) const
 	{
 		auto view = std::make_unique<Campaign>(world);
 		for (int i = 0; i < static_cast<int>(view->armies.size()); ++i)
@@ -156,12 +160,12 @@ namespace frontline
 			view->armies[i] = contact && contact->current ? contact->observed : Army{};
 		}
 		auto local = *this;
-		auto result = local.Resolve(*view, orders);
+		auto result = local.Resolve(*view, orders, battlefield);
 		result.prediction = true;
 		return result;
 	}
 	ChainResult TacticChain::Execute(Campaign& world, const BattleIntelligence& known,
-	                                 const std::vector<ChainOrder>& orders)
+	                                 const std::vector<ChainOrder>& orders, bool battlefield)
 	{
 		// Validate all initial targets against the same observation before any
 		// action mutates the world. A bad hidden target must not probe reality.
@@ -181,6 +185,6 @@ namespace frontline
 				return result;
 			}
 		}
-		return Resolve(world, orders);
+		return Resolve(world, orders, battlefield);
 	}
 } // namespace frontline

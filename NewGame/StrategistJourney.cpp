@@ -252,7 +252,7 @@ namespace frontline
 	{
 		if (stage != JourneyStage::Battle)
 			return false;
-		const bool result = chain.Strike(world, intelligence[0], army, enemy, message);
+		const bool result = chain.Strike(world, intelligence[0], army, enemy, message, campaignFlow);
 		if (result)
 		{
 			RefreshIntelligence();
@@ -262,14 +262,14 @@ namespace frontline
 	}
 	ChainResult StrategistJourney::Preview(const std::vector<ChainOrder>& orders) const
 	{
-		return chain.Preview(world, intelligence[0], orders);
+		return chain.Preview(world, intelligence[0], orders, campaignFlow);
 	}
 	ChainResult StrategistJourney::Execute(const std::vector<ChainOrder>& orders)
 	{
 		if (stage != JourneyStage::Battle)
 			return {};
         std::array<int,3> before{};for(int i=0;i<3;++i) before[i]=world.armies[i].tile;
-		lastChain = chain.Execute(world, intelligence[0], orders);
+		lastChain = chain.Execute(world, intelligence[0], orders, campaignFlow);
         for(int i=0;i<3;++i) if(world.armies[i].tile!=before[i]) RecordReliefMove(i,before[i],world.armies[i].tile);
         RecordCooperation(lastChain);
         if(battleReview.preparationTracked)

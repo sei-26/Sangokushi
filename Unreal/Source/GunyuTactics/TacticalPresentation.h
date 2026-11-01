@@ -152,7 +152,7 @@ struct FBattleBeat
     TArray<FVisualUnit> Before, After;
     EBattleCue Kind = EBattleCue::March;
     int Actor = -1, Target = -1;
-    FString Title, Reason;
+    FString Title, Reason, CouncilVoice;
     float Duration = 2.4f;
     bool bSignature = false;
     int ChainStep=0, Combo=0, ComboPercent=100;
@@ -171,7 +171,7 @@ struct FTacticalPresentation
     FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;
     FString ClockLabel, StandingOrderLabel, SpeedLabel;
     FString ChainSignalLabel,ResupplyLabel;
-    FString GuardContext,GuardHint,GuardButtonLabel;
+    FString GuardContext,GuardHint,GuardButtonLabel,BattlefieldHint;
     bool bGuardOrder=false;
     bool bHasResupplyPlan=false;
     bool bChainSignalArmed=false,bChainSignalReady=false;

@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyCouncilStage.hpp"
 #include "Components/AudioComponent.h"
 
 using namespace frontline;
@@ -88,6 +89,7 @@ void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
         if (Beat.bSignature) Beat.Title += TEXT("固有戦法 / ");
         Beat.Title += JourneyText(TacticChain::Name(Event.tactic)) + (Event.success ? TEXT(" 発動") : TEXT(" 停止"));
         Beat.Reason = JourneyText(Event.reason);
+        Beat.CouncilVoice=JourneyText(CouncilBattleVoice(State->Journey,Event,Index));
         Beat.Duration = Event.success ? (Beat.bSignature ? 3.8f : 3.0f) : 2.5f;
         // Visual snapshots come from resolved events, never from preview and never
         // by executing commands again. The authoritative battle is resolved once.

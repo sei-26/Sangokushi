@@ -104,6 +104,8 @@ public:
     bool TacticRepertoireSmokeTest();
     bool ComboSmokeTest();
     bool TacticAvailabilitySmokeTest();
+    bool BattlefieldTacticsSmokeTest();
+    void PrepareBattlefieldPreview(int Variant);
     bool GuardControlSmokeTest();
     bool TacticTargetSmokeTest();
     void PrepareTacticTargetPreview(int Variant);
