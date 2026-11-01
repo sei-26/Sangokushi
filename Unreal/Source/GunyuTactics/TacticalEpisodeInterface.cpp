@@ -21,13 +21,14 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
         const float W=FullBody ? 1020.f:650.f,H=FullBody ? 1530.f:975.f;
         auto Portrait=SNew(SBox).Visibility_Lambda([this,Slot]
             { const bool Match=Slot==0 || (Slot==1 ? NovelOfficer()!=4:NovelOfficer()==4);
-              return bEpisodeOpen && !bNovelPlan && Match && CurrentEpisodeLine().Speaker>=0 ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
+              return bEpisodeOpen && !bNovelPlan && !IsEnsembleEpisode() && Match && CurrentEpisodeLine().Speaker>=0 ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
             [SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush"))
              [NovelPortraitWidget([this,Slot] { return Slot==0 ? 3:NovelOfficer(); },W,H)]];
         if(Slot>0) { Portrait->SetRenderTransformPivot(FVector2D(.5,.5));Portrait->SetRenderTransform(FSlateRenderTransform(FScale2D(-1,1))); }
         const FVector2D Position=Slot==0 ? FVector2D(-30,-100):Slot==1 ? FVector2D(850,60):FVector2D(640,-100);
         Canvas->AddSlot().Position(Position).Size(FVector2D(W,H))[Portrait];
     }
+    BuildEnsemblePortraits(Canvas,false);
     auto Header=SNew(STacticalChrome).Padding(FMargin(22,12)).Opacity(.86f).Visibility_Lambda(DialogueVisible)
         [SNew(SVerticalBox)
          + SVerticalBox::Slot().AutoHeight()[Label([this] { return EpisodeSnapshot.Place; },12,Gold)]
@@ -67,4 +68,5 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
     Canvas->AddSlot().Position(FVector2D(460,370)).Size(FVector2D(680,180))[Choices];InputPanels.Add(Choices);
     BuildNovelHistory(Canvas);
     BuildNovelPlan(Canvas);
+    BuildCouncilScene(Canvas);
 }

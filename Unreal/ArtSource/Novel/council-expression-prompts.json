@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-01",
+  "tool": "built-in image_gen",
+  "description": "Identity-preserving facial-expression edits of existing original conversation sprites. Generated PNG originals copied unchanged; base sprites retained.",
+  "edits": [
+    {
+      "key": "liu",
+      "prompt": "Use case: identity-preserve. Asset type: expression variant of the attached original game conversation sprite. Edit this exact character, do not redesign or replace him. Preserve his age, recognizable facial identity, hairstyle and headwear, costume, ornament details, body silhouette, hand positions, camera angle, framing and lighting. Keep the identical 1024x1536 vertical composition, head and body landmarks in exactly the same screen positions so this image can swap with the original without jumping. Change only his facial expression as specified. Transparent background with clean cutout edges, no background scenery, no gradient glow, no shadow rectangle. No text, letters, logo or UI. Original premium painterly Three Kingdoms character art, same finish as input. Expression: Liu Bei is warmly amused and welcoming, naturally smiling with a slightly open mouth, softened brows, kind smiling eyes and subtle laugh lines, as he enjoys his companions' banter. A noble approachable leader, lively rather than a stern statue. Same pose and armor.",
+      "reference": "Unreal/ArtSource/Novel/liu-conversation-v1.png",
+      "output": "Unreal/ArtSource/Novel/liu-warm-v1.png"
+    },
+    {
+      "key": "guan",
+      "prompt": "Use case: identity-preserve. Asset type: expression variant of the attached original game conversation sprite. Edit this exact character, do not redesign or replace him. Preserve his age, recognizable facial identity, hairstyle and headwear, costume, ornament details, body silhouette, hand positions, camera angle, framing and lighting. Keep the identical 1024x1536 vertical composition, head and body landmarks in exactly the same screen positions so this image can swap with the original without jumping. Change only his facial expression as specified. Transparent background with clean cutout edges, no background scenery, no gradient glow, no shadow rectangle. No text, letters, logo or UI. Original premium painterly Three Kingdoms character art, same finish as input. Expression: Guan Yu shows a small but unmistakable confident amused smile, corners of his mouth lifted beneath the moustache, brows relaxed, warmly narrowed eyes as he dryly teases his younger brother. Keep his distinctive red complexion and long black beard. Dignified, not a wide silly grin. Same pose and armor.",
+      "reference": "Unreal/ArtSource/Novel/guan-conversation-v1.png",
+      "output": "Unreal/ArtSource/Novel/guan-warm-v1.png"
+    },
+    {
+      "key": "zhang",
+      "prompt": "Use case: identity-preserve. Asset type: expression variant of the attached original game conversation sprite. Edit this exact character, do not redesign or replace him. Preserve his age, recognizable facial identity, hairstyle and headwear, costume, ornament details, body silhouette, hand positions, camera angle, framing and lighting. Keep the identical 1024x1536 vertical composition, head and body landmarks in exactly the same screen positions so this image can swap with the original without jumping. Change only his facial expression as specified. Transparent background with clean cutout edges, no background scenery, no gradient glow, no shadow rectangle. No text, letters, logo or UI. Original premium painterly Three Kingdoms character art, same finish as input. Expression: Zhang Fei bursts into a broad infectious hearty laugh, smiling eyes, expressive raised cheeks, mouth open enough to show natural upper teeth, eyebrows relaxed into exuberant delight. A robust charismatic warrior laughing with his brothers, never snarling or angry. Preserve his dark beard, rugged face, exact body pose and armor.",
+      "reference": "Unreal/ArtSource/Novel/zhang-conversation-v1.png",
+      "output": "Unreal/ArtSource/Novel/zhang-warm-v1.png"
+    }
+  ]
+}

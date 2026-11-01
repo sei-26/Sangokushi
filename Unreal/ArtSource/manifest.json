@@ -119,6 +119,27 @@
       "name": "T_NightCampV2",
       "kind": "visual-novel",
       "provenance": "Original built-in image_gen artwork, 2026-11-01. Exact prompts: Unreal/ArtSource/Novel/HEROIC_V2_PROMPTS.md."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/liu-warm-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_LiuWarmV1",
+      "kind": "visual-novel",
+      "provenance": "Original character-expression edit with built-in image_gen, 2026-11-01. Exact prompts and references: Unreal/ArtSource/Novel/council-expression-prompts.json."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/guan-warm-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_GuanWarmV1",
+      "kind": "visual-novel",
+      "provenance": "Original character-expression edit with built-in image_gen, 2026-11-01. Exact prompts and references: Unreal/ArtSource/Novel/council-expression-prompts.json."
+    },
+    {
+      "source": "Unreal/ArtSource/Novel/zhang-warm-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_ZhangWarmV1",
+      "kind": "visual-novel",
+      "provenance": "Original character-expression edit with built-in image_gen, 2026-11-01. Exact prompts and references: Unreal/ArtSource/Novel/council-expression-prompts.json."
     }
   ]
 }

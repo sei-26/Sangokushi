@@ -35,6 +35,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyReliefDrama.cpp
     NewGame/JourneyReliefAdvice.cpp
     NewGame/JourneyPreparationDrama.cpp
+    NewGame/JourneyCouncilStage.cpp
     NewGame/JourneyCouncilDrama.cpp
     NewGame/JourneyEpisode.cpp
     NewGame/JourneyEpisodeCouncil.cpp
@@ -100,6 +101,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_battle_story tests/JourneyBattleStoryTests.cpp)
     add_rules_test(journey_realtime tests/JourneyRealtimeTests.cpp)
     add_rules_test(journey_auto tests/JourneyAutoBattleTests.cpp)
+    add_rules_test(journey_council_stage tests/JourneyCouncilStageTests.cpp)
     add_rules_test(journey_march tests/JourneyMarchTests.cpp)
     add_rules_test(journey_save tests/JourneySaveTests.cpp)
     add_rules_test(journey_assignments tests/JourneyAssignmentTests.cpp)

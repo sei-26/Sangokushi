@@ -151,6 +151,7 @@ public:
     bool SaveSessionSmokeTest();
     bool ChainPresentationSmokeTest();
     bool TacticCinemaSmokeTest();
+    FCouncilStageExchange ReadCouncilExchange(int Voice,int Decision=0) const;
     FString PlanningDutyProblem(int Officer,int Tile,int Kind) const;
     bool AssignPlanningDuty(int Officer,int Tile,int Kind);
     bool ExportSession(std::vector<std::uint8_t>&) const;
@@ -403,6 +404,27 @@ private:
     TSharedRef<class SWidget> NovelPortraitWidget(TFunction<int()> Speaker,float Width,float Height);
     void BuildNovelHistory(TSharedRef<class SCanvas> Canvas);
     void BuildNovelPlan(TSharedRef<class SCanvas> Canvas);
+    void BuildCouncilScene(TSharedRef<class SCanvas> Canvas);
+    void BuildEnsemblePortraits(TSharedRef<class SCanvas> Canvas,bool Council);
+    bool CouncilSceneVisible() const;
+    bool IsEnsembleEpisode() const;
+    void OpenCouncilVoice(int Voice,int Decision=0);
+    void ChooseCouncilDecision(int Decision);
+    void AdvanceCouncilScene(float Delta);
+    void NextCouncilLine();
+    FDialoguePresentation CurrentCouncilLine() const;
+    FString CouncilReaction(int Officer) const;
+    FString VisibleCouncilText() const;
+    FString CouncilChoiceLabel(int Index) const;
+    void CouncilChoice(int Index);
+    bool CouncilSceneSmokeTest();
+    bool bCouncilLedger=false;
+    int CouncilTopic=-1,CouncilPage=0,CouncilCachePlan=-1;
+    bool bCouncilCacheRescue=false;
+    float CouncilElapsed=0,CouncilStageTime=0,CouncilLineTime=0;
+    float CouncilPresence[3]={0,0,0};
+    FCouncilStageExchange CouncilExchange;
+
     void OpenNovelPlan();
     TSharedRef<class SWidget> BuildPlanningMap();
     void TogglePlanningMap();
@@ -444,6 +466,8 @@ private:
     bool bDetailedBattle=false;
     FLinearColor NovelPortraitTone(int Speaker) const;
     const struct FSlateBrush* NovelPortraitBrush(int Speaker) const;
+    UPROPERTY() TArray<TObjectPtr<class UTexture2D>> ReactionTextures;
+    TArray<TSharedPtr<struct FSlateBrush>> ReactionBrushes;
     UPROPERTY() TArray<TObjectPtr<class UTexture2D>> ConversationTextures;
     TArray<TSharedPtr<struct FSlateBrush>> ConversationBrushes;
     bool bNovelPlan=false,bNovelPersonal=false;

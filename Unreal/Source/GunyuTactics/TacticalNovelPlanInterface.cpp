@@ -9,7 +9,7 @@
 using namespace gunyuui;
 void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
 {
-    auto Visible=[this] { return bEpisodeOpen && bNovelPlan && Field->Presentation().Journey.bPreparation ? EVisibility::Visible:EVisibility::Collapsed; };
+    auto Visible=[this] { return bEpisodeOpen && bNovelPlan && Field->Presentation().Journey.bPreparation && !CouncilSceneVisible() ? EVisibility::Visible:EVisibility::Collapsed; };
     auto Shade=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.02f,.008f,.025f,.20f)).Visibility_Lambda(Visible);
     Canvas->AddSlot().Position(FVector2D::ZeroVector).Size(FVector2D(1600,900))[Shade];InputPanels.Add(Shade);
     auto Contents=SNew(SVerticalBox);
@@ -17,7 +17,7 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().FillWidth(1)[Label([] { return TEXT("さあ、軍議を始めよう"); },34,Gold)]
         + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelAdvice ? TEXT("案を比較 / A"):TEXT("皆の声を聞く / A"); },[this] { bNovelMap=false;bNovelAdvice=!bNovelAdvice; })]
         + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelMap ? TEXT("作戦の比較 / M"):TEXT("配置を考える / M"); },[this] { TogglePlanningMap(); })]
-        + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("物語へ戻る"); },[this] { bNovelPlan=false; })]];
+        + SHorizontalBox::Slot().AutoWidth()[Button([this] { return Field->Presentation().Journey.bCampaignFlow ? TEXT("軍議の場へ戻る"):TEXT("物語へ戻る"); },[this] { if(Field->Presentation().Journey.bCampaignFlow) bCouncilLedger=bNovelMap=bNovelAdvice=false;else bNovelPlan=false; })]];
     Contents->AddSlot().AutoHeight().Padding(0,4,0,8)
       [SNew(SHorizontalBox)
        + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)

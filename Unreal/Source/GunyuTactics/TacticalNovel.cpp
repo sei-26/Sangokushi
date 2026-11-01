@@ -11,6 +11,7 @@ bool ATacticalController::NovelTextComplete() const
 { return VisibleNovelText().Len()==CurrentEpisodeLine().Text.Len(); }
 void ATacticalController::AdvanceNovel(float Delta)
 {
+    AdvanceCouncilScene(Delta);
     if(bEpisodeOpen && !bNovelHistory && !bNovelPlan)
     { const float Step=FMath::Clamp(Delta,0.f,.25f);NovelElapsed=FMath::Min(1000.f,NovelElapsed+Step);NovelStageTime=FMath::Min(1.f,NovelStageTime+Step);NovelLineTime=FMath::Min(1.f,NovelLineTime+Step); }
 }

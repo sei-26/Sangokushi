@@ -32,7 +32,12 @@ void ATacticalController::HandleEpisodeKey(FKey Key)
     if(!bEpisodeOpen) return;
     if(bNovelPlan)
     {
-        if(Key==EKeys::Escape) { if(bNovelMap) bNovelMap=false;else bNovelPlan=false; }
+        if(CouncilSceneVisible())
+        {
+            if(Key==EKeys::Enter || Key==EKeys::SpaceBar || Key==EKeys::Right) { NextCouncilLine();return; }
+            if(Key==EKeys::One || Key==EKeys::Two) { ChooseCouncilDecision(Key==EKeys::One ? 3:4);return; }
+        }
+        if(Key==EKeys::Escape) { if(bNovelMap) bNovelMap=false;else if(bCouncilLedger || bNovelAdvice) { bCouncilLedger=bNovelAdvice=false; }else bNovelPlan=false; }
         else if(Key==EKeys::A) { bNovelMap=false;bNovelAdvice=!bNovelAdvice; }
         else if(Key==EKeys::M) TogglePlanningMap();
         else if(Key==EKeys::R) TogglePlanningRoute();

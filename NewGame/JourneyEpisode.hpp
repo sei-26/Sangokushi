@@ -5,7 +5,7 @@ namespace frontline
 {
     class StrategistJourney;
     // 0 Liu, 1 Guan, 2 Zhang, 3 protagonist, 4 Ji An, -1 narration.
-    struct JourneyEpisodeLine { int speaker=-1;std::u32string text,direction; };
+    struct JourneyEpisodeLine { int speaker=-1;std::u32string text,direction;int warmMask=0; };
     struct JourneyEpisode
     {
         std::u32string title,place,setting,question;

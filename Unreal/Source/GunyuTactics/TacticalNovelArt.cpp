@@ -16,6 +16,16 @@ void ATacticalController::LoadNovelArt()
         if(NovelBackgrounds.Num()<2) { NovelBackgrounds.Add(Texture);NovelBackgroundBrushes.Add(Brush); }
         else { CutinTextures.Add(Texture);CutinBrushes.Add(Brush); }
     }
+    ReactionTextures.Reset();ReactionBrushes.Reset();
+    for(const TCHAR* Name:{TEXT("T_LiuWarmV1"),TEXT("T_GuanWarmV1"),TEXT("T_ZhangWarmV1")})
+    {
+        auto* Texture=LoadObject<UTexture2D>(nullptr,*(FString(TEXT("/Game/Art/Novel/"))+Name+TEXT(".")+Name));
+        if(Texture) Texture->SetForceMipLevelsToBeResident(3600.f);
+        auto Brush=MakeShared<FSlateBrush>();Brush->SetResourceObject(Texture);Brush->DrawAs=ESlateBrushDrawType::Image;
+        // GetSize may still be the temporary square streaming resource during startup.
+        Brush->ImageSize=FVector2D(1024,1536);
+        ReactionTextures.Add(Texture);ReactionBrushes.Add(Brush);
+    }
     ConversationTextures.Reset();ConversationBrushes.Reset();
     for(const TCHAR* Name:{TEXT("T_LiuConversationV1"),TEXT("T_GuanConversationV1"),TEXT("T_ZhangConversationV1")})
     {
@@ -41,6 +51,8 @@ TSharedRef<SWidget> ATacticalController::NovelPortraitWidget(TFunction<int()> Sp
 
 const FSlateBrush* ATacticalController::NovelPortraitBrush(int Speaker) const
 {
+    const int Mask=CouncilSceneVisible() ? CurrentCouncilLine().WarmMask:bEpisodeOpen && !bNovelPlan ? CurrentEpisodeLine().WarmMask:0;
+    if(Speaker>=0 && Speaker<3 && (Mask&(1<<Speaker)) && ReactionTextures.IsValidIndex(Speaker) && ReactionTextures[Speaker]) return ReactionBrushes[Speaker].Get();
     if(Speaker>=0 && Speaker<3 && ConversationTextures.IsValidIndex(Speaker) && ConversationTextures[Speaker]) return ConversationBrushes[Speaker].Get();
     const int Index=Speaker==3 ? 4:Speaker==4 ? 3:Speaker;
     return CutinBrushes.IsValidIndex(Index) ? CutinBrushes[Index].Get():FCoreStyle::Get().GetBrush("NoBrush");

@@ -11,7 +11,7 @@ void ATacticalField::BuildEpisodePresentation()
     for(const auto& Line:E.lines)
     {
         FDialoguePresentation D;D.Speaker=Line.speaker;D.Name=JourneyText(frontline::EpisodeSpeakerName(Line.speaker));
-        D.Text=JourneyText(Line.text);D.Direction=JourneyText(Line.direction);D.bProtagonist=Line.speaker==3;
+        D.Text=JourneyText(Line.text);D.Direction=JourneyText(Line.direction);D.bProtagonist=Line.speaker==3;D.WarmMask=Line.warmMask;
         P.Lines.Add(MoveTemp(D));
     }
 }

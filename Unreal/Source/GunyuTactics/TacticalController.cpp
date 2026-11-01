@@ -296,6 +296,8 @@ void ATacticalController::PlayerTick(float Delta)
         Field->AdvancePresentation(Time);
     }
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAuto"))) Field->Issue(ETacticalCommand::AutoBattle);
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilSceneOnly")))
+    { const bool Passed=CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAutoOnly")))
     { const bool Passed=Field->AutoBattleSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAccessibilityOnly")))
@@ -376,6 +378,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=PlanningGuideSmokeTest();
         if(bPassed) bPassed=AccessibilitySmokeTest();
         if(bPassed) bPassed=CampaignPacingSmokeTest();
+        if(bPassed) bPassed=CouncilSceneSmokeTest();
         if(bPassed) bPassed=PlanAdviceSmokeTest();
         if(bPassed) bPassed=Field->GuardControlSmokeTest();
         if(bPassed) bPassed=Field->TacticTargetSmokeTest();
@@ -427,6 +430,15 @@ void ATacticalController::PlayerTick(float Delta)
         NovelStageTime=NovelLineTime=1;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelHistory"))) bNovelHistory=true;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuNovelPlan"))) OpenNovelPlan();
+        int CouncilVoice=-2,CouncilAnswer=0,CouncilLine=0;
+        if(FParse::Value(FCommandLine::Get(),TEXT("CouncilVoice="),CouncilVoice))
+        {
+            OpenNovelPlan();OpenCouncilVoice(CouncilVoice);
+            if(FParse::Value(FCommandLine::Get(),TEXT("CouncilAnswer="),CouncilAnswer)) ChooseCouncilDecision(CouncilAnswer);
+            if(FParse::Value(FCommandLine::Get(),TEXT("CouncilLine="),CouncilLine)) CouncilPage=FMath::Clamp(CouncilLine,0,CouncilExchange.Lines.Num()-1);
+            CouncilElapsed=1000;CouncilStageTime=1;
+        }
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilLedger"))) bCouncilLedger=true;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdvice"))) bNovelAdvice=true;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningMap")))
         {

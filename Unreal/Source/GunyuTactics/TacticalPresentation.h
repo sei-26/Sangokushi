@@ -82,7 +82,17 @@ struct FTacticOptionPresentation
     bool bSelected = false, bUnique = false, bUsed = false;
 };
 struct FDialoguePresentation
-{ int Speaker=0;FString Name,Text,Direction;bool bProtagonist=false; };
+{ int Speaker=0;FString Name,Text,Direction;bool bProtagonist=false;int WarmMask=0; };
+struct FCouncilStageLine
+{
+    FDialoguePresentation Dialogue;
+    FString Reactions[3];
+};
+struct FCouncilStageExchange
+{
+    FString Subject;
+    TArray<FCouncilStageLine> Lines;
+};
 struct FJourneyEpisodePresentation
 {
     FString Key,Title,Place,Setting,Question;
