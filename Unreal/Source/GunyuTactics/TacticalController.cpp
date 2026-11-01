@@ -215,6 +215,8 @@ void ATacticalController::PlayerTick(float Delta)
     {
         int FieldPreview=-1;
         if(FParse::Value(FCommandLine::Get(),TEXT("TacticField="),FieldPreview)) Field->PrepareBattlefieldPreview(FieldPreview);
+        int DoctrinePreview=-1;
+        if(FParse::Value(FCommandLine::Get(),TEXT("EnemyDoctrine="),DoctrinePreview)) Field->PrepareEnemyDoctrinePreview(DoctrinePreview);
     }
     if (bCapture && Frames == 3 && FParse::Param(FCommandLine::Get(), TEXT("GunyuPlan"))) Field->Issue(ETacticalCommand::Sample);
     if(bCapture && Frames==3 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBrokenPlan"))) Field->EditOrder(2,-1);
@@ -303,6 +305,8 @@ void ATacticalController::PlayerTick(float Delta)
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAuto"))) Field->Issue(ETacticalCommand::AutoBattle);
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBattlefieldOnly")))
     { const bool Passed=Field->BattlefieldTacticsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuEnemyDoctrineOnly")))
+    { const bool Passed=Field->EnemyDoctrineSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilSceneOnly")))
     { const bool Passed=CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAutoOnly")))
@@ -387,6 +391,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=CampaignPacingSmokeTest();
         if(bPassed) bPassed=CouncilSceneSmokeTest();
         if(bPassed) bPassed=Field->BattlefieldTacticsSmokeTest();
+        if(bPassed) bPassed=Field->EnemyDoctrineSmokeTest();
         if(bPassed) bPassed=PlanAdviceSmokeTest();
         if(bPassed) bPassed=Field->GuardControlSmokeTest();
         if(bPassed) bPassed=Field->TacticTargetSmokeTest();

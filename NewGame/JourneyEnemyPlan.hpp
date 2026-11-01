@@ -4,17 +4,21 @@
 
 namespace frontline
 {
-	enum class JourneyEnemyIntent { Wait, Engage, Guard, Search, Intercept, Assault, Recover };
+	enum class JourneyEnemyIntent { Wait, Engage, Guard, Search, Intercept, Assault, Recover, Reserve, HoldCamp, Counterattack, Fixing, MainAttack };
+	enum class JourneyEnemyRole { None, Vanguard, Reserve, Anchor, Counterattack, Fixing, MainAttack };
 	struct JourneyEnemyContext
 	{
 		JourneyObjective objective = JourneyObjective::Breakout;
 		int goal = -1, secondGoal = -1, policy = 0;
 		bool convoy = false;
+		bool campaign = false;
 	};
 	struct JourneyEnemyPlan
 	{
 		int army = -1, from = -1, next = -1, target = -1, targetArmy = -1;
 		JourneyEnemyIntent intent = JourneyEnemyIntent::Wait;
+		JourneyEnemyRole role = JourneyEnemyRole::None;
+		bool occupyTarget = false;
 		std::vector<int> danger;
 	};
 	// The caller supplies an observed battlefield, never the omniscient board.

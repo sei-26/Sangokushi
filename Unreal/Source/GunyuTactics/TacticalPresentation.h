@@ -171,7 +171,7 @@ struct FTacticalPresentation
     FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;
     FString ClockLabel, StandingOrderLabel, SpeedLabel;
     FString ChainSignalLabel,ResupplyLabel;
-    FString GuardContext,GuardHint,GuardButtonLabel,BattlefieldHint;
+    FString GuardContext,GuardHint,GuardButtonLabel,BattlefieldHint,EnemyPlanHint;
     bool bGuardOrder=false;
     bool bHasResupplyPlan=false;
     bool bChainSignalArmed=false,bChainSignalReady=false;

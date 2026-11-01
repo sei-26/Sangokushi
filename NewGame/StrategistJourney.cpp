@@ -134,6 +134,13 @@ namespace frontline
         reserveFood=campaignFlow && choice==1 ? 1800:0;
         const auto starts=PreparationPositions(choice);
 		world.armies.clear();
+		if(campaignFlow)
+        {
+            const char32_t* fronts[]={U"黄巾の先鋒",U"河港の守備隊",U"黄巾の牽制隊"};
+            const char32_t* reserves[]={U"黄巾の後詰",U"河港の反撃隊",U"黄巾の主攻隊"};
+            world.generals[3].name=fronts[std::clamp(mission,0,2)];
+            world.generals[4].name=reserves[std::clamp(mission,0,2)];
+        }
 		for (int i = 0; i < 5; ++i)
 		{
 			Army army;

@@ -71,7 +71,7 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
     Simple->AddSlot().AutoHeight().Padding(0,6)[SNew(SBox).HeightOverride(40)[Command(ETacticalCommand::Move,[] { return TEXT("ここへ進め！"); })]];
     Simple->AddSlot().AutoHeight().Padding(0,6)[SNew(SBox).HeightOverride(40)[Command(ETacticalCommand::Hold,[] { return TEXT("この場所を守れ！"); })]];
     Simple->AddSlot().AutoHeight().Padding(0,14)[Button([] { return TEXT("戦法を選ぶ・連鎖を組む"); },[this] { Field->StopAutoBattle();bDetailedBattle=true; })];
-    Simple->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().BattlefieldHint.IsEmpty() ? FString(TEXT("戦法は1人でも発動。\n仲間とつなげば威力アップ！")):Field->Presentation().BattlefieldHint; },14,Gold)];
+    Simple->AddSlot().AutoHeight()[Label([this] { const auto& H=Field->Presentation();return !H.BattlefieldHint.IsEmpty() ? H.BattlefieldHint:!H.EnemyPlanHint.IsEmpty() ? H.EnemyPlanHint:FString(TEXT("戦法は1人でも発動。\n仲間とつなげば威力アップ！")); },14,Gold)];
     auto Content=SNew(SVerticalBox);
     Content->AddSlot().AutoHeight().Padding(0,0,0,8)[Button([this] { return bDetailedBattle ? TEXT("かんたんな采配へ戻る"):TEXT("詳しい采配を開く"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })];
     Content->AddSlot().FillHeight(1)[SNew(SBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Collapsed:EVisibility::Visible; })[Simple]];

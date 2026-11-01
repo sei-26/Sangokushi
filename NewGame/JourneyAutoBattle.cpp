@@ -3,6 +3,7 @@
 #include <memory>
 namespace frontline
 {
+    void CoordinateJourneyAutoMovement(const StrategistJourney&,JourneyAutoPlan&);
     JourneyAutoPlan PlanJourneyAutoBattle(const StrategistJourney& j)
     {
         JourneyAutoPlan plan;
@@ -120,6 +121,7 @@ namespace frontline
             if(bestScore<=0) break;
             used[best.army]=true;plan.tactics.push_back(best);
         }
+        CoordinateJourneyAutoMovement(j,plan);
         return plan;
     }
 }

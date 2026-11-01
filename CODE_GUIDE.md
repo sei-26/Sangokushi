@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+本編の三戦の敵の役割は `NewGame/JourneyEnemyDoctrine.cpp`、共通の探索・競合と混乱への接続は `JourneyEnemyPlan.cpp`。`JourneyAutoPosition.cpp` は自動指揮の橋頭の移動と味方同士の競合回避。UEの推定表示は `TacticalEnemyPresentation.cpp`、実際の指揮と保存を使う確認は `TacticalEnemyDoctrineTests.cpp`。[仕様](ENEMY_BATTLE_PLANS.md)。
+
 本編の地形・構え・挟撃の計算は `NewGame/TacticBattlefield.cpp`。`StrategistJourney` から呼ぶ戦法と通常攻撃が適用し、旧形式の戦法APIの標準値は保持する。敵の再配置は `StrategistJourneyAI.cpp` の `AdaptivePlans`。軍議を受けた掛け声は `JourneyCouncilStage.cpp` の `CouncilBattleVoice`、UEの接続は `TacticalPlayback.cpp`。[仕様と検証対象](BATTLEFIELD_TACTICS.md)。
 
 通常の軍議の掛け合いは `NewGame/JourneyCouncilStage.cpp`。UEの読取は `TacticalCouncilRead.cpp`、話題・返答・送りは `TacticalCouncilScene.cpp`、画面は `TacticalCouncilSceneInterface.cpp`、三人の構図と登場・寄りは `TacticalEnsemble.cpp`。台詞ごとの表情指定は `JourneyEpisodeLine.warmMask` から `TacticalNovelArt.cpp` へ渡す。会話と実際の準備の接続・原画・残る範囲は [COUNCIL_PERFORMANCE.md](COUNCIL_PERFORMANCE.md)。

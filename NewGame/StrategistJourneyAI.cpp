@@ -9,7 +9,7 @@ namespace frontline
         JourneyEnemyContext Context(const StrategistJourney& journey)
         {
             return {journey.Definition().kind, journey.goal, journey.Definition().secondGoal,
-                    journey.enemyPolicy, journey.HasConvoy()};
+                    journey.enemyPolicy, journey.HasConvoy(),journey.campaignFlow};
         }
         std::unique_ptr<Campaign> EnemyView(const Campaign& world, const BattleIntelligence& known)
         {
@@ -117,7 +117,7 @@ namespace frontline
             {
                 world.armies[plan.army].tile=world.armies[plan.army].target=plan.next;
                 // Re-forming costs the guard's brace. A blocked move above never pays this cost.
-                if(campaignFlow && plan.intent==JourneyEnemyIntent::Guard) world.armies[plan.army].stance=battle::Stance::Balanced;
+                if(campaignFlow && world.armies[plan.army].stance==battle::Stance::Guard) world.armies[plan.army].stance=battle::Stance::Balanced;
                 ++world.revision;
             }
         RefreshIntelligence();

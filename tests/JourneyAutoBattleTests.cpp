@@ -28,6 +28,21 @@ int main()
     hold->world.armies[0].tile=hold->goal;hold->world.armies[1].tile=hold->Definition().secondGoal;hold->RefreshIntelligence();
     const auto guards=PlanJourneyAutoBattle(*hold);assert(guards.movement.orders[0].kind==JourneyDirective::Hold);assert(guards.movement.orders[1].kind==JourneyDirective::Hold);
     for(const auto& t:guards.tactics) assert(t.army==2);
+    // A bridgehead fights beside the bridge rather than holding up its allies.
+    auto bridge=std::make_unique<StrategistJourney>();bridge->ResetCampaign();bridge->mission=1;bridge->Meet();assert(bridge->Prepare(1,0));
+    bridge->world.armies[0].tile=bridge->world.armies[0].target=Campaign::At(11,11);
+    bridge->world.armies[1].tile=bridge->world.armies[1].target=Campaign::At(9,10);
+    bridge->world.armies[2].tile=bridge->world.armies[2].target=Campaign::At(9,11);bridge->RefreshIntelligence();
+    auto crossing=PlanJourneyAutoBattle(*bridge);const auto route=crossing.movement.Route(*bridge,0);
+    assert(crossing.movement.orders[0].kind==JourneyDirective::March && route.size()==2);
+    assert(bridge->world.tiles[route[1]].terrain!=Terrain::Bridge && route[1]%Width>=12);
+    std::vector<int> arrivals;
+    for(int a=0;a<3;++a)
+    {
+        const auto path=crossing.movement.Route(*bridge,a);if(path.size()<2) continue;
+        assert(std::find(arrivals.begin(),arrivals.end(),path[1])==arrivals.end());arrivals.push_back(path[1]);
+    }
+    assert(crossing.movement.Resolve(*bridge) && bridge->world.armies[0].tile==route[1]);
     // Exercise actual autonomous engagements, not a fake result shortcut.
     for(int mission=0;mission<3;++mission)
     {

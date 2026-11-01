@@ -1,5 +1,6 @@
 ﻿#include "JourneyEnemyPlan.hpp"
 #include <memory>
+#include "JourneyEnemyDoctrine.hpp"
 #include <queue>
 
 namespace frontline
@@ -12,9 +13,9 @@ namespace frontline
 		}
 		// Breadth-first search reaches a cell next to the target; rivers, friends
 		// and observed opponents block paths. No hidden occupancy is queried.
-		int NextStep(const Campaign& view, int from, int target)
+		int NextStep(const Campaign& view, int from, int target,bool occupy=false)
 		{
-			if (target < 0 || view.MapDistance(from, target) <= 1) return from;
+			if (target < 0 || view.MapDistance(from, target) <= (occupy ? 0:1)) return from;
 			std::array<int, TileCount> first;
 			first.fill(-1);
 			first[from] = from;
@@ -27,7 +28,7 @@ namespace frontline
 				{
 					if (!OnMap(tile) || first[tile] >= 0 || !TacticChain::Free(view, tile)) continue;
 					first[tile] = current == from ? tile : first[current];
-					if (view.MapDistance(tile, target) <= 1) return first[tile];
+					if (view.MapDistance(tile, target) <= (occupy ? 0:1)) return first[tile];
 					open.push(tile);
 				}
 			}
@@ -67,15 +68,17 @@ namespace frontline
 				plan.intent = JourneyEnemyIntent::Intercept;
 				plan.targetArmy = cart; plan.target = view->armies[cart].tile;
 			}
+			ApplyJourneyEnemyDoctrine(*view,context,plan);
 			if (unit.scouting && plan.intent == JourneyEnemyIntent::Engage)
 				plan.intent = JourneyEnemyIntent::Search;
 			if (unit.stance == battle::Stance::Guard && context.policy == 1 && id == 3 &&
-			    context.objective != JourneyObjective::HoldPositions)
+			    context.objective != JourneyObjective::HoldPositions &&
+                !(plan.role==JourneyEnemyRole::Anchor && plan.occupyTarget && plan.from!=context.goal))
 				plan.intent = JourneyEnemyIntent::Guard;
 			if (id < static_cast<int>(chain.disordered.size()) && chain.disordered[id])
 				plan.intent = JourneyEnemyIntent::Recover;
-			if (plan.intent != JourneyEnemyIntent::Recover && plan.intent != JourneyEnemyIntent::Guard)
-				plan.next = NextStep(*view, unit.tile, plan.target);
+			if (plan.intent != JourneyEnemyIntent::Recover && plan.intent != JourneyEnemyIntent::Guard && plan.intent!=JourneyEnemyIntent::Reserve)
+				plan.next = NextStep(*view, unit.tile, plan.target,plan.occupyTarget);
 			view->armies[id].tile = view->armies[id].target = plan.next;
 			// This is a possible attack area after the estimated one-cell move,
 			// not guaranteed damage or the enemy's private command.
@@ -99,6 +102,11 @@ namespace frontline
 		case JourneyEnemyIntent::Intercept: return U"護送車へ接近";
 		case JourneyEnemyIntent::Assault: return U"烽火へ進軍";
 		case JourneyEnemyIntent::Recover: return U"混乱・移動停止";
+		case JourneyEnemyIntent::Reserve: return U"後詰として待機する見込み";
+		case JourneyEnemyIntent::HoldCamp: return U"指揮所を守る見込み";
+		case JourneyEnemyIntent::Counterattack: return U"後詰から反撃する見込み";
+		case JourneyEnemyIntent::Fixing: return U"一翼を押さえる見込み";
+		case JourneyEnemyIntent::MainAttack: return U"手薄な翼を突く見込み";
 		default: return U"様子をうかがう";
 		}
 	}
