@@ -14,6 +14,8 @@ public class GunyuTactics : ModuleRules
         if (!File.Exists(RulesLibrary))
             throw new BuildException("Build the shared rules first: Unreal/Tools/build.ps1");
         PublicAdditionalLibraries.Add(RulesLibrary);
+        RuntimeDependencies.Add("$(ProjectDir)/Content/UI/Fonts/BIZUDMincho-Regular.ttf", StagedFileType.NonUFS);
+        RuntimeDependencies.Add("$(ProjectDir)/Content/UI/Fonts/OFL.txt", StagedFileType.NonUFS);
         // Match the engine's STL ABI; simulation code remains in its own CMake library.
         bEnableExceptions = true;
     }

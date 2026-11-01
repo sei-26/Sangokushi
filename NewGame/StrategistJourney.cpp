@@ -341,7 +341,7 @@ namespace frontline
 		if (mission == 2)
 		{
 			stage = JourneyStage::Complete;
-			Report(U"突破・護送・防衛の３戦を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");
+			Report(campaignFlow ? U"序章 完。退路、河港、決戦の両翼――三つの采配を経て、義勇軍の正式な軍師となった。":U"突破・護送・防衛の３戦を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");
 		}
 		else
 		{

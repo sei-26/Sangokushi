@@ -1,5 +1,7 @@
 ﻿#include "JourneyAutoBattle.hpp"
 #include "JourneySave.hpp"
+#include "JourneyEpisode.hpp"
+#include "JourneyCampaign.hpp"
 #include <cassert>
 #include <memory>
 #include <iostream>
@@ -58,6 +60,27 @@ int main()
         assert(battle->stage==JourneyStage::Debrief);assert(battle->won);
         std::cerr<<"auto mission "<<mission<<" won="<<battle->won<<" survivors="<<battle->survivors<<"\n";
     }
+    // A complete new-player campaign carries its real losses/resources forward
+    // and uses the next council's default enemy policy, rather than resetting battles.
+    auto career=std::make_unique<StrategistJourney>();career->ResetCampaign();career->SelectDifficulty(JourneyDifficulty::Story);career->Meet();
+    for(int mission=0;mission<3;++mission)
+    {
+        assert(career->mission==mission && career->Prepare(1,career->enemyPolicy));
+        for(int cycle=0;cycle<18 && career->stage==JourneyStage::Battle;++cycle)
+        {
+            auto next=PlanJourneyAutoBattle(*career);
+            if(!next.tactics.empty()) career->Execute(next.tactics);
+            if(career->stage==JourneyStage::Battle) assert(next.movement.Resolve(*career));
+        }
+        std::cerr<<"campaign auto mission="<<mission<<" policy="<<career->enemyPolicy<<" won="<<career->won<<" troops="<<career->world.cities[0].troops<<" food="<<career->world.cities[0].food<<"\n";
+        assert(career->won && career->CanContinue());
+        if(career->NeedsStoryReply()) assert(career->ChooseStoryReply(JourneyPledge::Coordinate));
+        assert(career->Continue());
+    }
+    assert(career->stage==JourneyStage::Complete && career->history[0].won && career->history[1].won && career->history[2].won);
+    assert(CampaignBeat(*career).phase.find(U"序章 完")!=std::u32string::npos);
+    const auto ending=BuildJourneyEpisode(*career);
+    assert(!ending.lines.empty() && ending.lines.back().direction.find(U"序章、完")!=std::u32string::npos);
     hold->stage=JourneyStage::Debrief;const auto ended=PlanJourneyAutoBattle(*hold);assert(ended.tactics.empty());
     for(const auto& order:ended.movement.orders) assert(order.kind==JourneyDirective::None);
 }

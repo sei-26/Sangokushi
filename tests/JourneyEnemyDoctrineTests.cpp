@@ -67,6 +67,15 @@ int main()
     const auto observedMain=Find(actual->ReadEnemyPlans(),4);
     assert(observedMain.target==context.secondGoal && observedMain.next!=observedMain.from);
     assert(actual->EndTurn() && actual->world.armies[4].tile==observedMain.next);
+    // Conceal a real officer with the public ambush command: appearing weaker
+    // changes the enemy's actual approach, not just the wording of its hint.
+    auto bait=std::make_unique<StrategistJourney>(f);
+    bait->world.armies[0].tile=bait->world.armies[0].target=Campaign::At(8,6);
+    bait->world.armies[1].tile=bait->world.armies[1].target=bait->goal;
+    bait->RefreshIntelligence();assert(Find(bait->ReadEnemyPlans(),4).target==context.secondGoal);
+    assert(bait->Ambush(1) && bait->chain.concealed[1]);
+    const auto baited=Find(bait->ReadEnemyPlans(),4);assert(baited.target==context.goal && baited.next!=baited.from);
+    assert(bait->EndTurn() && bait->world.armies[4].tile==baited.next);
     f.world.armies[0].tile=f.world.armies[0].target=Campaign::At(6,9);
     f.world.armies[1].tile=f.world.armies[1].target=Campaign::At(7,9);
     plans=PlanJourneyEnemies(f.world,f.chain,context);assert(Find(plans,4).target==context.goal);

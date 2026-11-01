@@ -88,16 +88,16 @@ namespace frontline
     {
         if(!c.campaign || p.intent==JourneyEnemyIntent::Recover) return {};
         if(p.intent==JourneyEnemyIntent::Reserve)
-            return p.role==JourneyEnemyRole::Counterattack ? U"反撃隊は渡河を待つ見込み。\n突入役と、迎え撃つ役を分けよう。":U"後詰はまだ待機する見込み。\n先鋒を崩す時は、その次にも備えよう。";
+            return p.role==JourneyEnemyRole::Counterattack ? U"反撃隊は渡河を待つ見込み。\n渡る隊と支える隊を分けよう。":U"後詰はまだ待機する見込み。\n先鋒の後の一手も残そう。";
         if(p.role==JourneyEnemyRole::Anchor)
-            return U"指揮所を離れにくい守備隊。\n崩して、旗を立てる隊を通そう。";
+            return U"指揮所を守る隊。\n崩して、占領役を通そう。";
         if(p.intent==JourneyEnemyIntent::Counterattack)
-            return p.role==JourneyEnemyRole::Counterattack ? U"橋を渡る部隊へ反撃する見込み。\n橋の出口で孤立しないように。":U"後詰が戦列へ向かう見込み。\n足を止め、先鋒と分断する手もある。";
+            return p.role==JourneyEnemyRole::Counterattack ? U"橋を渡る隊へ反撃の見込み。\n橋の先で孤立しないように。":U"後詰が動き出す見込み。\n足を止め、先鋒と分断しよう。";
         if(p.role==JourneyEnemyRole::Fixing)
-            return U"一翼の守備を引きつける隊。\n追いすぎず、もう一翼も見よう。";
+            return U"一翼を押さえる隊。\n追わず、もう一翼も見よう。";
         if(p.role==JourneyEnemyRole::MainAttack)
-            return p.intent==JourneyEnemyIntent::Engage ? U"主攻は目の前の部隊と交戦中。\n受け止める間に、両翼を整えよう。":
-                p.target==c.goal ? U"手薄と見た北の烽火へ進む見込み。\n移動を妨げ、守備を間に合わせよう。":U"手薄と見た南の烽火へ進む見込み。\n移動を妨げ、守備を間に合わせよう。";
+            return p.intent==JourneyEnemyIntent::Engage ? U"主攻は目の前の隊と交戦中。\n受け止め、両翼を整えよう。":
+                p.target==c.goal ? U"北の烽火を狙う見込み。\n足を止め、守備を急ごう。":U"南の烽火を狙う見込み。\n足を止め、守備を急ごう。";
         return {};
     }
 }

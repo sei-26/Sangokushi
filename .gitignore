@@ -465,4 +465,5 @@ Unreal/Saved/
 Unreal/DerivedDataCache/
 Unreal/.vs/
 Unreal/*.sln
+/Releases/
 __pycache__/
