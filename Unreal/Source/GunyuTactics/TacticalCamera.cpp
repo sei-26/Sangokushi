@@ -3,6 +3,7 @@
 #include "Camera/CameraActor.h"
 #include "TacticalWidgets.h"
 #include "TacticalBattleResponse.h"
+#include "TacticalActionFocus.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 using namespace gunyuui;
@@ -69,13 +70,21 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
         if(IsInputKeyDown(EKeys::Down)) Focus-=Forward*Speed;
     }
     else bOrbitDragging=false;
-    Distance=FMath::Clamp(Distance,1200.f,5500.f);
+    Distance=FMath::Clamp(Distance,800.f,5500.f);
     CameraElevation=FMath::Clamp(CameraElevation,32.f,76.f);CameraYaw=FMath::UnwindDegrees(CameraYaw);
     Focus.X=FMath::Clamp(Focus.X,200.,3000.);Focus.Y=FMath::Clamp(Focus.Y,200.,2400.);
     ViewDistance=FMath::FInterpTo(ViewDistance,Distance,FMath::Min(Delta,.1f),10.f);
     FVector ViewFocus=Focus;float Radius=ViewDistance,Tilt=CameraElevation;
     ApplyTacticCamera(ViewFocus,Radius,Tilt);
-    const float Yaw=FMath::DegreesToRadians(CameraYaw),Elevation=FMath::DegreesToRadians(Tilt);
+    float PresentedYaw=CameraYaw;
+    const auto Action=Field->ReadActionFocus();const auto Cinema=Field->ReadTacticCinema();
+    if(bTacticCinema && !bSaveMenuOpen && !bBattleLogOpen && !bMarchPlanOpen && !bTacticPickerOpen && Action.bActive && Action.bHasTarget)
+    {
+        const auto& Units=Field->VisualUnits();
+        const FVector Facing=Units[Action.Target].Position-Units[Action.Actor].Position;
+        if(!Facing.IsNearlyZero()) PresentedYaw+=FMath::FindDeltaAngleDegrees(CameraYaw,Facing.Rotation().Yaw+65)*Cinema.CameraWeight;
+    }
+    const float Yaw=FMath::DegreesToRadians(PresentedYaw),Elevation=FMath::DegreesToRadians(Tilt);
     const FVector Offset(FMath::Cos(Yaw)*FMath::Cos(Elevation)*Radius,FMath::Sin(Yaw)*FMath::Cos(Elevation)*Radius,FMath::Sin(Elevation)*Radius);
     BattleCamera->SetActorLocation(ViewFocus+Offset);BattleCamera->SetActorRotation((-Offset).Rotation());
     Field->SetActionView(BattleCamera->GetActorLocation());

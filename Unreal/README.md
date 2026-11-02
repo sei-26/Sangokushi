@@ -46,6 +46,8 @@ Epic Games Launcher → Unreal Engine → ライブラリ → マイプロジェ
 
 `Trial / Presentation` の `Playback Speed`（0.5〜2倍）と `Effects Volume`（0〜1）で演出速度・効果音量を調整できる。
 
+V10では顔・兜・小札・布・盾、三隊長の髭と外套を元OBJから作成した。Trial / ArtのInfantry Cloth / Head、Commander Beard / Capeも差し替え可能。地面は新素材を300cm単位のワールド座標で使い、通常ズームは800まで寄れる。元モデル・地面画像・プロンプトと取り込みは [戦場の造形と質感](../BATTLE_VISUAL_FINISH_V10.md)。
+
 命中後には実際の伏兵・誘導・崩し・鼓舞・停止を受けた武将の一声を重ね、連鎖の成功数に合う短い音を返す。反応欄はカメラの演出ON/OFFへ従い、待ち時間を増やさない。元音源と取込、検証は [策に応える武将](../BATTLE_RESPONSE_UPGRADE.md)。
 
 現時点のHEX配置と勝利条件は共通C++側の `NewGame/JourneyMission.hpp`、入力・仮の描画は `Source/GunyuTactics/`。地形を自由に彫ったLandscapeとルール上の地形を同期する編集機能は次の工程。

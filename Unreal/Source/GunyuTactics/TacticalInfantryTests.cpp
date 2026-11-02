@@ -36,6 +36,7 @@ bool ATacticalField::InfantryMotionSmokeTest()
         const auto P=gunyucompany::EquippedPose(Contact,Kit);
         gunyuinfantry::FBatches B;gunyuinfantry::Soldier(B,P,FVector::ZeroVector,FQuat::Identity,.94f,Stature,Kit);
         if(!Check(B.Limbs.Num()==8 && B.Swords.Num()==(Id==0) && B.Glaives.Num()==(Id==1) && B.Serpents.Num()==(Id==2) && B.Spears.Num()==(Id==3),TEXT("three observed commanders have distinct weapons, enemy keeps infantry gear"))) return false;
+        if(!Check(B.Heads.Num()==1 && B.Beards.Num()==(Id<3) && B.Capes.Num()==(Id<3),TEXT("sculpted heads are separate from hands; only commanders receive beards and capes"))) return false;
         auto Local=[&](FVector V) { V+=P.Root;V.Z*=Stature;return V*.94f; };
         if(Id==0)
         {
@@ -92,7 +93,7 @@ bool ATacticalField::InfantryMotionSmokeTest()
     auto Transforms=[&]()
     {
         TArray<FTransform> Result;
-        for(auto* Mesh:{Limbs.Get(),Weapons.Get(),CommanderSwords.Get(),CommanderGlaives.Get(),CommanderSerpents.Get()}) for(int I=0;I<Mesh->GetInstanceCount();++I)
+        for(auto* Mesh:{Limbs.Get(),Weapons.Get(),CommanderSwords.Get(),CommanderGlaives.Get(),CommanderSerpents.Get(),SculptedHeads.Get(),CommanderBeards.Get(),CommanderCapes.Get()}) for(int I=0;I<Mesh->GetInstanceCount();++I)
         { FTransform T;Mesh->GetInstanceTransform(I,T);Result.Add(T); }
         return Result;
     };
@@ -109,6 +110,8 @@ bool ATacticalField::InfantryMotionSmokeTest()
     const int Bodies=Spearheads->GetInstanceCount()+CommanderSwords->GetInstanceCount()+CommanderGlaives->GetInstanceCount()+CommanderSerpents->GetInstanceCount();
     if(!Check(Identical && Limbs->GetInstanceCount()==Bodies*8,TEXT("paused battlefield freezes every joint and weapon at a bounded count"))) return false;
     if(!Check(CommanderSwords->GetInstanceCount()==1 && CommanderGlaives->GetInstanceCount()==1 && CommanderSerpents->GetInstanceCount()==1,TEXT("actual observed battlefield renders one weapon for each allied commander"))) return false;
+    if(!Check(SculptedHeads->GetInstanceCount()==Bodies && CommanderBeards->GetInstanceCount()==3 && CommanderCapes->GetInstanceCount()==3 && CommanderCapes->PerInstanceSMCustomData.Num()==9,TEXT("actual visible companies have one head each and three independently tinted commanders"))) return false;
+    if(!Check(SculptedHeads->GetStaticMesh() && InfantryClothMesh && CommanderCapeMesh && CommanderBeardMesh && SculptedHeads->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("editable sculpted assets load without introducing collision"))) return false;
     if(!Check(Soldiers->NumCustomDataFloats==3 && Soldiers->PerInstanceSMCustomData.Num()==Soldiers->GetInstanceCount()*3 && Shields->GetInstanceCount()<Bodies,TEXT("instanced livery covers every cloth part and rear ranks shed shields"))) return false;
     for(int Id=0;Id<3;++Id)
     {
@@ -119,6 +122,7 @@ bool ATacticalField::InfantryMotionSmokeTest()
     }
     const auto Displayed=State->Units;State->Units[1]={};RenderUnits();
     if(!Check(CommanderGlaives->GetInstanceCount()==0 && CommanderSwords->GetInstanceCount()==1 && CommanderSerpents->GetInstanceCount()==1,TEXT("an unobserved commander cannot leave a floating signature weapon"))) return false;
+    if(!Check(CommanderBeards->GetInstanceCount()==2 && CommanderCapes->GetInstanceCount()==2,TEXT("unobserved officers leave no floating beard or cloak"))) return false;
     State->Units=Displayed;RenderUnits();
     if(!Check(ExportSession(After) && Before==After,TEXT("joint animation consumes no troops, orders, food or time"))) return false;
     if(!Check(Limbs->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("animated arms and legs cannot block orders"))) return false;

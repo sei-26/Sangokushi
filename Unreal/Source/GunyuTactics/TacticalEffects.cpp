@@ -115,12 +115,12 @@ void ATacticalField::RenderEffects()
     for (const auto& Unit : State->Units)
     {
         if (Unit.Id < 0 || Unit.Troops <= 0) continue;
-        const FLinearColor Team = Unit.bEnemy ? FLinearColor(1.f, .24f, .08f, .8f) : FLinearColor(.18f, .72f, .88f, .75f);
-        Ring(Unit.Position + FVector(0, 0, 7), 79, Unit.Id == State->Selected ? 6 : 2, Unit.Id == State->Selected ? FLinearColor(1.f, .75f, .22f, 1) : Team,true);
+        const FLinearColor Team = Unit.bEnemy ? FLinearColor(1.f, .24f, .08f, .45f) : FLinearColor(.18f, .72f, .88f, .4f);
+        Ring(Unit.Position + FVector(0, 0, 7), 79, Unit.Id == State->Selected ? 3.5f : 1.5f, Unit.Id == State->Selected ? FLinearColor(1.f, .75f, .22f, .8f) : Team,true);
         if (Unit.Id == State->Selected)
             Ring(Unit.Position + FVector(0, 0, 5), 91, 1.5f, FLinearColor(1.f, .8f, .4f, .55f),true);
         if (Unit.bDisordered || Unit.bPressured || Unit.bInspired)
-            Ring(Unit.Position + FVector(0, 0, 9), 85, 2.5f, Unit.bInspired ? FLinearColor(1,.82f,.25f,.8f) : Unit.bDisordered ? FLinearColor(.8f,.35f,1,.8f) : FLinearColor(1,.5f,.15f,.8f),true);
+            Ring(Unit.Position + FVector(0, 0, 9), 85, 1.2f, Unit.bInspired ? FLinearColor(1,.82f,.25f,.45f) : Unit.bDisordered ? FLinearColor(.8f,.35f,1,.45f) : FLinearColor(1,.5f,.15f,.45f),true);
     }
     if (Beat)
     {
@@ -138,7 +138,8 @@ void ATacticalField::RenderEffects()
             Color.A = 1 - Pulse;
             if (Progress > Start && Progress < .90f && Beat->Kind != EBattleCue::Stop)
             {
-                Ring(Center, 35 + Pulse * 150, 8 * (1 - Pulse) + 1, Color);
+                auto ImpactColor=Color;if(bWeaponSwing) ImpactColor.A*=.45f;
+                Ring(Center,bWeaponSwing ? 22+Pulse*60:35+Pulse*150,bWeaponSwing ? 3*(1-Pulse)+.6f:8*(1-Pulse)+1,ImpactColor);
                 if (Beat->Kind == EBattleCue::SerpentRoar)
                     for (int I = 1; I < 4; ++I) Ring(Center, (25 + Pulse * 140) * I * .65f, 5, Color);
                 if (Beat->Kind == EBattleCue::Rally)

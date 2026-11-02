@@ -56,15 +56,19 @@ void ATacticalField::RenderStandards()
             continue;
         }
         const float Time = State->VisualTime;
+        const auto Motion=gunyumotion::Read(Unit,State->Units,CurrentBeat(),BeatProgress());
+        const FRotator Heading=Motion.Facing.Rotation();
+        const auto Top=gunyucompany::StandardPoint({0,0});
+        FVector StandardBase=Unit.Position+Heading.RotateVector(FVector(Top.X,Top.Y,0));StandardBase.Z=SurfaceHeight(StandardBase);
         const FLinearColor Cloth=gunyucompany::Livery(Unit)*.7f;
         const FLinearColor Gold(.72f,.46f,.12f);
         auto ClothPoint = [&](FVector2D UV, float Layer = 0.f)
         {
             const float U=UV.X, V=UV.Y;
-            const float Wave = U * (5 * FMath::Sin(U*7 - Time*3.4f + Unit.Id) + 2 * FMath::Sin(V*9 + Time*2));
+            const float Wave = U * (3 * FMath::Sin(U*7 - Time*3.4f + Unit.Id) + 1.4f * FMath::Sin(V*9 + Time*2));
             // Pole-side edge stays pinned; the free hem and split tail move.
             const float Tail = Unit.Id == 2 ? FMath::Max(0.f,1-FMath::Abs(U-.5f)*4) * FMath::Pow(V,8) * 15 : 0;
-            return Unit.Position + FVector(-34 + U*88, Wave + Layer, 218 - V*91 + Tail + U*FMath::Sin(Time*2+Unit.Id)*2);
+            return StandardBase+Heading.RotateVector(gunyucompany::StandardPoint(UV)-FVector(Top.X,Top.Y,0)+FVector(0,Wave+Layer,Tail*.6f+U*FMath::Sin(Time*2+Unit.Id)));
         };
         auto Quad = [&](FVector2D A,FVector2D B,FVector2D C,FVector2D D,FLinearColor Tint,float Layer=0.f)
         {

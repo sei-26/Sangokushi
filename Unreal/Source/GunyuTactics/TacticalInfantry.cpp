@@ -15,31 +15,38 @@ namespace gunyuinfantry
             const FQuat Q=FQuat::FindBetweenNormals(FVector::UpVector,D.GetSafeNormal());
             B.Limbs.Add(FTransform(Heading*Q,Base+Heading.RotateVector((A+Z)*.5f),FVector(Radius*Scale,Radius*Scale,D.Size()/100)));
         };
-        Part(B.Cloth,Upper(FVector(0,0,37)),FVector(.25,.32,.33),P.Torso);
-        Part(B.Armour,Upper(FVector(0,0,38)),FVector(.46,.32,.38),P.Torso);
-        Part(B.Iron,FVector(0,0,24),FVector(.28,.34,.13));
-        Part(B.Cloth,Upper(FVector(0,0,31)),FVector(.29,.355,.055),P.Torso);
+        Part(B.Cloth,Upper(FVector(0,0,37)),FVector(.23,.26,.33),P.Torso);
+        Part(B.Armour,Upper(FVector(0,0,38)),FVector(.38,.27,.34),P.Torso);
+        Part(B.Iron,FVector(0,0,24),FVector(.23,.28,.09));
+        Part(B.Cloth,Upper(FVector(0,0,31)),FVector(.25,.29,.04),P.Torso);
         // Sleeves and split cloth skirt remain visible around the curved armour.
         for(int Side:{-1,1})
         {
-            Part(B.Cloth,Upper(FVector(0,Side*17,44)),FVector(.19,.12,.16),P.Torso);
-            Part(B.Cloth,FVector(0,Side*9,20),FVector(.24,.16,.18));
+            Part(B.Cloth,Upper(FVector(0,Side*14,44)),FVector(.16,.10,.14),P.Torso);
+            Part(B.Cloth,FVector(0,Side*7,20),FVector(.22,.12,.18));
         }
-        Part(B.Skin,Upper(FVector(0,0,60)),FVector(.16,.16,.20),P.Torso);
-        Part(B.Helmets,Upper(FVector(0,0,68)),FVector(.22,.22,.22),P.Torso);
-        Part(B.Cloth,Upper(FVector(-3,0,79)),FVector(.06,.07,.14),P.Torso);
+        Part(B.Skin,Upper(FVector(0,0,55)),FVector(.075,.075,.08),P.Torso);
+        Part(B.Heads,Upper(FVector(0,0,62)),FVector(.135,.13,.14),P.Torso);
+        Part(B.Helmets,Upper(FVector(0,0,66)),FVector(.17,.17,.17),P.Torso);
+        Part(B.Cloth,Upper(FVector(-3,0,75)),FVector(.04,.045,.08),P.Torso);
+        if(E.bCommander)
+        {
+            const bool Guan=E.Weapon==gunyucompany::EWeapon::Glaive,Zhang=E.Weapon==gunyucompany::EWeapon::Serpent;
+            Part(B.Beards,Upper(FVector(4,0,Guan ? 49:53)),Guan ? FVector(.14,.12,.32):Zhang ? FVector(.17,.15,.16):FVector(.10,.09,.11),P.Torso);
+            Part(B.Capes,Upper(FVector(-11,0,31)),FVector(.5,.40,.34),P.Torso);
+        }
         for(int I=0;I<2;++I)
         {
             Link(P.Hip[I],P.Knee[I],.105f);Link(P.Knee[I],P.Foot[I],.09f);
             Link(P.Shoulder[I],P.Elbow[I],.105f);Link(P.Elbow[I],P.Hand[I],.085f);
             Part(B.Iron,P.Foot[I]+FVector(2,0,0),FVector(.14,.11,.07));
-            Part(B.Skin,P.Hand[I],FVector(.075,.075,.075));
+            Part(B.Skin,P.Hand[I],FVector(.065,.065,.065));
         }
         if(E.bShield)
         {
             Part(B.Shields,P.ShieldCenter,FVector(.85,.32,.43),P.Shield);
-            Part(B.Cloth,P.ShieldCenter+P.Shield.RotateVector(FVector(3,-.5,0)),FVector(.018,.10,.33),P.Shield);
-            Part(B.Iron,P.ShieldCenter+P.Shield.RotateVector(FVector(5,0,0)),FVector(.07,.13,.13),P.Shield);
+            Part(B.Cloth,P.ShieldCenter+P.Shield.RotateVector(FVector(8,-.5,0)),FVector(.018,.08,.33),P.Shield);
+            Part(B.Iron,P.ShieldCenter+P.Shield.RotateVector(FVector(10,0,0)),FVector(.055,.10,.10),P.Shield);
         }
         // Crouching compresses world Z, not the spear's own long axis.
         const FVector OriginalAxis=P.Spear.RotateVector(FVector::UpVector);

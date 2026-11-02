@@ -52,9 +52,9 @@ void ATacticalController::BeginPlay()
     Exposure.bOverride_ColorContrast = true;
     Exposure.ColorContrast = FVector4(1.06f,1.06f,1.06f,1.f);
     Exposure.bOverride_AmbientOcclusionIntensity = true;
-    Exposure.AmbientOcclusionIntensity = .45f;
+    Exposure.AmbientOcclusionIntensity = .8f;
     Exposure.bOverride_AmbientOcclusionRadius = true;
-    Exposure.AmbientOcclusionRadius = 70.f;
+    Exposure.AmbientOcclusionRadius = 45.f;
     SetViewTarget(BattleCamera);
     PrimaryActorTick.bCanEverTick = true;
     bCapture = FParse::Param(FCommandLine::Get(), TEXT("GunyuCapture"));

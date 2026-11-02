@@ -18,9 +18,9 @@ void ATacticalController::ApplyTacticCamera(FVector& ViewFocus,float& ViewRadius
     Center+=Right*(70+Shot.Sweep*FMath::Sin(P*PI));
     const float Weight=Shot.Weight*.96f;
     ViewFocus=FMath::Lerp(ViewFocus,Center,Weight);
-    const float Close=FocusRead.bActive && FocusRead.bHasTarget ? FMath::Clamp(Separation*1.2f+620,920.f,1550.f)
+    const float Close=FocusRead.bActive && FocusRead.bHasTarget ? FMath::Clamp(Separation*1.35f+470,760.f,1350.f)
         : FMath::Clamp(Separation*1.2f+720,Shot.CloseDistance,2200.f);
     ViewRadius=FMath::Lerp(ViewRadius,FMath::Min(ViewRadius,Close),Weight);
-    ViewTilt=FMath::Lerp(ViewTilt,FocusRead.bActive && FocusRead.bHasTarget ? 38.f:Shot.Tilt,Weight*.8f);
+    ViewTilt=FMath::Lerp(ViewTilt,FocusRead.bActive && FocusRead.bHasTarget ? 34.f:Shot.Tilt,Weight*.8f);
     ViewFocus+=Right*Shot.Shake;
 }

@@ -1,6 +1,7 @@
 ﻿#include "TacticalActionFocus.h"
 #include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticalCompanyStyle.h"
 #include "JourneyArchive.hpp"
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
@@ -54,7 +55,12 @@ bool ATacticalField::ActionReadabilitySmokeTest()
         frontline::JourneyArchive W{false,Bytes};W(*J,RT,Signal,Orders);return Bytes;
     };
     const auto Before=Snapshot();
-    const FVector Cloth=VisualUnits()[R.Actor].Position+FVector(10,0,170);
+    const auto& FocusUnit=VisualUnits()[R.Actor];
+    const auto Motion=gunyumotion::Read(FocusUnit,VisualUnits(),CurrentBeat(),BeatProgress());
+    FVector Cloth=FocusUnit.Position+Motion.Facing.Rotation().RotateVector(gunyucompany::StandardPoint({.5f,.5f}));
+    const auto Top=gunyucompany::StandardPoint({0,0});
+    const FVector Base=FocusUnit.Position+Motion.Facing.Rotation().RotateVector(FVector(Top.X,Top.Y,0));
+    Cloth.Z+=SurfaceHeight(Base)-FocusUnit.Position.Z;
     SetActionView(R.Hero+(Cloth-R.Hero)*8);
     const auto* Section=Standards->GetProcMeshSection(0);int Minimum=255;
     if(Section) for(const auto& V:Section->ProcVertexBuffer) Minimum=FMath::Min(Minimum,int(V.Color.A));

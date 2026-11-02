@@ -4,6 +4,7 @@ namespace gunyucompany
     FEquipment Equipment(const FVisualUnit& U,int Soldier,int Count)
     {
         FEquipment E;
+        E.VisualScale=.70f+.025f*FMath::Sin(Soldier*2.37f+U.Id*.71f);
         E.bCommander=!U.bEnemy && U.Id>=0 && U.Id<3 && Soldier==3;
         E.bShield=Soldier<FMath::DivideAndRoundUp(Count,2);
         if(E.bCommander)

@@ -68,6 +68,14 @@ public:
     UPROPERTY(EditAnywhere, Category="Trial|Art")
     TObjectPtr<class UStaticMesh> ShieldMesh;
     UPROPERTY(EditAnywhere, Category="Trial|Art")
+    TObjectPtr<class UStaticMesh> InfantryClothMesh;
+    UPROPERTY(EditAnywhere, Category="Trial|Art")
+    TObjectPtr<class UStaticMesh> InfantryHeadMesh;
+    UPROPERTY(EditAnywhere, Category="Trial|Art")
+    TObjectPtr<class UStaticMesh> CommanderBeardMesh;
+    UPROPERTY(EditAnywhere, Category="Trial|Art")
+    TObjectPtr<class UStaticMesh> CommanderCapeMesh;
+    UPROPERTY(EditAnywhere, Category="Trial|Art")
     TObjectPtr<class UStaticMesh> GrassMesh;
     UPROPERTY(EditAnywhere, Category="Trial|Art")
     TObjectPtr<class UStaticMesh> GateRoofMesh;
@@ -239,6 +247,9 @@ private:
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Shields;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Weapons;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Faces;
+    UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> SculptedHeads;
+    UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CommanderBeards;
+    UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CommanderCapes;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Dust;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Limbs;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Spearheads;

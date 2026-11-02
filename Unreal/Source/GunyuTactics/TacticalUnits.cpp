@@ -30,6 +30,8 @@ void ATacticalField::RenderUnits()
     TArray<FTransform> ArmourParts, HelmetParts, ShieldParts;
     TArray<FTransform> LimbParts, SpearParts;
     TArray<FTransform> SwordParts,GlaiveParts,SerpentParts;
+    TArray<FTransform> HeadParts,BeardParts,CapeParts;
+    TArray<float> CapeColors;
     TArray<float> AllyColors,EnemyColors;
     TArray<FTransform> WheelParts;
     const auto* Beat = CurrentBeat();
@@ -70,16 +72,20 @@ void ATacticalField::RenderUnits()
         ArmourParts.Append(Body.Armour);HelmetParts.Append(Body.Helmets);ShieldParts.Append(Body.Shields);
         LimbParts.Append(Body.Limbs);SpearParts.Append(Body.Spears);
         SwordParts.Append(Body.Swords);GlaiveParts.Append(Body.Glaives);SerpentParts.Append(Body.Serpents);
+        HeadParts.Append(Body.Heads);BeardParts.Append(Body.Beards);CapeParts.Append(Body.Capes);
         auto& Colors=Unit.bEnemy ? EnemyColors:AllyColors;
         const auto Tint=gunyucompany::Livery(Unit);
+        for(int I=0;I<Body.Capes.Num();++I) CapeColors.Append({Tint.R,Tint.G,Tint.B});
         for(int I=FirstCloth;I<Cloth.Num();++I) Colors.Append({Tint.R,Tint.G,Tint.B});
-        // Large standards make whole formations readable, including at strategic zoom.
-        PoleParts.Add(FTransform(FRotator::ZeroRotator, Unit.Position + FVector(-34,0,110),FVector(.03,.03,2.2)));
-        PoleParts.Add(FTransform(FRotator::ZeroRotator, Unit.Position + FVector(10,0,218),FVector(.94,.028,.028)));
-        IronParts.Add(FTransform(FRotator::ZeroRotator, Unit.Position + FVector(-34,0,228),FVector(.08,.08,.15)));
+        const FVector Top=gunyucompany::StandardPoint({0,0});
+        FVector StandardBase=Unit.Position+Heading.RotateVector(FVector(Top.X,Top.Y,0));StandardBase.Z=SurfaceHeight(StandardBase);
+        PoleParts.Add(FTransform(Heading,StandardBase+FVector(0,0,71),FVector(.023,.023,1.42)));
+        PoleParts.Add(FTransform(Heading,StandardBase+Heading.RotateVector(FVector(27,0,142)),FVector(.58,.023,.023)));
+        IronParts.Add(FTransform(Heading,StandardBase+FVector(0,0,148),FVector(.045,.045,.10)));
     }
     Commit(Soldiers, AllyParts); Commit(Enemies, EnemyParts); Commit(Helmets, IronParts);
-    for(auto Pair:{TPair<UInstancedStaticMeshComponent*,const TArray<float>*>(Soldiers,&AllyColors),TPair<UInstancedStaticMeshComponent*,const TArray<float>*>(Enemies,&EnemyColors)})
+    Commit(SculptedHeads,HeadParts);Commit(CommanderBeards,BeardParts);Commit(CommanderCapes,CapeParts);
+    for(auto Pair:{TPair<UInstancedStaticMeshComponent*,const TArray<float>*>(Soldiers,&AllyColors),TPair<UInstancedStaticMeshComponent*,const TArray<float>*>(Enemies,&EnemyColors),TPair<UInstancedStaticMeshComponent*,const TArray<float>*>(CommanderCapes,&CapeColors)})
     {
         auto* Mesh=Pair.Key;
         if(Mesh->NumCustomDataFloats!=3) Mesh->SetNumCustomDataFloats(3);

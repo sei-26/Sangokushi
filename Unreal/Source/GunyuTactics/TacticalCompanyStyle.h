@@ -15,4 +15,5 @@ namespace gunyucompany
     int RepresentativeCount(const FVisualUnit&);
     FLinearColor Livery(const FVisualUnit&);
     gunyumotion::FPose EquippedPose(gunyumotion::FPose,const FEquipment&);
+    inline FVector StandardPoint(FVector2D UV) { return FVector(-72+UV.X*54,-12,142-UV.Y*64); }
 }

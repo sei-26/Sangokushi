@@ -44,6 +44,10 @@ ATacticalField::ATacticalField()
     ArmourMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_LamellarArmor.SM_LamellarArmor"));
     WarHelmetMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_WarHelmet.SM_WarHelmet"));
     ShieldMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_InfantryShield.SM_InfantryShield"));
+    InfantryClothMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_TailoredClothV10.SM_TailoredClothV10"));
+    InfantryHeadMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_InfantryHeadV10.SM_InfantryHeadV10"));
+    CommanderBeardMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_CommandBeardV10.SM_CommandBeardV10"));
+    CommanderCapeMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_CommandCapeV10.SM_CommandCapeV10"));
     GrassMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_GrassClump.SM_GrassClump"));
     GateRoofMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_GateRoof.SM_GateRoof"));
     SpearheadMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_SpearheadV2.SM_SpearheadV2"));
@@ -96,6 +100,15 @@ ATacticalField::ATacticalField()
     Shields = Instances(this, TEXT("InfantryShields"), TEXT("/Game/Art/Battle/SM_InfantryShield.SM_InfantryShield"), TEXT("/Game/Art/Materials/M_BattleShield.M_BattleShield"));
     Weapons = Instances(this, TEXT("Weapons"), TEXT("/Engine/BasicShapes/Cube.Cube"), TEXT("/Game/Art/Materials/M_Bark.M_Bark"));
     Faces = Instances(this, TEXT("Faces"), TEXT("/Engine/BasicShapes/Sphere.Sphere"), TEXT("/Game/Art/Materials/M_Skin.M_Skin"));
+    auto ModelPart=[&](FName Name,const TCHAR* Path)
+    {
+        auto* Part=CreateDefaultSubobject<UInstancedStaticMeshComponent>(Name);
+        Part->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,Path));Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);Part->SetupAttachment(Ground);return Part;
+    };
+    SculptedHeads=ModelPart(TEXT("SculptedHeads"),TEXT("/Game/Art/Battle/SM_InfantryHeadV10.SM_InfantryHeadV10"));
+    CommanderBeards=ModelPart(TEXT("CommanderBeards"),TEXT("/Game/Art/Battle/SM_CommandBeardV10.SM_CommandBeardV10"));
+    CommanderCapes=ModelPart(TEXT("CommanderCapes"),TEXT("/Game/Art/Battle/SM_CommandCapeV10.SM_CommandCapeV10"));
+    CommanderCapes->SetNumCustomDataFloats(3);
     Dust = Instances(this, TEXT("Dust"), TEXT("/Engine/BasicShapes/Sphere.Sphere"), TEXT("/Game/Art/Materials/M_Dust.M_Dust"));
     if(auto* SoftDust=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_GroundDustV6.M_GroundDustV6"))) Dust->SetMaterial(0,SoftDust);
     Limbs = Instances(this, TEXT("InfantryLimbs"), TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), TEXT("/Game/Art/Materials/M_InfantryLeatherV2.M_InfantryLeatherV2"));
@@ -192,6 +205,10 @@ void ATacticalField::Refresh()
     if (ArmourMesh) Armour->SetStaticMesh(ArmourMesh);
     if (WarHelmetMesh) WarHelmets->SetStaticMesh(WarHelmetMesh);
     if (ShieldMesh) Shields->SetStaticMesh(ShieldMesh);
+    if(InfantryClothMesh) { Soldiers->SetStaticMesh(InfantryClothMesh);Enemies->SetStaticMesh(InfantryClothMesh); }
+    if(InfantryHeadMesh) SculptedHeads->SetStaticMesh(InfantryHeadMesh);
+    if(CommanderBeardMesh) CommanderBeards->SetStaticMesh(CommanderBeardMesh);
+    if(CommanderCapeMesh) CommanderCapes->SetStaticMesh(CommanderCapeMesh);
     if (GrassMesh) Grass->SetStaticMesh(GrassMesh);
     if (GateRoofMesh) { Roofs->SetStaticMesh(GateRoofMesh);CityRoofs->SetStaticMesh(GateRoofMesh); }
     if(FortressMaterial) CityWalls->SetMaterial(0,FortressMaterial);
@@ -202,6 +219,7 @@ void ATacticalField::Refresh()
     if (CartWheelMesh) CartWheels->SetStaticMesh(CartWheelMesh);
     if(auto* Surface=ResolveStandardMaterial(StandardMaterial.Get(),bReadableStandards)) Standards->SetMaterial(0,Surface);
     if (AllyMaterial) Soldiers->SetMaterial(0, AllyMaterial);
+    if (AllyMaterial) CommanderCapes->SetMaterial(0, AllyMaterial);
     if (EnemyMaterial) Enemies->SetMaterial(0, EnemyMaterial);
     if (PalisadeMesh) Palisades->SetStaticMesh(PalisadeMesh);
     if (WatchtowerMesh) Watchtowers->SetStaticMesh(WatchtowerMesh);

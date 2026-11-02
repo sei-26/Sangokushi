@@ -4,6 +4,6 @@ import runpy
 import unreal
 
 root=Path(__file__).resolve().parent
-for filename in ('make_battle_meshes.py','make_battle_details.py','make_battlefield_props.py','import_battle_meshes.py','prepare_battle_art.py','prepare_battle_finish.py','prepare_battle_cinema.py','prepare_map_art.py','prepare_field_readability.py','prepare_company_art.py','prepare_action_readability.py','prepare_tactic_response_audio.py'):
+for filename in ('make_battle_meshes.py','make_battle_details.py','make_battlefield_props.py','import_battle_meshes.py','prepare_battle_art.py','prepare_battle_finish.py','prepare_battle_cinema.py','prepare_map_art.py','prepare_field_readability.py','prepare_company_art.py','prepare_action_readability.py','prepare_tactic_response_audio.py','prepare_battle_finish_v10.py'):
     runpy.run_path(str(root/filename),run_name='__main__')
 unreal.log('GUNYU_BATTLE_VISUALS: PASS')

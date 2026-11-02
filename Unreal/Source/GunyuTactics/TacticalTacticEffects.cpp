@@ -52,15 +52,21 @@ void gunyufx::Tactic(const FBattleBeat& B,const TArray<FVisualUnit>& U,float P,F
     }
     else if(B.Kind==EBattleCue::Ambush)
     {
+        Color.A*=.45f;
         for(int Direction=0;Direction<4;++Direction)
         {
             const float Angle=Direction*PI/2+.4f;
             const FVector Axis(FMath::Cos(Angle),FMath::Sin(Angle),0);
-            for(int I=0;I<12;++I)
+            auto Point=[&](float F) { return Target+Axis*(96*(1-F))+FVector(0,0,FMath::Sin(F*PI)*32+T*12); };
+            auto Side=[&](float F)
             {
-                const float S=I/12.f,Z=(I+1)/12.f;
-                auto Point=[&](float F) { return Target+Axis*(150*(1-F))+FVector(0,0,FMath::Sin(F*PI)*60+T*20); };
-                Line(Point(S),Point(Z),2.8f,Color);
+                const FVector Tangent=-Axis*96+FVector(0,0,FMath::Cos(F*PI)*PI*32);
+                return FVector::CrossProduct(Tangent.GetSafeNormal(),FVector(0,-1,.8)).GetSafeNormal()*(.3f+1.2f*FMath::Sin(F*PI))*(1-T);
+            };
+            for(int I=0;I<24;++I)
+            {
+                const float S=I/24.f,Z=(I+1)/24.f;
+                Quad(Point(S)-Side(S),Point(S)+Side(S),Point(Z)+Side(Z),Point(Z)-Side(Z),Color);
             }
         }
     }

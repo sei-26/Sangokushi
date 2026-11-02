@@ -1,0 +1,11 @@
+newmtl Features
+Kd 0.3 0.3 0.3
+d 1.0
+
+newmtl Hair
+Kd 0.3 0.3 0.3
+d 1.0
+
+newmtl Skin
+Kd 0.3 0.3 0.3
+d 1.0

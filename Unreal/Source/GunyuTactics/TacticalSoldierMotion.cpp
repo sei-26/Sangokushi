@@ -76,7 +76,7 @@ namespace gunyumotion
             R.Hip[I]=FVector(0,Side*7,25);
             R.Knee[I]=FVector(Step*4+Lift*2+M.Brace*2,Side*7,14-M.Brace*2);
             R.Foot[I]=FVector(Step*9+Thrust*(I==1 ? 6:-3),Side*7,3+Lift*6);
-            R.Shoulder[I]=Upper(FVector(0,Side*17,46));
+            R.Shoulder[I]=Upper(FVector(0,Side*14,46));
         }
         R.Hand[0]=Upper(FVector(13+Thrust*7+M.Brace*6,-23,37+M.Brace*9+Hit*5));
         R.Hand[1]=Upper(FVector(7-Wind*8+Thrust*18,22,43+Wind*6-Thrust*5+M.Salute*13+Idle));
