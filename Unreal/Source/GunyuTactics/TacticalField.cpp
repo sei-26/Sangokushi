@@ -2,6 +2,7 @@
 #include "ProceduralMeshComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
+#include "Engine/World.h"
 #include "StrategistJourney.hpp"
 
 #include "TacticalState.h"
@@ -37,6 +38,11 @@ ATacticalField::ATacticalField()
     GrassMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_GrassClump.SM_GrassClump"));
     GateRoofMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_GateRoof.SM_GateRoof"));
     SpearheadMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_SpearheadV2.SM_SpearheadV2"));
+    CommanderSwordMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_CommandSwordV7.SM_CommandSwordV7"));
+    CommanderGlaiveMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_CommandGlaiveV7.SM_CommandGlaiveV7"));
+    CommanderSerpentMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_CommandSerpentV7.SM_CommandSerpentV7"));
+    if(auto* Refined=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_LamellarArmorV7.SM_LamellarArmorV7"))) ArmourMesh=Refined;
+    if(auto* Cloth=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_CompanyClothV7.M_CompanyClothV7"))) AllyMaterial=EnemyMaterial=Cloth;
     CartWheelMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Art/Battle/SM_CartWheelV2.SM_CartWheelV2"));
     PalisadeMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_PalisadeStakeV4.SM_PalisadeStakeV4"));
     WatchtowerMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Art/Battle/SM_WatchtowerV4.SM_WatchtowerV4"));
@@ -45,6 +51,7 @@ ATacticalField::ATacticalField()
     StandardMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Art/Materials/M_ArmyStandardV2.M_ArmyStandardV2"));
     Soldiers = Instances(this, TEXT("Allies"), TEXT("/Engine/BasicShapes/Cube.Cube"), TEXT("/Game/Art/Materials/M_Ally.M_Ally"));
     Enemies = Instances(this, TEXT("Enemies"), TEXT("/Engine/BasicShapes/Cube.Cube"), TEXT("/Game/Art/Materials/M_Enemy.M_Enemy"));
+    Soldiers->SetNumCustomDataFloats(3);Enemies->SetNumCustomDataFloats(3);
     Trees = Instances(this, TEXT("Trees"), TEXT("/Engine/BasicShapes/Sphere.Sphere"), TEXT("/Game/Art/Materials/M_Trees.M_Trees"));
     Trunks = Instances(this, TEXT("TreeTrunks"), TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), TEXT("/Game/Art/Materials/M_Bark.M_Bark"));
     Rocks = Instances(this, TEXT("RockOutcrops"), TEXT("/Engine/BasicShapes/Sphere.Sphere"), TEXT("/Game/Art/Materials/M_BattleRock.M_BattleRock"));
@@ -84,6 +91,10 @@ ATacticalField::ATacticalField()
     if(auto* SoftDust=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_GroundDustV6.M_GroundDustV6"))) Dust->SetMaterial(0,SoftDust);
     Limbs = Instances(this, TEXT("InfantryLimbs"), TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), TEXT("/Game/Art/Materials/M_InfantryLeatherV2.M_InfantryLeatherV2"));
     Spearheads = Instances(this, TEXT("InfantrySpearheads"), TEXT("/Game/Art/Battle/SM_SpearheadV2.SM_SpearheadV2"), TEXT("/Game/Art/Materials/M_BattleMetal.M_BattleMetal"));
+    CommanderSwords=Instances(this,TEXT("CommanderSwords"),TEXT("/Game/Art/Battle/SM_CommandSwordV7.SM_CommandSwordV7"),TEXT("/Game/Art/Materials/M_BattleMetal.M_BattleMetal"));
+    CommanderGlaives=Instances(this,TEXT("CommanderGlaives"),TEXT("/Game/Art/Battle/SM_CommandGlaiveV7.SM_CommandGlaiveV7"),TEXT("/Game/Art/Materials/M_BattleMetal.M_BattleMetal"));
+    CommanderSerpents=Instances(this,TEXT("CommanderSerpents"),TEXT("/Game/Art/Battle/SM_CommandSerpentV7.SM_CommandSerpentV7"),TEXT("/Game/Art/Materials/M_BattleMetal.M_BattleMetal"));
+    for(auto* Part:{CommanderSwords.Get(),CommanderGlaives.Get(),CommanderSerpents.Get()}) Part->SetupAttachment(Ground);
     Limbs->SetupAttachment(Ground); Spearheads->SetupAttachment(Ground);
     CartWheels=Instances(this,TEXT("CartWheels"),TEXT("/Game/Art/Battle/SM_CartWheelV2.SM_CartWheelV2"),TEXT("/Game/Art/Materials/M_Bark.M_Bark"));
     CartWheels->SetupAttachment(Ground);
@@ -107,6 +118,15 @@ void ATacticalField::OnConstruction(const FTransform& Transform)
     Super::OnConstruction(Transform);
     StartTrial();
 }
+#if WITH_EDITOR
+void ATacticalField::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+    Super::PostEditChangeProperty(PropertyChangedEvent);
+    // Native actors also need property edits to refresh their preview. Never
+    // restart a live PIE/game world or mutate the class default while editing.
+    if(State && GetWorld() && !GetWorld()->IsGameWorld() && !HasAnyFlags(RF_ClassDefaultObject|RF_ArchetypeObject)) StartTrial();
+}
+#endif
 void ATacticalField::StartTrial()
 {
     State->Realtime.Reset();State->bRealtimeInBattle=false;State->bRealtimeStepping=false;
@@ -162,6 +182,9 @@ void ATacticalField::Refresh()
     if (GateRoofMesh) { Roofs->SetStaticMesh(GateRoofMesh);CityRoofs->SetStaticMesh(GateRoofMesh); }
     if(FortressMaterial) CityWalls->SetMaterial(0,FortressMaterial);
     if (SpearheadMesh) Spearheads->SetStaticMesh(SpearheadMesh);
+    if (CommanderSwordMesh) CommanderSwords->SetStaticMesh(CommanderSwordMesh);
+    if (CommanderGlaiveMesh) CommanderGlaives->SetStaticMesh(CommanderGlaiveMesh);
+    if (CommanderSerpentMesh) CommanderSerpents->SetStaticMesh(CommanderSerpentMesh);
     if (CartWheelMesh) CartWheels->SetStaticMesh(CartWheelMesh);
     if (StandardMaterial) Standards->SetMaterial(0,StandardMaterial);
     if (AllyMaterial) Soldiers->SetMaterial(0, AllyMaterial);

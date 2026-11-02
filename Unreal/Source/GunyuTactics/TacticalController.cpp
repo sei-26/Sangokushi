@@ -310,6 +310,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=Field->BattlefieldTacticsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuFieldArtOnly")))
     { const bool Passed=Field->VisualGeometrySmokeTest() && Field->MapDetailSmokeTest() && Field->BackdropSmokeTest() && Field->ActivityReadSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCompanyOnly")))
+    { const bool Passed=Field->InfantryMotionSmokeTest() && CameraPresentationSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuFieldCinemaOnly")))
     { const bool Passed=CameraPresentationSmokeTest() && Field->ActivityReadSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuEnemyDoctrineOnly")))
@@ -424,8 +426,9 @@ void ATacticalController::PlayerTick(float Delta)
     if(bCapture && Frames==5 && FParse::Param(FCommandLine::Get(),TEXT("GunyuInfantryClose")))
     {
         const auto* Beat=Field->CurrentBeat();const auto& Units=Field->VisualUnits();
-        const int Id=Beat && Units.IsValidIndex(Beat->Actor) && Units[Beat->Actor].Id>=0 ? Beat->Actor:0;
-        if(Units.IsValidIndex(Id)) { Focus=Units[Id].Position;Distance=ViewDistance=1200;CameraYaw=125;CameraElevation=36;CameraPreset=-1;bTacticCinema=false; }
+        int Id=Beat && Units.IsValidIndex(Beat->Actor) && Units[Beat->Actor].Id>=0 ? Beat->Actor:0;
+        FParse::Value(FCommandLine::Get(),TEXT("CompanyOfficer="),Id);
+        if(Units.IsValidIndex(Id) && Units[Id].Id>=0) { Focus=Units[Id].Position;Distance=ViewDistance=850;CameraYaw=125;CameraElevation=36;CameraPreset=-1;bTacticCinema=false; }
     }
     if (bCapture && Frames == 130)
         FScreenshotRequest::RequestScreenshot(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / TEXT("trial.png")), true, false);

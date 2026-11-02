@@ -28,12 +28,15 @@ void ATacticalField::RenderUnits()
     TArray<FTransform> AllyParts, EnemyParts, IronParts, SkinParts, PoleParts;
     TArray<FTransform> ArmourParts, HelmetParts, ShieldParts;
     TArray<FTransform> LimbParts, SpearParts;
+    TArray<FTransform> SwordParts,GlaiveParts,SerpentParts;
+    TArray<float> AllyColors,EnemyColors;
     TArray<FTransform> WheelParts;
     const auto* Beat = CurrentBeat();
     for (const auto& Unit : State->Units)
     {
         if (Unit.Id < 0 || (Unit.Troops <= 0 && !IsPlaying())) continue;
         auto& Cloth = Unit.bEnemy ? EnemyParts : AllyParts;
+        const int FirstCloth=Cloth.Num();
         const auto Motion=gunyumotion::Read(Unit,State->Units,Beat,BeatProgress());
         const FRotator Heading=Motion.Facing.Rotation();
         if (Unit.Id == frontline::StrategistJourney::ConvoyArmy)
@@ -54,25 +57,37 @@ void ATacticalField::RenderUnits()
         const int Count=FMath::Clamp(FMath::CeilToInt(Unit.Troops/35.f),6,48);
         for(int Soldier=0;Soldier<Count;++Soldier)
         {
-            const auto Pose=gunyumotion::Pose(Motion,Soldier,Unit.Id,State->VisualTime);
+            const auto Equipment=gunyucompany::Equipment(Unit,Soldier,Count);
+            const auto Pose=gunyucompany::EquippedPose(gunyumotion::Pose(Motion,Soldier,Unit.Id,State->VisualTime),Equipment);
             FVector Base=Unit.Position+Heading.RotateVector(gunyumotion::FormationOffset(Motion,Soldier,Count));
             Base.Z=SurfaceHeight(Base);
             if(Unit.Troops<=0) { Cloth.Add(FTransform(Heading,Base+FVector(0,0,5),FVector(.30,.16,.08)));continue; }
             const float Stature=Motion.Stature;
-            gunyuinfantry::Soldier(Body,Pose,Base,Heading.Quaternion(),Soldier==3 ? .86f:.72f,Stature);
+            gunyuinfantry::Soldier(Body,Pose,Base,Heading.Quaternion(),Equipment.bCommander ? .94f:.72f,Stature,Equipment);
         }
         Cloth.Append(Body.Cloth);IronParts.Append(Body.Iron);SkinParts.Append(Body.Skin);PoleParts.Append(Body.Poles);
         ArmourParts.Append(Body.Armour);HelmetParts.Append(Body.Helmets);ShieldParts.Append(Body.Shields);
         LimbParts.Append(Body.Limbs);SpearParts.Append(Body.Spears);
+        SwordParts.Append(Body.Swords);GlaiveParts.Append(Body.Glaives);SerpentParts.Append(Body.Serpents);
+        auto& Colors=Unit.bEnemy ? EnemyColors:AllyColors;
+        const auto Tint=gunyucompany::Livery(Unit);
+        for(int I=FirstCloth;I<Cloth.Num();++I) Colors.Append({Tint.R,Tint.G,Tint.B});
         // Large standards make whole formations readable, including at strategic zoom.
         PoleParts.Add(FTransform(FRotator::ZeroRotator, Unit.Position + FVector(-34,0,110),FVector(.03,.03,2.2)));
         PoleParts.Add(FTransform(FRotator::ZeroRotator, Unit.Position + FVector(10,0,218),FVector(.94,.028,.028)));
         IronParts.Add(FTransform(FRotator::ZeroRotator, Unit.Position + FVector(-34,0,228),FVector(.08,.08,.15)));
     }
     Commit(Soldiers, AllyParts); Commit(Enemies, EnemyParts); Commit(Helmets, IronParts);
+    for(auto Pair:{TPair<UInstancedStaticMeshComponent*,const TArray<float>*>(Soldiers,&AllyColors),TPair<UInstancedStaticMeshComponent*,const TArray<float>*>(Enemies,&EnemyColors)})
+    {
+        auto* Mesh=Pair.Key;
+        if(Mesh->NumCustomDataFloats!=3) Mesh->SetNumCustomDataFloats(3);
+        if(Mesh->GetInstanceCount()>0) Mesh->SetCustomData(0,Mesh->GetInstanceCount()-1,MakeArrayView(*Pair.Value),true);
+    }
     Commit(Weapons, PoleParts); Commit(Faces, SkinParts);
     Commit(Armour, ArmourParts); Commit(WarHelmets, HelmetParts); Commit(Shields, ShieldParts);
     Commit(Limbs,LimbParts); Commit(Spearheads,SpearParts);
+    Commit(CommanderSwords,SwordParts);Commit(CommanderGlaives,GlaiveParts);Commit(CommanderSerpents,SerpentParts);
     Commit(CartWheels,WheelParts);
     RenderStandards();
 }

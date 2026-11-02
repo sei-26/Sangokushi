@@ -17,16 +17,32 @@ field.set_editor_property("pause_on_battle_alert",not initial_alert_pause)
 assert field.get_editor_property("pause_on_battle_alert")== (not initial_alert_pause)
 field.set_editor_property("pause_on_battle_alert",initial_alert_pause)
 initial = field.get_editor_property("first_mission")
-field.set_editor_property("first_mission", 1)
-assert field.get_editor_property("first_mission") == 1
+initial_council=field.get_editor_property("start_with_council")
+# With the story opening enabled, the battlefield is intentionally prepared
+# only at deployment. Verify scenario geometry in the direct-battle preview.
+field.set_editor_property("start_with_council",False)
+def scenery_counts():
+    parts={c.get_name():c for c in field.get_components_by_class(unreal.InstancedStaticMeshComponent)}
+    return tuple(parts[name].get_instance_count() for name in ("RockOutcrops","TreeTrunks","CampPalisades"))
+initial_scenery=scenery_counts()
+alternate=(initial+1)%3
+field.set_editor_property("first_mission", alternate)
+assert field.get_editor_property("first_mission") == alternate
+assert scenery_counts()!=initial_scenery, "Changing scenario must rebuild its distinct scenery"
 field.set_editor_property("first_mission", initial)
+assert scenery_counts()==initial_scenery, "Returning to the original scenario must restore its scenery"
+field.set_editor_property("start_with_council",initial_council)
 for prop in ("terrain_material", "water_material", "fortress_material", "distant_material", "ally_material", "enemy_material", "foliage_material", "objective_material", "standard_material", "rock_material"):
     assert field.get_editor_property(prop), "Editable art reference missing: " + prop
-for prop in ("foliage_mesh", "rock_mesh", "armour_mesh", "war_helmet_mesh", "shield_mesh", "grass_mesh", "gate_roof_mesh", "spearhead_mesh", "cart_wheel_mesh", "palisade_mesh", "watchtower_mesh", "tent_mesh", "supply_crate_mesh"):
+for prop in ("foliage_mesh", "rock_mesh", "armour_mesh", "war_helmet_mesh", "shield_mesh", "grass_mesh", "gate_roof_mesh", "spearhead_mesh", "cart_wheel_mesh", "palisade_mesh", "watchtower_mesh", "tent_mesh", "supply_crate_mesh", "commander_sword_mesh", "commander_glaive_mesh", "commander_serpent_mesh"):
     assert isinstance(field.get_editor_property(prop), unreal.StaticMesh), "Editable battle mesh missing: " + prop
-rocks=next(c for c in field.get_components_by_class(unreal.InstancedStaticMeshComponent) if c.get_name()=="RockOutcrops")
-if initial==0:
-    assert rocks.get_instance_count()==7, "Editor must rebuild the current ridge scenery after changing scenario properties"
+original_glaive=field.get_editor_property("commander_glaive_mesh")
+sword=field.get_editor_property("commander_sword_mesh")
+field.set_editor_property("commander_glaive_mesh",sword)
+glaive_component=next(c for c in field.get_components_by_class(unreal.InstancedStaticMeshComponent) if c.get_name()=="CommanderGlaives")
+assert glaive_component.get_editor_property("static_mesh")==sword, "Editing a weapon must update the actual preview component"
+field.set_editor_property("commander_glaive_mesh",original_glaive)
+assert glaive_component.get_editor_property("static_mesh")==original_glaive, "Restoring the weapon must restore the preview"
 foliage=field.get_editor_property("foliage_material")
 if foliage.get_name() in ("M_CommandCanopyV4","M_LandscapeCanopyV5"):
     assert unreal.MaterialEditingLibrary.get_material_property_input_node(foliage,unreal.MaterialProperty.MP_OPACITY_MASK), "Observed-unit canopy mask must be connected"
@@ -41,4 +57,4 @@ unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).set_level_viewport_cam
     unreal.Vector(1600, 4050, 3600), unreal.Rotator(-53.13, -90, 0))
 actors.set_selected_level_actors([field])
 assert levels.save_current_level(), "Editor map must save successfully"
-unreal.log("GUNYU_EDITOR_CHECK: PASS (editable map, scenario properties, ten material references, thirteen battle meshes, three portraits)")
+unreal.log("GUNYU_EDITOR_CHECK: PASS (editable map, scenario properties, ten material references, sixteen battle meshes, three portraits)")

@@ -26,6 +26,34 @@ bool ATacticalField::InfantryMotionSmokeTest()
         const FVector Tip=Pole.TransformPosition(FVector(0,0,50)),BladeRoot=Head.TransformPosition(FVector(0,0,-50));
         if(!Check(FVector::Dist(Tip,BladeRoot)<3,TEXT("spearhead meets the shaft while crouching or standing"))) return false;
     }
+    // Display identities alter costumes only; all variants preserve joints and grips.
+    for(int Id=0;Id<4;++Id) for(float Stature:{.65f,1.f})
+    {
+        FVisualUnit U;U.Id=Id;U.bEnemy=Id==3;
+        const auto Kit=gunyucompany::Equipment(U,3,40);
+        const auto P=gunyucompany::EquippedPose(Contact,Kit);
+        gunyuinfantry::FBatches B;gunyuinfantry::Soldier(B,P,FVector::ZeroVector,FQuat::Identity,.94f,Stature,Kit);
+        if(!Check(B.Limbs.Num()==8 && B.Swords.Num()==(Id==0) && B.Glaives.Num()==(Id==1) && B.Serpents.Num()==(Id==2) && B.Spears.Num()==(Id==3),TEXT("three observed commanders have distinct weapons, enemy keeps infantry gear"))) return false;
+        auto Local=[&](FVector V) { V+=P.Root;V.Z*=Stature;return V*.94f; };
+        if(Id==0)
+        {
+            if(!Check(B.Poles.IsEmpty() && B.Swords[0].TransformPosition(FVector(0,0,-35)).Equals(Local(P.Hand[1]),.001),TEXT("sword grip stays attached even when concealed"))) return false;
+        }
+        else
+        {
+            const auto& Blade=Id==1 ? B.Glaives[0]:Id==2 ? B.Serpents[0]:B.Spears[0];
+            if(!Check(FVector::Dist(B.Poles[0].TransformPosition(FVector(0,0,50)),Blade.TransformPosition(FVector(0,0,-50)))<.01,TEXT("long polearms meet their blade sockets"))) return false;
+        }
+        if(!Kit.bShield && !Check((P.Hand[0]-P.SpearCenter).Equals(P.Spear.RotateVector(FVector(0,0,-24)),.001) && B.Shields.IsEmpty(),TEXT("rear ranks and polearm commanders use two hands without a floating shield"))) return false;
+        for(const auto* Parts:{&B.Cloth,&B.Iron,&B.Skin,&B.Poles,&B.Armour,&B.Helmets,&B.Shields,&B.Limbs,&B.Spears,&B.Swords,&B.Glaives,&B.Serpents})
+            for(const auto& T:*Parts) if(!Check(!T.ContainsNaN() && T.GetScale3D().GetMin()>0,TEXT("each commander costume stays finite and positively scaled"))) return false;
+    }
+    for(int Count:{6,17,40,48})
+    {
+        int ShieldCount=0,SpearCount=0;FVisualUnit U;U.Id=0;
+        for(int I=0;I<Count;++I) { const auto E=gunyucompany::Equipment(U,I,Count);ShieldCount+=E.bShield;SpearCount+=E.Weapon==gunyucompany::EWeapon::Spear; }
+        if(!Check(ShieldCount>0 && ShieldCount<Count && SpearCount==Count-1,TEXT("casualty-scaled company retains front shields, rear spears and one commander"))) return false;
+    }
     Seen[3].Loss=300;
     if(!Check(Read(Seen[3],Seen,&Beat,.47f).Recoil==0 && Read(Seen[3],Seen,&Beat,.56f).Recoil>0,TEXT("casualty recoil starts only after the actual impact"))) return false;
     Beat.Kind=EBattleCue::Stop;
@@ -76,9 +104,22 @@ bool ATacticalField::InfantryMotionSmokeTest()
     if(!Check(ExportSession(Before),TEXT("stable battle export"))) return false;
     AdvancePresentation(.6f);const auto Frozen=Transforms();bool Identical=Moving.Num()==Frozen.Num();
     for(int I=0;I<Moving.Num() && Identical;++I) Identical=Moving[I].Equals(Frozen[I],.001);
-    if(!Check(Identical && Limbs->GetInstanceCount()==Spearheads->GetInstanceCount()*8,TEXT("paused battlefield freezes every joint and weapon at a bounded count"))) return false;
+    const int Bodies=Spearheads->GetInstanceCount()+CommanderSwords->GetInstanceCount()+CommanderGlaives->GetInstanceCount()+CommanderSerpents->GetInstanceCount();
+    if(!Check(Identical && Limbs->GetInstanceCount()==Bodies*8,TEXT("paused battlefield freezes every joint and weapon at a bounded count"))) return false;
+    if(!Check(CommanderSwords->GetInstanceCount()==1 && CommanderGlaives->GetInstanceCount()==1 && CommanderSerpents->GetInstanceCount()==1,TEXT("actual observed battlefield renders one weapon for each allied commander"))) return false;
+    if(!Check(Soldiers->NumCustomDataFloats==3 && Soldiers->PerInstanceSMCustomData.Num()==Soldiers->GetInstanceCount()*3 && Shields->GetInstanceCount()<Bodies,TEXT("instanced livery covers every cloth part and rear ranks shed shields"))) return false;
+    for(int Id=0;Id<3;++Id)
+    {
+        const auto Tint=gunyucompany::Livery(State->Units[Id]);bool Found=false;
+        const auto& Colors=Soldiers->PerInstanceSMCustomData;
+        for(int I=0;I+2<Colors.Num();I+=3) Found=Found || (Colors[I]==Tint.R && Colors[I+1]==Tint.G && Colors[I+2]==Tint.B);
+        if(!Check(Found,TEXT("each visible officer's cloth reaches the material with the same livery as the standard"))) return false;
+    }
+    const auto Displayed=State->Units;State->Units[1]={};RenderUnits();
+    if(!Check(CommanderGlaives->GetInstanceCount()==0 && CommanderSwords->GetInstanceCount()==1 && CommanderSerpents->GetInstanceCount()==1,TEXT("an unobserved commander cannot leave a floating signature weapon"))) return false;
+    State->Units=Displayed;RenderUnits();
     if(!Check(ExportSession(After) && Before==After,TEXT("joint animation consumes no troops, orders, food or time"))) return false;
     if(!Check(Limbs->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("animated arms and legs cannot block orders"))) return false;
     bRealtimeCommand=SavedRealtime;bStartWithCouncil=SavedCouncil;FirstMission=SavedMission;EnemyPolicy=SavedPolicy;Issue(ETacticalCommand::Restart);
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_INFANTRY: PASS (forward thrust, attached grip, timed recoil, stopped/hidden target, continuous ranks, joint bounds, pause, immutable session)"));return true;
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_INFANTRY: PASS (forward thrust, three commander weapons, grip/socket attachment, shield/spear ranks, livery, hidden commander, timed recoil, continuous ranks, pause, immutable session)"));return true;
 }

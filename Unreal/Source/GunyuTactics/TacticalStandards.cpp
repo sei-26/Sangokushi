@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticalCompanyStyle.h"
 #include "ProceduralMeshComponent.h"
 #include "ProfilingDebugging/CsvProfiler.h"
 
@@ -47,8 +48,7 @@ void ATacticalField::RenderStandards()
             continue;
         }
         const float Time = State->VisualTime;
-        const FLinearColor Cloth = Unit.bEnemy ? FLinearColor(.30f,.035f,.018f)
-            : Unit.Id == 1 ? FLinearColor(.018f,.16f,.09f) : Unit.Id == 2 ? FLinearColor(.025f,.09f,.12f) : FLinearColor(.022f,.12f,.21f);
+        const FLinearColor Cloth=gunyucompany::Livery(Unit)*.7f;
         const FLinearColor Gold(.72f,.46f,.12f);
         auto ClothPoint = [&](FVector2D UV, float Layer = 0.f)
         {

@@ -31,6 +31,9 @@ public:
     virtual ~ATacticalField() override;
     virtual void BeginPlay() override;
     virtual void OnConstruction(const FTransform& Transform) override;
+#if WITH_EDITOR
+    virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
     UPROPERTY(EditAnywhere, Category="Trial|Scenario", meta=(ClampMin="0", ClampMax="2"))
     int32 FirstMission = 0;
     UPROPERTY(EditAnywhere, Category="Trial|Scenario", meta=(ClampMin="0", ClampMax="2"))
@@ -69,6 +72,12 @@ public:
     TObjectPtr<class UStaticMesh> GateRoofMesh;
     UPROPERTY(EditAnywhere, Category="Trial|Art")
     TObjectPtr<class UStaticMesh> SpearheadMesh;
+    UPROPERTY(EditAnywhere, Category="Trial|Art")
+    TObjectPtr<class UStaticMesh> CommanderSwordMesh;
+    UPROPERTY(EditAnywhere, Category="Trial|Art")
+    TObjectPtr<class UStaticMesh> CommanderGlaiveMesh;
+    UPROPERTY(EditAnywhere, Category="Trial|Art")
+    TObjectPtr<class UStaticMesh> CommanderSerpentMesh;
     UPROPERTY(EditAnywhere, Category="Trial|Art")
     TObjectPtr<class UStaticMesh> CartWheelMesh;
     UPROPERTY(EditAnywhere, Category="Trial|Art")
@@ -227,6 +236,9 @@ private:
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Dust;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Limbs;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> Spearheads;
+    UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CommanderSwords;
+    UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CommanderGlaives;
+    UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CommanderSerpents;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CartWheels;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> Standards;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> Effects;
