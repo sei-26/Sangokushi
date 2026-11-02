@@ -124,7 +124,8 @@ void ATacticalController::PlayerTick(float Delta)
     }
     const bool bSignatureCapture = bCapture && FParse::Param(FCommandLine::Get(), TEXT("GunyuSignature"));
     const bool bSoloCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuSolo"));
-    const bool bCinemaCapture = bCapture && (FParse::Param(FCommandLine::Get(), TEXT("GunyuCinema")) || bSignatureCapture || bSoloCapture);
+    const bool bWeaponCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuWeaponCapture"));
+    const bool bCinemaCapture = bCapture && (FParse::Param(FCommandLine::Get(), TEXT("GunyuCinema")) || bSignatureCapture || bSoloCapture || bWeaponCapture);
     const bool bSignalCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuChainSignal"));
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
     if (!bCinemaCapture)
@@ -275,7 +276,18 @@ void ATacticalController::PlayerTick(float Delta)
     { Field->PrepareOpeningPreview(false);Field->bRealtimeCommand=true;Field->Issue(ETacticalCommand::Deploy); }
     if (bCinemaCapture && Frames == 3)
     {
-        if(bSoloCapture)
+        if(bWeaponCapture)
+        {
+            const int Destinations[]={frontline::Campaign::At(9,11),frontline::Campaign::At(9,9),frontline::Campaign::At(9,10)};
+            for(int Id=0;Id<3;++Id)
+            { Field->SelectOfficer(Id);Field->Issue(ETacticalCommand::Move);Field->CommandAt(Destinations[Id]);Field->Issue(ETacticalCommand::Skip); }
+            int Officer=0;FParse::Value(FCommandLine::Get(),TEXT("CompanyOfficer="),Officer);
+            Field->SelectOfficer(FMath::Clamp(Officer,0,2));Field->Issue(ETacticalCommand::Strike);
+            const auto* Attack=Field->CurrentBeat();
+            if(!Attack || Attack->Kind!=EBattleCue::Strike || Attack->Actor!=FMath::Clamp(Officer,0,2))
+            { UE_LOG(LogTemp,Error,TEXT("GUNYU_WEAPON_CAPTURE: FAIL (public move/strike did not produce the requested attack)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        }
+        else if(bSoloCapture)
         {
             Field->SelectOfficer(0);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(9,11));Field->Issue(ETacticalCommand::Skip);
             Field->SelectOfficer(2);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(9,10));Field->Issue(ETacticalCommand::Skip);
@@ -300,10 +312,12 @@ void ATacticalController::PlayerTick(float Delta)
                 Field->EditOrder(2,-1);
             }
         }
-        Field->Issue(ETacticalCommand::Execute);
-        float Time = bSoloCapture ? 1.7f : bSignatureCapture ? 9.5f : 4.7f;
+        if(!bWeaponCapture) Field->Issue(ETacticalCommand::Execute);
+        float WeaponPhase=.50f;FParse::Value(FCommandLine::Get(),TEXT("WeaponPhase="),WeaponPhase);
+        float Time = bWeaponCapture ? Field->CurrentBeat()->Duration*FMath::Clamp(WeaponPhase,0.f,.95f):bSoloCapture ? 1.7f : bSignatureCapture ? 9.5f : 4.7f;
         FParse::Value(FCommandLine::Get(), TEXT("CueTime="), Time);
         Field->AdvancePresentation(Time);
+        if(bWeaponCapture) UE_LOG(LogTemp,Display,TEXT("GUNYU_WEAPON_CAPTURE: PASS (public strike actor=%d, progress=%.3f)"),Field->CurrentBeat() ? Field->CurrentBeat()->Actor:-1,Field->BeatProgress());
     }
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAuto"))) Field->Issue(ETacticalCommand::AutoBattle);
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBattlefieldOnly")))

@@ -4,6 +4,7 @@
 #include "TacticalTargetVisual.h"
 #include "TacticalPositionEffects.h"
 #include "TacticalGroundAtmosphere.h"
+#include "TacticalWeaponMotion.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "Components/AudioComponent.h"
@@ -56,6 +57,7 @@ void ATacticalField::RenderEffects()
     };
     const auto* Beat = CurrentBeat();
     const float Progress = BeatProgress();
+    const bool bWeaponSwing=gunyuweapon::IsAttack(State->Units,Beat,Progress);
     const auto& H = State->HUD;
     if (!Beat && H.bBattle && H.bThreatOverlay)
     {
@@ -125,14 +127,15 @@ void ATacticalField::RenderEffects()
         if (State->Units.IsValidIndex(FocusId) && State->Units[FocusId].Id >= 0)
         {
             const FVector Center = State->Units[FocusId].Position + FVector(0, 0, 12);
-            const float Pulse = FMath::Clamp((Progress - .40f) / .5f, 0.f, 1.f);
             const bool bHit = Beat->Kind == EBattleCue::Strike || Beat->Kind == EBattleCue::Disrupt;
+            const float Start=bHit || bWeaponSwing ? .48f:.40f;
+            const float Pulse = FMath::Clamp((Progress - Start) / (.90f-Start), 0.f, 1.f);
             FLinearColor Color = Beat->Kind == EBattleCue::Ambush ? FLinearColor(.20f, 1.f, .5f, 1) : Beat->Kind == EBattleCue::Lure ? FLinearColor(.15f, .75f, 1.f, 1) : FLinearColor(1.f, .52f, .12f, 1);
             if (Beat->Kind == EBattleCue::AzureDragon) Color = FLinearColor(.12f,1.f,.65f,1);
             if (Beat->Kind == EBattleCue::Rally) Color = FLinearColor(1.f,.85f,.25f,1);
             if (Beat->Kind == EBattleCue::SerpentRoar) Color = FLinearColor(1.f,.23f,.10f,1);
             Color.A = 1 - Pulse;
-            if (Progress > .40f && Progress < .90f && Beat->Kind != EBattleCue::Stop)
+            if (Progress > Start && Progress < .90f && Beat->Kind != EBattleCue::Stop)
             {
                 Ring(Center, 35 + Pulse * 150, 8 * (1 - Pulse) + 1, Color);
                 if (Beat->Kind == EBattleCue::SerpentRoar)
@@ -141,15 +144,20 @@ void ATacticalField::RenderEffects()
                     for (const auto& Ally : State->Units)
                         if (Ally.Id >= 0 && Ally.bInspired && !Ally.bEnemy) Ring(Ally.Position + FVector(0,0,10), 55 + Pulse * 65, 5, Color);
                 if (bHit)
-                    for (int I = 0; I < 12; ++I)
+                    for (int I = 0; I < (bWeaponSwing ? 8:12); ++I)
                     {
-                        const float Angle = I * 2 * PI / 12;
+                        const float Spark=bWeaponSwing ? FMath::Clamp((Progress-.48f)/.16f,0.f,1.f):Pulse;
+                        if(bWeaponSwing && Spark>=1) break;
+                        const float Angle = I * 2 * PI / (bWeaponSwing ? 8:12);
                         const FVector Ray(FMath::Cos(Angle), FMath::Sin(Angle), .6);
-                        const FVector Side(-Ray.Y * 3, Ray.X * 3, 0);
-                        const FVector A = Center + Ray * (25 + Pulse * 70), B = Center + Ray * (80 + Pulse * 100);
-                        Quad(A - Side, A + Side, B + Side, B - Side, Color);
+                        const FVector Side(-Ray.Y, Ray.X, 0);auto Tint=Color;
+                        Tint.A*=bWeaponSwing ? 1-Spark:1;
+                        const FVector A = Center + Ray * (bWeaponSwing ? 12+Spark*25:25+Pulse*70);
+                        const FVector B = Center + Ray * (bWeaponSwing ? 45+Spark*35:80+Pulse*100);
+                        const auto Width=Side*(bWeaponSwing ? 1.7f:3.f);
+                        Quad(A - Width, A + Width, B + Width, B - Width, Tint);
                     }
-                if (bHit)
+                if (bHit && !bWeaponSwing)
                 {
                     // Curved weapon trails rise out of the battle, grounded at the real victim.
                     for (int Arc = 0; Arc < 3; ++Arc) for (int Segment = 0; Segment < 18; ++Segment)
@@ -165,7 +173,7 @@ void ATacticalField::RenderEffects()
                     }
                 }
             }
-            if (Beat->Before.IsValidIndex(Beat->Actor) && Beat->Before.IsValidIndex(Beat->Target) && Beat->Kind != EBattleCue::Stop)
+            if (!bWeaponSwing && Beat->Before.IsValidIndex(Beat->Actor) && Beat->Before.IsValidIndex(Beat->Target) && Beat->Kind != EBattleCue::Stop)
             {
                 const FVector A = State->Units[Beat->Actor].Position + FVector(0, 0, 20), B = Center;
                 const FVector Side = FVector::CrossProduct((B - A).GetSafeNormal(), FVector::UpVector) * 4;
@@ -175,6 +183,13 @@ void ATacticalField::RenderEffects()
         }
     }
     if(Beat) gunyufx::Tactic(*Beat,State->Units,Progress,Quad);
+    for(const auto& Stroke:gunyuweapon::Ribbons(State->Units,Beat,Progress,State->VisualTime,[this](FVector P) { return SurfaceHeight(P); }))
+    {
+        Quad(Stroke.A,Stroke.B,Stroke.C,Stroke.D,Stroke.Color);
+        const auto Side=FVector::CrossProduct((Stroke.C-Stroke.B).GetSafeNormal(),FVector(0,-1,.5f)).GetSafeNormal()*1.1f;
+        auto Edge=Stroke.Color*2.2f;Edge.A=Stroke.Color.A*.65f;
+        Quad(Stroke.B-Side,Stroke.B+Side,Stroke.C+Side,Stroke.C-Side,Edge);
+    }
     const auto* Section=Effects->GetProcMeshSection(0);
     // All effects use independent quads, so equal counts mean equal topology.
     if (Section && Section->ProcVertexBuffer.Num()==Vertices.Num() && Section->ProcIndexBuffer.Num()==Triangles.Num())

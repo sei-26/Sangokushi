@@ -1,5 +1,6 @@
 ﻿#include "TacticalInfantry.h"
 #include "TacticalTrial.h"
+#include "TacticalWeaponMotion.h"
 #include "TacticalState.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
@@ -54,16 +55,16 @@ void ATacticalField::RenderUnits()
             continue;
         }
         gunyuinfantry::FBatches Body;
-        const int Count=FMath::Clamp(FMath::CeilToInt(Unit.Troops/35.f),6,48);
+        const int Count=gunyucompany::RepresentativeCount(Unit);
         for(int Soldier=0;Soldier<Count;++Soldier)
         {
             const auto Equipment=gunyucompany::Equipment(Unit,Soldier,Count);
-            const auto Pose=gunyucompany::EquippedPose(gunyumotion::Pose(Motion,Soldier,Unit.Id,State->VisualTime),Equipment);
+            const auto Pose=gunyuweapon::Pose(Motion,Equipment,Soldier,Unit.Id,State->VisualTime);
             FVector Base=Unit.Position+Heading.RotateVector(gunyumotion::FormationOffset(Motion,Soldier,Count));
             Base.Z=SurfaceHeight(Base);
             if(Unit.Troops<=0) { Cloth.Add(FTransform(Heading,Base+FVector(0,0,5),FVector(.30,.16,.08)));continue; }
             const float Stature=Motion.Stature;
-            gunyuinfantry::Soldier(Body,Pose,Base,Heading.Quaternion(),Equipment.bCommander ? .94f:.72f,Stature,Equipment);
+            gunyuinfantry::Soldier(Body,Pose,Base,Heading.Quaternion(),Equipment.VisualScale,Stature,Equipment);
         }
         Cloth.Append(Body.Cloth);IronParts.Append(Body.Iron);SkinParts.Append(Body.Skin);PoleParts.Append(Body.Poles);
         ArmourParts.Append(Body.Armour);HelmetParts.Append(Body.Helmets);ShieldParts.Append(Body.Shields);

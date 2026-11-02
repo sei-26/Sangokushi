@@ -8,9 +8,11 @@ namespace gunyucompany
         EWeapon Weapon=EWeapon::Spear;
         bool bShield=true,bCommander=false;
         float ShaftLength=92;
+        float VisualScale=.72f;
     };
     // Costume and representative ranks, never additional troop types or bonuses.
     FEquipment Equipment(const FVisualUnit&,int Soldier,int Count);
+    int RepresentativeCount(const FVisualUnit&);
     FLinearColor Livery(const FVisualUnit&);
     gunyumotion::FPose EquippedPose(gunyumotion::FPose,const FEquipment&);
 }

@@ -8,12 +8,14 @@ namespace gunyucompany
         E.bShield=Soldier<FMath::DivideAndRoundUp(Count,2);
         if(E.bCommander)
         {
+            E.VisualScale=.94f;
             E.Weapon=U.Id==0 ? EWeapon::Sword:U.Id==1 ? EWeapon::Glaive:EWeapon::Serpent;
             E.bShield=U.Id==0;
         }
         E.ShaftLength=E.bShield ? 92:116;
         return E;
     }
+    int RepresentativeCount(const FVisualUnit& U) { return FMath::Clamp(FMath::CeilToInt(U.Troops/35.f),6,48); }
     FLinearColor Livery(const FVisualUnit& U)
     {
         if(U.bEnemy) return FLinearColor(.46f,.23f,.035f);

@@ -42,8 +42,10 @@ namespace gunyuinfantry
             Part(B.Iron,P.ShieldCenter+P.Shield.RotateVector(FVector(5,0,0)),FVector(.07,.13,.13),P.Shield);
         }
         // Crouching compresses world Z, not the spear's own long axis.
-        FVector Shaft=P.Spear.RotateVector(FVector::UpVector);Shaft.Z*=Height;
-        const float ShaftScale=Shaft.Size();const FQuat Weapon=FQuat::FindBetweenNormals(FVector::UpVector,Shaft.GetSafeNormal());
+        const FVector OriginalAxis=P.Spear.RotateVector(FVector::UpVector);
+        FVector Shaft=OriginalAxis;Shaft.Z*=Height;
+        const float ShaftScale=Shaft.Size();
+        const FQuat Weapon=FQuat::FindBetweenNormals(OriginalAxis,Shaft.GetSafeNormal())*P.Spear;
         if(E.Weapon==gunyucompany::EWeapon::Sword)
         {
             // OBJ grip is at Z=-35; attach the actual grip to the right hand.

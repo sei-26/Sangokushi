@@ -1,10 +1,12 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticalWeaponMotion.h"
 #include "TacticalInfantry.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
 bool ATacticalField::InfantryMotionSmokeTest()
 {
+    if(!gunyuweapon::SmokeTest()) return false;
     using namespace gunyumotion;
     auto Check=[](bool V,const TCHAR* Why) { if(!V) UE_LOG(LogTemp,Error,TEXT("GUNYU_INFANTRY: FAIL %s"),Why);return V; };
     TArray<FVisualUnit> Seen;Seen.SetNum(6);
@@ -90,7 +92,7 @@ bool ATacticalField::InfantryMotionSmokeTest()
     auto Transforms=[&]()
     {
         TArray<FTransform> Result;
-        for(auto* Mesh:{Limbs.Get(),Weapons.Get()}) for(int I=0;I<Mesh->GetInstanceCount();++I)
+        for(auto* Mesh:{Limbs.Get(),Weapons.Get(),CommanderSwords.Get(),CommanderGlaives.Get(),CommanderSerpents.Get()}) for(int I=0;I<Mesh->GetInstanceCount();++I)
         { FTransform T;Mesh->GetInstanceTransform(I,T);Result.Add(T); }
         return Result;
     };
