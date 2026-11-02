@@ -168,6 +168,14 @@ struct FTacticCinematicRead
 // UI receives observed information and cached predictions only.
 struct FTacticalPresentation
 {
+    struct FBattleChoice
+    {
+        FString Title,Outcome,Cost,Detail;
+        int Actor=-1;
+    };
+    TArray<FBattleChoice> BattleChoices;
+    FString BattleChoiceReason,BattleChoiceTarget;
+    int BattleChoiceVersion=0;
     FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;
     FString ClockLabel, StandingOrderLabel, SpeedLabel;
     FString ChainSignalLabel,ResupplyLabel;

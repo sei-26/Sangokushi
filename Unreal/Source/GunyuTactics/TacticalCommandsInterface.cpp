@@ -55,23 +55,22 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
        + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("主力へ糧1,800を分配・士気＋20。行動権は戻らない"); },11,Gold)]];
     auto Simple=SNew(SVerticalBox);
     Simple->AddSlot().AutoHeight()[SNew(SHorizontalBox)
-      + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([this] { return Field->Presentation().Selected; },78,94)]
+      + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([this] { return Field->Presentation().Selected; },62,74)]
       + SHorizontalBox::Slot().FillWidth(1).Padding(14,8)[SNew(SVerticalBox)
         + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& H=Field->Presentation();return H.Officers.IsValidIndex(H.Selected) ? H.Officers[H.Selected].Name:FString(); },25,Gold)]
         + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this] { return Field->IsAutoBattle() ? Field->Presentation().ClockLabel:FString(TEXT("さあ、次の一手だ！")); },15)]]];
-    Simple->AddSlot().AutoHeight().Padding(0,12,0,8)[SNew(SBox).HeightOverride(52)
+    Simple->AddSlot().AutoHeight().Padding(0,6,0,2)[BuildBattleChoicesInterface()];
+    Simple->AddSlot().AutoHeight().Padding(0,2,0,6)[SNew(SBox).HeightOverride(38)
       .ToolTipText_Lambda([this] { return FText::FromString(Field->CanIssue(ETacticalCommand::AutoBattle) ? TEXT("味方3隊の移動・戦法・目標の守備を任せる。損耗と戦果は本当の結果。いつでも指揮へ戻れる。"):TEXT("予約した戦法や合図を実行・解除してから任せよう。") ); })
       [Button([this] { return Field->IsAutoBattle() ? TEXT("自分で指揮する"):TEXT("武将たちに任せる"); },[this] { Field->Issue(ETacticalCommand::AutoBattle); },[this] { return Field->CanIssue(ETacticalCommand::AutoBattle); })]];
-    Simple->AddSlot().AutoHeight().Padding(0,0,0,15)[Label([this] { return Field->IsAutoBattle() ? TEXT("移動も戦法もお任せ。\n勝負どころは自分で采配！"):TEXT("武将を選び、右クリック。\n迷ったら任せてみよう。"); },16)];
     Simple->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SBox).HeightOverride(4).Visibility_Lambda([this] { return Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })
       [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this] { return Field->Presentation().ClockProgress; }).FillColorAndOpacity(Gold)]];
-    Simple->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SHorizontalBox)
+    Simple->AddSlot().AutoHeight().Padding(0,0,0,4)[SNew(SHorizontalBox)
       + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::RealtimePause,[this] { return Field->RealtimePaused() ? TEXT("再開する"):TEXT("一時停止"); })]
       + SHorizontalBox::Slot().FillWidth(1).Padding(8,0,0,0)[Command(ETacticalCommand::RealtimeSpeed,[this] { return TEXT("速さ ")+Field->Presentation().SpeedLabel; })]];
-    Simple->AddSlot().AutoHeight().Padding(0,6)[SNew(SBox).HeightOverride(40)[Command(ETacticalCommand::Move,[] { return TEXT("ここへ進め！"); })]];
-    Simple->AddSlot().AutoHeight().Padding(0,6)[SNew(SBox).HeightOverride(40)[Command(ETacticalCommand::Hold,[] { return TEXT("この場所を守れ！"); })]];
-    Simple->AddSlot().AutoHeight().Padding(0,14)[Button([] { return TEXT("戦法を選ぶ・連鎖を組む"); },[this] { Field->StopAutoBattle();bDetailedBattle=true; })];
-    Simple->AddSlot().AutoHeight()[Label([this] { const auto& H=Field->Presentation();return !H.BattlefieldHint.IsEmpty() ? H.BattlefieldHint:!H.EnemyPlanHint.IsEmpty() ? H.EnemyPlanHint:FString(TEXT("戦法は1人でも発動。\n仲間とつなげば威力アップ！")); },14,Gold)];
+    Simple->AddSlot().AutoHeight().Padding(0,4)[SNew(SBox).HeightOverride(36)[SNew(SHorizontalBox)
+      + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,4,0)[Command(ETacticalCommand::Move,[] { return TEXT("ここへ進め！"); })]
+      + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::Hold,[] { return TEXT("ここを守れ！"); })]]];
     auto Content=SNew(SVerticalBox);
     Content->AddSlot().AutoHeight().Padding(0,0,0,8)[Button([this] { return bDetailedBattle ? TEXT("かんたんな采配へ戻る"):TEXT("詳しい采配を開く"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })];
     Content->AddSlot().FillHeight(1)[SNew(SBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Collapsed:EVisibility::Visible; })[Simple]];

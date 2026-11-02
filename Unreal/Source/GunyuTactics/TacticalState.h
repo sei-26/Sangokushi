@@ -4,6 +4,7 @@
 #include "JourneyRealtime.hpp"
 #include "JourneyChainSignal.hpp"
 #include "JourneyBattleWatch.hpp"
+#include "JourneyBattleChoices.hpp"
 #include <memory>
 
 struct FJourneyState
@@ -19,6 +20,9 @@ struct FJourneyState
     bool bRealtimeInBattle=false,bRealtimeStepping=false,bRealtimeChainRequested=false,bRealtimePauseAfterPlayback=false;
     TArray<TPair<int,int>> RealtimeRoutes;
     std::vector<frontline::ChainOrder> Orders;
+    std::vector<int> BattleChoiceKey;
+    std::vector<frontline::JourneyBattleChoice> BattleChoices;
+    int BattleChoiceVersion=0; // Display-only generation; never saved.
     std::array<frontline::ChainTactic, 3> SelectedTactics{frontline::ChainTactic::Lure, frontline::ChainTactic::Ambush, frontline::ChainTactic::Breakthrough};
     int Selected = 0, Target = 3;
     ETacticalInput Input = ETacticalInput::Select;

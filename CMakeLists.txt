@@ -15,6 +15,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyEnemyPlan.cpp
     NewGame/JourneyEnemyDoctrine.cpp
     NewGame/JourneyAutoBattle.cpp
+    NewGame/JourneyBattleChoices.cpp
     NewGame/JourneyAutoPosition.cpp
     NewGame/JourneyRealtime.cpp
     NewGame/JourneyRealtimeRouting.cpp
@@ -121,6 +122,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_battle_watch tests/JourneyBattleWatchTests.cpp)
     add_rules_test(journey_enemy_plans tests/JourneyEnemyPlanTests.cpp)
     add_rules_test(journey_enemy_doctrine tests/JourneyEnemyDoctrineTests.cpp)
+    add_rules_test(journey_battle_choices tests/JourneyBattleChoiceTests.cpp)
     add_rules_test(journey_missions tests/JourneyMissionTests.cpp)
     add_rules_test(journey_battlefields tests/JourneyBattlefieldTests.cpp)
     add_rules_test(journey_playthrough tests/JourneyPlaythroughTests.cpp)

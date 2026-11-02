@@ -127,8 +127,9 @@ void ATacticalController::PlayerTick(float Delta)
     const bool bWeaponCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuWeaponCapture"));
     const bool bCinemaCapture = bCapture && (FParse::Param(FCommandLine::Get(), TEXT("GunyuCinema")) || bSignatureCapture || bSoloCapture || bWeaponCapture);
     const bool bSignalCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuChainSignal"));
+    const bool bDecisionCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision"));
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
-    if (!bCinemaCapture)
+    if (!bCinemaCapture && !bDecisionCapture)
     {
         if (Field->bRealtimeCommand && !bCapture && !bSmoke && !FApp::HasFocus() && !Field->RealtimePaused())
             Field->Issue(ETacticalCommand::RealtimePause);
@@ -164,6 +165,12 @@ void ATacticalController::PlayerTick(float Delta)
         // Explicit cinematic QA captures use fixed manual playback; editor map
         // speed/mode preferences must not turn CueTime into a different phase.
         if(bCinemaCapture) { Field->bRealtimeCommand=false;Field->PlaybackSpeed=1; }
+        if(bDecisionCapture)
+        {
+            Field->PlaybackSpeed=1;int ChoicePolicy=-1;
+            if(FParse::Value(FCommandLine::Get(),TEXT("ChoicePolicy="),ChoicePolicy))
+            { Field->EnemyPolicy=FMath::Clamp(ChoicePolicy,0,2);Field->Issue(ETacticalCommand::Restart); }
+        }
         if (FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilPreview")))
         { Field->bStartWithCouncil=true;Field->FirstMission=0;Field->EnemyPolicy=1;Field->Issue(ETacticalCommand::Restart); }
         if (FParse::Param(FCommandLine::Get(),TEXT("GunyuRealtime")))
@@ -182,10 +189,11 @@ void ATacticalController::PlayerTick(float Delta)
         const bool bCouncil = FParse::Param(FCommandLine::Get(), TEXT("GunyuCouncil")) || FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilPreview"));
         const bool bDebrief = FParse::Param(FCommandLine::Get(), TEXT("GunyuDebrief"));
         const bool bWithdrawal = FParse::Param(FCommandLine::Get(), TEXT("GunyuWithdrawal"));
-        const bool bBattle = bCinemaCapture || bDebrief || bWithdrawal || FParse::Param(FCommandLine::Get(), TEXT("GunyuPlan")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuMove")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuBattlePreview")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuTacticMenu"));
+        const bool bBattle = bCinemaCapture || bDebrief || bWithdrawal || FParse::Param(FCommandLine::Get(), TEXT("GunyuPlan")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuMove")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuBattlePreview")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuTacticMenu")) || FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision"));
         if (bCouncil || bBattle)
             for (int Step = 0; Step < 3; ++Step) Field->Action(EKeys::Enter);
         if (bDebrief) Field->Issue(ETacticalCommand::PromiseRoad);
+        if (bDecisionCapture && FParse::Param(FCommandLine::Get(),TEXT("ChoiceRoad"))) Field->Issue(ETacticalCommand::PromiseRoad);
         if (bSignatureCapture || FParse::Param(FCommandLine::Get(),TEXT("GunyuReserve"))) Field->Issue(ETacticalCommand::PlanSupplies);
         if (bBattle) Field->Action(EKeys::Enter);
         if(bCapture && bBattle && FParse::Param(FCommandLine::Get(),TEXT("GunyuUseReserve")))
@@ -320,6 +328,19 @@ void ATacticalController::PlayerTick(float Delta)
         if(bWeaponCapture) UE_LOG(LogTemp,Display,TEXT("GUNYU_WEAPON_CAPTURE: PASS (public strike actor=%d, progress=%.3f)"),Field->CurrentBeat() ? Field->CurrentBeat()->Actor:-1,Field->BeatProgress());
     }
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAuto"))) Field->Issue(ETacticalCommand::AutoBattle);
+    if(bCapture && Frames==3 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision")))
+    {
+        int Choice=-1;
+        if(FParse::Value(FCommandLine::Get(),TEXT("Choice="),Choice))
+        {
+            if(!Field->UseBattleChoice(Choice,Field->Presentation().BattleChoiceVersion))
+            { UE_LOG(LogTemp,Error,TEXT("GUNYU_DECISION_CAPTURE: FAIL (choice unavailable)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+            float Time=1.7f;FParse::Value(FCommandLine::Get(),TEXT("ChoiceTime="),Time);Field->AdvancePresentation(Time);
+            UE_LOG(LogTemp,Display,TEXT("GUNYU_DECISION_CAPTURE: PASS (direct public choice %d, actual playback)"),Choice);
+        }
+    }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuChoicesOnly")))
+    { const bool Passed=Field->BattleChoicesSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuResponseOnly")))
     { const bool Passed=Field->TacticCinemaSmokeTest() && Field->BattlefieldTacticsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBattlefieldOnly")))

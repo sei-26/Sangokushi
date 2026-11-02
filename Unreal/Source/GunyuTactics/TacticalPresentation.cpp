@@ -93,6 +93,7 @@ void ATacticalField::BuildPresentation()
             Contact->observed.stance == battle::Stance::Guard ? TEXT("固守") : Contact->observed.scouting ? TEXT("索敵中") : TEXT("通常"));
     BuildTacticsPresentation();
     BuildEnemyPresentation();
+    BuildBattleChoices();
     if (J.HasConvoy() && TacticChain::Living(J.world,StrategistJourney::ConvoyArmy))
     {
         HUD.ConvoyRoute.Add(J.world.armies[StrategistJourney::ConvoyArmy].tile);

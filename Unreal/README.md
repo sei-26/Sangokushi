@@ -1,5 +1,7 @@
 # 群雄戦線 / Unreal Engine版
 
+簡単な采配に「次の一手」を追加。見えている敵を選び、一隊へ託すか、複数隊で畳みかけるかを、効果・参加者・士気・損耗から比べて直接発動する。成立する案だけを最大二つ表示し、停止中でもその一手の演出へ進む。[操作・条件と制限](../BATTLE_DECISIONS.md)、[核を見直した調査](../FUN_REDESIGN_RESEARCH.md)。
+
 開発先は **Unreal Engine 5.7**。`GunyuTactics.uproject` が編集用プロジェクト。ルートの旧Siv3D版とは別に開く。戦闘ルールを共通C++ライブラリへ分け、表示、入力、演出と素材はUEで作る。
 
 Windows単体の序章試遊版は `Tools/package.ps1` で作成する。既定の `../Releases/GunyuSenzen-Development/Play.cmd` がフルスクリーンの起動入口。遊ぶ側にEditorは不要。[作成方法・今回の範囲](../PLAYABLE_BUILD.md)。

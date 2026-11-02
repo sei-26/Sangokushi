@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+簡単な采配の「次の一手」は `NewGame/JourneyBattleChoices.hpp/.cpp`。捕捉に基づく単独・連携の候補を通常の予測で比較する。UEの読取・キャッシュ・即時発動は `TacticalBattleChoices.cpp`、肖像と代償を持つボタンは `TacticalBattleChoicesInterface.cpp`。共通の確認は `tests/JourneyBattleChoiceTests.cpp`、実際の発動と停止の確認は `TacticalBattleChoicesTests.cpp`。[操作・責務と制限](BATTLE_DECISIONS.md)、[面白さの調査](FUN_REDESIGN_RESEARCH.md)。
+
 V10の兵・顔・髭・外套・軍旗の寸法は `TacticalInfantry.cpp` / `TacticalCompanyStyle.h`、部品のまとめ描画は `TacticalUnits.cpp`。8種の元モデルは `Unreal/Tools/make_battle_finish_v10.py`、質感・地面・光の取り込みは `prepare_battle_finish_v10.py`。[戦場の造形と質感](BATTLE_VISUAL_FINISH_V10.md)。
 
 戦果に応じた武将の短い台詞・連鎖の音は `TacticalBattleResponse.cpp`、反応欄は `TacticalCinematicRelay.cpp`、鳴らす入口は `TacticalEffects.cpp`。元WAVの生成と取込は `make_tactic_response_audio.py` / `prepare_tactic_response_audio.py`。[策に応える一声](BATTLE_RESPONSE_UPGRADE.md)。

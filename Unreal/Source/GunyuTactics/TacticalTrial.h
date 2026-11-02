@@ -164,6 +164,8 @@ public:
     FChainReview ReadChainReview() const;
     bool RealtimeSmokeTest();
     bool AutoBattleSmokeTest();
+    bool BattleChoicesSmokeTest();
+    bool UseBattleChoice(int Index,int ExpectedVersion);
     bool IsAutoBattle() const;
     void StopAutoBattle();
     bool ChainSignalSmokeTest();
@@ -307,6 +309,7 @@ private:
     void BuildMarchPresentation();
     void IssueMarchPlan(ETacticalCommand Command);
     void BuildPresentation();
+    void BuildBattleChoices();
     void BuildTacticsPresentation();
     void BuildTacticAvailability();
     FTacticTargetPresentation ReadTacticTarget(int Target) const;
@@ -395,6 +398,7 @@ private:
     TSharedRef<class SWidget> BattleActivityOverlay();
     void BuildRosterInterface(TSharedRef<class SCanvas>);
     void BuildCommandInterface(TSharedRef<class SCanvas>);
+    TSharedRef<class SWidget> BuildBattleChoicesInterface();
     TSharedRef<class SWidget> ChainPlannerWidget();
     TSharedRef<class SWidget> ChainPlanOverlay();
     FString UnitChainNumber(int Index) const;
