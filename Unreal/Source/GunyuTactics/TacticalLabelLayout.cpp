@@ -2,6 +2,7 @@
 #include "TacticalChrome.h"
 #include "Campaign.hpp"
 #include "TacticalTargetVisual.h"
+#include "TacticalActionFocus.h"
 
 void ATacticalController::LayoutMapLabels()
 {
@@ -9,16 +10,29 @@ void ATacticalController::LayoutMapLabels()
     if(!Field || Field->Presentation().Journey.bVisible) return;
     const auto& Units=Field->VisualUnits();const FVector2D Size(132,86);
     const bool WideShot=bTacticCinema && Field->ReadTacticCinema().bVisible;
+    const auto Action=Field->ReadActionFocus();
+    const bool Focused=WideShot && Action.bActive && Action.bHasTarget && Action.Weight>.20f;
     const FVector2D Min=gunyulayout::MapOrigin,Max=WideShot ? FVector2D(1584,718):Min+gunyulayout::MapSize;
     TArray<FSlateRect> Occupied;
+    auto Protect=[&](FVector Center,FVector Extent)
+    {
+        FVector2D Lo(1e9,1e9),Hi(-1e9,-1e9);bool Valid=true;
+        for(int X:{-1,1}) for(int Y:{-1,1}) for(int Z:{-1,1})
+        {
+            const auto P=MapLabelPosition(Center+Extent*FVector(X,Y,Z),FVector2D::ZeroVector);
+            if(P.X<-1000) { Valid=false;continue; }
+            Lo.X=FMath::Min(Lo.X,P.X);Lo.Y=FMath::Min(Lo.Y,P.Y);Hi.X=FMath::Max(Hi.X,P.X);Hi.Y=FMath::Max(Hi.Y,P.Y);
+        }
+        if(Valid) Occupied.Add(FSlateRect(Lo.X-6,Lo.Y-6,Hi.X+6,Hi.Y+6));
+    };
     if(Field->Presentation().Position.bVisible) Occupied.Add(FSlateRect(16,174,Field->Presentation().Position.Relief.bVisible ? 408:368,Field->Presentation().Position.Relief.bVisible ? 694:534));
     // Leave the displayed formations and cart themselves readable, too.
     for(const auto& U:Units)
         if(U.Id>=0 && (U.Troops>0 || Field->IsPlaying()))
         {
-            const auto P=MapLabelPosition(U.Position+FVector(0,0,35),FVector2D(100,66));
-            Occupied.Add(FSlateRect(P.X,P.Y,P.X+100,P.Y+66));
+            Protect(U.Position+FVector(0,0,45),FVector(110,110,45));
         }
+    if(Focused) for(const auto& Subject:Action.Clearings) Protect(Subject.Center,FVector(Subject.Radius));
     if(bDetailedBattle && !WideShot && !Field->Presentation().Position.bVisible) Occupied.Add(FSlateRect(16,Field->bRealtimeCommand ? 486:586,246,704));
     if(bDetailedBattle && Field->bRealtimeCommand && !Field->IsPlaying() && !bTacticPickerOpen) Occupied.Add(FSlateRect(936,174,1252,278));
     if(Field->IsPlaying())
@@ -36,13 +50,16 @@ void ATacticalController::LayoutMapLabels()
     for(int Tile:{Field->Presentation().GoalTile,Field->Presentation().SecondGoalTile})
         if(Tile>=0)
         { const auto P=MapLabelPosition(Field->SurfaceLocation(Tile)+FVector(0,0,240),FVector2D(140,34));Occupied.Add(FSlateRect(P.X,P.Y,P.X+140,P.Y+34)); }
-    TArray<int> Priority{Field->Presentation().Selected,5};
+    TArray<int> Priority;
+    if(Focused) { Priority.Add(Action.Actor);Priority.AddUnique(Action.Target); }
+    Priority.AddUnique(Field->Presentation().Selected);Priority.AddUnique(5);
     for(int Id=0;Id<6;++Id) Priority.AddUnique(Id);
     auto Intersects=[](const FSlateRect& A,const FSlateRect& B)
     { return A.Left<B.Right && B.Left<A.Right && A.Top<B.Bottom && B.Top<A.Bottom; };
     for(int Id:Priority)
     {
         if(!Units.IsValidIndex(Id) || Units[Id].Id<0 || (Units[Id].Troops<=0 && !Field->IsPlaying())) continue;
+        if(Focused && Id!=Action.Actor && Id!=Action.Target) continue;
         const auto& U=Units[Id];const auto Anchor=MapLabelPosition(U.Position+FVector(0,0,70),FVector2D::ZeroVector);
         if(Anchor.X<Min.X-60 || Anchor.X>Max.X+60 || Anchor.Y<Min.Y-60 || Anchor.Y>Max.Y+60) continue;
         const auto Base=MapLabelPosition(U.Position+FVector(0,0,240),Size);

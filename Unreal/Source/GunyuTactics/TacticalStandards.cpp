@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalCompanyStyle.h"
+#include "TacticalActionFocus.h"
 #include "ProceduralMeshComponent.h"
 #include "ProfilingDebugging/CsvProfiler.h"
 
@@ -13,16 +14,23 @@ void ATacticalField::RenderStandards()
     TArray<int32> Indices;
     TArray<FVector2D> UVs;
     TArray<FLinearColor> Colors;
+    const auto Focus=ReadActionFocus();bool bArmyCloth=false;
     auto Triangle = [&](FVector A, FVector B, FVector C, FLinearColor Tint)
     {
         const int Start = Points.Num();
         Points.Append({A,B,C}); Indices.Append({Start,Start+2,Start+1});
         const FVector Normal = FVector::CrossProduct(B-A,C-A).GetSafeNormal();
-        for (int I=0; I<3; ++I) { Normals.Add(Normal); UVs.Add(FVector2D::ZeroVector); Colors.Add(Tint); }
+        for(const auto& P:{A,B,C})
+        {
+            Normals.Add(Normal);UVs.Add(FVector2D::ZeroVector);
+            Tint.A=bReadableStandards && bArmyCloth && State->bHasActionCamera ? gunyufocus::ClothOpacity(P,State->ActionCamera,Focus):1;
+            Colors.Add(Tint);
+        }
     };
     for (const auto& Unit : State->Units)
     {
         if (Unit.Id < 0 || Unit.Troops <= 0) continue;
+        bArmyCloth=Unit.Id!=frontline::StrategistJourney::ConvoyArmy;
         if (Unit.Id == frontline::StrategistJourney::ConvoyArmy)
         {
             FVector Facing=FVector::ForwardVector;

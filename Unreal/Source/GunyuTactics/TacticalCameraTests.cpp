@@ -1,12 +1,15 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalSceneryLayout.h"
 #include "TacticalFormation.h"
+#include "TacticalActionFocus.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
 #include "StrategistJourney.hpp"
 
 bool ATacticalController::CameraPresentationSmokeTest()
 {
+    if(!Field->ActionReadabilitySmokeTest()) return false;
     const auto SavedFocus=Focus;const float SavedYaw=CameraYaw,SavedTilt=CameraElevation,SavedDistance=Distance;
     const int SavedPreset=CameraPreset,SavedVistaMission=VistaMission;
     auto Check=[](bool Value,const TCHAR* Reason) { if(!Value) UE_LOG(LogTemp,Error,TEXT("GUNYU_BATTLE_VIEW: FAIL %s"),Reason);return Value; };
@@ -52,7 +55,10 @@ bool ATacticalController::CameraPresentationSmokeTest()
     if(!Check(UnitChainNumber(2)==TEXT("② ") && UnitChainNumber(1)==TEXT("③ "),TEXT("map numbers follow reordered actors"))) return false;
     Field->Issue(ETacticalCommand::Clear);
     if(!Check(UnitChainNumber(0).IsEmpty(),TEXT("clear removes map reservation badges"))) return false;
-    const bool OriginalMode=Field->bRealtimeCommand;Field->bRealtimeCommand=false;
+    const bool OriginalMode=Field->bRealtimeCommand,OriginalCouncil=Field->bStartWithCouncil;
+    const int OriginalPolicy=Field->EnemyPolicy;const float OriginalSpeed=Field->PlaybackSpeed;
+    Field->bRealtimeCommand=false;Field->bStartWithCouncil=false;Field->EnemyPolicy=0;Field->PlaybackSpeed=1;
+    Field->Issue(ETacticalCommand::Restart);
     Field->Issue(ETacticalCommand::Sample);Field->Issue(ETacticalCommand::Execute);
     Field->AdvancePresentation(1.6f);
     if(!Check(Field->IsPlaying() && Field->ReadTacticCinema().CameraWeight>0,TEXT("camera fixture enters an actual tactic replay"))) return false;
@@ -61,6 +67,24 @@ bool ATacticalController::CameraPresentationSmokeTest()
     FVector Presented=Focus;float PresentedRange=ViewDistance,PresentedTilt=CameraElevation;
     ApplyTacticCamera(Presented,PresentedRange,PresentedTilt);
     if(!Check(!Presented.Equals(Focus) && PresentedRange<ViewDistance && Focus.Equals(OriginalFocus) && Distance==OriginalRange && CameraElevation==OriginalTilt,TEXT("tactic camera never overwrites player orbit or focus"))) return false;
+    UpdateBattleCamera(0,true);
+    if(PlayerCameraManager) PlayerCameraManager->UpdateCamera(0);
+    LayoutMapLabels();const auto Action=Field->ReadActionFocus();
+    int LabelViewWidth=0,LabelViewHeight=0;GetViewportSize(LabelViewWidth,LabelViewHeight);
+    const auto ActorPlate=UnitLabelPositions.IsValidIndex(Action.Actor) ? UnitLabelPositions[Action.Actor]:FVector2D(-2000,-2000);
+    const auto TargetPlate=UnitLabelPositions.IsValidIndex(Action.Target) ? UnitLabelPositions[Action.Target]:FVector2D(-2000,-2000);
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_VIEW_LABEL_DIAG: viewport=%dx%d active=%d weight=%.3f actor=%d target=%d plates=(%.0f,%.0f)/(%.0f,%.0f) passive=%.0f"),LabelViewWidth,LabelViewHeight,Action.bActive,Action.Weight,Action.Actor,Action.Target,ActorPlate.X,ActorPlate.Y,TargetPlate.X,TargetPlate.Y,UnitLabelPositions[2].X);
+    if(!Check(Action.bActive && Action.bHasTarget,TEXT("successful public replay supplies a live actor and victim"))) return false;
+    if(LabelViewWidth>0 && LabelViewHeight>0)
+    {
+        if(!Check(ActorPlate.X>-1000 && TargetPlate.X>-1000 && UnitLabelPositions[2].X<-1000,TEXT("cinematic plates identify the acting officer and current victim without passive clutter"))) return false;
+        for(int Id:{Action.Actor,Action.Target}) for(FVector Point:{Action.Hero,Action.Blade})
+        {
+            const auto P=MapLabelPosition(Point,FVector2D::ZeroVector),L=UnitLabelPositions[Id];
+            if(!Check(!(P.X>=L.X && P.X<=L.X+132 && P.Y>=L.Y && P.Y<=L.Y+86),TEXT("nameplates do not cover the actual commander or moving blade"))) return false;
+        }
+    }
+    else UE_LOG(LogTemp,Display,TEXT("GUNYU_VIEW_LABELS: SKIP (headless viewport; require rendered focused verification)"));
     UpdateTacticLens();
     if(!Check(BattleCamera->GetCameraComponent()->PostProcessSettings.VignetteIntensity>.22f,TEXT("tactic lens follows the current shot"))) return false;
     bTacticCinema=false;UpdateTacticLens();
@@ -69,7 +93,12 @@ bool ATacticalController::CameraPresentationSmokeTest()
     bTacticCinema=false;Presented=Focus;PresentedRange=ViewDistance;PresentedTilt=CameraElevation;
     ApplyTacticCamera(Presented,PresentedRange,PresentedTilt);
     if(!Check(Presented.Equals(Focus) && PresentedRange==ViewDistance && PresentedTilt==CameraElevation,TEXT("cinema off retains the tactical view"))) return false;
+    UpdateBattleCamera(0,true);LayoutMapLabels();
+    if(PlayerCameraManager) PlayerCameraManager->UpdateCamera(0);
+    LayoutMapLabels();
+    if(LabelViewWidth>0 && LabelViewHeight>0 && !Check(UnitLabelPositions[2].X>-1000,TEXT("cinema off immediately restores other visible nameplates"))) return false;
     bTacticCinema=OriginalCinema;Field->Issue(ETacticalCommand::Skip);Field->bRealtimeCommand=OriginalMode;
+    Field->bStartWithCouncil=OriginalCouncil;Field->EnemyPolicy=OriginalPolicy;Field->PlaybackSpeed=OriginalSpeed;
     FVisualUnit Unit;Unit.Id=0;Unit.Troops=1400;
     using namespace gunyuformation;
     Unit.bGuarded=true;if(!Check(Shape(Unit,false)==EShape::ShieldWall,TEXT("visible guard creates shield wall"))) return false;

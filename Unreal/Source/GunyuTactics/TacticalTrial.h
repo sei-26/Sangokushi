@@ -17,6 +17,7 @@ struct FJourneyState;
 struct FChainReview;
 namespace frontline { struct JourneyWatchSnapshot; }
 namespace TacticalMap { struct FSurface; }
+namespace gunyufocus { struct FRead; }
 struct FJourneyDeleter
 {
     void operator()(FJourneyState* Value) const;
@@ -185,6 +186,9 @@ public:
     FString CueReason() const;
     FUnitActivity ReadUnitActivity(int Id) const;
     FTacticCinematicRead ReadTacticCinema() const;
+    gunyufocus::FRead ReadActionFocus() const;
+    void SetActionView(FVector Camera);
+    bool ActionReadabilitySmokeTest();
     static FVector TileLocation(int Tile);
     float SurfaceHeight(FVector Point) const;
     FVector SurfaceLocation(int Tile) const;
@@ -195,6 +199,8 @@ public:
     float EffectsVolume = 0.45f;
     UPROPERTY(EditAnywhere, Category="Trial|Presentation")
     bool bReadableFoliage = true;
+    UPROPERTY(EditAnywhere, Category="Trial|Art")
+    bool bReadableStandards = true;
     UPROPERTY(EditAnywhere, Category="Trial|Scenario")
     bool bRealtimeCommand = false;
     UPROPERTY(EditAnywhere, Category="Trial|Scenario")

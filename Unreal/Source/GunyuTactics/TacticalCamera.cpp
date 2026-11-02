@@ -77,6 +77,7 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
     const float Yaw=FMath::DegreesToRadians(CameraYaw),Elevation=FMath::DegreesToRadians(Tilt);
     const FVector Offset(FMath::Cos(Yaw)*FMath::Cos(Elevation)*Radius,FMath::Sin(Yaw)*FMath::Cos(Elevation)*Radius,FMath::Sin(Elevation)*Radius);
     BattleCamera->SetActorLocation(ViewFocus+Offset);BattleCamera->SetActorRotation((-Offset).Rotation());
+    Field->SetActionView(BattleCamera->GetActorLocation());
     UpdateTacticLens();
     const auto Cue=Field->ReadTacticCinema();
     if(CinematicIntro) CinematicIntro->SetRenderOpacity(Cue.Intro);

@@ -30,6 +30,8 @@ struct FJourneyState
     FTacticalPresentation HUD;
     TArray<int> Reachable;
     TArray<FLinearColor> FoliageClearings;
+    FVector ActionCamera=FVector::ZeroVector;
+    bool bHasActionCamera=false; // Display-only: never part of a journey save.
     TArray<int32> TerrainSnapshot, LandscapeSnapshot, BackdropSnapshot;
     TArray<FVector> LandscapePeaks, LandscapeRivers, LandscapeRoad;
     TArray<TPair<FVector,FVector>> LandscapeRidges;

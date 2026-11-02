@@ -4,6 +4,8 @@
 
 剣の斬り・偃月刀の薙ぎ・蛇矛の踏み込みと、刃先から出す軌跡は `TacticalWeaponMotion.cpp`。命中の光の時刻と汎用の大円弧との切替は `TacticalEffects.cpp`。[動作と検証](WEAPON_MOTION_UPGRADE.md)。
 
+隊長・刃・現在の相手への注目は `TacticalActionFocus.cpp`。`TacticalCinematicCamera.cpp`、`TacticalStandards.cpp`、`TacticalLabelLayout.cpp` が同じ注目情報を使い、カメラ・旗・名札を整える。[一手を見せる画面](ACTION_FOCUS_UPGRADE.md)。
+
 戦場の高精細な地面は `TacticalGroundMesh.h`、移動範囲だけの更新は `TacticalGroundGrid.h`、河港の指揮所は `TacticalCommandPost.h`。実移動と損害の煙は `TacticalGroundAtmosphere.cpp`、新素材の再現は `Unreal/Tools/prepare_ground_atmosphere.py`。見せ場のカメラと戦果の配置は `TacticalCinematicCamera.cpp` / `TacticalCinematicInterface.cpp`。[最新の描画仕様](LANDSCAPE_VISUAL_REFINEMENT.md)。
 
 本編の三戦の敵の役割は `NewGame/JourneyEnemyDoctrine.cpp`、共通の探索・競合と混乱への接続は `JourneyEnemyPlan.cpp`。`JourneyAutoPosition.cpp` は自動指揮の橋頭の移動と味方同士の競合回避。UEの推定表示は `TacticalEnemyPresentation.cpp`、実際の指揮と保存を使う確認は `TacticalEnemyDoctrineTests.cpp`。[仕様](ENEMY_BATTLE_PLANS.md)。

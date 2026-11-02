@@ -3,6 +3,7 @@
 #include "WorldLayout.hpp"
 #include "TacticalWidgets.h"
 #include "TacticalTargetVisual.h"
+#include "TacticalActionFocus.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBorder.h"
@@ -46,6 +47,12 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
         auto Plate=SNew(SBorder).Padding(1).BorderImage_Lambda([this,Index]
             { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return FCoreStyle::Get().GetBrush(Read && Read->bSelected ? "WhiteBrush":"NoBrush"); })
             .BorderBackgroundColor_Lambda([this,Index] { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return Read ? gunyutargetui::Color(*Read):FLinearColor::Transparent; })
+            .ColorAndOpacity_Lambda([this,Index]
+            {
+                const auto A=Field->ReadActionFocus();
+                const bool Passive=bTacticCinema && Field->ReadTacticCinema().bVisible && A.bActive && A.bHasTarget && Index!=A.Actor && Index!=A.Target;
+                return FLinearColor(1,1,1,Passive ? 1-FMath::SmoothStep(0.f,.20f,A.Weight):1.f);
+            })
             .ToolTipText_Lambda([this,Index] { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return FText::FromString(Read ? Field->Presentation().SelectedTacticName+TEXT("\n")+Read->Detail:FString()); })
             .Cursor(EMouseCursor::Hand)
             .Visibility_Lambda([this,Index]

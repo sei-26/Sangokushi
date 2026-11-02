@@ -38,4 +38,6 @@ EditorのDevelopmentビルド、重点3検証群、UE通し56検証群が成功�
 
 大きな軍旗や名札が隊長と重なる角度は残る。次はカメラの寄りと情報の配置を整え、成立した一手を見せる画面を磨く。
 
+この課題に対し、隊長と刃への寄り、旗の局所的な透過、札の整理を [武将の一手を見届ける画面](ACTION_FOCUS_UPGRADE.md) で追加した。
+
 更新したWindows単体版でも重点3群が成功。起動入口のbootstrap EXEから実行し、1600×900で関羽の通常攻撃、1280×720で伏兵の連鎖と実戦果635を実描画して確認した。ビルドは `Intermediate/weapon-motion-package.log`、単体版の検証は `weapon-motion-packaged-native.log`。個人セーブと別のUserDirを使用した。

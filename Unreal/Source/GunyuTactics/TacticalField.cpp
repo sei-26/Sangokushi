@@ -3,6 +3,9 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Engine/World.h"
+#if WITH_EDITOR
+#include "UObject/UnrealType.h"
+#endif
 #include "StrategistJourney.hpp"
 
 #include "TacticalState.h"
@@ -10,6 +13,12 @@ void FJourneyDeleter::operator()(FJourneyState* Value) const { delete Value; }
 
 namespace
 {
+    UMaterialInterface* ResolveStandardMaterial(UMaterialInterface* Source,bool Readable)
+    {
+        if(Readable && Source && Source->GetName()==TEXT("M_ArmyStandardV2"))
+            if(auto* Surface=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_ArmyStandardReadableV8.M_ArmyStandardReadableV8"))) return Surface;
+        return Source;
+    }
     UInstancedStaticMeshComponent* Instances(AActor* Owner, FName Name, const TCHAR* Mesh, const TCHAR* Material)
     {
         auto* Part = Owner->CreateDefaultSubobject<UInstancedStaticMeshComponent>(Name);
@@ -121,6 +130,11 @@ void ATacticalField::OnConstruction(const FTransform& Transform)
 #if WITH_EDITOR
 void ATacticalField::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
+    if(State && GetWorld() && GetWorld()->IsGameWorld() && PropertyChangedEvent.GetPropertyName()==GET_MEMBER_NAME_CHECKED(ATacticalField,bReadableStandards))
+    {
+        if(auto* Surface=ResolveStandardMaterial(StandardMaterial.Get(),bReadableStandards)) Standards->SetMaterial(0,Surface);
+        RenderStandards();return;
+    }
     Super::PostEditChangeProperty(PropertyChangedEvent);
     // Native actors also need property edits to refresh their preview. Never
     // restart a live PIE/game world or mutate the class default while editing.
@@ -186,7 +200,7 @@ void ATacticalField::Refresh()
     if (CommanderGlaiveMesh) CommanderGlaives->SetStaticMesh(CommanderGlaiveMesh);
     if (CommanderSerpentMesh) CommanderSerpents->SetStaticMesh(CommanderSerpentMesh);
     if (CartWheelMesh) CartWheels->SetStaticMesh(CartWheelMesh);
-    if (StandardMaterial) Standards->SetMaterial(0,StandardMaterial);
+    if(auto* Surface=ResolveStandardMaterial(StandardMaterial.Get(),bReadableStandards)) Standards->SetMaterial(0,Surface);
     if (AllyMaterial) Soldiers->SetMaterial(0, AllyMaterial);
     if (EnemyMaterial) Enemies->SetMaterial(0, EnemyMaterial);
     if (PalisadeMesh) Palisades->SetStaticMesh(PalisadeMesh);
