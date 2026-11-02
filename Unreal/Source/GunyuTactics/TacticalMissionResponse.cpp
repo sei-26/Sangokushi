@@ -6,6 +6,7 @@ namespace gunyumission
         gunyuresponse::FRead R;
         if(!B || B->Kind!=EBattleCue::Enemy || !B->MissionBefore.bBattle || !B->MissionAfter.bBattle) return R;
         const auto& A=B->MissionBefore;const auto& Z=B->MissionAfter;
+        const auto Credit=ReadCredit(B);if(!Credit.Line.IsEmpty()) return Credit;
         auto Living=[&](int Id)
         {
             return B->Before.IsValidIndex(Id) && B->After.IsValidIndex(Id) && B->Before[Id].Id==Id && B->After[Id].Id==Id &&

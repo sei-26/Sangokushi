@@ -150,6 +150,8 @@ struct FVisualUnit
 struct FMissionProgress
 {
     int Convoy=-1,Total=0,Held=-1,Required=0;
+    int ConvoyNext=-1,DirectedMovers=0;
+    TArray<int> ConfirmedReliefs;
     bool bBattle=false,bRescue=false;
 };
 struct FBattleBeat
@@ -162,6 +164,8 @@ struct FBattleBeat
     bool bSignature = false;
     int ChainStep=0, Combo=0, ComboPercent=100;
     FMissionProgress MissionBefore,MissionAfter;
+    int RoadClearedBy=-1,ReliefIncoming=-1,ReliefOutgoing=-1;
+    bool bReliefRecovered=false;
 };
 struct FTacticCinematicRead
 {

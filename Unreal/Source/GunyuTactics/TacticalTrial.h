@@ -192,6 +192,7 @@ public:
     bool IsPlaying() const;
     gunyuresponse::FRead ReadMissionResponse() const;
     bool MissionMomentsSmokeTest();
+    bool MissionCreditSmokeTest();
     const TArray<FVisualUnit>& VisualUnits() const;
     const FBattleBeat* CurrentBeat() const;
     float BeatProgress() const;
@@ -272,6 +273,7 @@ private:
     void BeginPlayback();
     void FinishPlayback(bool bShowMissionResponse=true);
     FMissionProgress CaptureMissionProgress() const;
+    void AttachMissionCredit(FBattleBeat&);
     void PublishMissionResponse();
     void RenderUnits();
     FString ReadPlaybackReport() const;

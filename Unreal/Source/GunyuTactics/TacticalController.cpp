@@ -358,6 +358,28 @@ void ATacticalController::PlayerTick(float Delta)
             if(Response.Line.IsEmpty()) { UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_MOMENT_CAPTURE: FAIL (actual progress produced no response)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
             UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_MOMENT_CAPTURE: PASS (%s / actor %d / %s)"),*Response.Caption,Response.Actor,*Response.Line);
         }
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionCredit")))
+        {
+            const bool Relief=FParse::Param(FCommandLine::Get(),TEXT("GunyuCreditRelief"));
+            if(Relief)
+            {
+                Field->PrepareReliefPreview(0);
+                if(!Field->CommitRelief()) { UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_CREDIT_CAPTURE: FAIL (handover unavailable)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+                Field->AdvancePresentation(10);Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
+            }
+            else
+            {
+                auto Move=[this](int Id,int Tile) { Field->SelectOfficer(Id);Field->Issue(ETacticalCommand::Move);Field->CommandAt(Tile);Field->Issue(ETacticalCommand::Skip); };
+                Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
+                Move(0,frontline::Campaign::At(8,10));Move(2,frontline::Campaign::At(8,11));
+                Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
+                Move(2,frontline::Campaign::At(9,10));Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
+            }
+            const auto Response=Field->ReadMissionResponse();
+            if(Response.Actor!=(Relief ? 0:2) || !Response.Caption.Contains(Relief ? TEXT("→"):TEXT("隊が車道")))
+            { UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_CREDIT_CAPTURE: FAIL (%s / actor %d)"),*Response.Caption,Response.Actor);FPlatformMisc::RequestExitWithStatus(false,1);return; }
+            UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_CREDIT_CAPTURE: PASS (%s / %s / %s)"),*Response.Caption,*Response.Line,*Response.Reply);
+        }
         if(FParse::Value(FCommandLine::Get(),TEXT("Choice="),Choice))
         {
             if(!Field->UseBattleChoice(Choice,Field->Presentation().BattleChoiceVersion))
@@ -374,6 +396,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMomentsOnly")))
     { const bool Passed=Field->MissionMomentsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionCreditOnly")))
+    { const bool Passed=Field->MissionCreditSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuResponseOnly")))
     { const bool Passed=Field->TacticCinemaSmokeTest() && Field->BattlefieldTacticsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBattlefieldOnly")))

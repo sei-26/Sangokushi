@@ -45,11 +45,13 @@ TArray<FVisualUnit> ATacticalField::ObserveUnits() const
 
 void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const TArray<FVisualUnit>& Before,FMissionProgress MissionBefore)
 {
-    if (State->bNoPlayback) return;
     FBattleBeat Beat;
     Beat.Before = Before; Beat.After = ObserveUnits();
     if(Kind==EBattleCue::Enemy) { Beat.MissionBefore=MissionBefore;Beat.MissionAfter=CaptureMissionProgress(); }
     Beat.Actor = Actor; Beat.Target = Target; Beat.Kind = Kind;
+    if(Kind==EBattleCue::March) Beat.MissionBefore=Beat.MissionAfter=CaptureMissionProgress();
+    if(Kind==EBattleCue::March || Kind==EBattleCue::Enemy) AttachMissionCredit(Beat);
+    if(State->bNoPlayback) return;
     const TCHAR* Names[] = {TEXT("進軍"), TEXT("通常攻撃"), TEXT("誘導"), TEXT("伏兵"), TEXT("突破"), TEXT("固守"), TEXT("伏兵準備"), TEXT("敵の指揮 / 交戦と補給"), TEXT("連鎖停止"), TEXT("全軍撤収 / 生存兵と残りの糧を回収"), TEXT("牽制"), TEXT("攪乱"), TEXT("全軍へ補給"), TEXT("青龍"), TEXT("咆哮")};
     Beat.Title = (Before.IsValidIndex(Actor) ? Before[Actor].Name + TEXT("  ―  ") : FString()) + Names[static_cast<int>(Kind)];
     if(Kind==EBattleCue::Rally) Beat.Title=TEXT("主人公の采配  ―  全軍へ補給 / 士気＋20");
@@ -104,6 +106,7 @@ void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
             Unit.bPressured = Change.pressured; Unit.bInspired = Change.inspired;
         }
         Beat.After = Display;
+        Beat.MissionBefore=Beat.MissionAfter=CaptureMissionProgress();AttachMissionCredit(Beat);
         State->Beats.Add(MoveTemp(Beat));
     }
     BeginPlayback();

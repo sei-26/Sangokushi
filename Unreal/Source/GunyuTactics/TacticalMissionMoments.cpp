@@ -7,8 +7,12 @@ FMissionProgress ATacticalField::CaptureMissionProgress() const
 {
     const auto& J=State->Journey;FMissionProgress P;
     P.bBattle=J.stage==frontline::JourneyStage::Battle;P.bRescue=J.IsRescue();
-    if(J.HasConvoy()) { P.Convoy=J.convoyStep;P.Total=int(J.ConvoyPath().size())-1; }
+    if(J.HasConvoy()) { P.Convoy=J.convoyStep;P.Total=int(J.ConvoyPath().size())-1;P.ConvoyNext=J.ConvoyPath()[FMath::Min(P.Convoy+1,P.Total)]; }
     if(J.Definition().kind==frontline::JourneyObjective::HoldPositions) { P.Held=J.heldTurns;P.Required=J.RequiredHoldTurns(); }
+    if(bRealtimeCommand) for(int A=0;A<3;++A)
+        if(State->Realtime.orders[A].kind==frontline::JourneyDirective::March || State->Realtime.orders[A].kind==frontline::JourneyDirective::Attack) P.DirectedMovers|=1<<A;
+    for(int I=0;I<int(J.battleReview.relief.size());++I)
+        if(J.battleReview.relief[I].outcome==frontline::JourneyReliefOutcome::Held || J.battleReview.relief[I].outcome==frontline::JourneyReliefOutcome::Recovered) P.ConfirmedReliefs.Add(I);
     return P;
 }
 void ATacticalField::PublishMissionResponse()

@@ -157,6 +157,7 @@ void ATacticalField::PostEditChangeProperty(FPropertyChangedEvent& PropertyChang
 void ATacticalField::StartTrial()
 {
     State->MissionResponse={};State->MissionResponseRemaining=0;
+    State->RoadClearArmy=State->RoadClearStep=State->RoadClearTile=-1;
     State->Realtime.Reset();State->bRealtimeInBattle=false;State->bRealtimeStepping=false;
     State->ChainSignal.Cancel();State->SignalRead={};
     State->BattleWatch.Reset();State->OrderReads={};State->bWatchPending=State->bWatchPauseAfterPlayback=false;
@@ -191,6 +192,7 @@ FVector ATacticalField::TileLocation(int Tile)
 void ATacticalField::Refresh()
 {
     auto& J = State->Journey;
+    if (J.stage != frontline::JourneyStage::Battle) State->RoadClearArmy=State->RoadClearStep=State->RoadClearTile=-1;
     RetargetObservedEnemy();
     SyncRealtime();
     SyncChainSignal();
