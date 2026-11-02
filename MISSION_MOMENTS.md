@@ -40,4 +40,8 @@ EditorビルドとGPU重点２群が成功。最初と道半ば、途中の静�
 
 最終のネイティブ通し62群が成功（0 FAIL）。既存の戦法・進行・会話・保存、カメラ・名札、護送・守備の目的との接続も確認した。
 
+Windows単体版も更新し、起動入口のEXEからGPU重点２群が成功（0 FAIL）。720pで実際の３倍速の護送1/6と、守備隊の移動で烽火の維持が０へ戻った反応を実描画し、本文・返答・肖像と操作欄の収まりを目視確認した。配布物は640.5MB（610.8MiB）。QAは専用UserDirへ分離し、配布物にセーブ・ログ・ダンプを含めていない。
+
+重点確認は `-GunyuSmoke -GunyuMissionMomentsOnly`。描画は `-GunyuCapture -GunyuSimple -GunyuDecision -GunyuMissionMoment` に、護送は `-GunyuMissionAfterChain -ChoicePolicy=0`、烽火は `-MapMission=2 -ChoicePolicy=1 -GunyuMomentGuard`、中断はさらに `-GunyuMomentLost` を付ける。すべて通常の指示から進め、描画用に戦果を書き換えない。
+
 次の候補は、道塞ぎを解いた隊や守備の交代で維持した隊など、実際に役目を果たした人物をさらに具体的にねぎらうこと。今回の表示が多すぎないか、試遊でも確認する。
