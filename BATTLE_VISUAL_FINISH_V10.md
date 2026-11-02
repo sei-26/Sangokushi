@@ -23,7 +23,9 @@
 
 Editorビルド、8種の元モデルの有限座標・法線と寸法の検査、UEへの取り込みが成功。最初の実描画から照明と構図を調整した。1600×900の最終GPU重点4群が成功（`Intermediate/battle-finish-v10-focused-final.log`）。頭・髭・外套の実個数、未確認の武将の部品消去、停止と保存バイト不変、武器の接続、旗の透過、カメラと札、隊列の範囲を確認した。楔形の隊列の端が範囲を越えた失敗は、幅を収めて再検証した。
 
-退路・河港・両翼を1600×900で実描画して目視確認。最終の戦法画面は `Intermediate/battle-finish-v10-refined-impact.png`、近接写真は `battle-finish-v10-close-hero.png`。通し検証とWindows単体版は確認中。
+退路・河港・両翼を1600×900で実描画して目視確認。最終の戦法画面は `Intermediate/battle-finish-v10-refined-impact.png`、近接写真は `battle-finish-v10-close-hero.png`。ネイティブ通し58検証群も成功（`Intermediate/battle-finish-v10-full.log`、58 PASS / 0 FAIL）。
+
+Windows単体版のビルドと、起動入口のEXEから1600×900のGPU重点4群も成功（`Intermediate/battle-finish-v10-packaged-test.log`、4 PASS / 0 FAIL）。表示する兵の頭・三隊長の装備・髭・外套、観測と表示の接続、軍旗の透過、カメラと名札、演出OFFの復帰を実行ファイル上で検証した。単体版の伏兵・河港・通常指揮画面への復帰を実描画して目視確認し、モデル・地面・葉・日本語が揃うことを確認。画像は `Intermediate/battle-finish-v10-packaged-{impact,port,return}.png`。配布物は約640MB（610.8MiB）。個人セーブとは別のUserDirを使い、画像・ログ・配布物は生成物としてGitへ含めない。
 
 身体は分割モデルとコードによる動作で、表情のアニメーションや収録した全身モーションは含まない。兵の表示は最大48人の代表兵。描画品質の今回の節目を完成版美術や多機種の性能保証とは扱わない。戦闘の損害・行動権・資源・勝敗・物語・セーブ形式10を変えない。
 
