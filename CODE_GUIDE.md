@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+合戦の「今の狙い」は `TacticalMissionRead.cpp`。捕捉・味方・公開経路から案内を作り、上部の `TacticalBattleHeader.cpp` と簡単な采配へ渡す。「目標へ / U」のカメラは `TacticalMissionFocus.cpp`、実際の進行と表示・保存の検証は `TacticalMissionFocusTests.cpp`。[任務ごとの案内と保護](MISSION_GUIDANCE.md)。
+
 軍議の本文・行間・枠・文字送りボタンは `TacticalCouncilSceneInterface.cpp`、前の台詞へ戻る入力は `TacticalEpisode.cpp`。3倍速は `JourneyRealtime.cpp` / `JourneySaveValidation.cpp` と `TacticalRealtime.cpp` / `TacticalPlayback.cpp`。演出中の速度ボタンは `TacticalCinematicInterface.cpp`。[操作と確認](COUNCIL_READING_AND_TEMPO.md)。
 
 簡単な采配の「次の一手」は `NewGame/JourneyBattleChoices.hpp/.cpp`。捕捉に基づく単独・連携の候補を通常の予測で比較する。UEの読取・キャッシュ・即時発動は `TacticalBattleChoices.cpp`、肖像と代償を持つボタンは `TacticalBattleChoicesInterface.cpp`。共通の確認は `tests/JourneyBattleChoiceTests.cpp`、実際の発動と停止の確認は `TacticalBattleChoicesTests.cpp`。[操作・責務と制限](BATTLE_DECISIONS.md)、[面白さの調査](FUN_REDESIGN_RESEARCH.md)。

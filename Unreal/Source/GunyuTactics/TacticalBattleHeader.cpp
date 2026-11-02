@@ -11,12 +11,18 @@ void ATacticalController::BuildBattleHeader(TSharedRef<SCanvas> Canvas)
         + SVerticalBox::Slot().AutoHeight()[Label([this] { return TEXT("群雄戦線    ―    軍師の一策 ／ ")+Field->Presentation().Difficulty; },11,Gold)]
         + SVerticalBox::Slot().AutoHeight().Padding(0,3)[SNew(SBox).WidthOverride(1090)
           [Label([this] { return Field->Presentation().Title.Replace(TEXT("群雄戦線  /  "),TEXT("")); },23)]]
-        + SVerticalBox::Slot().AutoHeight()[SNew(SBox).WidthOverride(1090)[Label([this] { return Field->Presentation().Objective; },15,Gold)]];
+        + SVerticalBox::Slot().AutoHeight()[SNew(SBox).WidthOverride(1230)
+          .ToolTipText_Lambda([this] { const auto& H=Field->Presentation();return FText::FromString(H.MissionDetail.IsEmpty() ? H.Objective:H.MissionDetail); })
+          [Label([this] { const auto& H=Field->Presentation();return H.MissionStep.IsEmpty() ? H.Objective:H.MissionStep; },15,Gold)]];
     auto Header=SNew(STacticalChrome).Padding(FMargin(16,9))[Text];
     InputPanels.Add(Header);Canvas->AddSlot().Position(FVector2D(16,12)).Size(FVector2D(1568,94))[Header];
     auto Retreat=Button([this] { return Field->Presentation().WithdrawLabel; },[this] { Field->Issue(ETacticalCommand::Withdraw); },[this] { return Field->CanIssue(ETacticalCommand::Withdraw); },true);
     auto RetreatBox=SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().bBattle ? EVisibility::Visible : EVisibility::Collapsed; })[Retreat];
     InputPanels.Add(RetreatBox);Canvas->AddSlot().Position(FVector2D(1290,32)).Size(FVector2D(282,40))[RetreatBox];
+    auto Goal=SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().bBattle ? EVisibility::Visible:EVisibility::Collapsed; })
+      .ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().MissionDetail); })
+      [Button([] { return TEXT("目標へ / U"); },[this] { FocusMissionObjective(); },[this] { return !Field->IsPlaying() && Field->Presentation().MissionFocusTile>=0; },true)];
+    InputPanels.Add(Goal);Canvas->AddSlot().Position(FVector2D(1290,76)).Size(FVector2D(282,26))[Goal];
     AddBattlePanel(Canvas,FVector2D(1268,820),FVector2D(316,64),Button([this] { return Field->Presentation().NextLabel; },[this]
     {
         const auto& H=Field->Presentation();

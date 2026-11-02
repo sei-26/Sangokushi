@@ -309,6 +309,7 @@ private:
     void BuildMarchPresentation();
     void IssueMarchPlan(ETacticalCommand Command);
     void BuildPresentation();
+    void BuildMissionPresentation();
     void BuildBattleChoices();
     void BuildTacticsPresentation();
     void BuildTacticAvailability();
@@ -385,6 +386,8 @@ private:
     void UpdateBattleCamera(float Delta,bool bBlocked);
     void CycleCameraView();
     void FocusSelectedOfficer();
+    void FocusMissionObjective();
+    bool MissionFocusSmokeTest();
     void ResetBattleCamera();
     bool CameraPresentationSmokeTest();
     FVector CameraOffset(float Radius) const;

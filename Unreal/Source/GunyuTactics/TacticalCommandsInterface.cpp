@@ -58,11 +58,11 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
       + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([this] { return Field->Presentation().Selected; },62,74)]
       + SHorizontalBox::Slot().FillWidth(1).Padding(14,8)[SNew(SVerticalBox)
         + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& H=Field->Presentation();return H.Officers.IsValidIndex(H.Selected) ? H.Officers[H.Selected].Name:FString(); },25,Gold)]
-        + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this] { return Field->IsAutoBattle() ? Field->Presentation().ClockLabel:FString(TEXT("さあ、次の一手だ！")); },15)]]];
+        + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this] { return Field->IsAutoBattle() ? Field->Presentation().ClockLabel:Field->Presentation().MissionAdvice; },15)]]];
     Simple->AddSlot().AutoHeight().Padding(0,6,0,2)[BuildBattleChoicesInterface()];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,6)[SNew(SBox).HeightOverride(38)
       .ToolTipText_Lambda([this] { return FText::FromString(Field->CanIssue(ETacticalCommand::AutoBattle) ? TEXT("味方3隊の移動・戦法・目標の守備を任せる。損耗と戦果は本当の結果。いつでも指揮へ戻れる。"):TEXT("予約した戦法や合図を実行・解除してから任せよう。") ); })
-      [Button([this] { return Field->IsAutoBattle() ? TEXT("自分で指揮する"):TEXT("武将たちに任せる"); },[this] { Field->Issue(ETacticalCommand::AutoBattle); },[this] { return Field->CanIssue(ETacticalCommand::AutoBattle); })]];
+      [Button([this] { return Field->IsAutoBattle() ? TEXT("自分で指揮する"):Field->Presentation().bConvoyMission ? TEXT("護送を任せる"):TEXT("武将たちに任せる"); },[this] { Field->Issue(ETacticalCommand::AutoBattle); },[this] { return Field->CanIssue(ETacticalCommand::AutoBattle); })]];
     Simple->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SBox).HeightOverride(4).Visibility_Lambda([this] { return Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })
       [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this] { return Field->Presentation().ClockProgress; }).FillColorAndOpacity(Gold)]];
     Simple->AddSlot().AutoHeight().Padding(0,0,0,4)[SNew(SHorizontalBox)

@@ -328,11 +328,18 @@ void ATacticalController::PlayerTick(float Delta)
         if(bWeaponCapture) UE_LOG(LogTemp,Display,TEXT("GUNYU_WEAPON_CAPTURE: PASS (public strike actor=%d, progress=%.3f)"),Field->CurrentBeat() ? Field->CurrentBeat()->Actor:-1,Field->BeatProgress());
     }
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAuto"))) Field->Issue(ETacticalCommand::AutoBattle);
+    if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGoalFocus"))) FocusMissionObjective();
     if(bCapture && Frames==3 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision")))
     {
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuTripleSpeed")))
         { Field->Issue(ETacticalCommand::RealtimeSpeed);Field->Issue(ETacticalCommand::RealtimeSpeed); }
         int Choice=-1;
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionAfterChain")))
+        {
+            Field->Issue(ETacticalCommand::Sample);Field->Issue(ETacticalCommand::Execute);Field->Issue(ETacticalCommand::Skip);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionAdvance")))
+            { Field->Issue(ETacticalCommand::EndTurn);Field->Issue(ETacticalCommand::Skip); }
+        }
         if(FParse::Value(FCommandLine::Get(),TEXT("Choice="),Choice))
         {
             if(!Field->UseBattleChoice(Choice,Field->Presentation().BattleChoiceVersion))
@@ -345,6 +352,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=Field->BattleChoicesSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTempoOnly")))
     { const bool Passed=Field->RealtimeSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
+    { const bool Passed=MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuResponseOnly")))
     { const bool Passed=Field->TacticCinemaSmokeTest() && Field->BattlefieldTacticsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBattlefieldOnly")))
@@ -454,6 +463,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=ReliefAdviceSmokeTest();
         if(bPassed) bPassed=Field->ReliefReadinessSmokeTest();
         if(bPassed) bPassed=Field->ReliefApproachSmokeTest();
+        if(bPassed) bPassed=MissionFocusSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR

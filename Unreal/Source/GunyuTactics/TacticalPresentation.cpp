@@ -29,7 +29,8 @@ void ATacticalField::BuildPresentation()
     if(J.stage==JourneyStage::Battle && J.CurrentPledge()!=JourneyPledge::None)
     {
         const FString Main=J.HasConvoy() ? FString::Printf(TEXT("護送 %d/%d区間 / 護衛%d"),J.convoyStep,int(J.ConvoyPath().size())-1,J.world.armies[StrategistJourney::ConvoyArmy].troops)
-            : FString::Printf(TEXT("烽火の維持 %d/%d指揮"),J.heldTurns,J.Definition().requiredProgress);
+            : J.Definition().kind==JourneyObjective::HoldPositions ? FString::Printf(TEXT("烽火の維持 %d/%d指揮"),J.heldTurns,J.RequiredHoldTurns())
+            : JourneyText(J.ObjectiveProgress());
         HUD.Objective=Main+TEXT(" / ")+JourneyText(J.PledgeProgress());
     }
     HUD.Report = State->Report;
@@ -93,6 +94,7 @@ void ATacticalField::BuildPresentation()
             Contact->observed.stance == battle::Stance::Guard ? TEXT("固守") : Contact->observed.scouting ? TEXT("索敵中") : TEXT("通常"));
     BuildTacticsPresentation();
     BuildEnemyPresentation();
+    BuildMissionPresentation();
     BuildBattleChoices();
     if (J.HasConvoy() && TacticChain::Living(J.world,StrategistJourney::ConvoyArmy))
     {

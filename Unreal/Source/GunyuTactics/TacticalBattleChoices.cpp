@@ -10,7 +10,7 @@ void ATacticalField::BuildBattleChoices()
     { H.BattleChoiceReason=TEXT("予約した策がある。詳しい采配で実行・見直しができる。");return; }
     const auto* Seen=J.intelligence[0].Find(State->Target);
     if(!Seen || !Seen->current || Seen->observed.troops<=0)
-    { H.BattleChoiceReason=TEXT("見えている敵の札を選ぼう。その相手に打てる策を比べられる。");return; }
+    { H.BattleChoiceReason=H.MissionAdvice+TEXT("\n「目標へ」で場所を確認。");return; }
     H.BattleChoiceTarget=JourneyText(J.world.generals[Seen->observed.general].name);
     const auto Key=BattleChoiceContext(J,State->Target);
     if(Key!=State->BattleChoiceKey)

@@ -176,6 +176,9 @@ struct FTacticalPresentation
     TArray<FBattleChoice> BattleChoices;
     FString BattleChoiceReason,BattleChoiceTarget;
     int BattleChoiceVersion=0;
+    FString MissionStep,MissionAdvice,MissionDetail;
+    int MissionFocusTile=-1;
+    bool bConvoyMission=false;
     FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;
     FString ClockLabel, StandingOrderLabel, SpeedLabel;
     FString ChainSignalLabel,ResupplyLabel;
