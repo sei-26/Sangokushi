@@ -23,4 +23,8 @@ EditorのDevelopmentビルド、ネイティブ通し57検証群、1600×900のG
 
 元の素材は保持され、Readable Standardsを無効にすると指定した素材を使う。ゲーム中のEditorから切り替えても、戦いを初期化せず表示だけを更新する。
 
-Windows単体版への収録と実行を確認中。身体は既存の分割モデルのまま。軍旗の支柱は不透明で、他の建築物の透過や全ての画面比率の検証は含まない。
+Windows単体版のビルドと新素材の収録も成功。起動入口のEXEから1280×720のGPU重点4群が成功し、伏兵の実戦果635と、演出後に名札・指揮パネルが戻る画面を実描画して目視確認した。個人セーブとは別のUserDirを使った。
+
+検証ログは `Intermediate/action-focus-full.log`（57 PASS / 0 FAIL）、`Intermediate/action-focus-rendered-test.log`（4 PASS / 0 FAIL）、`Intermediate/action-focus-packaged-test.log`（4 PASS / 0 FAIL）。単体版の画像は `Intermediate/action-focus-packaged-impact.png` と `Intermediate/action-focus-packaged-return.png`。ログ・画像・配布物は生成物としてGitへ含めない。
+
+身体は既存の分割モデルのまま。軍旗の支柱は不透明で、他の建築物の透過や全ての画面比率の検証は含まない。
