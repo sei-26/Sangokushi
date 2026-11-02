@@ -1,5 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticalGroundGrid.h"
+#include "Components/InstancedStaticMeshComponent.h"
 
 bool ATacticalField::MapDetailSmokeTest()
 {
@@ -14,6 +16,18 @@ bool ATacticalField::MapDetailSmokeTest()
     Issue(ETacticalCommand::PromiseRescue);Issue(ETacticalCommand::RouteSouthernWood);Issue(ETacticalCommand::Deploy);
     const auto& J=State->Journey;
     if(!Check(J.stage==JourneyStage::Battle && J.convoyRoute==JourneyConvoyRoute::SouthernWood,TEXT("public controls deploy the woodland route"))) return false;
+    const auto Stable=State->TerrainSnapshot;
+    auto Range=Stable;Range[5]^=512;
+    if(!Check(TacticalMap::OnlyGroundRangeChanged(Stable,Range),TEXT("range colors can reuse static terrain"))) return false;
+    auto Fog=Range;Fog[5]^=256;
+    auto City=Range;City.Last()^=512;
+    if(!Check(!TacticalMap::OnlyGroundRangeChanged(Stable,Fog) && !TacticalMap::OnlyGroundRangeChanged(Stable,City),TEXT("fog and city metadata still invalidate the static scene"))) return false;
+    // A diagnostic off-board instance proves highlight updates do not clear
+    // and recreate the scenery; remove it before the normal geometry checks.
+    const int Marker=Trees->AddInstance(FTransform(FVector(0,0,-10000)));
+    Issue(ETacticalCommand::Move);
+    if(!Check(!State->Reachable.IsEmpty() && Trees->GetInstanceCount()==Marker+1,TEXT("actual move highlights retain existing scenery instances"))) return false;
+    Trees->RemoveInstance(Marker);SelectOfficer(0);
     for(int Tile:J.ConvoyPath())
     {
         const FVector P=TileLocation(Tile);

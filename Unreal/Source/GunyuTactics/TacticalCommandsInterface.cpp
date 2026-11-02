@@ -76,5 +76,7 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
     Content->AddSlot().AutoHeight().Padding(0,0,0,8)[Button([this] { return bDetailedBattle ? TEXT("かんたんな采配へ戻る"):TEXT("詳しい采配を開く"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })];
     Content->AddSlot().FillHeight(1)[SNew(SBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Collapsed:EVisibility::Visible; })[Simple]];
     Content->AddSlot().FillHeight(1)[SNew(SBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Visible:EVisibility::Collapsed; })[Orders]];
-    AddBattlePanel(Canvas,gunyulayout::CommandOrigin,gunyulayout::CommandSize,Content);
+    auto Panel=SNew(STacticalChrome).Padding(12)
+        .Visibility_Lambda([this] { return Field->Presentation().Journey.bVisible || (bTacticCinema && Field->ReadTacticCinema().bVisible) ? EVisibility::Collapsed:EVisibility::Visible; })[Content];
+    InputPanels.Add(Panel);Canvas->AddSlot().Position(gunyulayout::CommandOrigin).Size(gunyulayout::CommandSize)[Panel];
 }

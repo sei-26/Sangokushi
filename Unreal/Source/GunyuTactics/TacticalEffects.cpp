@@ -3,6 +3,7 @@
 #include "TacticalState.h"
 #include "TacticalTargetVisual.h"
 #include "TacticalPositionEffects.h"
+#include "TacticalGroundAtmosphere.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "Components/AudioComponent.h"
@@ -117,17 +118,6 @@ void ATacticalField::RenderEffects()
             Ring(Unit.Position + FVector(0, 0, 5), 91, 1.5f, FLinearColor(1.f, .8f, .4f, .55f),true);
         if (Unit.bDisordered || Unit.bPressured || Unit.bInspired)
             Ring(Unit.Position + FVector(0, 0, 9), 85, 2.5f, Unit.bInspired ? FLinearColor(1,.82f,.25f,.8f) : Unit.bDisordered ? FLinearColor(.8f,.35f,1,.8f) : FLinearColor(1,.5f,.15f,.8f),true);
-        if (Unit.Motion > 0)
-            for (int I = 0; I < 7; ++I)
-            {
-                const float Age = FMath::Frac(Progress * 3 + I / 7.f);
-                FVector Direction(1, 0, 0);
-                if (Beat && Beat->Before.IsValidIndex(Unit.Id) && Beat->After.IsValidIndex(Unit.Id))
-                    Direction = (Beat->After[Unit.Id].Position - Beat->Before[Unit.Id].Position).GetSafeNormal();
-                const FVector Across(-Direction.Y, Direction.X, 0);
-                const FVector Offset = -Direction * (40 + Age * 60) + Across * ((I - 3) * 19) + FVector(0, 0, 10 + Age * 20);
-                DustParts.Add(FTransform(FRotator::ZeroRotator, Unit.Position + Offset, FVector(.16 + Age * .28, .16 + Age * .28, .08 + Age * .15)));
-            }
     }
     if (Beat)
     {
@@ -173,12 +163,6 @@ void ATacticalField::RenderEffects()
                         const FVector Side = FVector::CrossProduct((Q - P).GetSafeNormal(), FVector(0, -1, .5f)).GetSafeNormal() * (4 + 8 * (1 - Pulse));
                         Quad(P - Side, P + Side, Q + Side, Q - Side, Color);
                     }
-                    for (int I = 0; I < 14; ++I)
-                    {
-                        const float Angle = I * 2.4f;
-                        const FVector P = Center + FVector(FMath::Cos(Angle) * Pulse * 130, FMath::Sin(Angle) * Pulse * 130, FMath::Sin(Pulse * PI) * (18 + I * 3));
-                        DustParts.Add(FTransform(FRotator::ZeroRotator, P, FVector(.20 + Pulse * .45, .20 + Pulse * .45, .1 + Pulse * .25)));
-                    }
                 }
             }
             if (Beat->Before.IsValidIndex(Beat->Actor) && Beat->Before.IsValidIndex(Beat->Target) && Beat->Kind != EBattleCue::Stop)
@@ -196,6 +180,11 @@ void ATacticalField::RenderEffects()
     if (Section && Section->ProcVertexBuffer.Num()==Vertices.Num() && Section->ProcIndexBuffer.Num()==Triangles.Num())
         Effects->UpdateMeshSection_LinearColor(0,Vertices,Normals,UVs,Colors,{},false);
     else Effects->CreateMeshSection_LinearColor(0,Vertices,Triangles,Normals,UVs,Colors,{},false);
+    for(const auto& Cloud:gunyuatmosphere::GroundDust(State->Units,Beat,Progress))
+    {
+        auto P=Cloud.Position;P.Z=SurfaceHeight(P)+Cloud.Lift;
+        DustParts.Add(FTransform(FRotator::ZeroRotator,P,Cloud.Scale));
+    }
     Commit(Dust, DustParts);
 }
 

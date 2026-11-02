@@ -31,5 +31,7 @@ void ATacticalController::BuildRosterInterface(TSharedRef<SCanvas> Canvas)
                      .FillColorAndOpacity(FLinearColor(.23f,.62f,.57f))]]]]];
         Roster->AddSlot().FillWidth(1).Padding(0,0,Index<2 ? 10:0,0)[Card];
     }
-    AddBattlePanel(Canvas,FVector2D(16,776),FVector2D(1240,108),Roster,4);
+    auto Panel=SNew(STacticalChrome).Padding(4)
+        .Visibility_Lambda([this] { return Field->Presentation().Journey.bVisible || (bTacticCinema && Field->ReadTacticCinema().bVisible) ? EVisibility::Collapsed:EVisibility::Visible; })[Roster];
+    InputPanels.Add(Panel);Canvas->AddSlot().Position(FVector2D(16,776)).Size(FVector2D(1240,108))[Panel];
 }

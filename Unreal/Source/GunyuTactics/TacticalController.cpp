@@ -160,6 +160,9 @@ void ATacticalController::PlayerTick(float Delta)
     }
     if (Frames == 3 && (bCapture || FParse::Param(FCommandLine::Get(), TEXT("GunyuBattlePreview")) || FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilPreview"))))
     {
+        // Explicit cinematic QA captures use fixed manual playback; editor map
+        // speed/mode preferences must not turn CueTime into a different phase.
+        if(bCinemaCapture) { Field->bRealtimeCommand=false;Field->PlaybackSpeed=1; }
         if (FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilPreview")))
         { Field->bStartWithCouncil=true;Field->FirstMission=0;Field->EnemyPolicy=1;Field->Issue(ETacticalCommand::Restart); }
         if (FParse::Param(FCommandLine::Get(),TEXT("GunyuRealtime")))
@@ -305,6 +308,10 @@ void ATacticalController::PlayerTick(float Delta)
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAuto"))) Field->Issue(ETacticalCommand::AutoBattle);
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBattlefieldOnly")))
     { const bool Passed=Field->BattlefieldTacticsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuFieldArtOnly")))
+    { const bool Passed=Field->VisualGeometrySmokeTest() && Field->MapDetailSmokeTest() && Field->BackdropSmokeTest() && Field->ActivityReadSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuFieldCinemaOnly")))
+    { const bool Passed=CameraPresentationSmokeTest() && Field->ActivityReadSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuEnemyDoctrineOnly")))
     { const bool Passed=Field->EnemyDoctrineSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilSceneOnly")))

@@ -81,6 +81,7 @@ ATacticalField::ATacticalField()
     Weapons = Instances(this, TEXT("Weapons"), TEXT("/Engine/BasicShapes/Cube.Cube"), TEXT("/Game/Art/Materials/M_Bark.M_Bark"));
     Faces = Instances(this, TEXT("Faces"), TEXT("/Engine/BasicShapes/Sphere.Sphere"), TEXT("/Game/Art/Materials/M_Skin.M_Skin"));
     Dust = Instances(this, TEXT("Dust"), TEXT("/Engine/BasicShapes/Sphere.Sphere"), TEXT("/Game/Art/Materials/M_Dust.M_Dust"));
+    if(auto* SoftDust=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_GroundDustV6.M_GroundDustV6"))) Dust->SetMaterial(0,SoftDust);
     Limbs = Instances(this, TEXT("InfantryLimbs"), TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), TEXT("/Game/Art/Materials/M_InfantryLeatherV2.M_InfantryLeatherV2"));
     Spearheads = Instances(this, TEXT("InfantrySpearheads"), TEXT("/Game/Art/Battle/SM_SpearheadV2.SM_SpearheadV2"), TEXT("/Game/Art/Materials/M_BattleMetal.M_BattleMetal"));
     Limbs->SetupAttachment(Ground); Spearheads->SetupAttachment(Ground);

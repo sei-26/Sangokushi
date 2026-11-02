@@ -1,7 +1,9 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalActivity.h"
+#include "TacticalGroundAtmosphere.h"
 #include "JourneyArchive.hpp"
+#include "Components/InstancedStaticMeshComponent.h"
 
 bool ATacticalField::ActivityReadSmokeTest()
 {
@@ -16,17 +18,30 @@ bool ATacticalField::ActivityReadSmokeTest()
     if(!Check(!gunyuactivity::Read(1,U,&B,.25f).bActive && gunyuactivity::Read(1,U,&B,.25f).Caption==TEXT("潜伏中"),TEXT("uninvolved officers retain their own state"))) return false;
     if(!Check(!gunyuactivity::Read(3,U,&B,.47f).bImpact && !gunyuactivity::Read(3,U,&B,.47f).Caption.Contains(TEXT("被弾")),TEXT("windup does not reveal later casualties"))) return false;
     U[3].Troops=1200;U[3].Loss=600;U[3].bDisordered=true;
+    if(!Check(gunyuatmosphere::GroundDust(U,&B,.47f).IsEmpty() && !gunyuatmosphere::GroundDust(U,&B,.60f).IsEmpty(),TEXT("soft impact dust waits for published real troop loss"))) return false;
+    for(const auto& Cloud:gunyuatmosphere::GroundDust(U,&B,.60f))
+        if(!Check(!Cloud.Position.ContainsNaN() && !Cloud.Scale.ContainsNaN() && Cloud.Lift>=0 && Cloud.Scale.GetMax()<1.5f,TEXT("dust remains finite, local and bounded"))) return false;
+    B.Kind=EBattleCue::Rally;
+    if(!Check(gunyuatmosphere::GroundDust(U,&B,.60f).IsEmpty(),TEXT("support cannot borrow later casualties for an impact"))) return false;
+    B.Kind=EBattleCue::Strike;
     if(!Check(gunyuactivity::Read(3,U,&B,.55f).bImpact && gunyuactivity::Read(3,U,&B,.55f).Caption==TEXT("被弾・混乱"),TEXT("published casualty/state produces the victim role"))) return false;
     auto Marks=gunyuactivity::Markers(U,&B,.55f);
     if(!Check(Marks.Num()>2 && Marks.Num()<16,TEXT("actual action has a small bounded set of directional marks"))) return false;
     for(const auto& Mark:Marks) for(auto P:Mark.Points)
         if(!Check(!P.ContainsNaN() && P.Size()<1000,TEXT("markers stay finite and near displayed participants"))) return false;
     B.Kind=EBattleCue::Stop;
+    if(!Check(gunyuatmosphere::GroundDust(U,&B,.60f).IsEmpty(),TEXT("stopped chains produce no attack cloud"))) return false;
     if(!Check(gunyuactivity::Read(0,U,&B,.55f).bStopped && gunyuactivity::Markers(U,&B,.55f).IsEmpty(),TEXT("stopped chain has a stop label and no attack arrows"))) return false;
     B.Kind=EBattleCue::Rally;
     if(!Check(!gunyuactivity::Read(3,U,&B,.2f).bActive && gunyuactivity::Read(0,U,&B,.2f).Partner==-1,TEXT("support never marks an enemy as an attack recipient"))) return false;
     B.Kind=EBattleCue::Strike;B.Target=4;B.After[4].Id=4;B.After[4].Position=FVector(9000,9000,0);
+    if(!Check(gunyuatmosphere::GroundDust(U,&B,.60f).IsEmpty(),TEXT("an unseen future target has no dust footprint"))) return false;
     if(!Check(!gunyuactivity::Read(4,U,&B,.3f).bActive && !gunyuactivity::Read(0,U,&B,.3f).bActive && gunyuactivity::Markers(U,&B,.3f).IsEmpty(),TEXT("future hidden reserve has no role, name, progress bar or mark"))) return false;
+    B.Kind=EBattleCue::March;B.Target=-1;B.After=B.Before;B.After[0].Position=FVector(200,0,0);
+    U[0].Motion=1;U[0].Position=FVector(100,0,0);
+    if(!Check(gunyuatmosphere::GroundDust(U,&B,.5f).Num()==10,TEXT("real displayed movement emits a small train of ground dust"))) return false;
+    B.After[0].Position=B.Before[0].Position;
+    if(!Check(gunyuatmosphere::GroundDust(U,&B,.5f).IsEmpty(),TEXT("a stationary formation or planned route emits no marching dust"))) return false;
     const int SavedMission=FirstMission,SavedPolicy=EnemyPolicy;
     const bool SavedCouncil=bStartWithCouncil,SavedRealtime=bRealtimeCommand,SavedNoPlayback=State->bNoPlayback;
     const float SavedSpeed=PlaybackSpeed;
@@ -37,6 +52,10 @@ bool ATacticalField::ActivityReadSmokeTest()
     if(!Check(CurrentBeat()->Kind==EBattleCue::Ambush && ReadUnitActivity(1).Caption.Contains(TEXT("構え")) && State->Units[3].Troops==1800,TEXT("next step starts without borrowing the later damage"))) return false;
     AdvancePresentation(1.5f);
     if(!Check(State->Units[3].Loss==553 && ReadUnitActivity(3).Caption==TEXT("被弾・混乱") && State->HUD.Officers[1].Status.Contains(TEXT("伏兵")),TEXT("map and roster describe the current ambush, not the later breakthrough"))) return false;
+    if(!Check(Dust->GetInstanceCount()>0 && Dust->IsVisible(),TEXT("actual ambush damage reaches the visible dust component"))) return false;
+    FTransform Cloud;Dust->GetInstanceTransform(0,Cloud);
+    const float Lift=Cloud.GetLocation().Z-SurfaceHeight(Cloud.GetLocation());
+    if(!Check(Lift>0 && Lift<60,TEXT("real impact dust follows the ground, including sloping terrain"))) return false;
     // The player save API intentionally rejects an in-flight replay. Snapshot
     // simulation copies in memory here without changing that production guard.
     auto Snapshot=[&]()

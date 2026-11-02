@@ -17,6 +17,9 @@ bool ATacticalField::VisualGeometrySmokeTest()
     for (int Mission=0; Mission<3; ++Mission)
     {
         FirstMission=Mission; Issue(ETacticalCommand::Restart);
+        const auto* Land=Ground->GetProcMeshSection(0);
+        if(!Check(Land && Land->ProcVertexBuffer.Num()>0 && Land->ProcVertexBuffer.Num()<Land->ProcIndexBuffer.Num()/2,
+            TEXT("curved terrain reuses shared vertices instead of separate triangle copies"))) return false;
         if (Mission==1 || Mission==2)
         {
             const auto* Channel=Ground->GetProcMeshSection(2);

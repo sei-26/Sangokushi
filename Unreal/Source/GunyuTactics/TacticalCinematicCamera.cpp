@@ -12,10 +12,10 @@ void ATacticalController::ApplyTacticCamera(FVector& ViewFocus,float& ViewRadius
     const float Yaw=FMath::DegreesToRadians(CameraYaw);
     const FVector Right(FMath::Sin(Yaw),-FMath::Cos(Yaw),0);
     const float P=Field->BeatProgress();
-    Center+=Right*(180+Shot.Sweep*FMath::Sin(P*PI));
-    const float Weight=Shot.Weight*.82f;
+    Center+=Right*(70+Shot.Sweep*FMath::Sin(P*PI));
+    const float Weight=Shot.Weight*.96f;
     ViewFocus=FMath::Lerp(ViewFocus,Center,Weight);
-    ViewRadius=FMath::Lerp(ViewRadius,FMath::Min(ViewRadius,FMath::Clamp(Separation*1.5f+900,Shot.CloseDistance,2600.f)),Weight);
+    ViewRadius=FMath::Lerp(ViewRadius,FMath::Min(ViewRadius,FMath::Clamp(Separation*1.2f+720,Shot.CloseDistance,2200.f)),Weight);
     ViewTilt=FMath::Lerp(ViewTilt,Shot.Tilt,Weight*.8f);
     ViewFocus+=Right*Shot.Shake;
 }

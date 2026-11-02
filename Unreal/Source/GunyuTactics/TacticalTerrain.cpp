@@ -2,6 +2,8 @@
 #include "TacticalState.h"
 #include "TacticalBattlefieldStyle.h"
 #include "TacticalGroundDetail.h"
+#include "TacticalGroundMesh.h"
+#include "TacticalGroundGrid.h"
 #include "TacticalMapMesh.h"
 using TacticalMap::FSurface;
 #include "ProceduralMeshComponent.h"
@@ -37,12 +39,19 @@ void ATacticalField::BuildTerrain()
     // Selecting an officer or reordering a chain must not rebuild the landscape.
     // Exact snapshots avoid hash collisions; construction resets this cache for art edits.
     if (Snapshot == State->TerrainSnapshot) return;
+    const bool GridOnly=TacticalMap::OnlyGroundRangeChanged(State->TerrainSnapshot,Snapshot);
     State->TerrainSnapshot = MoveTemp(Snapshot);
-    FSurface Land, Grid;
+    auto Height = [this](FVector P) { return SurfaceHeight(P); };
+    auto Grid=TacticalMap::GroundGrid(J,State->Reachable,[](int Tile) { return TileLocation(Tile); },Height);
+    Grid.Submit(Ground,1);
+    Ground->SetMaterial(1,LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Art/Materials/M_BattleFX.M_BattleFX")));
+    if(GridOnly) return;
+    TacticalMap::FGroundMesh GroundMesh;
+    FSurface& Land=GroundMesh.Surface;
+    constexpr int GroundDetail=8;
     Trees->ClearInstances(); Trunks->ClearInstances(); Rocks->ClearInstances();
     Grass->ClearInstances(); Buildings->ClearInstances(); Roofs->ClearInstances();
     Houses->ClearInstances();
-    auto Height = [this](FVector P) { return SurfaceHeight(P); };
     auto VisibilityShade = [&](FVector P)
     {
         const auto Cell=hexgrid::Pick(P.X/200.,P.Y/200.);
@@ -90,40 +99,31 @@ void ATacticalField::BuildTerrain()
             const bool bForest = Terrain == frontline::Terrain::Forest;
             const bool bRock = Terrain == frontline::Terrain::Mountain;
             const bool bWater = Terrain == frontline::Terrain::River;
-            FSurface& Surface = Land;
             FLinearColor Base=Style.Ground;
             if (bForest) Base = Style.Forest;
             if (bRock) Base = Style.Rock;
             if (bWater) Base = FLinearColor(.20f, .16f, .095f);
             if (Terrain == frontline::Terrain::Bridge) Base = FLinearColor(.31f, .22f, .12f);
-            auto Point = [&](FVector P) { P.Z = bWater ? -10.f : Height(P); return P; };
             for (int Side = 0; Side < 6; ++Side)
             {
                 const float A = FMath::DegreesToRadians(30.f + Side * 60.f);
                 const float B = FMath::DegreesToRadians(90.f + Side * 60.f);
                 const FVector U(FMath::Cos(A) * HexRadius, FMath::Sin(A) * HexRadius, 0);
                 const FVector V(FMath::Cos(B) * HexRadius, FMath::Sin(B) * HexRadius, 0);
-                constexpr int Detail = 4;
+                constexpr int Detail = GroundDetail;
                 for (int I = 0; I < Detail; ++I) for (int K = 0; K < Detail - I; ++K)
                 {
-                    const FVector P = Point(Center + U * (I / float(Detail)) + V * (K / float(Detail)));
-                    const FVector Q = Point(Center + U * ((I + 1) / float(Detail)) + V * (K / float(Detail)));
-                    const FVector R = Point(Center + U * (I / float(Detail)) + V * ((K + 1) / float(Detail)));
-                    Surface.Triangle(P, Q, R, ColorAt(P, Base, bVisible), ColorAt(Q, Base, bVisible), ColorAt(R, Base, bVisible));
+                    const FVector P = Center + U * (I / float(Detail)) + V * (K / float(Detail));
+                    const FVector Q = Center + U * ((I + 1) / float(Detail)) + V * (K / float(Detail));
+                    const FVector R = Center + U * (I / float(Detail)) + V * ((K + 1) / float(Detail));
+                    auto Color=[&](FVector Position) { return ColorAt(Position,Base,bVisible); };
+                    GroundMesh.Triangle(P,Q,R,bWater,Height,Color);
                     if (I + K < Detail - 1)
                     {
-                        const FVector S = Point(Center + U * ((I + 1) / float(Detail)) + V * ((K + 1) / float(Detail)));
-                        Surface.Triangle(Q, S, R, ColorAt(Q, Base, bVisible), ColorAt(S, Base, bVisible), ColorAt(R, Base, bVisible));
+                        const FVector S = Center + U * ((I + 1) / float(Detail)) + V * ((K + 1) / float(Detail));
+                        GroundMesh.Triangle(Q,S,R,bWater,Height,Color);
                     }
                 }
-                // Thin inlaid grid, continuous ground underneath instead of separated plates.
-                const bool bReachable = State->Reachable.Contains(Tile);
-                for (int Segment=0;Segment<4;++Segment)
-                    Grid.Line(Point(Center+FMath::Lerp(U,V,Segment/4.f))+FVector(0,0,bWater ? 2.5 : 1.5),
-                        Point(Center+FMath::Lerp(U,V,(Segment+1)/4.f))+FVector(0,0,bWater ? 2.5 : 1.5), bReachable ? 3.f : .85f,
-                        bReachable ? FLinearColor(.22f,.82f,.95f,.92f) : FLinearColor(.48f,.51f,.40f,bVisible ? .21f : .06f));
-                if (bReachable)
-                    Grid.Triangle(Point(Center) + FVector(0, 0, 1), Point(Center + U) + FVector(0, 0, 1), Point(Center + V) + FVector(0, 0, 1), FLinearColor(.05f, .5f, .7f, .13f), FLinearColor(.05f, .5f, .7f, .13f), FLinearColor(.05f, .5f, .7f, .13f));
             }
             if (bForest)
                 for (int Tree = 0; Tree < 2 + int(Grain(X, Y) * 4); ++Tree)
@@ -177,7 +177,6 @@ void ATacticalField::BuildTerrain()
                 }
 
         }
-    BuildRoadRuts(Land);
     // The battlefield sits in a landscape, without exposing the edge of a board.
     // Continue the analytic ground across the actual jagged hex perimeter.
     // These extra hexes are scenery only: no grid, visibility or movement cells.
@@ -187,50 +186,30 @@ void ATacticalField::BuildTerrain()
             if (X>=1 && Y>=1 && X<frontline::StrategistJourney::Columns-1 && Y<frontline::StrategistJourney::Rows-1) continue;
             const auto XY=hexgrid::Center(X,Y);
             const FVector Center(XY.first*200,XY.second*200,0);
-            auto Point=[&](FVector P) { P.Z=Height(P); return P; };
             for (int Side=0;Side<6;++Side)
             {
                 const float A=(30.f+Side*60.f)*PI/180, B=A+PI/3;
                 const FVector U(FMath::Cos(A)*HexRadius,FMath::Sin(A)*HexRadius,0);
                 const FVector V(FMath::Cos(B)*HexRadius,FMath::Sin(B)*HexRadius,0);
-                for (int I=0;I<4;++I) for (int K=0;K<4-I;++K)
+                for (int I=0;I<GroundDetail;++I) for (int K=0;K<GroundDetail-I;++K)
                 {
-                    const FVector P=Point(Center+U*(I/4.f)+V*(K/4.f)),Q=Point(Center+U*((I+1)/4.f)+V*(K/4.f)),R=Point(Center+U*(I/4.f)+V*((K+1)/4.f));
+                    const FVector P=Center+U*(I/float(GroundDetail))+V*(K/float(GroundDetail)),Q=Center+U*((I+1)/float(GroundDetail))+V*(K/float(GroundDetail)),R=Center+U*(I/float(GroundDetail))+V*((K+1)/float(GroundDetail));
                     const FLinearColor Base=Style.Ground;
-                    Land.Triangle(P,Q,R,ColorAt(P,Base,false),ColorAt(Q,Base,false),ColorAt(R,Base,false));
-                    if (I+K<3)
+                    auto Color=[&](FVector Position) { return ColorAt(Position,Base,false); };
+                    GroundMesh.Triangle(P,Q,R,false,Height,Color);
+                    if (I+K<GroundDetail-1)
                     {
-                        const FVector S=Point(Center+U*((I+1)/4.f)+V*((K+1)/4.f));
-                        Land.Triangle(Q,S,R,ColorAt(Q,Base,false),ColorAt(S,Base,false),ColorAt(R,Base,false));
+                        const FVector S=Center+U*((I+1)/float(GroundDetail))+V*((K+1)/float(GroundDetail));
+                        GroundMesh.Triangle(Q,S,R,false,Height,Color);
                     }
                 }
             }
         }
-    auto Gateway = [&](int Tile)
-    {
-        if (Tile < 0) return;
-        const FVector P = SurfaceLocation(Tile);
-        for (int Side = 0; Side < 6; ++Side)
-        {
-            const float A = FMath::DegreesToRadians(30.f + Side * 60.f), B = A + PI / 3;
-            Grid.Line(P + FVector(FMath::Cos(A) * 103, FMath::Sin(A) * 103, 3), P + FVector(FMath::Cos(B) * 103, FMath::Sin(B) * 103, 3), 4, FLinearColor(1, .72f, .20f, .9f));
-        }
-    };
-    Gateway(J.goal); Gateway(J.Definition().secondGoal);
     BuildMapScenery();
-    // Smooth the ridge lighting without changing its shared selectable surface.
-    for (int I=0;I<Land.Vertices.Num();++I)
-    {
-        const FVector P=Land.Vertices[I];
-        if (P.X<200 || P.X>3200 || P.Y<200 || P.Y>2500 || FMath::Abs(P.Z-Height(P))>1) continue;
-        const double DX=Height(P+FVector(3,0,0))-Height(P-FVector(3,0,0));
-        const double DY=Height(P+FVector(0,3,0))-Height(P-FVector(0,3,0));
-        Land.Normals[I]=FVector(-DX,-DY,6).GetSafeNormal();
-    }
-    Land.Submit(Ground, 0); Grid.Submit(Ground, 1);
+    BuildRoadRuts(Land);
+    Land.Submit(Ground, 0);
     Ground->ClearMeshSection(2);
     BuildMapWater();
     Ground->SetMaterial(0, TerrainMaterial ? TerrainMaterial.Get() : LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Art/Materials/M_Field.M_Field")));
-    Ground->SetMaterial(1, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Art/Materials/M_BattleFX.M_BattleFX")));
     Ground->SetMaterial(2, WaterMaterial ? WaterMaterial.Get() : LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Art/Materials/M_BattleWater.M_BattleWater")));
 }

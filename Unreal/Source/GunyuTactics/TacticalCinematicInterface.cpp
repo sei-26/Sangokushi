@@ -29,7 +29,7 @@ void ATacticalController::BuildTacticCinema(TSharedRef<SCanvas> Canvas)
     auto Result=SNew(SOverlay).Visibility_Lambda([this,Read] { return bTacticCinema && Read().bVisible && Read().Impact>.001f && !Read().Primary.IsEmpty() ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
         + SOverlay::Slot()[SNew(STacticalInkStroke).Read(Read)]
         + SOverlay::Slot().Padding(18,10)[SNew(SVerticalBox)
-            + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Chain+TEXT("  /  ")+Read().Tactic; },13,Gold)]
+            + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Officer+TEXT("  /  ")+Read().Tactic+TEXT("  /  ")+Read().Chain; },13,Gold)]
             + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Bold",36))
                 .ColorAndOpacity_Lambda([Read] { return FSlateColor(Read().Accent); }).ShadowOffset(FVector2D(2,3)).ShadowColorAndOpacity(FLinearColor::Black)
                 .Text_Lambda([Read] { return FText::FromString(Read().Primary); })]
@@ -41,6 +41,7 @@ FVector2D ATacticalController::TacticResultPosition() const
 {
     const auto* Beat=Field->CurrentBeat();const auto& U=Field->VisualUnits();const int Id=Beat ? gunyucinema::ResultUnit(*Beat,U):-1;
     if(!U.IsValidIndex(Id) || U[Id].Id<0) return FVector2D(-2000,-2000);
+    if(bTacticCinema && Field->ReadTacticCinema().bVisible) return FVector2D(1192,530);
     auto P=MapLabelPosition(U[Id].Position+FVector(0,0,280),FVector2D(380,142));
     if(P.X<-1000) return FVector2D(-2000,-2000);
     P.X=FMath::Clamp(P.X,270.,850.);P.Y=FMath::Clamp(P.Y,224.,570.);return P;

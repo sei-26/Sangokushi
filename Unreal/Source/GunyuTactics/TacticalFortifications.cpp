@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalMapMesh.h"
+#include "TacticalCommandPost.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
 // Site markers use only public cities and mission goals. They never inspect
@@ -91,7 +92,13 @@ void ATacticalField::BuildFortifications()
     }
     else
     {
-        Gate(J.goal);
+        if(J.Definition().kind==frontline::JourneyObjective::CaptureCamp)
+        {
+            const FVector P=SurfaceLocation(J.goal);
+            TacticalMap::CommandPost(P,[this](FVector Q) { return SurfaceHeight(Q); },Wood,Cloth);
+            Flag(P+FVector(94,54,0),FLinearColor(.28f,.14f,.06f),1.12f);
+        }
+        else Gate(J.goal);
         if (J.mission==1)
             for (int I=0;I<4;++I)
             {

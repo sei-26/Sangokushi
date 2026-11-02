@@ -26,7 +26,7 @@ void ATacticalController::BuildRealtimeInterface(TSharedRef<SCanvas> Canvas)
     Content->AddSlot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return Field->bRealtimeCommand ? EVisibility::Visible : EVisibility::Collapsed; })[Live]];
     Content->AddSlot().AutoHeight().Padding(0,4)[Label([] { return TEXT("右クリック：行軍・攻撃\nShift＋右：経由地追加"); },11,FLinearColor(.55f,.62f,.62f))];
     auto Panel=SNew(STacticalChrome).Padding(12).Accent(FLinearColor(.21f,.48f,.43f))
-        .Visibility_Lambda([this] { return bDetailedBattle && Field->Presentation().bBattle && !Field->Presentation().Position.bVisible && !(bTacticCinema && Field->ReadTacticCinema().Intro>.001f) ? EVisibility::Visible : EVisibility::Collapsed; })[Content];
+        .Visibility_Lambda([this] { return bDetailedBattle && Field->Presentation().bBattle && !Field->Presentation().Position.bVisible && !(bTacticCinema && Field->ReadTacticCinema().bVisible) ? EVisibility::Visible : EVisibility::Collapsed; })[Content];
     InputPanels.Add(Panel);Canvas->AddSlot().Position_Lambda([this] { return FVector2D(16,Field->bRealtimeCommand ? 486:586); }).Size_Lambda([this] { return FVector2D(230,Field->bRealtimeCommand ? 218:118); })[Panel];
     auto Signal=SNew(SVerticalBox);
     Signal->AddSlot().AutoHeight()[SNew(SHorizontalBox)
@@ -34,6 +34,6 @@ void ATacticalController::BuildRealtimeInterface(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().AutoWidth()[Command(ETacticalCommand::RealtimeChainSignal,[this] { return Field->Presentation().bChainSignalArmed ? TEXT("解除 B") : TEXT("合図 B"); })]];
     Signal->AddSlot().AutoHeight().Padding(0,7)[Label([this] { return Field->Presentation().ChainSignalLabel; },12)];
     auto SignalPanel=SNew(STacticalChrome).Padding(12).Accent(FLinearColor(.6f,.43f,.13f))
-        .Visibility_Lambda([this] { return bDetailedBattle && Field->bRealtimeCommand && Field->Presentation().bBattle ? EVisibility::Visible : EVisibility::Collapsed; })[Signal];
+        .Visibility_Lambda([this] { return bDetailedBattle && Field->bRealtimeCommand && Field->Presentation().bBattle && !(bTacticCinema && Field->ReadTacticCinema().bVisible) ? EVisibility::Visible : EVisibility::Collapsed; })[Signal];
     InputPanels.Add(SignalPanel);Canvas->AddSlot().Position(FVector2D(1268,704)).Size(FVector2D(316,104))[SignalPanel];
 }
