@@ -248,15 +248,18 @@ void ATacticalField::Issue(ETacticalCommand Command)
         break;
     }
     case ETacticalCommand::EndTurn:
+    {
         if (!State->Orders.empty() && !State->bConfirmEndTurn)
         {
             State->bConfirmEndTurn = true;
             State->Report = TEXT("未発動の予約があります。「予約を破棄して進める」で敵の指揮へ。Escで取り消せます。");
             break;
         }
+        const auto MissionBefore=CaptureMissionProgress();
         J.EndTurn(); State->Orders.clear(); State->bConfirmEndTurn = false;
         State->Input = ETacticalInput::Select; State->Report = JourneyText(J.message);
-        QueueAction(EBattleCue::Enemy, -1, -1, Before); break;
+        QueueAction(EBattleCue::Enemy, -1, -1, Before,MissionBefore); break;
+    }
     case ETacticalCommand::Withdraw:
         if (!State->bConfirmWithdrawal)
         {
@@ -288,7 +291,7 @@ void ATacticalField::Issue(ETacticalCommand Command)
     case ETacticalCommand::Restart:
         StartTrial(); return;
     case ETacticalCommand::Skip:
-        FinishPlayback(); return;
+        FinishPlayback(false); return;
     }
     Refresh();
 }

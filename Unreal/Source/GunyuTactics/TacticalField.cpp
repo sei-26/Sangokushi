@@ -156,6 +156,7 @@ void ATacticalField::PostEditChangeProperty(FPropertyChangedEvent& PropertyChang
 #endif
 void ATacticalField::StartTrial()
 {
+    State->MissionResponse={};State->MissionResponseRemaining=0;
     State->Realtime.Reset();State->bRealtimeInBattle=false;State->bRealtimeStepping=false;
     State->ChainSignal.Cancel();State->SignalRead={};
     State->BattleWatch.Reset();State->OrderReads={};State->bWatchPending=State->bWatchPauseAfterPlayback=false;

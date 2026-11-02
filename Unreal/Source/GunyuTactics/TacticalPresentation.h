@@ -147,6 +147,11 @@ struct FVisualUnit
     bool bDisordered = false, bPressured = false, bInspired = false;
     float Motion = 0;
 };
+struct FMissionProgress
+{
+    int Convoy=-1,Total=0,Held=-1,Required=0;
+    bool bBattle=false,bRescue=false;
+};
 struct FBattleBeat
 {
     TArray<FVisualUnit> Before, After;
@@ -156,6 +161,7 @@ struct FBattleBeat
     float Duration = 2.4f;
     bool bSignature = false;
     int ChainStep=0, Combo=0, ComboPercent=100;
+    FMissionProgress MissionBefore,MissionAfter;
 };
 struct FTacticCinematicRead
 {

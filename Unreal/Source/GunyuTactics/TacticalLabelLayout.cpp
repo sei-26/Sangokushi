@@ -15,6 +15,7 @@ void ATacticalController::LayoutMapLabels()
     const bool Focused=WideShot && Action.bActive && Action.bHasTarget && Action.Weight>.20f;
     const FVector2D Min=gunyulayout::MapOrigin,Max=WideShot ? FVector2D(1584,718):Min+gunyulayout::MapSize;
     TArray<FSlateRect> Occupied;
+    if(bTacticCinema && Field->ReadMissionResponse().Weight>.001f) Occupied.Add(FSlateRect(32,120,732,260));
     auto Protect=[&](FVector Center,FVector Extent)
     {
         FVector2D Lo(1e9,1e9),Hi(-1e9,-1e9);bool Valid=true;

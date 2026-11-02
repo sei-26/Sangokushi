@@ -123,6 +123,7 @@ void ATacticalField::RunRealtimeCycle(bool bSingleStep)
 {
     if (IsPlaying() || State->Journey.stage!=JourneyStage::Battle) return;
     const auto Before=ObserveUnits();
+    const auto MissionBefore=CaptureMissionProgress();
     const auto WatchBefore=JourneyBattleWatch::Capture(State->Journey,State->Realtime);
     if (!State->Realtime.Resolve(State->Journey,State->ChainSignal.ReservedAttacks())) return;
     State->Realtime.Consume(bSingleStep);
@@ -136,7 +137,7 @@ void ATacticalField::RunRealtimeCycle(bool bSingleStep)
         else if (State->Realtime.orders[Id].kind==JourneyDirective::March) ++Waiting;
     }
     State->Report=FString::Printf(TEXT("味方の行軍 %d / 進路待ち %d。交戦・補給・護送を更新。 "),Moved,Waiting)+JourneyText(State->Journey.message);
-    QueueAction(EBattleCue::Enemy,-1,-1,Before);
+    QueueAction(EBattleCue::Enemy,-1,-1,Before,MissionBefore);
     RecordBattleWatch(WatchBefore);
     if (IsPlaying()) State->Beats[0].Title=TEXT("全軍進行 / 移動と交戦");
     else State->bRealtimeStepping=false;

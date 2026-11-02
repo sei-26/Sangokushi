@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+護送・烽火の節目の台詞は `TacticalMissionResponse.cpp`、指揮の前後と再生終了への接続・表示タイマーは `TacticalMissionMoments.cpp` / `TacticalPlayback.cpp`、肖像付き表示は `TacticalMissionMomentInterface.cpp`。純粋な読取の確認は `TacticalMissionResponseTests.cpp`、実指揮・保存・倍速との接続は `TacticalMissionMomentsTests.cpp`。[反応の節目・操作と制限](MISSION_MOMENTS.md)。
+
 合戦の「今の狙い」は `TacticalMissionRead.cpp`。捕捉・味方・公開経路から案内を作り、上部の `TacticalBattleHeader.cpp` と簡単な采配へ渡す。「目標へ / U」のカメラは `TacticalMissionFocus.cpp`、実際の進行と表示・保存の検証は `TacticalMissionFocusTests.cpp`。[任務ごとの案内と保護](MISSION_GUIDANCE.md)。
 
 軍議の本文・行間・枠・文字送りボタンは `TacticalCouncilSceneInterface.cpp`、前の台詞へ戻る入力は `TacticalEpisode.cpp`。3倍速は `JourneyRealtime.cpp` / `JourneySaveValidation.cpp` と `TacticalRealtime.cpp` / `TacticalPlayback.cpp`。演出中の速度ボタンは `TacticalCinematicInterface.cpp`。[操作と確認](COUNCIL_READING_AND_TEMPO.md)。

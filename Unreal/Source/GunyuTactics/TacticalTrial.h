@@ -16,6 +16,7 @@ class ACameraActor;
 struct FJourneyState;
 struct FChainReview;
 namespace frontline { struct JourneyWatchSnapshot; }
+namespace gunyuresponse { struct FRead; }
 namespace TacticalMap { struct FSurface; }
 namespace gunyufocus { struct FRead; }
 struct FJourneyDeleter
@@ -189,6 +190,8 @@ public:
     void ToggleThreatOverlay();
     void AdvancePresentation(float Delta);
     bool IsPlaying() const;
+    gunyuresponse::FRead ReadMissionResponse() const;
+    bool MissionMomentsSmokeTest();
     const TArray<FVisualUnit>& VisualUnits() const;
     const FBattleBeat* CurrentBeat() const;
     float BeatProgress() const;
@@ -263,11 +266,13 @@ private:
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> Effects;
     UPROPERTY() TObjectPtr<class UAudioComponent> CueAudio;
     TArray<FVisualUnit> ObserveUnits() const;
-    void QueueAction(EBattleCue Kind, int Actor, int Target, const TArray<FVisualUnit>& Before);
+    void QueueAction(EBattleCue Kind, int Actor, int Target, const TArray<FVisualUnit>& Before,FMissionProgress MissionBefore={});
     void QueueChain(const TArray<FVisualUnit>& Before);
     void DispatchQueuedChain();
     void BeginPlayback();
-    void FinishPlayback();
+    void FinishPlayback(bool bShowMissionResponse=true);
+    FMissionProgress CaptureMissionProgress() const;
+    void PublishMissionResponse();
     void RenderUnits();
     FString ReadPlaybackReport() const;
     void RenderStandards();
@@ -374,11 +379,13 @@ private:
     void BuildCameraInterface(TSharedRef<class SCanvas>);
     void BuildTacticCinema(TSharedRef<class SCanvas>);
     void BuildTacticRelay(TSharedRef<class SCanvas>);
+    void BuildMissionMomentInterface(TSharedRef<class SCanvas>);
     void UpdateTacticLens();
     FVector2D TacticResultPosition() const;
     void ApplyTacticCamera(FVector& ViewFocus,float& ViewRadius,float& ViewTilt) const;
     bool bTacticCinema=true;
     TSharedPtr<class SWidget> CinematicIntro,CinematicResult,CinematicRelay;
+    TSharedPtr<class SWidget> MissionMomentPanel;
     UPROPERTY() TArray<TObjectPtr<class UTexture2D>> CutinTextures;
     TArray<TSharedPtr<struct FSlateBrush>> CutinBrushes;
     void LoadCutinPortraits();

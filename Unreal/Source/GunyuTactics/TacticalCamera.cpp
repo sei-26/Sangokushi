@@ -94,6 +94,7 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
     if(CinematicIntro) CinematicIntro->SetRenderOpacity(Cue.Intro);
     if(CinematicResult) CinematicResult->SetRenderOpacity(Cue.Impact);
     if(CinematicRelay) CinematicRelay->SetRenderOpacity(gunyuresponse::Read(Field->CurrentBeat(),Field->VisualUnits(),Field->BeatProgress()).Weight);
+    if(MissionMomentPanel) MissionMomentPanel->SetRenderOpacity(Field->ReadMissionResponse().Weight);
     LabelLayoutFrame=MAX_uint64;
 }
 void ATacticalController::BuildCameraInterface(TSharedRef<SCanvas> Canvas)

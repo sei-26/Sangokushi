@@ -5,6 +5,7 @@
 #include "JourneyChainSignal.hpp"
 #include "JourneyBattleWatch.hpp"
 #include "JourneyBattleChoices.hpp"
+#include "TacticalMissionResponse.h"
 #include <memory>
 
 struct FJourneyState
@@ -45,6 +46,8 @@ struct FJourneyState
     int BeatIndex = 0;
     float BeatTime = 0, VisualTime = 0;
     bool bNoPlayback = false, bImpactPlayed = false;
+    gunyuresponse::FRead MissionResponse;
+    float MissionResponseRemaining=0;
     int CheckpointStage=-1,CheckpointMission=-1;
     int DialogueIndex = 0, PreparationChoice = 0, Interlocutor = 0;
     std::unique_ptr<frontline::StrategistJourney> BeforeBattle;

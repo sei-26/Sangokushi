@@ -43,11 +43,12 @@ TArray<FVisualUnit> ATacticalField::ObserveUnits() const
     return Result;
 }
 
-void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const TArray<FVisualUnit>& Before)
+void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const TArray<FVisualUnit>& Before,FMissionProgress MissionBefore)
 {
     if (State->bNoPlayback) return;
     FBattleBeat Beat;
     Beat.Before = Before; Beat.After = ObserveUnits();
+    if(Kind==EBattleCue::Enemy) { Beat.MissionBefore=MissionBefore;Beat.MissionAfter=CaptureMissionProgress(); }
     Beat.Actor = Actor; Beat.Target = Target; Beat.Kind = Kind;
     const TCHAR* Names[] = {TEXT("進軍"), TEXT("通常攻撃"), TEXT("誘導"), TEXT("伏兵"), TEXT("突破"), TEXT("固守"), TEXT("伏兵準備"), TEXT("敵の指揮 / 交戦と補給"), TEXT("連鎖停止"), TEXT("全軍撤収 / 生存兵と残りの糧を回収"), TEXT("牽制"), TEXT("攪乱"), TEXT("全軍へ補給"), TEXT("青龍"), TEXT("咆哮")};
     Beat.Title = (Before.IsValidIndex(Actor) ? Before[Actor].Name + TEXT("  ―  ") : FString()) + Names[static_cast<int>(Kind)];
@@ -110,6 +111,7 @@ void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
 
 void ATacticalField::BeginPlayback()
 {
+    State->MissionResponse={};State->MissionResponseRemaining=0;
     State->bSupplyPlayback=false;
     State->BeatIndex = 0; State->BeatTime = 0; State->bImpactPlayed = false;
     State->Reachable.Reset(); State->Input = ETacticalInput::Select;
@@ -120,9 +122,11 @@ void ATacticalField::BeginPlayback()
     State->HUD.Report=ReadPlaybackReport();
     PlayCueSound(false);
 }
-void ATacticalField::FinishPlayback()
+void ATacticalField::FinishPlayback(bool bShowMissionResponse)
 {
     if (CueAudio) CueAudio->Stop();
+    if(bShowMissionResponse) PublishMissionResponse();
+    else { State->MissionResponse={};State->MissionResponseRemaining=0; }
     if(State->bSupplyPlayback && bRealtimeCommand) State->Realtime.paused=true;
     State->bSupplyPlayback=false;
     State->Beats.Reset(); State->BeatIndex = 0; State->BeatTime = 0;
@@ -135,6 +139,7 @@ void ATacticalField::FinishPlayback()
 }
 void ATacticalField::AdvancePresentation(float Delta)
 {
+    State->MissionResponseRemaining=FMath::Max(0.f,State->MissionResponseRemaining-FMath::Max(0.f,Delta));
     float Elapsed=FMath::Max(0.f,Delta)*FMath::Clamp(static_cast<float>(State->Realtime.speed),.5f,3.f);
     if (bRealtimeCommand && !State->bSupplyPlayback)
         Elapsed=State->Realtime.paused && !State->bRealtimeStepping ? 0.f : Elapsed;

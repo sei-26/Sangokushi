@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "Camera/CameraActor.h"
+#include "TacticalMissionResponse.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/World.h"
 #include "Engine/GameViewportClient.h"
@@ -340,6 +341,23 @@ void ATacticalController::PlayerTick(float Delta)
             if(FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionAdvance")))
             { Field->Issue(ETacticalCommand::EndTurn);Field->Issue(ETacticalCommand::Skip); }
         }
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMoment")))
+        {
+            const bool Guard=FParse::Param(FCommandLine::Get(),TEXT("GunyuMomentGuard"));
+            if(Guard)
+            {
+                Field->SelectOfficer(0);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(7,6));Field->Issue(ETacticalCommand::Skip);Field->Issue(ETacticalCommand::Hold);Field->Issue(ETacticalCommand::Skip);
+            }
+            Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
+            if(Guard && FParse::Param(FCommandLine::Get(),TEXT("GunyuMomentLost")))
+            {
+                Field->SelectOfficer(0);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(7,7));Field->Issue(ETacticalCommand::Skip);
+                Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
+            }
+            const auto Response=Field->ReadMissionResponse();
+            if(Response.Line.IsEmpty()) { UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_MOMENT_CAPTURE: FAIL (actual progress produced no response)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+            UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_MOMENT_CAPTURE: PASS (%s / actor %d / %s)"),*Response.Caption,Response.Actor,*Response.Line);
+        }
         if(FParse::Value(FCommandLine::Get(),TEXT("Choice="),Choice))
         {
             if(!Field->UseBattleChoice(Choice,Field->Presentation().BattleChoiceVersion))
@@ -354,6 +372,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=Field->RealtimeSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
     { const bool Passed=MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMomentsOnly")))
+    { const bool Passed=Field->MissionMomentsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuResponseOnly")))
     { const bool Passed=Field->TacticCinemaSmokeTest() && Field->BattlefieldTacticsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuBattlefieldOnly")))
