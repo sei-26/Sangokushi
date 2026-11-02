@@ -43,6 +43,8 @@ Editorの重点２群が成功。実際の命令で、道塞ぎ、道を空け�
 
 ネイティブ通し64群が成功（0 FAIL）。その後、戦場を離れた時点の候補リセットを追加し、Editorを再ビルドしてGPU重点２群が成功。撤退から再挑戦して準備へ戻っても、古い車道の候補を持ち越さないことを追加確認した。
 
+最新のWindows単体版へ反映し、起動入口 `Windows/GunyuTactics.exe` からGPU重点２群が成功（0 FAIL）。別の専用UserDirで720pの３倍速・張飛の車道解消と護送2/6、張飛から劉備への守備交代2/3を実描画し、本文・返答・肖像・操作欄を目視確認した。単体版の画像は `Intermediate/PackagedMissionCredit-road720QA/Saved/trial.png` と `Intermediate/PackagedMissionCredit-relief720QA/Saved/trial.png`。配布物は640.6MB（610.9MiB）で、セーブ・ログ・ダンプを含まない。外部フォントは必要なTTFとOFLだけを収録した。
+
 ## 残る範囲と次
 
 次の改善候補は、任務終了時にも役目の働きが分かる短い振り返りを整えること。既存の実際の交代記録や戦後評価から読み、会話量と説明の増やしすぎに注意する。
