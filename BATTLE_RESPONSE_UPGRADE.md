@@ -20,7 +20,9 @@
 
 EditorのDevelopmentビルドとネイティブ通し58検証群が成功（`Intermediate/battle-response-full.log`、58 PASS / 0 FAIL）。応答・戦法・軍議接続の重点3群も成功。命中前の結果を隠す、未確認の相手を語らない、単独と2・3連鎖、実際の鼓舞と無変化、停止、スキップを確認。実行中の旅・時計・予約を直列化したバイトが、反応の読取前後で一致した。
 
-5本の元WAVのPCM形式・長さ・ピーク・RMS・静かな両端・別音源であることを確認。UE素材の取込も成功し、2連鎖専用音の実再生を確認した。1280×720で伏兵、次の武将の応答、停止、鼓舞、通常画面への復帰を実描画して目視確認。余白を詰めた最終版のGPU重点4群も成功し、名札が反応欄を避けることを確認した（`Intermediate/battle-response-rendered-test.log`）。単体版は確認中。
+5本の元WAVのPCM形式・長さ・ピーク・RMS・静かな両端・別音源であることを確認。UE素材の取込も成功し、2連鎖専用音の実再生を確認した。1280×720で伏兵、次の武将の応答、停止、鼓舞、通常画面への復帰を実描画して目視確認。余白を詰めた最終版のGPU重点4群も成功し、名札が反応欄を避けることを確認した（`Intermediate/battle-response-rendered-test.log`）。
+
+2026-11-03、Windows単体版のビルドと起動入口のEXEからの重点3群も成功（`Intermediate/battle-response-packaged-test.log`、3 PASS / 0 FAIL）。5本のSoundWaveの収録と長さを実行ファイル上で検証。1280×720で関羽と張飛の掛け合い、3連鎖の実戦果805、連鎖停止、演出後の通常指揮画面を実描画して目視確認し、2連鎖・3連鎖・停止の新しい音の実再生も確認した。画像は `Intermediate/battle-response-packaged-{relay,third,stop,return}.png`、対応するログも同じ接頭辞。配布物は約637MB（607.4MiB）。個人セーブを避けてUserDirを分離し、生成物はGitへ含めない。
 
 ## 次の改善
 
