@@ -6,6 +6,7 @@ bool ATacticalField::RealtimeSmokeTest()
 {
     const bool SavedMode=bRealtimeCommand,SavedCouncil=bStartWithCouncil,SavedPlayback=State->bNoPlayback;
     const int SavedMission=FirstMission,SavedPolicy=EnemyPolicy;
+    const float SavedSpeed=PlaybackSpeed;
     auto Check=[](bool Value,const TCHAR* Reason)
     {
         if (!Value) UE_LOG(LogTemp,Error,TEXT("GUNYU_REALTIME: FAIL: %s"),Reason);
@@ -51,8 +52,28 @@ bool ATacticalField::RealtimeSmokeTest()
     if (!Check(State->Journey.lastChain.completed==3 && State->Journey.turn==1,TEXT("chosen chain fires on resume, keeping authentic tactic conditions and action costs"))) return false;
     State->Journey.Withdraw();const int Turn=State->Journey.turn;AdvanceRealtime(100);
     if (!Check(State->Journey.turn==Turn && RealtimePaused(),TEXT("story/debrief cannot accumulate battle time"))) return false;
+    bRealtimeCommand=false;FirstMission=0;EnemyPolicy=0;State->bNoPlayback=false;PlaybackSpeed=1;Issue(ETacticalCommand::Restart);
+    Issue(ETacticalCommand::RealtimeSpeed);Issue(ETacticalCommand::RealtimeSpeed);
+    if(!Check(!bRealtimeCommand && State->Realtime.speed==3 && State->HUD.SpeedLabel==TEXT("3.0×"),TEXT("manual commands can select three-times speed"))) return false;
+    const int InitialEnemy=State->Journey.world.armies[3].troops;
+    if(!Check(UseBattleChoice(0,State->HUD.BattleChoiceVersion),TEXT("manual solo starts at selected speed"))) return false;
+    const int Damage=InitialEnemy-State->Journey.world.armies[3].troops;
+    AdvancePresentation(.2f);
+    if(!Check(IsPlaying() && FMath::IsNearlyEqual(State->BeatTime,.6f),TEXT("manual playback advances three times without a second speed multiplier"))) return false;
+    const float BeforeSpeed=State->BeatTime;
+    Issue(ETacticalCommand::RealtimeSpeed);
+    if(!Check(State->Realtime.speed==.5 && State->BeatTime==BeforeSpeed,TEXT("changing speed during playback preserves progress"))) return false;
+    Issue(ETacticalCommand::RealtimeSpeed);Issue(ETacticalCommand::RealtimeSpeed);Issue(ETacticalCommand::RealtimeSpeed);
+    AdvancePresentation(20);
+    if(!Check(!IsPlaying() && InitialEnemy-State->Journey.world.armies[3].troops==Damage,TEXT("fast playback neither duplicates damage nor changes its result"))) return false;
+    Issue(ETacticalCommand::AutoBattle);AdvanceRealtime(1);
+    if(!Check(IsAutoBattle() && State->Realtime.speed==3 && FMath::IsNearlyEqual(State->Realtime.elapsed,3.),TEXT("delegation retains three-times speed and advances the actual clock"))) return false;
+    Issue(ETacticalCommand::RealtimePause);const double Paused=State->Realtime.elapsed;AdvanceRealtime(20);
+    if(!Check(State->Realtime.elapsed==Paused,TEXT("three-times clock still respects pause"))) return false;
+    std::vector<std::uint8_t> Saved;
+    if(!Check(ExportSession(Saved) && ImportSession(Saved) && State->Realtime.speed==3 && RealtimePaused() && !IsAutoBattle(),TEXT("three-times save reloads paused with its selected speed"))) return false;
     bRealtimeCommand=SavedMode;bStartWithCouncil=SavedCouncil;FirstMission=SavedMission;EnemyPolicy=SavedPolicy;
-    State->bNoPlayback=SavedPlayback;Issue(ETacticalCommand::Restart);
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_REALTIME: PASS (paused planning, autonomous pulse, persistent march, single-step, mode switching, frozen playback, live orders, timed chain, debrief)"));
+    State->bNoPlayback=SavedPlayback;PlaybackSpeed=SavedSpeed;Issue(ETacticalCommand::Restart);
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_REALTIME: PASS (paused planning, autonomous pulse, persistent march, single-step, mode switching, frozen playback, live orders, timed chain, debrief, manual/auto 3x speed and paused reload)"));
     return true;
 }

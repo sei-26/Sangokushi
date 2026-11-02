@@ -7,7 +7,7 @@ namespace frontline
     void JourneyRealtime::Advance(double seconds)
     {
         if (paused || !std::isfinite(seconds) || seconds<=0) return;
-        const double delta=seconds*std::clamp(speed,.5,2.);
+        const double delta=seconds*std::clamp(speed,.5,3.);
         elapsed+=delta;activeSeconds+=delta;
     }
     void JourneyRealtime::Consume(bool singleStep)

@@ -4,6 +4,7 @@
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SScrollBox.h"
 using namespace gunyuui;
 void ATacticalController::BuildCouncilScene(TSharedRef<SCanvas> Canvas)
 {
@@ -24,25 +25,32 @@ void ATacticalController::BuildCouncilScene(TSharedRef<SCanvas> Canvas)
            [SNew(SVerticalBox)
             + SVerticalBox::Slot().AutoHeight()[Label([I] { return I==0 ? TEXT("劉備"):I==1 ? TEXT("関羽"):TEXT("張飛"); },26,Gold)]
             + SVerticalBox::Slot().AutoHeight()[Label([I] { return I==0 ? TEXT("この旗で、何を成すか"):I==1 ? TEXT("最初の一手を、こちらがつくる"):TEXT("一度きりで、終わらせるな"); },14)]]];
-        Canvas->AddSlot().Position(FVector2D(48+I*510,430)).Size(FVector2D(484,82))[Voice];InputPanels.Add(Voice);
+        Canvas->AddSlot().Position(FVector2D(48+I*510,372)).Size(FVector2D(484,72))[Voice];InputPanels.Add(Voice);
         auto Reaction=SNew(STacticalChrome).Padding(FMargin(16,7)).Opacity(.82f)
           .Visibility_Lambda([this,I] { return CouncilSceneVisible() && !CouncilReaction(I).IsEmpty() ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
           [Label([this,I] { return TEXT("「")+CouncilReaction(I)+TEXT("」"); },16,Gold)];
-        Canvas->AddSlot().Position(FVector2D(62+I*510,517)).Size(FVector2D(456,36))[Reaction];
+        Canvas->AddSlot().Position(FVector2D(62+I*510,452)).Size(FVector2D(456,44))[Reaction];
     }
     auto Dialogue=SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Visibility_Lambda(Visible)
       .OnMouseButtonDown_Lambda([this](const FGeometry&,const FPointerEvent& E)
         { if(E.GetEffectingButton()==EKeys::LeftMouseButton) { NextCouncilLine();return FReply::Handled(); }return FReply::Unhandled(); })
-      [SNew(STacticalChrome).Padding(FMargin(28,16)).Opacity(.94f)
+      [SNew(STacticalChrome).Padding(FMargin(28,14)).Opacity(1.f)
        [SNew(SVerticalBox)
-        + SVerticalBox::Slot().AutoHeight()[Label([this] { return CurrentCouncilLine().Name; },24,Gold)]
-        + SVerticalBox::Slot().FillHeight(1).Padding(0,7)[Label([this] { return VisibleCouncilText(); },24)]
         + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
-          + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([this] { return CurrentCouncilLine().Direction; },13)]
+          + SHorizontalBox::Slot().FillWidth(1)[Label([this] { return CurrentCouncilLine().Name; },26,Gold)]
+          + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Label([this] { return FString::Printf(TEXT("%d / %d"),CouncilPage+1,CouncilExchange.Lines.Num()); },15,Gold)]
+          + SHorizontalBox::Slot().AutoWidth().Padding(18,0)[Button([] { return TEXT("前の台詞 / ←"); },[this] { HandleEpisodeKey(EKeys::Left); },[this] { return CouncilPage>0; })]
+          + SHorizontalBox::Slot().AutoWidth()[Button([this] { return bNovelInstant ? TEXT("文字：一括"):TEXT("文字：順次"); },[this] { bNovelInstant=!bNovelInstant; })]]
+        + SVerticalBox::Slot().FillHeight(1).Padding(0,10)[SNew(SScrollBox)+SScrollBox::Slot()
+          [SNew(STextBlock).Font(gunyustyle::Font(28)).ColorAndOpacity(FLinearColor(.99f,.98f,.94f))
+           .ShadowOffset(FVector2D(1,1)).ShadowColorAndOpacity(FLinearColor::Black).LineHeightPercentage(1.2f)
+           .AutoWrapText(true).WrapTextAt(1380.f).Text_Lambda([this] { return FText::FromString(VisibleCouncilText()); })]]
+        + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
+          + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([this] { return CurrentCouncilLine().Direction; },15)]
           + SHorizontalBox::Slot().AutoWidth().Padding(16,0,0,0)[Button([this]
             { return VisibleCouncilText().Len()<CurrentCouncilLine().Text.Len() ? TEXT("全文を見る"):CouncilPage+1<CouncilExchange.Lines.Num() ? TEXT("次の言葉へ / Enter"):TEXT("誰の案を聞こう？"); },[this] { NextCouncilLine(); },[this]
             { return VisibleCouncilText().Len()<CurrentCouncilLine().Text.Len() || CouncilPage+1<CouncilExchange.Lines.Num(); },true)]]]];
-    Canvas->AddSlot().Position(FVector2D(48,566)).Size(FVector2D(1504,174))[Dialogue];InputPanels.Add(Dialogue);
+    Canvas->AddSlot().Position(FVector2D(48,510)).Size(FVector2D(1504,230))[Dialogue];InputPanels.Add(Dialogue);
     auto Choices=SNew(SHorizontalBox).Visibility_Lambda(Visible);
     for(int I=0;I<2;++I)
         Choices->AddSlot().FillWidth(1).Padding(I==0 ? FMargin(0,0,16,0):FMargin(0))

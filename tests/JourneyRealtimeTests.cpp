@@ -35,6 +35,10 @@ int main()
         clock.speed=2;clock.Advance(6);assert(clock.Due());clock.Consume();clock.paused=true;
         clock.Advance(100);assert(clock.pulses==2 && clock.elapsed==0);
         clock.Consume(true);assert(clock.paused && clock.pulses==3 && clock.activeSeconds==36);
+        clock.Reset();clock.paused=false;clock.speed=3;
+        clock.Advance(3.9);assert(!clock.Due());clock.Advance(.1);assert(clock.Due());
+        clock.Consume();assert(clock.pulses==1 && std::abs(clock.elapsed)<1e-7 && std::abs(clock.activeSeconds-12)<1e-7);
+        clock.paused=true;clock.Advance(100);assert(clock.pulses==1 && std::abs(clock.elapsed)<1e-7);
     }
     {
         auto j=CreateRealtimeMission();Quiet(*j);JourneyRealtime rt;

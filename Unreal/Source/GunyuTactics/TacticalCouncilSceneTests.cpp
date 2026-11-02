@@ -21,6 +21,8 @@ bool ATacticalController::CouncilSceneSmokeTest()
         OpenCouncilVoice(I);AdvanceCouncilScene(.1f);
         if(!Check(CouncilTopic==I && CurrentCouncilLine().Speaker==I && CouncilPresence[I]>0 && !VisibleCouncilText().IsEmpty(),TEXT("each officer owns a distinct voiced proposal with active presence"))) return false;
         if(I==0 && !Check(NovelPortraitBrush(0)==ReactionBrushes[0].Get(),TEXT("authored warm expression replaces the neutral portrait without changing game data"))) return false;
+        CouncilElapsed=1000;NextCouncilLine();HandleEpisodeKey(EKeys::Left);
+        if(!Check(CouncilPage==0 && VisibleCouncilText()==CurrentCouncilLine().Text,TEXT("previous line returns with its full text and no adopted choice"))) return false;
         for(int L=0;L<12;++L) { CouncilElapsed=1000;NextCouncilLine(); }
         if(!Check(CouncilSceneVisible() && Field->ExportSession(After) && Before==After,TEXT("listening/animation/repeating does not adopt, spend, deploy or award trust"))) return false;
     }

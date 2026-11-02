@@ -34,6 +34,7 @@ void ATacticalController::HandleEpisodeKey(FKey Key)
     {
         if(CouncilSceneVisible())
         {
+            if(Key==EKeys::Left) { if(CouncilPage>0) { --CouncilPage;CouncilElapsed=1000;CouncilLineTime=0; }return; }
             if(Key==EKeys::Enter || Key==EKeys::SpaceBar || Key==EKeys::Right) { NextCouncilLine();return; }
             if(Key==EKeys::One || Key==EKeys::Two) { ChooseCouncilDecision(Key==EKeys::One ? 3:4);return; }
         }

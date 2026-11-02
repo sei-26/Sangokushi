@@ -163,7 +163,7 @@ namespace frontline
         const auto& r=s.realtime;
         if(!std::isfinite(r.elapsed) || r.elapsed<0 || r.elapsed>JourneyRealtime::Period ||
             !std::isfinite(r.activeSeconds) || r.activeSeconds<0 || r.activeSeconds>1000000 ||
-            (r.speed!=.5 && r.speed!=1 && r.speed!=2) || !Range(r.pulses,0,10000)) return false;
+            (r.speed!=.5 && r.speed!=1 && r.speed!=2 && r.speed!=3) || !Range(r.pulses,0,10000)) return false;
         for(auto t:s.tactics) if(!Enum(t,7)) return false;
         for(const auto& o:r.orders) if(!Order(o)) return false;
         for(const auto& o:s.watch.lastOrders) if(!Order(o)) return false;

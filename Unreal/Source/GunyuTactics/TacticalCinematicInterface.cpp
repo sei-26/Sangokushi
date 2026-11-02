@@ -12,6 +12,9 @@ void ATacticalController::BuildTacticCinema(TSharedRef<SCanvas> Canvas)
 {
     BuildTacticRelay(Canvas);
     auto Read=[this] { return Field->ReadTacticCinema(); };
+    auto Speed=SNew(SBox).Visibility_Lambda([this,Read] { return bTacticCinema && Read().bVisible ? EVisibility::Visible:EVisibility::Collapsed; })
+      [Button([this] { return TEXT("演出の速さ ")+Field->Presentation().SpeedLabel; },[this] { Field->Issue(ETacticalCommand::RealtimeSpeed); })];
+    Canvas->AddSlot().Position(FVector2D(1268,772)).Size(FVector2D(316,36))[Speed];InputPanels.Add(Speed);
     auto Banner=SNew(SOverlay)
         + SOverlay::Slot()[SNew(STacticalInkStroke).Read(Read)]
         + SOverlay::Slot().Padding(24,20)[SNew(SVerticalBox)

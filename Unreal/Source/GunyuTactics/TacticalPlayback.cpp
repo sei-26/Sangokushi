@@ -135,9 +135,9 @@ void ATacticalField::FinishPlayback()
 }
 void ATacticalField::AdvancePresentation(float Delta)
 {
-    float Elapsed=FMath::Max(0.f,Delta);
+    float Elapsed=FMath::Max(0.f,Delta)*FMath::Clamp(static_cast<float>(State->Realtime.speed),.5f,3.f);
     if (bRealtimeCommand && !State->bSupplyPlayback)
-        Elapsed=State->Realtime.paused && !State->bRealtimeStepping ? 0.f : Elapsed*State->Realtime.speed;
+        Elapsed=State->Realtime.paused && !State->bRealtimeStepping ? 0.f : Elapsed;
     State->VisualTime += Elapsed;
     if (IsPlaying())
     {

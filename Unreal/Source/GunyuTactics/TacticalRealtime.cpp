@@ -12,7 +12,8 @@ void ATacticalField::SyncRealtime()
     const bool Active=bRealtimeCommand && State->Journey.stage==JourneyStage::Battle;
     if (Active && !State->bRealtimeInBattle)
     {
-        State->Realtime.Reset();State->bRealtimeStepping=false;
+        const double Speed=State->Realtime.speed;
+        State->Realtime.Reset();State->Realtime.speed=Speed;State->bRealtimeStepping=false;
         State->bRealtimeChainRequested=false;State->bRealtimePauseAfterPlayback=false;
         State->BattleWatch.Reset();State->bWatchPending=State->bWatchPauseAfterPlayback=false;
     }
@@ -45,6 +46,7 @@ bool ATacticalField::CanRealtimeIssue(ETacticalCommand Command) const
 {
     const bool Battle=State->Journey.stage==JourneyStage::Battle;
     if (Command==ETacticalCommand::RealtimeMode) return Battle && !IsPlaying();
+    if (Command==ETacticalCommand::RealtimeSpeed) return Battle || IsPlaying();
     if (!bRealtimeCommand || (!Battle && !IsPlaying())) return false;
     if (Command==ETacticalCommand::RealtimeUndoWaypoint || Command==ETacticalCommand::RealtimeArrival)
         return Battle && !IsPlaying() && State->Realtime.orders[State->Selected].kind==JourneyDirective::March;
@@ -71,7 +73,8 @@ void ATacticalField::IssueRealtime(ETacticalCommand Command)
     switch (Command)
     {
     case ETacticalCommand::RealtimeMode:
-        bRealtimeCommand=!bRealtimeCommand;State->bRealtimeInBattle=false;RT.Reset();
+        bRealtimeCommand=!bRealtimeCommand;State->bRealtimeInBattle=false;
+        { const double Speed=RT.speed;RT.Reset();RT.speed=Speed; }
         State->ChainSignal.Cancel();State->SignalRead={};
         State->BattleWatch.Reset();State->bWatchPending=State->bWatchPauseAfterPlayback=false;
         State->bRealtimeChainRequested=false;State->Input=ETacticalInput::Select;
@@ -83,7 +86,7 @@ void ATacticalField::IssueRealtime(ETacticalCommand Command)
         else RT.paused=!RT.paused;
         break;
     case ETacticalCommand::RealtimeSpeed:
-        RT.speed=RT.speed<.75 ? 1. : RT.speed<1.5 ? 2. : .5;break;
+        RT.speed=RT.speed<.75 ? 1. : RT.speed<1.5 ? 2. : RT.speed<2.5 ? 3. : .5;break;
     case ETacticalCommand::RealtimeAlertPause:
         bPauseOnBattleAlert=!bPauseOnBattleAlert;
         State->Report=bPauseOnBattleAlert ? TEXT("危険時停止をON。新たな捕捉・損耗・護送車の被害・停滞を報告し、演出後に停止する。") :
