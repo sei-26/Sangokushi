@@ -1,8 +1,11 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalTacticEffects.h"
+#include "TacticalBattleResponse.h"
+#include "JourneyArchive.hpp"
 bool ATacticalField::TacticCinemaSmokeTest()
 {
+    if(!gunyuresponse::SmokeTest()) return false;
     const int SavedMission=FirstMission,SavedPolicy=EnemyPolicy;
     const bool SavedCouncil=bStartWithCouncil,SavedPlayback=State->bNoPlayback,SavedRealtime=bRealtimeCommand;
     const float SavedVolume=EffectsVolume,SavedSpeed=PlaybackSpeed;
@@ -12,12 +15,24 @@ bool ATacticalField::TacticCinemaSmokeTest()
     const int Resolved=State->Journey.world.armies[3].troops,ResolvedTurn=State->Journey.turn;
     AdvancePresentation(.6f);auto C=ReadTacticCinema();
     if(!Check(C.bVisible && !C.bResolved && C.Primary.IsEmpty() && C.Intro>0 && CurrentBeat()->ChainStep==1,TEXT("intro names actor and step, never future damage"))) return false;
+    if(!Check(gunyuresponse::Read(CurrentBeat(),VisualUnits(),BeatProgress()).Line.IsEmpty(),TEXT("officers cannot celebrate an unresolved tactic"))) return false;
     AdvancePresentation(1.1f);C=ReadTacticCinema();
     if(!Check(C.bResolved && C.Primary==TEXT("敵を引き出した") && C.Secondary.Contains(TEXT("60")),TEXT("lure shows actual bait loss and movement"))) return false;
     AdvancePresentation(1.3f);C=ReadTacticCinema();
     if(!Check(CurrentBeat()->Kind==EBattleCue::Ambush && C.Primary.IsEmpty() && !CueReason().Contains(TEXT("553")) && State->Units[3].Troops==1800,TEXT("next-step intro cannot reveal its later casualties"))) return false;
     AdvancePresentation(1.6f);C=ReadTacticCinema();
     if(!Check(C.Primary==TEXT("−553") && C.Secondary.Contains(TEXT("混乱")) && CurrentBeat()->ChainStep==2,TEXT("actual ambush damage and disorder at impact"))) return false;
+    const auto Response=gunyuresponse::Read(CurrentBeat(),VisualUnits(),BeatProgress());
+    if(!Check(Response.Actor==1 && Response.Weight>0 && Response.Caption.Contains(TEXT("2連鎖")) && Response.Sound==gunyuresponse::ESound::Combo2,TEXT("actual second-hand payoff receives the correct officer and combo sound"))) return false;
+    auto Snapshot=[&]()
+    {
+        std::vector<std::uint8_t> Bytes;auto J=std::make_unique<frontline::StrategistJourney>(State->Journey);
+        auto RT=State->Realtime;auto Signal=State->ChainSignal;auto Orders=State->Orders;
+        frontline::JourneyArchive W{false,Bytes};W(*J,RT,Signal,Orders);return Bytes;
+    };
+    const auto BeforeRead=Snapshot();
+    for(int I=0;I<12;++I) gunyuresponse::Read(CurrentBeat(),VisualUnits(),BeatProgress(),ReadTacticCinema().NextActor);
+    if(!Check(BeforeRead==Snapshot(),TEXT("response reads change no saved resource, trust, order or battle outcome"))) return false;
     int Quads=0;bool Finite=true;
     auto Draw=[&](FVector A,FVector B,FVector D,FVector E,FLinearColor Color) { ++Quads;Finite=Finite && !A.ContainsNaN() && !B.ContainsNaN() && !D.ContainsNaN() && !E.ContainsNaN() && FMath::IsFinite(Color.R) && FMath::IsFinite(Color.G) && FMath::IsFinite(Color.B) && FMath::IsFinite(Color.A); };
     gunyufx::Tactic(*CurrentBeat(),State->Units,BeatProgress(),Draw);
@@ -29,6 +44,7 @@ bool ATacticalField::TacticCinemaSmokeTest()
     if(!Check(State->Journey.world.armies[3].troops==Resolved && State->Journey.turn==ResolvedTurn,TEXT("reading cinematic feedback never applies effects again"))) return false;
     Issue(ETacticalCommand::Skip);
     if(!Check(!ReadTacticCinema().bVisible && State->Units[3].Troops==Resolved,TEXT("skip clears cinematic feedback without replaying damage"))) return false;
+    if(!Check(gunyuresponse::Read(CurrentBeat(),VisualUnits(),BeatProgress()).Weight==0,TEXT("skip clears the officer response"))) return false;
     Issue(ETacticalCommand::Restart);Issue(ETacticalCommand::Sample);State->Journey.world.armies[2].morale=5;EditOrder(2,-1);Issue(ETacticalCommand::Execute);AdvancePresentation(4.5f);C=ReadTacticCinema();
     if(!Check(CurrentBeat()->Kind==EBattleCue::Stop && C.Primary==TEXT("連鎖停止") && !C.bHit,TEXT("failed step has no successful impact stamp"))) return false;
     Quads=0;gunyufx::Tactic(*CurrentBeat(),State->Units,BeatProgress(),Draw);

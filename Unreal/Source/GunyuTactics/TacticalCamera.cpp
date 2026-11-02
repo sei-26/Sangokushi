@@ -2,6 +2,7 @@
 #include "TacticalSceneryLayout.h"
 #include "Camera/CameraActor.h"
 #include "TacticalWidgets.h"
+#include "TacticalBattleResponse.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 using namespace gunyuui;
@@ -82,7 +83,7 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
     const auto Cue=Field->ReadTacticCinema();
     if(CinematicIntro) CinematicIntro->SetRenderOpacity(Cue.Intro);
     if(CinematicResult) CinematicResult->SetRenderOpacity(Cue.Impact);
-    if(CinematicRelay) CinematicRelay->SetRenderOpacity(Cue.Relay);
+    if(CinematicRelay) CinematicRelay->SetRenderOpacity(gunyuresponse::Read(Field->CurrentBeat(),Field->VisualUnits(),Field->BeatProgress()).Weight);
     LabelLayoutFrame=MAX_uint64;
 }
 void ATacticalController::BuildCameraInterface(TSharedRef<SCanvas> Canvas)

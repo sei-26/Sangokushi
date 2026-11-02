@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+戦果に応じた武将の短い台詞・連鎖の音は `TacticalBattleResponse.cpp`、反応欄は `TacticalCinematicRelay.cpp`、鳴らす入口は `TacticalEffects.cpp`。元WAVの生成と取込は `make_tactic_response_audio.py` / `prepare_tactic_response_audio.py`。[策に応える一声](BATTLE_RESPONSE_UPGRADE.md)。
+
 歩兵の前列・後列と武将の武器・部隊色は `TacticalCompanyStyle.cpp`、手と装備の接続は `TacticalInfantry.cpp`。元モデルと素材の再現は `Unreal/Tools/make_company_meshes.py` / `prepare_company_art.py`。[部隊の見た目と編集箇所](COMPANY_VISUAL_UPGRADE.md)。
 
 剣の斬り・偃月刀の薙ぎ・蛇矛の踏み込みと、刃先から出す軌跡は `TacticalWeaponMotion.cpp`。命中の光の時刻と汎用の大円弧との切替は `TacticalEffects.cpp`。[動作と検証](WEAPON_MOTION_UPGRADE.md)。

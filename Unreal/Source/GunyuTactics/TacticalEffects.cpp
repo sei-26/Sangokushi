@@ -5,6 +5,7 @@
 #include "TacticalPositionEffects.h"
 #include "TacticalGroundAtmosphere.h"
 #include "TacticalWeaponMotion.h"
+#include "TacticalBattleResponse.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "Components/AudioComponent.h"
@@ -206,12 +207,17 @@ void ATacticalField::RenderEffects()
 void ATacticalField::PlayCueSound(bool bImpact)
 {
     const auto* Beat = CurrentBeat();
-    if (!Beat || EffectsVolume <= 0 || State->bNoPlayback || Beat->Kind==EBattleCue::Stop) return;
-    if (bImpact && (Beat->Kind == EBattleCue::March || Beat->Kind == EBattleCue::Guard || Beat->Kind == EBattleCue::Conceal || Beat->Kind == EBattleCue::Stop || Beat->Kind == EBattleCue::Withdraw || Beat->Kind == EBattleCue::Rally)) return;
+    if (!Beat || EffectsVolume <= 0 || State->bNoPlayback || (!bImpact && Beat->Kind==EBattleCue::Stop)) return;
+    if (bImpact && (Beat->Kind == EBattleCue::March || Beat->Kind == EBattleCue::Guard || Beat->Kind == EBattleCue::Conceal || Beat->Kind == EBattleCue::Withdraw)) return;
     const TCHAR* Path = bImpact ? TEXT("/Game/Audio/S_Impact.S_Impact") : Beat->Kind == EBattleCue::March || Beat->Kind == EBattleCue::Lure || Beat->Kind == EBattleCue::Enemy ? TEXT("/Game/Audio/S_March.S_March") : TEXT("/Game/Audio/S_Command.S_Command");
+    const auto Response=bImpact ? gunyuresponse::Read(Beat,State->Units,BeatProgress()):gunyuresponse::FRead{};
+    const TCHAR* ResponsePath=gunyuresponse::SoundPath(Response.Sound);
+    if(bImpact && (Beat->Kind==EBattleCue::Rally || Beat->Kind==EBattleCue::Stop) && !ResponsePath) return;
+    if(ResponsePath) Path=ResponsePath;
     if (auto* Sound = LoadObject<USoundBase>(nullptr, Path))
     {
-        const float Pitch=Beat->Kind==EBattleCue::SerpentRoar ? .76f : Beat->Kind==EBattleCue::AzureDragon ? 1.13f : Beat->Kind==EBattleCue::Rally ? .9f : 1.f;
+        if(CueAudio) CueAudio->Stop();
+        const float Pitch=ResponsePath ? 1.f:Beat->Kind==EBattleCue::SerpentRoar ? .76f : Beat->Kind==EBattleCue::AzureDragon ? 1.13f : Beat->Kind==EBattleCue::Rally ? .9f : 1.f;
         CueAudio = UGameplayStatics::SpawnSound2D(this, Sound, FMath::Clamp(EffectsVolume, 0.f, 1.f),Pitch);
         UE_LOG(LogTemp, Display, TEXT("GUNYU_CUE_AUDIO: %s playing=%d"), *Sound->GetName(), CueAudio && CueAudio->IsPlaying());
     }
