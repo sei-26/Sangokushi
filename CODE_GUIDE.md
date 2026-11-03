@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+河港の占領隊と成功した連鎖の参加者を戦後へ返す読取は `NewGame/JourneyContributionAftermath.cpp`、人物と役割ごとの声は `JourneyContributionVoices.cpp`。既存の `JourneyAftermathRole.cpp` へ接続し、同じ本幕と通常の結果表示を使う。[根拠と実戦確認](CONTRIBUTION_AFTERMATH.md)。
+
 守備交代を戦後の本幕へ返す読取は `NewGame/JourneyAftermathRole.cpp`、前任・後任の声は `JourneyAftermathRoleVoices.cpp`。`JourneyCampaignDrama.cpp` / `JourneyEpisodeAftermath.cpp` が場面に接続し、`TacticalStoryPresentation.cpp` が通常の結果画面にも担当者を示す。[条件と確認](ROLE_AFTERMATH.md)。
 
 車道の解消と守備交代の担当者は `TacticalMissionCredit.cpp`。実移動と進捗、既存の確定した交代記録を読み、`TacticalMissionCreditResponse.cpp` が名前付きの台詞を選ぶ。読取と実指揮の確認は `TacticalMissionCreditResponseTests.cpp` / `TacticalMissionCreditTests.cpp`。[担当者の反応と条件](MISSION_CREDIT.md)。

@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "JourneySave.hpp"
+#include "TacticalContributionQA.h"
 #include <memory>
 bool ATacticalController::CampaignPacingSmokeTest()
 {
@@ -30,6 +31,23 @@ bool ATacticalController::CampaignPacingSmokeTest()
     Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Skip);Field->Issue(ETacticalCommand::Retry);
     Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*Old);
     if(!Check(Old->journey.campaignFlow && !Old->journey.HasConvoy() && Old->journey.world.cities[0].food==Food,TEXT("retry upgrades the new attempt to capture only after restoring the real unpaid council"))) return false;
+    for(int Variant=0;Variant<4;++Variant)
+    {
+        CloseEpisode();if(!Check(PrepareContributionPreview(Field,Variant),TEXT("actual shared-rule contribution playthrough imports"))) return false;
+        OpenJourneyEntry();
+        if(!Check(!bEpisodeOpen && Field->CanIssue(ETacticalCommand::Continue),TEXT("named contribution does not force another scene or gate continuation"))) return false;
+        const auto& P=Field->Presentation().Journey;const TCHAR* Names[]={TEXT("劉備"),TEXT("関羽"),TEXT("張飛")};
+        const auto Summary=P.CampaignChange;
+        if(!Check(Variant==3 ? Summary.Contains(TEXT("連鎖に参加")):Summary.Contains(FString(TEXT("河港に旗を立てた："))+Names[Variant]),TEXT("normal debrief names the actual captor or saved chain participants"))) return false;
+        if(!Check(Variant!=2 || !Summary.Contains(TEXT("連鎖に参加")),TEXT("ordinary attacks are never mislabeled as a cooperative tactic"))) return false;
+        OpenEpisode();Field->ExportSession(Before);BuildInterface();StepEpisode(1);NovelHistoryText(0);Field->ExportSession(After);
+        if(!Check(EpisodeSnapshot.Lines.Num()>=3 && EpisodeSnapshot.Lines.Num()<=4 && (Variant==3 || EpisodeSnapshot.Lines[1].Speaker==Variant) && Before==After,TEXT("actual speaker, portrait and optional short scene preserve the real save"))) return false;
+        CloseEpisode();if(!Check(Field->ImportSession(Before),TEXT("contribution debrief reloads"))) return false;
+        OpenEpisode();if(!Check(Field->Presentation().Journey.CampaignChange==Summary,TEXT("reload preserves the same named contribution without new rewards"))) return false;
+        CloseEpisode();Field->Issue(ETacticalCommand::Continue);Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*Save);
+        if(!Check(Save->journey.stage==JourneyStage::Preparation && Save->journey.mission==(Variant==3 ? 1:2),TEXT("the named debrief continues through the ordinary chapter transition"))) return false;
+    }
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_CONTRIBUTION_AFTERMATH: PASS (real three-captor and chain playthroughs, ordinary-attack witness, actual speakers, optional immutable scenes, save/load and chapter advance)"));
     CloseEpisode();Field->bLegacyJourney=true;
     UE_LOG(LogTemp,Display,TEXT("GUNYU_CAMPAIGN_PACING: PASS (direct council, real capture objective, no cart, optional vow, short aftermath and campaign advance)"));return true;
 }

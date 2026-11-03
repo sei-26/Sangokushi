@@ -8,12 +8,14 @@ namespace frontline
         JourneyRoleAftermath result;
         if(j.stage!=JourneyStage::Debrief || j.mission<0 || j.mission>=int(j.history.size())) return result;
         const auto& h=j.history[j.mission];const auto& review=h.review;
-        if(!h.completed || !review.reliefTracked) return result;
+        if(!h.completed) return result;
+        const auto contribution=ReadContributionAftermath(j);
+        if(!review.reliefTracked || (j.Definition().kind==JourneyObjective::CaptureCamp && !contribution.lines.empty())) return contribution;
         const JourneyReliefRecord* record=nullptr;
         for(auto it=review.relief.rbegin();it!=review.relief.rend();++it)
             if(it->outgoing>=0 && it->outgoing<3 && it->incoming>=0 && it->incoming<3 && it->outgoing!=it->incoming && it->departedTurn>0 && it->arrivedTurn>0)
             { record=&*it;break; }
-        if(!record) return result;
+        if(!record) return contribution;
         const auto& r=*record;using O=JourneyReliefOutcome;
         if(r.outcome!=O::Held && r.outcome!=O::Recovered && r.outcome!=O::Lost && r.outcome!=O::Unconfirmed) return result;
         if(r.outcome!=O::Unconfirmed && r.checkedTurn<=0) return result;

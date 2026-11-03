@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "Camera/CameraActor.h"
 #include "TacticalMissionResponse.h"
+#include "TacticalContributionQA.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/World.h"
 #include "Engine/GameViewportClient.h"
@@ -426,7 +427,7 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=ReliefAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefStoryOnly")))
     { const bool bPassed=ReliefStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
-    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuRoleAftermathOnly")))
+    if(bSmoke && Frames==2 && (FParse::Param(FCommandLine::Get(),TEXT("GunyuRoleAftermathOnly")) || FParse::Param(FCommandLine::Get(),TEXT("GunyuContributionOnly"))))
     { const bool Passed=NovelFlowSmokeTest() && EpisodeInterfaceSmokeTest() && CampaignPacingSmokeTest() && ReliefStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefOnly")))
     { const bool bPassed=Field->ReliefSmokeTest() && ReliefInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
@@ -638,6 +639,19 @@ void ATacticalController::PlayerTick(float Delta)
         { Field->CommitRelief();Field->AdvancePresentation(ReliefBeat); }
     }
     int ReliefStory=0;
+    int ContributionScene=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ContributionScene="),ContributionScene))
+    {
+        CloseEpisode();if(!PrepareContributionPreview(Field,ContributionScene))
+        { UE_LOG(LogTemp,Error,TEXT("GUNYU_CONTRIBUTION_CAPTURE: FAIL (public playthrough import)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        if(!FParse::Param(FCommandLine::Get(),TEXT("GunyuContributionSummary")))
+        { OpenEpisode();int Page=1;FParse::Value(FCommandLine::Get(),TEXT("ContributionPage="),Page);EpisodePage=FMath::Clamp(Page,0,FMath::Max(0,EpisodeSnapshot.Lines.Num()-1));NovelElapsed=1000;NovelStageTime=NovelLineTime=1; }
+        const auto& P=Field->Presentation().Journey;
+        const bool Valid=P.bDebrief && P.Episode.Lines.Num()>=3 && P.Episode.Lines.Num()<=4 &&
+            (ContributionScene==3 ? P.Episode.Setting.Contains(TEXT("連鎖に参加")):P.Episode.Lines[1].Speaker==ContributionScene);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_CONTRIBUTION_CAPTURE: %s (%s)"),Valid ? TEXT("PASS"):TEXT("FAIL"),*P.Episode.Setting);
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ReliefStory="),ReliefStory))
     {
         Field->PrepareReliefStoryPreview(ReliefStory);CloseEpisode();

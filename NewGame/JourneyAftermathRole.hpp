@@ -7,6 +7,7 @@ namespace frontline
         std::u32string summary;
         std::vector<JourneyEpisodeLine> lines;
     };
-    // Settled, executed handovers only. Reading cannot award trust or change history.
+    // Settled/public contributions only. Reading cannot award trust or change history.
     JourneyRoleAftermath ReadRoleAftermath(const StrategistJourney&);
+    JourneyRoleAftermath ReadContributionAftermath(const StrategistJourney&);
 }
