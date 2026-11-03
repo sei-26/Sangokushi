@@ -38,7 +38,9 @@
 
 EditorビルドとGPU重点５群が成功（0 FAIL）。三人の占領と初陣の実記録から、通常の結果表示・正しい話者・最大４台詞・任意の閲覧・セーブ再開・次の章への接続を確認した。既存の会話送り・軍議・守備交代の成功と失敗・回復も確認した。
 
-720pで、河港を取った関羽、通常攻撃で取った張飛に応じる劉備、初陣の連鎖に参加した関羽、通常の河港の結果画面を実描画して目視確認した。本文・肖像・主人公の顔と操作欄の収まり、占領隊と連鎖参加者が分かれた一行、次の戦役へ進むボタンを確認した。`Intermediate/EditorContribution-{captor,witness,chain,summary}QA/Saved/trial.png`。単体版はソース保存後に更新する。
+720pで、河港を取った関羽、通常攻撃で取った張飛に応じる劉備、初陣の連鎖に参加した関羽、通常の河港の結果画面を実描画して目視確認した。本文・肖像・主人公の顔と操作欄の収まり、占領隊と連鎖参加者が分かれた一行、次の戦役へ進むボタンを確認した。`Intermediate/EditorContribution-{captor,witness,chain,summary}QA/Saved/trial.png`。
+
+ソースを `dc75d0c` で保存後、Windows単体版を更新。起動入口 `Windows/GunyuTactics.exe` からGPU重点５群が成功（0 FAIL、`Intermediate/contribution-aftermath-packaged-focused.log`）。720pで河港を取った関羽・連鎖に参加した関羽・通常の結果画面を実描画し、本文・肖像・主人公の顔・担当者の一行と次の戦役へのボタンを目視確認した。画像は `Intermediate/PackagedContribution-{captor,chain,summary}QA/Saved/trial.png`。配布物は640.6MB（610.9MiB）。検証は専用UserDirへ分離し、配布物にセーブ・ログ・ダンプを含めない。外部フォントはTTFとOFLだけを収録した。
 
 ## 残る範囲と次
 
