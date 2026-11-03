@@ -38,7 +38,14 @@ bool ATacticalController::ReliefStorySmokeTest()
     Field->PrepareReliefStoryPreview(0);auto S=Read();
     if(!Check(S && S->journey.won && S->journey.history[2].review.relief.size()==1 && S->journey.history[2].review.relief[0].outcome==JourneyReliefOutcome::Held &&
         Field->Presentation().Journey.StoryFacts.Contains(TEXT("交代直後の更新で守備を確認")),TEXT("actual public handover and subsequent guard commands win with a checked aftermath fact"))) return false;
-    Field->Issue(ETacticalCommand::TalkLiu);OpenOfficerNovel();
+    OpenJourneyEntry();
+    if(!Check(!bEpisodeOpen && Field->Presentation().Journey.CampaignChange.Contains(TEXT("張飛 → 劉備")),TEXT("role summary is visible without forcing another scene or blocking continuation"))) return false;
+    OpenEpisode();
+    if(!Check(EpisodeSnapshot.Lines.Num()==4 && EpisodeSnapshot.Lines[1].Speaker==0 && EpisodeSnapshot.Lines[2].Speaker==2 && EpisodeSnapshot.Lines[3].Speaker==3 &&
+        Contains(TEXT("翼徳、守りは受け取った")) && Contains(TEXT("兄者の旗")),TEXT("actual successor and predecessor replace the generic ensemble aftermath"))) return false;
+    std::vector<std::uint8_t> SceneBefore,SceneAfter;Field->ExportSession(SceneBefore);BuildInterface();StepEpisode(1);NovelHistoryText(0);Field->ExportSession(SceneAfter);
+    if(!Check(SceneBefore==SceneAfter && Field->CanIssue(ETacticalCommand::Continue),TEXT("scene reading is immutable and keeps the real next chapter available"))) return false;
+    CloseEpisode();Field->Issue(ETacticalCommand::TalkLiu);OpenOfficerNovel();
     if(!Check(bEpisodeOpen && bNovelPersonal && EpisodeSnapshot.Title==TEXT("帰陣の語らい ／ 劉備") && Contains(TEXT("両方に役目")),TEXT("Liu's actual relief reaction reaches the personal novel"))) return false;
     const auto Trust=S->journey.officerTrust;std::vector<std::uint8_t> Before,After;
     Field->ExportSession(Before);BuildInterface();NovelHistoryText(0);VisibleNovelText();Field->ExportSession(After);
@@ -53,10 +60,14 @@ bool ATacticalController::ReliefStorySmokeTest()
     Field->PrepareReliefStoryPreview(2);S=Read();Field->Issue(ETacticalCommand::TalkLiu);OpenOfficerNovel();
     if(!Check(S && S->journey.history[2].review.relief.size()==1 && S->journey.history[2].review.relief[0].outcome==JourneyReliefOutcome::Lost &&
         Field->Presentation().Journey.StoryFacts.Contains(TEXT("守備条件を満たせなかった")) && Contains(TEXT("人を入れれば守れる")) && !Contains(TEXT("両方に役目")),TEXT("actual exposed arrival gives failure facts and reflection instead of success praise"))) return false;
+    CloseEpisode();OpenEpisode();
+    if(!Check(EpisodeSnapshot.Lines.Num()==4 && Contains(TEXT("着けば守れると思った")) && !Contains(TEXT("二人の名")),TEXT("failed handover reaches the main scene without a success celebration"))) return false;
     CloseEpisode();Field->PrepareReliefStoryPreview(1);S=Read();Field->Issue(ETacticalCommand::TalkZhang);OpenOfficerNovel();
     if(!Check(S && S->journey.history[2].review.relief.size()==1 && S->journey.history[2].review.relief[0].outcome==JourneyReliefOutcome::Recovered && S->journey.history[2].review.relief[0].gapCycles==1 &&
         Field->Presentation().Journey.StoryFacts.Contains(TEXT("1回の空白後")) && Contains(TEXT("待ってる間")),TEXT("real RT occupancy gap and later arrival reach the aftermath and Zhang's conversation"))) return false;
+    CloseEpisode();OpenEpisode();
+    if(!Check(Contains(TEXT("空白のあと")) && Contains(TEXT("待ってる間")),TEXT("real RT recovery remains distinct in the ensemble as well as the personal novel"))) return false;
     CloseEpisode();Field->FirstMission=Mission;Field->EnemyPolicy=Policy;Field->bStartWithCouncil=Council;Field->bRealtimeCommand=Realtime;Field->bLegacyJourney=Legacy;
     Field->Issue(ETacticalCommand::Restart);
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_RELIEF_STORY: PASS (public moves/guard/result, true held/lost/recovered facts, personalized novel, immutable reading and save/load)"));return true;
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_RELIEF_STORY: PASS (public moves/guard/result, true held/lost/recovered facts, named ensemble and personal novel, optional summary, immutable reading, continuation and save/load)"));return true;
 }

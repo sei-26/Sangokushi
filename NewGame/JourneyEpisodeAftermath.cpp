@@ -1,5 +1,6 @@
 ﻿#include "JourneyEpisode.hpp"
 #include "StrategistJourney.hpp"
+#include "JourneyAftermathRole.hpp"
 namespace frontline
 {
     void BuildEpisodeAftermath(const StrategistJourney& j,JourneyEpisode& e)
@@ -30,6 +31,8 @@ namespace frontline
                 {-1,U"名を呼ぶ者がいる。戻る席がある。この軍師の物語は、ここから始まる。",U"序章・了。火の向こうには、まだ見ぬ旗が揺れていた。"}});
             return;
         }
+        const auto role=ReadRoleAftermath(j);
+        if(!role.lines.empty()) { e.lines=role.lines;e.setting=role.summary;return; }
         if(j.withdrawn || !j.won)
         {
             e.question=U"果たせなかった戦いを、誰と語り直すのか。";

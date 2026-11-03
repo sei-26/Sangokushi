@@ -1,5 +1,6 @@
 ﻿#include "JourneyEpisode.hpp"
 #include "JourneyCampaign.hpp"
+#include "JourneyAftermathRole.hpp"
 #include "StrategistJourney.hpp"
 namespace frontline
 {
@@ -40,6 +41,8 @@ namespace frontline
         else e.lines={{-1,beat.change,U"一戦の結果が、次の役目を変える。"},
             {j.mission==1 ? 2:0,j.mission==1 ? U"港の旗が変わったぞ！ 軍師、これで本隊が動けるんだな。":U"君の采配で、次へ進む道ができた。残った兵も糧も、そのまま次へ連れていこう。",U"勝った理由と代償が、仲間の記憶に残る。"},
             {3,beat.next,U"次へ進む返答と約束は、戦後の画面で任意に選べる。"}};
+        const auto role=ReadRoleAftermath(j);
+        if(!role.lines.empty()) { e.lines=role.lines;e.setting=role.summary; }
         return e;
     }
     std::vector<JourneyDialogueLine> CampaignPortConversation(const StrategistJourney& j,int who)

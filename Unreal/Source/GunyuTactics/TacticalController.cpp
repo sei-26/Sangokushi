@@ -426,6 +426,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=ReliefAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefStoryOnly")))
     { const bool bPassed=ReliefStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuRoleAftermathOnly")))
+    { const bool Passed=EpisodeInterfaceSmokeTest() && CampaignPacingSmokeTest() && ReliefStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefOnly")))
     { const bool bPassed=Field->ReliefSmokeTest() && ReliefInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPositionOnly")))
@@ -639,10 +641,23 @@ void ATacticalController::PlayerTick(float Delta)
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ReliefStory="),ReliefStory))
     {
         Field->PrepareReliefStoryPreview(ReliefStory);CloseEpisode();
-        int Officer=0;FParse::Value(FCommandLine::Get(),TEXT("ReliefStoryOfficer="),Officer);
-        const ETacticalCommand Talk[]={ETacticalCommand::TalkLiu,ETacticalCommand::TalkGuan,ETacticalCommand::TalkZhang};
-        Field->Issue(Talk[FMath::Clamp(Officer,0,2)]);OpenOfficerNovel();
-        EpisodePage=FMath::Max(0,EpisodeSnapshot.Lines.Num()-3);NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuRoleAftermath")))
+        {
+            if(!FParse::Param(FCommandLine::Get(),TEXT("GunyuRoleSummary")))
+            { OpenEpisode();int Page=1;FParse::Value(FCommandLine::Get(),TEXT("RolePage="),Page);EpisodePage=FMath::Clamp(Page,0,FMath::Max(0,EpisodeSnapshot.Lines.Num()-1));NovelElapsed=1000;NovelStageTime=NovelLineTime=1; }
+            const auto& P=Field->Presentation().Journey;
+            const bool Valid=P.bDebrief && P.Episode.Lines.Num()==4 && P.Episode.Lines[1].Speaker==0 && P.Episode.Lines[2].Speaker==2 && P.CampaignChange.Contains(TEXT("張飛 → 劉備"));
+            const auto Text=P.Episode.Lines.IsValidIndex(1) ? P.Episode.Lines[1].Text:FString();
+            UE_LOG(LogTemp,Display,TEXT("GUNYU_ROLE_AFTERMATH_CAPTURE: %s (%s / %s)"),Valid ? TEXT("PASS"):TEXT("FAIL"),*P.Episode.Setting,*Text);
+            if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        }
+        else
+        {
+            int Officer=0;FParse::Value(FCommandLine::Get(),TEXT("ReliefStoryOfficer="),Officer);
+            const ETacticalCommand Talk[]={ETacticalCommand::TalkLiu,ETacticalCommand::TalkGuan,ETacticalCommand::TalkZhang};
+            Field->Issue(Talk[FMath::Clamp(Officer,0,2)]);OpenOfficerNovel();
+            EpisodePage=FMath::Max(0,EpisodeSnapshot.Lines.Num()-3);NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+        }
     }
     int ReliefCouncil=1;
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ReliefCouncil="),ReliefCouncil))

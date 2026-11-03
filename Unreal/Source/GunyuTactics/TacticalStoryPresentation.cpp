@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyAftermathRole.hpp"
 using namespace frontline;
 void ATacticalField::BuildStoryPresentation()
 {
@@ -16,6 +17,11 @@ void ATacticalField::BuildStoryPresentation()
         if(J.CurrentPledge()!=JourneyPledge::None) P.PledgeText=TEXT("主人公が交わした約束：")+JourneyText(PledgeName(J.CurrentPledge()));
     }
     const auto& Story=J.history[J.mission].story;
+    if(P.bCampaignFlow && P.bDebrief)
+    {
+        const auto Aftermath=ReadRoleAftermath(J);
+        if(!Aftermath.lines.empty()) P.CampaignChange+=TEXT("\n")+JourneyText(Aftermath.summary);
+    }
     if(P.bDebrief || P.bComplete)
     {
         P.StoryTitle=JourneyText(BattleStoryName(Story,J.won,J.withdrawn));
