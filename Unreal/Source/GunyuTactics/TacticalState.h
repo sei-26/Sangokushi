@@ -5,6 +5,7 @@
 #include "JourneyChainSignal.hpp"
 #include "JourneyBattleWatch.hpp"
 #include "JourneyBattleChoices.hpp"
+#include "JourneySupport.hpp"
 #include "TacticalMissionResponse.h"
 #include <memory>
 
@@ -24,6 +25,9 @@ struct FJourneyState
     std::vector<int> BattleChoiceKey;
     std::vector<frontline::JourneyBattleChoice> BattleChoices;
     int BattleChoiceVersion=0; // Display-only generation; never saved.
+    std::vector<int> SupportKey;
+    std::vector<frontline::JourneySupportChoice> SupportChoices;
+    int SupportVersion=0;
     std::array<frontline::ChainTactic, 3> SelectedTactics{frontline::ChainTactic::Lure, frontline::ChainTactic::Ambush, frontline::ChainTactic::Breakthrough};
     int Selected = 0, Target = 3;
     ETacticalInput Input = ETacticalInput::Select;

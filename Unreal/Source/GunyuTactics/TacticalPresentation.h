@@ -98,6 +98,12 @@ struct FJourneyEpisodePresentation
     FString Key,Title,Place,Setting,Question;
     TArray<FDialoguePresentation> Lines;
 };
+struct FSupportChoicePresentation
+{
+    int Actor=-1,Goal=-1;
+    FString Title,Outcome,Cost,Detail;
+    bool bEnabled=false;
+};
 struct FJourneyPresentation
 {
     FString Heading, Speaker, Dialogue, Resources, Outcome, Relationships, Context, PrimaryLabel, PromiseText, History;
@@ -205,6 +211,8 @@ struct FTacticalPresentation
     TArray<int> ConvoyRoute;
     FString MarchSummary,ArrivalLabel;
     TArray<FOfficerPresentation> Officers;
+    TArray<FSupportChoicePresentation> SupportChoices;
+    int SupportVersion=0;
     TArray<FOrderPresentation> Orders;
     TArray<FTacticOptionPresentation> Tactics;
     TArray<FEnemyReadPresentation> EnemyReads;

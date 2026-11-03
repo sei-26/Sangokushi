@@ -96,6 +96,7 @@ void ATacticalField::BuildPresentation()
     BuildEnemyPresentation();
     BuildMissionPresentation();
     BuildBattleChoices();
+    BuildSupportChoices();
     if (J.HasConvoy() && TacticChain::Living(J.world,StrategistJourney::ConvoyArmy))
     {
         HUD.ConvoyRoute.Add(J.world.armies[StrategistJourney::ConvoyArmy].tile);

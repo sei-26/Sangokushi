@@ -60,6 +60,7 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
         + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& H=Field->Presentation();return H.Officers.IsValidIndex(H.Selected) ? H.Officers[H.Selected].Name:FString(); },25,Gold)]
         + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this] { return Field->IsAutoBattle() ? Field->Presentation().ClockLabel:Field->Presentation().MissionAdvice; },15)]]];
     Simple->AddSlot().AutoHeight().Padding(0,6,0,2)[BuildBattleChoicesInterface()];
+    Simple->AddSlot().AutoHeight().Padding(0,2,0,4)[BuildSupportChoicesInterface()];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,6)[SNew(SBox).HeightOverride(38)
       .ToolTipText_Lambda([this] { return FText::FromString(Field->CanIssue(ETacticalCommand::AutoBattle) ? TEXT("味方3隊の移動・戦法・目標の守備を任せる。損耗と戦果は本当の結果。いつでも指揮へ戻れる。"):TEXT("予約した戦法や合図を実行・解除してから任せよう。") ); })
       [Button([this] { return Field->IsAutoBattle() ? TEXT("自分で指揮する"):Field->Presentation().bConvoyMission ? TEXT("護送を任せる"):TEXT("武将たちに任せる"); },[this] { Field->Issue(ETacticalCommand::AutoBattle); },[this] { return Field->CanIssue(ETacticalCommand::AutoBattle); })]];

@@ -2,6 +2,7 @@
 #include "Camera/CameraActor.h"
 #include "TacticalMissionResponse.h"
 #include "TacticalContributionQA.h"
+#include "TacticalSupportQA.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/World.h"
 #include "Engine/GameViewportClient.h"
@@ -391,6 +392,8 @@ void ATacticalController::PlayerTick(float Delta)
     }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuChoicesOnly")))
     { const bool Passed=Field->BattleChoicesSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuSupportOnly")))
+    { const bool Passed=Field->SupportChoicesSmokeTest() && Field->BattleChoicesSmokeTest() && PlanAdviceSmokeTest() && ReliefAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTempoOnly")))
     { const bool Passed=Field->RealtimeSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
@@ -649,7 +652,21 @@ void ATacticalController::PlayerTick(float Delta)
         OpenJourneyEntry();CouncilElapsed=1000;CouncilStageTime=CouncilLineTime=1;
         if(FParse::Param(FCommandLine::Get(),TEXT("CooperationMap"))) OpenPlanningExample();
         if(FParse::Param(FCommandLine::Get(),TEXT("CooperationAdopt"))) ApplyPlanningExample();
+        if(FParse::Param(FCommandLine::Get(),TEXT("SupportAttackCase"))) Field->Issue(ETacticalCommand::PlanAmbush);
         if(FParse::Param(FCommandLine::Get(),TEXT("CooperationDeploy"))) DeployNovelPlan();
+        if(FParse::Param(FCommandLine::Get(),TEXT("SupportPreview")))
+        {
+            int Updates=0;FParse::Value(FCommandLine::Get(),TEXT("SupportAdvance="),Updates);
+            for(int N=0;N<FMath::Clamp(Updates,0,4);++N) { Field->Issue(ETacticalCommand::RealtimeStep);Field->AdvancePresentation(30); }
+            if(FParse::Param(FCommandLine::Get(),TEXT("SupportAttackCase")) && !PrepareSupportContactPreview(Field))
+            { UE_LOG(LogTemp,Error,TEXT("GUNYU_SUPPORT_CAPTURE: FAIL (explicit visible-contact fixture)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+            Field->SelectOfficer(0);const auto& H=Field->Presentation();int Choice=-1;
+            if(H.SupportChoices.Num()!=2) { UE_LOG(LogTemp,Error,TEXT("GUNYU_SUPPORT_CAPTURE: FAIL (missing choices)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+            const bool Apply=FParse::Value(FCommandLine::Get(),TEXT("SupportChoice="),Choice);
+            if(Apply && !Field->UseSupportChoice(Choice,H.SupportVersion)) { UE_LOG(LogTemp,Error,TEXT("GUNYU_SUPPORT_CAPTURE: FAIL (choice rejected)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+            Focus=Field->VisualUnits()[0].Position;LabelLayoutFrame=MAX_uint64;
+            UE_LOG(LogTemp,Display,TEXT("GUNYU_SUPPORT_CAPTURE: PASS (real cooperation council, normal deployment, attacks=%d, %s)"),H.BattleChoices.Num(),Apply ? TEXT("ordinary support order"):TEXT("two readable choices"));
+        }
         const auto& P=Field->Presentation().Journey;const bool Deployed=FParse::Param(FCommandLine::Get(),TEXT("CooperationDeploy"));
         const bool Valid=Deployed ? Field->Presentation().bBattle && Field->RealtimePaused():P.bPreparation && P.ExampleAdviser==(CooperationCouncil==3 ? 2:1);
         UE_LOG(LogTemp,Display,TEXT("GUNYU_COOPERATION_CAPTURE: %s (%s)"),Valid ? TEXT("PASS"):TEXT("FAIL"),*P.ExampleReason);

@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+自由な隊に北・南の援護先を示す読取は `NewGame/JourneySupport.cpp`、公開状況の変更確認は `JourneySupportContext.cpp`。UEの通常指揮への接続は `TacticalSupportChoices.cpp`、二択の表示は `TacticalSupportInterface.cpp`。[実行する行動・代償・対象範囲](SUPPORT_CHOICES.md)。
+
 前戦で連鎖を担った武将が次の役を志願する案は `NewGame/JourneyContributionPlan.cpp`、軍議の４台詞は `JourneyContributionCouncil.cpp`。既存の `PlanExample` と採用操作を使い、通常の担当・行軍・支払いへつなぐ。[記憶から次の役目へ](COOPERATION_COUNCIL.md)。
 
 河港の占領隊と成功した連鎖の参加者を戦後へ返す読取は `NewGame/JourneyContributionAftermath.cpp`、人物と役割ごとの声は `JourneyContributionVoices.cpp`。既存の `JourneyAftermathRole.cpp` へ接続し、同じ本幕と通常の結果表示を使う。[根拠と実戦確認](CONTRIBUTION_AFTERMATH.md)。

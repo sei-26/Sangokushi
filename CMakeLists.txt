@@ -50,6 +50,8 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyContributionVoices.cpp
     NewGame/JourneyContributionPlan.cpp
     NewGame/JourneyContributionCouncil.cpp
+    NewGame/JourneySupport.cpp
+    NewGame/JourneySupportContext.cpp
     NewGame/JourneyChainSignal.cpp
     NewGame/JourneyBattleWatch.cpp
     NewGame/JourneyOrderRead.cpp
@@ -124,6 +126,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_role_aftermath tests/JourneyRoleAftermathTests.cpp)
     add_rules_test(journey_contribution_aftermath tests/JourneyContributionAftermathTests.cpp)
     add_rules_test(journey_cooperation_plan tests/JourneyCooperationPlanTests.cpp)
+    add_rules_test(journey_support tests/JourneySupportTests.cpp)
     add_rules_test(journey_relief_advice tests/JourneyReliefAdviceTests.cpp)
     add_rules_test(journey_relief_approach tests/JourneyReliefApproachTests.cpp)
     add_rules_test(journey_opening tests/JourneyOpeningTests.cpp)

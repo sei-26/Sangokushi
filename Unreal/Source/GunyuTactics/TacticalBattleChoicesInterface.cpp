@@ -24,11 +24,12 @@ TSharedRef<SWidget> ATacticalController::BuildBattleChoicesInterface()
               + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Title; },16,Gold)]
               + SVerticalBox::Slot().AutoHeight().Padding(0,3)[Label([Read] { return Read().Outcome; },12)]
               + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Cost; },11)]]];
-        Choices->AddSlot().AutoHeight().Padding(0,0,0,7)[SNew(SBox).HeightOverride(112)
+        Choices->AddSlot().AutoHeight().Padding(0,0,0,7)[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().SupportChoices.IsEmpty() ? FOptionalSize(112):FOptionalSize(102); })
           .Visibility_Lambda([this,Index] { return Field->Presentation().BattleChoices.IsValidIndex(Index) ? EVisibility::Visible:EVisibility::Collapsed; })[Card]];
     }
     Choices->AddSlot().AutoHeight()[SNew(SBox)
-      .Visibility_Lambda([this] { return Field->Presentation().BattleChoices.IsEmpty() ? EVisibility::Visible:EVisibility::Collapsed; })
+      .Visibility_Lambda([this] { const auto& H=Field->Presentation();return H.BattleChoices.IsEmpty() && H.SupportChoices.IsEmpty() ? EVisibility::Visible:EVisibility::Collapsed; })
       [Label([this] { return Field->Presentation().BattleChoiceReason; },15)]];
-    return SNew(SBox).HeightOverride_Lambda([this] { const int Count=Field->Presentation().BattleChoices.Num();return FOptionalSize(Count>0 ? 26+Count*119:90); })[Choices];
+    return SNew(SBox).HeightOverride_Lambda([this] { const auto& H=Field->Presentation();const int Count=H.BattleChoices.Num();return FOptionalSize(Count>0 ? 26+Count*(H.SupportChoices.IsEmpty() ? 119:109):H.SupportChoices.IsEmpty() ? 90:0); })
+      .Visibility_Lambda([this] { const auto& H=Field->Presentation();return H.BattleChoices.IsEmpty() && !H.SupportChoices.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })[Choices];
 }
