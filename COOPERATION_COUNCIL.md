@@ -47,7 +47,9 @@ EditorビルドとGPU重点７群が成功（0 FAIL）。実戦の正式な記�
 
 720pで関羽・張飛の志願、未採用の配置案、採用後の実際の担当、出陣後の指示を実描画して目視確認した。未採用と採用済みを色だけでなく担当欄・文言で分け、劉備が未指定、関羽が北、張飛が南となることを確認した。返答に1・2を明記した後もEditorを再ビルドし、関羽の軍議を再描画して確認した。画像は `Intermediate/EditorCooperationPlan-{guan,zhang,preview,adopted,orders}QA/Saved/trial.png`。
 
-最後に、先遣伏兵が初期には準備される点を説明へ反映し、先遣伏兵・予備糧の両方で通常の出陣と行軍、行軍による潜伏解除を確認する試験に広げ、共通33群が再び成功した。単体版はこのソース保存後に更新する。
+最後に、先遣伏兵が初期には準備される点を説明へ反映し、先遣伏兵・予備糧の両方で通常の出陣と行軍、行軍による潜伏解除を確認する試験に広げ、共通33群が再び成功した。
+
+ソースを `201088f` でGitHubへ保存後、Windows単体版を更新。起動入口 `Windows/GunyuTactics.exe` からGPU重点７群が成功（0 FAIL、`Intermediate/cooperation-plan-packaged-focused.log`）。720pで関羽の志願、採用後の担当、出陣後の指示を実描画して目視確認した。返答の1・2、本文と肖像の収まり、未指定の劉備と北の関羽・南の張飛、出陣後の守備未成立と通常の指示を確認。画像は `Intermediate/PackagedCooperationPlan-{guan,adopted,orders}QA/Saved/trial.png`。配布物は640.6MB（610.9MiB）。検証は専用UserDirへ分離し、配布物にセーブ・ログ・ダンプを含めない。外部フォントはTTFとOFLだけを収録した。起動案内の1・2の説明も軍議の会話中と明記した。
 
 ## 次の改善候補
 
