@@ -36,7 +36,7 @@ void ATacticalController::HandleEpisodeKey(FKey Key)
         {
             if(Key==EKeys::Left) { if(CouncilPage>0) { --CouncilPage;CouncilElapsed=1000;CouncilLineTime=0; }return; }
             if(Key==EKeys::Enter || Key==EKeys::SpaceBar || Key==EKeys::Right) { NextCouncilLine();return; }
-            if(Key==EKeys::One || Key==EKeys::Two) { ChooseCouncilDecision(Key==EKeys::One ? 3:4);return; }
+            if(Key==EKeys::One || Key==EKeys::Two) { CouncilChoice(Key==EKeys::One ? 0:1);return; }
         }
         if(Key==EKeys::Escape) { if(bNovelMap) bNovelMap=false;else if(bCouncilLedger || bNovelAdvice) { bCouncilLedger=bNovelAdvice=false; }else bNovelPlan=false; }
         else if(Key==EKeys::A) { bNovelMap=false;bNovelAdvice=!bNovelAdvice; }

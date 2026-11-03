@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+前戦で連鎖を担った武将が次の役を志願する案は `NewGame/JourneyContributionPlan.cpp`、軍議の４台詞は `JourneyContributionCouncil.cpp`。既存の `PlanExample` と採用操作を使い、通常の担当・行軍・支払いへつなぐ。[記憶から次の役目へ](COOPERATION_COUNCIL.md)。
+
 河港の占領隊と成功した連鎖の参加者を戦後へ返す読取は `NewGame/JourneyContributionAftermath.cpp`、人物と役割ごとの声は `JourneyContributionVoices.cpp`。既存の `JourneyAftermathRole.cpp` へ接続し、同じ本幕と通常の結果表示を使う。[根拠と実戦確認](CONTRIBUTION_AFTERMATH.md)。
 
 守備交代を戦後の本幕へ返す読取は `NewGame/JourneyAftermathRole.cpp`、前任・後任の声は `JourneyAftermathRoleVoices.cpp`。`JourneyCampaignDrama.cpp` / `JourneyEpisodeAftermath.cpp` が場面に接続し、`TacticalStoryPresentation.cpp` が通常の結果画面にも担当者を示す。[条件と確認](ROLE_AFTERMATH.md)。

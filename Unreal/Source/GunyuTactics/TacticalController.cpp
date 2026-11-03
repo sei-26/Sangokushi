@@ -439,6 +439,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=Field->GuardControlSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdviceOnly")))
     { const bool bPassed=PlanAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCooperationPlanOnly")))
+    { const bool Passed=PlanAdviceSmokeTest() && CouncilSceneSmokeTest() && NovelFlowSmokeTest() && CampaignPacingSmokeTest() && ReliefAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPreparationOnly")))
     { const bool bPassed=PreparationMeaningSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCampaignOnly")))
@@ -639,6 +641,20 @@ void ATacticalController::PlayerTick(float Delta)
         { Field->CommitRelief();Field->AdvancePresentation(ReliefBeat); }
     }
     int ReliefStory=0;
+    int CooperationCouncil=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("CooperationCouncil="),CooperationCouncil))
+    {
+        CloseEpisode();if(!PrepareCooperationCouncilPreview(Field,CooperationCouncil))
+        { UE_LOG(LogTemp,Error,TEXT("GUNYU_COOPERATION_CAPTURE: FAIL (actual prior battle)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        OpenJourneyEntry();CouncilElapsed=1000;CouncilStageTime=CouncilLineTime=1;
+        if(FParse::Param(FCommandLine::Get(),TEXT("CooperationMap"))) OpenPlanningExample();
+        if(FParse::Param(FCommandLine::Get(),TEXT("CooperationAdopt"))) ApplyPlanningExample();
+        if(FParse::Param(FCommandLine::Get(),TEXT("CooperationDeploy"))) DeployNovelPlan();
+        const auto& P=Field->Presentation().Journey;const bool Deployed=FParse::Param(FCommandLine::Get(),TEXT("CooperationDeploy"));
+        const bool Valid=Deployed ? Field->Presentation().bBattle && Field->RealtimePaused():P.bPreparation && P.ExampleAdviser==(CooperationCouncil==3 ? 2:1);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_COOPERATION_CAPTURE: %s (%s)"),Valid ? TEXT("PASS"):TEXT("FAIL"),*P.ExampleReason);
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     int ContributionScene=0;
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ContributionScene="),ContributionScene))
     {

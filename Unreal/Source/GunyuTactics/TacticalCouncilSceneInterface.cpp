@@ -54,7 +54,7 @@ void ATacticalController::BuildCouncilScene(TSharedRef<SCanvas> Canvas)
     auto Choices=SNew(SHorizontalBox).Visibility_Lambda(Visible);
     for(int I=0;I<2;++I)
         Choices->AddSlot().FillWidth(1).Padding(I==0 ? FMargin(0,0,16,0):FMargin(0))
-          [Button([this,I] { return CouncilChoiceLabel(I); },[this,I] { CouncilChoice(I); })];
+          [Button([this,I] { return FString::Printf(TEXT("%d  "),I+1)+CouncilChoiceLabel(I); },[this,I] { CouncilChoice(I); })];
     Canvas->AddSlot().Position(FVector2D(48,752)).Size(FVector2D(1504,68))[Choices];InputPanels.Add(Choices);
     auto Footer=SNew(SHorizontalBox).Visibility_Lambda(Visible)
       + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([this] { const auto& P=Field->Presentation().Journey;const auto* Plan=P.Plans.FindByPredicate([](const FPreparationPresentation& V) { return V.bSelected; });

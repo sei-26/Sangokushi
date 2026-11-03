@@ -7,6 +7,8 @@ namespace frontline
     {
         std::u32string name,purpose,manualTask,caution,reason,warning;
         int adviser=-1;
+        bool remembersCooperation=false;
+        std::u32string offer;
         std::array<JourneyAssignment,3> assignments{};
     };
     JourneyPlanExample PlanExample(const StrategistJourney&);

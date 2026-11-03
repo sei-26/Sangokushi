@@ -67,7 +67,7 @@ FString ATacticalController::CouncilChoiceLabel(int Index) const
         if(P.bChoosePromise) return Index==0 ? TEXT("まず、民の退路を開こう\n先鋒を崩すか、出口を確保する"):TEXT("車が着くまで、俺たちで守る\n護衛600・その兵糧900を追加");
         return Index==0 ? TEXT("そのための配置を、一緒に決めよう"):TEXT("二人の案も、聞かせてくれ");
     }
-    if(CouncilTopic<0) return Index==0 ? TEXT("関羽の先手案を聞く"):TEXT("張飛の立て直し案を聞く");
+    if(CouncilTopic<0) return Index==0 ? TEXT("今の配置案を、地図で見せてくれ\n見るだけでは担当を変更しない"):TEXT("準備の案も、聞かせてくれ\n関羽の先手案から聞く");
     if(Index==1) return TEXT("他の意見も聞こう");
     const int Plan=CouncilTopic==1 ? 0:1;
     if(!P.Plans.IsValidIndex(Plan)) return {};
@@ -77,7 +77,7 @@ FString ATacticalController::CouncilChoiceLabel(int Index) const
 void ATacticalController::CouncilChoice(int Index)
 {
     if(!CouncilSceneVisible() || Index<0 || Index>1) return;
-    if(CouncilTopic<0) { OpenCouncilVoice(Index==0 ? 1:2);return; }
+    if(CouncilTopic<0) { if(Index==0) OpenPlanningExample();else OpenCouncilVoice(1);return; }
     if(CouncilTopic==0)
     {
         if(Field->Presentation().Journey.bChoosePromise) ChooseCouncilDecision(Index==0 ? 1:2);
