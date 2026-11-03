@@ -7,7 +7,7 @@ TSharedRef<SWidget> ATacticalController::BuildBattleChoicesInterface()
 {
     auto Choices=SNew(SVerticalBox);
     Choices->AddSlot().AutoHeight().Padding(0,0,0,6)[Label([this]
-        { const auto& H=Field->Presentation();return H.BattleChoiceTarget.IsEmpty() ? TEXT("次の一手"):H.BattleChoiceTarget+TEXT("に、どう打つ？"); },14,Gold)];
+        { const auto& H=Field->Presentation();return !H.BattleChoicePrompt.IsEmpty() ? H.BattleChoicePrompt:H.BattleChoiceTarget.IsEmpty() ? TEXT("次の一手"):H.BattleChoiceTarget+TEXT("に、どう打つ？"); },14,Gold)];
     for(int Index=0;Index<2;++Index)
     {
         auto Read=[this,Index]() { const auto& H=Field->Presentation();return H.BattleChoices.IsValidIndex(Index) ? H.BattleChoices[Index]:FTacticalPresentation::FBattleChoice{}; };

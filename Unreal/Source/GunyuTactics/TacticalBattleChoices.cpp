@@ -4,10 +4,14 @@ using namespace frontline;
 void ATacticalField::BuildBattleChoices()
 {
     auto& H=State->HUD;const auto& J=State->Journey;
+    State->bSupportBattleChoices=false;
     if(IsPlaying() || J.stage!=JourneyStage::Battle) return;
     if(State->bAutoBattle) { H.BattleChoiceReason=TEXT("皆に任せて進軍中。勝負どころで自分の指揮へ戻ろう。");return; }
+    if(State->bRealtimeStepping || State->bRealtimeChainRequested)
+    { H.BattleChoiceReason=TEXT("命令を実行待ち。完了してから次の一手を選ぼう。");return; }
     if(!State->Orders.empty() || State->ChainSignal.Armed())
     { H.BattleChoiceReason=TEXT("予約した策がある。詳しい采配で実行・見直しができる。");return; }
+    if(BuildSupportActionChoices()) return;
     const auto* Seen=J.intelligence[0].Find(State->Target);
     if(!Seen || !Seen->current || Seen->observed.troops<=0)
     { H.BattleChoiceReason=H.MissionAdvice+TEXT("\n「目標へ」で場所を確認。");return; }
@@ -52,19 +56,26 @@ void ATacticalField::BuildBattleChoices()
 }
 bool ATacticalField::UseBattleChoice(int Index,int ExpectedVersion)
 {
-    if(IsPlaying() || State->Journey.stage!=JourneyStage::Battle || State->bAutoBattle || !State->Orders.empty() || State->ChainSignal.Armed()) return false;
-    if(ExpectedVersion!=State->BattleChoiceVersion || Index<0 || Index>=int(State->BattleChoices.size()) || BattleChoiceContext(State->Journey,State->Target)!=State->BattleChoiceKey)
+    if(IsPlaying() || State->Journey.stage!=JourneyStage::Battle || State->bAutoBattle || State->bRealtimeStepping || State->bRealtimeChainRequested || !State->Orders.empty() || State->ChainSignal.Armed()) return false;
+    auto Key=State->bSupportBattleChoices ? JourneySupportActionContext(State->Journey,State->Realtime,State->Selected):BattleChoiceContext(State->Journey,State->Target);
+    if(State->bSupportBattleChoices) Key.push_back(bRealtimeCommand);
+    const auto& ShownKey=State->bSupportBattleChoices ? State->SupportActionKey:State->BattleChoiceKey;
+    if(ExpectedVersion!=State->BattleChoiceVersion || Index<0 || Index>=int(State->BattleChoices.size()) || Key!=ShownKey)
     { State->Report=TEXT("戦況が変わった。今の提案を確認してから、もう一度選ぼう。");Refresh();return false; }
     const auto Plan=State->BattleChoices[Index];
+    const auto Support=State->bSupportBattleChoices ? State->SupportActions[Index]:JourneySupportAction{};
     const auto Check=State->Journey.Preview(Plan.orders);
     if(Check.completed!=int(Plan.orders.size())) { Refresh();return false; }
     State->Selected=Plan.orders.front().army;State->Orders=Plan.orders;
+    State->Target=Plan.target;
     State->Input=ETacticalInput::Select;State->bConfirmEndTurn=State->bConfirmWithdrawal=false;
     // A direct decision plays immediately even when the planning clock is paused.
     // Preserve standing movement and all normal action budgets; finish paused again.
     const bool WasPaused=bRealtimeCommand && State->Realtime.paused;
     if(WasPaused) { State->bRealtimeStepping=true;State->bRealtimePauseAfterPlayback=true; }
     DispatchQueuedChain();
+    if(Support.goal>=0 && State->Beats.Num()==1)
+    { auto& Beat=State->Beats[0];Beat.SupportGoal=Support.goal;Beat.SupportGuard=Support.guard;Beat.SupportNorth=Support.goal==State->Journey.goal; }
     if(!IsPlaying() && WasPaused) { State->bRealtimeStepping=false;State->bRealtimePauseAfterPlayback=false;State->Realtime.paused=true; }
     Refresh();return true;
 }

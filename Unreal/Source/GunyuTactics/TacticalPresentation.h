@@ -172,6 +172,8 @@ struct FBattleBeat
     FMissionProgress MissionBefore,MissionAfter;
     int RoadClearedBy=-1,ReliefIncoming=-1,ReliefOutgoing=-1;
     bool bReliefRecovered=false;
+    int SupportGoal=-1,SupportGuard=-1;
+    bool SupportNorth=true;
 };
 struct FTacticCinematicRead
 {
@@ -193,6 +195,7 @@ struct FTacticalPresentation
     FString BattleChoiceReason,BattleChoiceTarget;
     int BattleChoiceVersion=0;
     FString MissionStep,MissionAdvice,MissionDetail;
+    FString BattleChoicePrompt;
     int MissionFocusTile=-1;
     bool bConvoyMission=false;
     FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;

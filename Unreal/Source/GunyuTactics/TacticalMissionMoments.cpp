@@ -18,7 +18,8 @@ FMissionProgress ATacticalField::CaptureMissionProgress() const
 void ATacticalField::PublishMissionResponse()
 {
     if(State->bNoPlayback || State->Beats.IsEmpty()) return;
-    auto Response=gunyumission::Read(&State->Beats.Last());
+    auto Response=gunyumission::ReadSupport(&State->Beats.Last());
+    if(Response.Line.IsEmpty()) Response=gunyumission::Read(&State->Beats.Last());
     if(Response.Line.IsEmpty()) return;
     State->MissionResponse=MoveTemp(Response);State->MissionResponseRemaining=4.5f;
     const auto* Path=gunyuresponse::SoundPath(State->MissionResponse.Sound);

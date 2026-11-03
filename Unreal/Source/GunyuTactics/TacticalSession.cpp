@@ -36,6 +36,7 @@ bool ATacticalField::ImportSession(const std::vector<std::uint8_t>& Bytes)
     Restored->CheckpointStage=static_cast<int>(Restored->Journey.stage);Restored->CheckpointMission=Restored->Journey.mission;
     Restored->bNoPlayback=State->bNoPlayback;
     Restored->SupportVersion=State->SupportVersion+1; // A press from before loading cannot match a newly displayed proposal.
+    Restored->BattleChoiceVersion=State->BattleChoiceVersion+1;
     Restored->Report=TEXT("記録から再開しました。戦況と命令を確認し、Spaceで作戦を再開できます。");
     State=MoveTemp(Restored);Refresh();return true;
 }

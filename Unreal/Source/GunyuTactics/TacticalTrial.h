@@ -169,6 +169,7 @@ public:
     bool UseBattleChoice(int Index,int ExpectedVersion);
     bool UseSupportChoice(int Index,int ExpectedVersion);
     bool SupportChoicesSmokeTest();
+    bool SupportActionsSmokeTest();
     bool IsAutoBattle() const;
     void StopAutoBattle();
     bool ChainSignalSmokeTest();
@@ -320,6 +321,7 @@ private:
     void BuildPresentation();
     void BuildMissionPresentation();
     void BuildBattleChoices();
+    bool BuildSupportActionChoices();
     void BuildSupportChoices();
     void BuildTacticsPresentation();
     void BuildTacticAvailability();

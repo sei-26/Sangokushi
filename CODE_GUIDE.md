@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+援護役の通常戦法を比べる読取は `NewGame/JourneySupportActions.cpp`、実際の予測と局所敵数は `JourneySupportActionPreview.cpp`。カードは `TacticalSupportActions.cpp`、守備隊との返答は `TacticalSupportResponse.cpp`。[一手と実結果の反応](SUPPORT_ACTIONS.md)。
+
 自由な隊に北・南の援護先を示す読取は `NewGame/JourneySupport.cpp`、公開状況の変更確認は `JourneySupportContext.cpp`。UEの通常指揮への接続は `TacticalSupportChoices.cpp`、二択の表示は `TacticalSupportInterface.cpp`。[実行する行動・代償・対象範囲](SUPPORT_CHOICES.md)。
 
 前戦で連鎖を担った武将が次の役を志願する案は `NewGame/JourneyContributionPlan.cpp`、軍議の４台詞は `JourneyContributionCouncil.cpp`。既存の `PlanExample` と採用操作を使い、通常の担当・行軍・支払いへつなぐ。[記憶から次の役目へ](COOPERATION_COUNCIL.md)。
