@@ -427,7 +427,7 @@ void ATacticalController::PlayerTick(float Delta)
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefStoryOnly")))
     { const bool bPassed=ReliefStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuRoleAftermathOnly")))
-    { const bool Passed=EpisodeInterfaceSmokeTest() && CampaignPacingSmokeTest() && ReliefStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    { const bool Passed=NovelFlowSmokeTest() && EpisodeInterfaceSmokeTest() && CampaignPacingSmokeTest() && ReliefStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuReliefOnly")))
     { const bool bPassed=Field->ReliefSmokeTest() && ReliefInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPositionOnly")))

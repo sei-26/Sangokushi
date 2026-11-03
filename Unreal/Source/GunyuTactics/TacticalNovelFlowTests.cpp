@@ -9,6 +9,8 @@ bool ATacticalController::NovelFlowSmokeTest()
     if(!Check(ConversationTextures.Num()==3 && ConversationTextures[0] && ConversationTextures[1] && ConversationTextures[2],TEXT("three conversation poses are loaded"))) return false;
     for(int I=0;I<3;++I)
         if(!Check(NovelPortraitBrush(I)==ConversationBrushes[I].Get() && NovelPortraitBrush(I)!=CutinBrushes[I].Get(),TEXT("quiet dialogue uses its own artwork while battle cut-ins are retained"))) return false;
+    if(!Check(NovelBackgroundBrushes.Num()==2 && NovelBackgroundBrushes[0]->ImageSize==FVector2D(1672,941) && NovelBackgroundBrushes[1]->ImageSize==FVector2D(1672,941) &&
+        NovelPortraitBrush(3)->ImageSize==FVector2D(1024,1536) && NovelPortraitBrush(4)->ImageSize==FVector2D(1024,1536),TEXT("authored backdrop and full-body aspect ratios do not depend on temporary startup resources"))) return false;
     if(!Check(NovelPortraitTone(3).A==0,TEXT("a scene starts with a gentle portrait entrance"))) return false;
     AdvanceNovel(.25f);AdvanceNovel(.25f);
     if(!Check(NovelPortraitTone(3).A==1 && NovelStageTime>0,TEXT("entrance settles without advancing game time"))) return false;

@@ -32,7 +32,12 @@ namespace frontline
             return;
         }
         const auto role=ReadRoleAftermath(j);
-        if(!role.lines.empty()) { e.lines=role.lines;e.setting=role.summary;return; }
+        if(!role.lines.empty())
+        {
+            e.lines=role.lines;e.setting=role.summary;
+            if(j.withdrawn || !j.won) e.question=U"果たせなかった戦いを、誰と語り直すのか。";
+            return;
+        }
         if(j.withdrawn || !j.won)
         {
             e.question=U"果たせなかった戦いを、誰と語り直すのか。";

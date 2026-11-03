@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalWidgets.h"
+#include "TacticalNovelLayout.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBox.h"
@@ -11,9 +12,10 @@ void ATacticalController::BuildEncounterInterface(TSharedRef<SCanvas> Canvas)
     Canvas->AddSlot().Position(FVector2D::ZeroVector).Size(FVector2D(1600,900))[Scene];InputPanels.Add(Scene);
     for(int Slot=0;Slot<2;++Slot)
     {
-        auto Figure=SNew(SBox).Visibility_Lambda(Visible)[NovelPortraitWidget([this,Slot] { return Slot==0 ? 3:Field->Presentation().Journey.Portrait; },Slot==0 ? 1020:650,Slot==0 ? 1530:975)];
+        const FVector2D Size=Slot==0 ? FVector2D(gunyunovel::FullBodyWidth,gunyunovel::FullBodyHeight):FVector2D(650,975);
+        auto Figure=SNew(SBox).Visibility_Lambda(Visible)[NovelPortraitWidget([this,Slot] { return Slot==0 ? 3:Field->Presentation().Journey.Portrait; },Size.X,Size.Y)];
         if(Slot==1) { Figure->SetRenderTransformPivot(FVector2D(.5,.5));Figure->SetRenderTransform(FSlateRenderTransform(FScale2D(-1,1))); }
-        Canvas->AddSlot().Position(Slot==0 ? FVector2D(-30,-100):FVector2D(850,60)).Size(Slot==0 ? FVector2D(1020,1530):FVector2D(650,975))[Figure];
+        Canvas->AddSlot().Position(Slot==0 ? FVector2D(-30,gunyunovel::FullBodyTop):FVector2D(850,60)).Size(Size)[Figure];
     }
     auto Intro=SNew(STacticalChrome).Padding(FMargin(22,12)).Opacity(.88f).Visibility_Lambda(Visible)
         [SNew(SVerticalBox)

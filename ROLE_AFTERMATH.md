@@ -27,6 +27,7 @@
 - `NewGame/JourneyAftermathRoleVoices.cpp`：前任・後任の役割と相手に応じた言葉を選ぶ。
 - `JourneyCampaignDrama.cpp` / `JourneyEpisodeAftermath.cpp`：現行本編と旧任務の本幕へ接続。記録がなければ元の場面を使う。
 - `TacticalStoryPresentation.cpp`：通常の結果画面の「この一戦で変わったこと」に、一行の結果を添える。
+- `TacticalNovelArt.cpp` / `TacticalNovelLayout.h`：元画像の縦横比と全身立ち絵の配置。`TacticalEpisodeInterface.cpp` / `TacticalEncounterInterface.cpp` が共用する。
 - `tests/JourneyRoleAftermathTests.cpp` / `TacticalReliefStoryTests.cpp`：実際の命令から結果・会話・保存・画面操作の接続を確認する。
 
 会話を読んでも、兵・資源・信頼・約束・戦役進行は変えない。新しい保存項目や版番号は追加しない。前回の車道解消の担当者は表示だけの一時記録のため、今回の戦後の対象は保存済みの守備交代に限る。
@@ -35,9 +36,13 @@
 
 共通ルール31群が成功（0 FAIL）。実際の移動・次の守備確認・固守からの勝利、敵の圧力での不成立、リアルタイムの道塞ぎによる空白と回復、守備確認前の撤退を確認した。局所成功と大損耗・約束未達・一翼のみの区別、話者の生存、旧形式の本幕への接続は、明示した表示用の履歴ケースでも確認した。閲覧前後の保存バイト列が一致し、再開しても同じ担当者と言葉になる。未発見の敵の位置や方針は会話を変えない。
 
-EditorのGPU重点３群が成功（0 FAIL）。本幕の再読・履歴・スキップと入力の排他、任意の戦後から実際の次の戦役への進行、公開の移動・固守と勝敗からの前任・後任の会話、セーブ再開を確認した。720pで成功時の張飛、失敗時の劉備、通常の結果画面の一行と「終幕へ」を実描画して目視確認した。`Intermediate/EditorRoleAftermath-{held,failed,summary}QA/Saved/trial.png` に分離して記録する。
+最終のEditorのGPU重点４群が成功（0 FAIL）。本幕の再読・履歴・スキップと入力の排他、任意の戦後から実際の次の戦役への進行、公開の移動・固守と勝敗からの前任・後任の会話、セーブ再開、会話の表情と元画像の比率を確認した。720pで成功時の張飛、失敗時の劉備、通常の結果画面の一行と「終幕へ」を実描画して目視確認した。`Intermediate/EditorRoleAftermath-{held,failed,summary}QA/Saved/trial.png` に分離して記録する。
 
-その後、共通の勝利文が「烽火が消えず」と途中も断定していたため、「烽火をそろえ」へ修正。空白後に実際の固守から勝利しても、回復の記憶が残る試験を追加し、関係する共通３群が成功。Editorも再ビルドした。単体版の更新はこのソース保存後に行う。
+共通の勝利文が「烽火が消えず」と途中も断定していたため、「烽火をそろえ」へ修正。空白後に実際の固守から勝利しても、回復の記憶が残る試験を追加し、関係する共通３群が成功。旧任務の敗戦の問いも勝利の文脈にならないよう直し、関連する共通１群が成功した。
+
+最初の単体版の描画で主人公の顔が上端に切れ、Editorの構図と異なることを発見。ロード直後の一時的な画像サイズを使わず、背景1672×941・全身立ち絵1024×1536の元画像の比率へ固定した。出会いと会話に共通の850×1275・上端130の配置を使い、顔を見出しの下へ収める。修正後にEditorを再ビルドして上記４群を確認した。
+
+最終のWindows単体版を再作成し、起動入口 `Windows/GunyuTactics.exe` からGPU重点４群が成功（0 FAIL、`Intermediate/role-aftermath-final-packaged-focused.log`）。720pで成功時の張飛・失敗時の劉備・通常の結果画面を再描画し、主人公の髪と顔、台詞、操作欄、「終幕へ」を目視確認した。Editorと単体版の立ち絵の構図が一致することも確認した。画像は `Intermediate/PackagedRoleAftermath-{held,failed,summary}QA/Saved/trial.png`。配布物は640.6MB（610.9MiB）。専用UserDirへ検証を分離し、配布物にセーブ・ログ・ダンプを含めない。フォントの外部ファイルはTTFとOFLだけを収録した。
 
 ## 残る範囲と次
 

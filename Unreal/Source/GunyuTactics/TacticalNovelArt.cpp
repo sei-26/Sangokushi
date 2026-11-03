@@ -12,7 +12,8 @@ void ATacticalController::LoadNovelArt()
         auto* Texture=LoadObject<UTexture2D>(nullptr,*(FString(TEXT("/Game/Art/Novel/"))+Name+TEXT(".")+Name));
         if(Texture) Texture->SetForceMipLevelsToBeResident(3600.f);
         auto Brush=MakeShared<FSlateBrush>();Brush->SetResourceObject(Texture);Brush->DrawAs=ESlateBrushDrawType::Image;
-        Brush->ImageSize=Texture ? FVector2D(Texture->GetSizeX(),Texture->GetSizeY()):FVector2D(1600,900);
+        // Startup resources can have temporary dimensions; use the authored aspect ratios.
+        Brush->ImageSize=NovelBackgrounds.Num()<2 ? FVector2D(1672,941):FVector2D(1024,1536);
         if(NovelBackgrounds.Num()<2) { NovelBackgrounds.Add(Texture);NovelBackgroundBrushes.Add(Brush); }
         else { CutinTextures.Add(Texture);CutinBrushes.Add(Brush); }
     }

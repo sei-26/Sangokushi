@@ -37,6 +37,7 @@ int main()
     assert(f.EndTurn() && f.heldTurns==0 && f.Withdraw());const auto lost=ReadRoleAftermath(f);
     assert(lost.summary.find(U"成立せず")!=std::u32string::npos && lost.lines[1].warmMask==0 && Text(lost).find(U"任務を果たしたことにはならなかった")!=std::u32string::npos);
     assert(Text(lost).find(U"二人の名")==std::u32string::npos);
+    f.campaignFlow=false;assert(BuildJourneyEpisode(f).question.find(U"果たせなかった戦い")!=std::u32string::npos);
     auto early=Staged();MovePair(early->journey);assert(early->journey.Withdraw());
     assert(ReadRoleAftermath(early->journey).summary.find(U"未確認")!=std::u32string::npos);
     auto order=Staged();assert(order->journey.Withdraw());assert(ReadRoleAftermath(order->journey).lines.empty());
