@@ -1,37 +1,21 @@
-﻿#include "JourneySupportActions.hpp"
+﻿#include "JourneySupportActionInternal.hpp"
 #include "JourneySupport.hpp"
 #include <algorithm>
 namespace frontline
 {
-    namespace supportactions { JourneySupportAction Preview(const StrategistJourney&,int,int,int,const ChainOrder&); }
     std::vector<int> JourneySupportActionContext(const StrategistJourney& j,const JourneyRealtime& clock,int actor)
     {
         auto key=BattleChoiceContext(j,-1);const auto support=JourneySupportContext(j,clock,actor);
-        key.insert(key.end(),support.begin(),support.end());return key;
-    }
-    namespace
-    {
-        int Effect(const StrategistJourney& j,const JourneySupportAction& c)
-        {
-            const auto& o=c.plan.orders[0];const auto& seen=j.intelligence[0].Find(c.plan.target)->observed;
-            return int(c.plan.damage>=seen.troops) | (int(c.enemyTo!=seen.tile)<<1) |
-                (int(c.plan.disordered && !j.chain.disordered[o.enemy])<<2) | (int(c.plan.pressured && !j.chain.pressured[o.enemy])<<3) |
-                (int(o.tactic==ChainTactic::Disrupt && seen.stance==battle::Stance::Guard)<<4);
-        }
-        int Score(const StrategistJourney& j,const JourneySupportAction& c)
-        {
-            const int effect=Effect(j,c);
-            return 2000*(c.threatsBefore-c.threatsAfter)+1600*(effect&1)+200*(bool(effect&2))+150*(bool(effect&4))+
-                80*(bool(effect&8))+100*(bool(effect&16))+c.plan.damage+2*c.enemyMoraleLoss-c.plan.friendlyLoss-j.world.MapDistance(c.actorTo,c.goal);
-        }
+        key.insert(key.end(),support.begin(),support.end());supportactions::AddProvenanceKey(j,key);return key;
     }
     std::vector<JourneySupportAction> ReadJourneySupportActions(const StrategistJourney& j,const JourneyRealtime& clock,int actor)
     {
-        std::vector<JourneySupportAction> bait,attacks;
+        using namespace supportactions;std::vector<JourneySupportAction> bait,attacks;
         if(j.stage!=JourneyStage::Battle || j.Definition().kind!=JourneyObjective::HoldPositions || actor<0 || actor>=3 ||
            !TacticChain::Living(j.world,actor) || j.world.armies[actor].faction!=j.world.player || j.assignments[actor].duty!=JourneyDuty::None ||
            (clock.orders[actor].kind!=JourneyDirective::None && clock.orders[actor].kind!=JourneyDirective::Hold) ||
            j.world.armies[actor].tile==j.goal || j.world.armies[actor].tile==j.Definition().secondGoal) return {};
+        if(j.chain.spent[actor]) return Followups(j,clock,actor);
         for(int goal:{j.goal,j.Definition().secondGoal})
         {
             const int distance=j.world.MapDistance(j.world.armies[actor].tile,goal);if(distance<1 || distance>2) continue;
@@ -47,7 +31,7 @@ namespace frontline
                     const auto& info=TacticChain::Definition(tactic);if(info.unique || !info.targetsEnemy) continue;
                     auto Add=[&](int destination)
                     {
-                        auto c=supportactions::Preview(j,actor,goal,guard,{actor,seen.id,tactic,destination});if(c.goal<0) return;
+                        auto c=Preview(j,actor,goal,guard,{{actor,seen.id,tactic,destination}});if(c.goal<0) return;
                         if(tactic==ChainTactic::Lure) { if(c.enemyTo!=seen.observed.tile) bait.push_back(std::move(c)); }
                         else attacks.push_back(std::move(c));
                     };
@@ -64,10 +48,13 @@ namespace frontline
         for(auto* list:{&bait,&attacks}) list->erase(std::remove_if(list->begin(),list->end(),[&](const auto& c)
             { return c.goal!=goal || c.guard!=guard || c.plan.target!=target; }),list->end());
         auto Best=[&](auto& list) { std::stable_sort(list.begin(),list.end(),[&](const auto& a,const auto& b) { return Score(j,a)>Score(j,b); }); };
-        Best(bait);Best(attacks);std::vector<JourneySupportAction> result;if(!bait.empty()) result.push_back(std::move(bait.front()));
+        Best(bait);Best(attacks);std::vector<JourneySupportAction> solo=bait;solo.insert(solo.end(),attacks.begin(),attacks.end());Best(solo);
+        auto combined=Combinations(j,clock,actor,solo);
+        if(!combined.empty()) return {solo.front(),combined.front()};
+        std::vector<JourneySupportAction> result;if(!bait.empty()) result.push_back(std::move(bait.front()));
         for(auto& candidate:attacks)
         {
-            bool duplicate=false;for(const auto& c:result) if(c.goal==candidate.goal && c.plan.target==candidate.plan.target && Effect(j,c)==Effect(j,candidate)) duplicate=true;
+            bool duplicate=false;for(const auto& c:result) if(Effect(j,c)==Effect(j,candidate)) duplicate=true;
             if(!duplicate) result.push_back(std::move(candidate));if(result.size()==2) break;
         }
         return result;

@@ -170,6 +170,7 @@ public:
     bool UseSupportChoice(int Index,int ExpectedVersion);
     bool SupportChoicesSmokeTest();
     bool SupportActionsSmokeTest();
+    bool SupportCombinationSmokeTest();
     bool IsAutoBattle() const;
     void StopAutoBattle();
     bool ChainSignalSmokeTest();

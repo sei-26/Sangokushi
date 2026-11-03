@@ -7,6 +7,8 @@ namespace gunyumission
     gunyuresponse::FRead ReadCredit(const FBattleBeat* Beat);
     gunyuresponse::FRead ReadSupport(const FBattleBeat* Beat);
     bool SupportSmokeTest();
+    gunyuresponse::FRead ReadSupportCombo(const TArray<FBattleBeat>& Beats);
+    bool SupportComboSmokeTest();
     bool CreditSmokeTest();
     bool SmokeTest();
 }

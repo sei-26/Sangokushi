@@ -41,4 +41,4 @@ Editorの720pで、誘導と牽制の比較、実際の誘導後の本人・守�
 
 重点確認は `-GunyuSmoke -GunyuSupportActionsOnly`。描画は `-GunyuCapture -GunyuSimple -SupportActionPreview=0`（後方誘導）、`=1`（押し返し）、`=2`（押し出さない突撃）。`-SupportActionChoice=0 -SupportActionResolved` で実際の戦法を自然終了まで進めた局所の返答を表示する。いずれも専用の `-UserDir` と `-SaveToUserDir` へ分離し、描画では結果を一度だけ実行した時点を固定して確認する。
 
-次は、ここで作った隙を仲間が使う時に、同じ二案の枠で連携の価値を見通せるようにする案を検討する。
+作った隙を仲間へつなぐ改善は [守備役にも攻めを託す比較](SUPPORT_COMBINATION.md) として接続した。守備役の二手目と固守の代償、先に発動した後の追撃を区別する。

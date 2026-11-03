@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+守備役にも攻めを託す比較は `NewGame/JourneySupportCombination.cpp`、実記録からの単発追撃は `JourneySupportFollowup.cpp`。二手を見届けた返答は `TacticalSupportComboResponse.cpp`。[連携と固守の代償](SUPPORT_COMBINATION.md)。
+
 援護役の通常戦法を比べる読取は `NewGame/JourneySupportActions.cpp`、実際の予測と局所敵数は `JourneySupportActionPreview.cpp`。カードは `TacticalSupportActions.cpp`、守備隊との返答は `TacticalSupportResponse.cpp`。[一手と実結果の反応](SUPPORT_ACTIONS.md)。
 
 自由な隊に北・南の援護先を示す読取は `NewGame/JourneySupport.cpp`、公開状況の変更確認は `JourneySupportContext.cpp`。UEの通常指揮への接続は `TacticalSupportChoices.cpp`、二択の表示は `TacticalSupportInterface.cpp`。[実行する行動・代償・対象範囲](SUPPORT_CHOICES.md)。

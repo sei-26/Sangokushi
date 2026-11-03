@@ -74,8 +74,8 @@ bool ATacticalField::UseBattleChoice(int Index,int ExpectedVersion)
     const bool WasPaused=bRealtimeCommand && State->Realtime.paused;
     if(WasPaused) { State->bRealtimeStepping=true;State->bRealtimePauseAfterPlayback=true; }
     DispatchQueuedChain();
-    if(Support.goal>=0 && State->Beats.Num()==1)
-    { auto& Beat=State->Beats[0];Beat.SupportGoal=Support.goal;Beat.SupportGuard=Support.guard;Beat.SupportNorth=Support.goal==State->Journey.goal; }
+    if(Support.goal>=0) for(auto& Beat:State->Beats)
+    { Beat.SupportGoal=Support.goal;Beat.SupportGuard=Support.guard;Beat.SupportNorth=Support.goal==State->Journey.goal; }
     if(!IsPlaying() && WasPaused) { State->bRealtimeStepping=false;State->bRealtimePauseAfterPlayback=false;State->Realtime.paused=true; }
     Refresh();return true;
 }

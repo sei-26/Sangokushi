@@ -15,7 +15,7 @@ static std::unique_ptr<JourneySaveData> Scene(int actor=0,bool rear=false)
     for(int y=1;y<StrategistJourney::Rows-1;++y) for(int x=1;x<StrategistJourney::Columns-1;++x) j.world.tiles[Campaign::At(x,y)].terrain=Terrain::Plain;
     Place(j,1,7,6);Place(j,actor==0 ? 2:0,8,9);Place(j,actor,rear ? 5:6,6);Place(j,3,6,rear ? 6:5);
     j.world.armies[3].troops=3000;j.world.armies[3].morale=actor==2 ? 60:90;j.world.armies[3].stance=battle::Stance::Balanced;j.world.armies[4].troops=0;
-    j.chain.Reset(j.world);j.RefreshIntelligence();return s;
+    j.chain.Reset(j.world);j.chain.spent[1]=true;j.RefreshIntelligence();return s; // Keep this existing group focused on single-support tactics.
 }
 static std::vector<JourneySupportAction> Read(const JourneySaveData& s)
 { return ReadJourneySupportActions(s.journey,s.realtime,s.selected); }
@@ -24,9 +24,9 @@ static void Same(const std::vector<JourneySupportAction>& a,const std::vector<Jo
 {
     assert(a.size()==b.size());for(std::size_t n=0;n<a.size();++n)
     {
-        const auto& x=a[n];const auto& y=b[n];assert(x.goal==y.goal && x.guard==y.guard && x.actorTo==y.actorTo && x.enemyTo==y.enemyTo && x.enemyMoraleLoss==y.enemyMoraleLoss && x.threatsBefore==y.threatsBefore && x.threatsAfter==y.threatsAfter && x.clearsThreat==y.clearsThreat);
+        const auto& x=a[n];const auto& y=b[n];assert(x.goal==y.goal && x.guard==y.guard && x.actorTo==y.actorTo && x.enemyTo==y.enemyTo && x.enemyMoraleLoss==y.enemyMoraleLoss && x.threatsBefore==y.threatsBefore && x.threatsAfter==y.threatsAfter && x.clearsThreat==y.clearsThreat && x.supporter==y.supporter && x.guardActs==y.guardActs && x.followup==y.followup);
         assert(x.plan.target==y.plan.target && x.plan.damage==y.plan.damage && x.plan.moraleCost==y.plan.moraleCost && x.plan.friendlyLoss==y.plan.friendlyLoss && x.plan.disordered==y.plan.disordered && x.plan.pressured==y.plan.pressured);
-        assert(x.plan.orders.size()==1 && y.plan.orders.size()==1);const auto& p=x.plan.orders[0];const auto& q=y.plan.orders[0];assert(p.army==q.army && p.enemy==q.enemy && p.tactic==q.tactic && p.destination==q.destination);
+        assert(x.plan.orders.size()==y.plan.orders.size());for(std::size_t k=0;k<x.plan.orders.size();++k) { const auto& p=x.plan.orders[k];const auto& q=y.plan.orders[k];assert(p.army==q.army && p.enemy==q.enemy && p.tactic==q.tactic && p.destination==q.destination); }
     }
 }
 int main()

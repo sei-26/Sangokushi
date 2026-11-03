@@ -69,6 +69,7 @@ bool ATacticalField::SmokeTest()
     if (!BattleChoicesSmokeTest()) return false;
     if (!SupportChoicesSmokeTest()) return false;
     if (!gunyumission::SupportSmokeTest() || !SupportActionsSmokeTest()) return false;
+    if (!gunyumission::SupportComboSmokeTest() || !SupportCombinationSmokeTest()) return false;
     if (!MissionMomentsSmokeTest()) return false;
     if (!MissionCreditSmokeTest()) return false;
     if (!BattleStorySmokeTest()) return false;
