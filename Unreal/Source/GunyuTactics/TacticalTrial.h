@@ -383,6 +383,7 @@ private:
     TSharedRef<class SWidget> ReliefChoicesWidget();
     bool ReliefInterfaceSmokeTest();
     bool ReliefStorySmokeTest();
+    bool DefenseAftermathSmokeTest();
     bool ReliefAdviceSmokeTest();
     void PrepareReliefAdviceCapture(int Variant);
     void BuildBattleHeader(TSharedRef<class SCanvas>);

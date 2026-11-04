@@ -6,3 +6,4 @@ bool PrepareSupportContactPreview(ATacticalField*);
 bool PrepareSupportActionPreview(ATacticalField*,int Variant);
 bool PrepareSupportCombinationPreview(ATacticalField*,int Variant);
 bool PrepareDefensePreview(ATacticalField*,int Variant);
+bool PrepareDefenseAftermathPreview(ATacticalField*,int Variant);

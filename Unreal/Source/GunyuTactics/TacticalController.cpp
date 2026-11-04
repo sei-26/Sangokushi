@@ -403,6 +403,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=gunyumission::SupportComboSmokeTest() && Field->SupportCombinationSmokeTest() && gunyumission::SupportSmokeTest() && Field->SupportActionsSmokeTest() && Field->SupportChoicesSmokeTest() && Field->BattleChoicesSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseOnly")))
     { const bool Passed=gunyumission::DefenseSmokeTest() && Field->DefenseSmokeTest() && gunyumission::SupportComboSmokeTest() && Field->SupportCombinationSmokeTest() && Field->MissionMomentsSmokeTest() && MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseAftermathOnly")))
+    { const bool Passed=DefenseAftermathSmokeTest() && Field->DefenseSmokeTest() && CampaignPacingSmokeTest() && ReliefStorySmokeTest() && EpisodeInterfaceSmokeTest() && NovelFlowSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTempoOnly")))
     { const bool Passed=Field->RealtimeSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
@@ -521,6 +523,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=Field->ReliefSmokeTest();
         if(bPassed) bPassed=ReliefInterfaceSmokeTest();
         if(bPassed) bPassed=ReliefStorySmokeTest();
+        if(bPassed) bPassed=DefenseAftermathSmokeTest();
         if(bPassed) bPassed=ReliefAdviceSmokeTest();
         if(bPassed) bPassed=Field->ReliefReadinessSmokeTest();
         if(bPassed) bPassed=Field->ReliefApproachSmokeTest();
@@ -657,6 +660,16 @@ void ATacticalController::PlayerTick(float Delta)
     int SupportAction=0;
     int SupportCombo=0;
     int Defense=0;
+    int DefenseAftermath=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DefenseAftermath="),DefenseAftermath))
+    {
+        CloseEpisode();bool Valid=PrepareCooperationCouncilPreview(Field,0);
+        if(Valid) { Field->Issue(ETacticalCommand::PlanExample);Field->Issue(ETacticalCommand::PlanAmbush);Field->Issue(ETacticalCommand::Deploy);Valid=PrepareDefenseAftermathPreview(Field,DefenseAftermath); }
+        if(Valid && !FParse::Param(FCommandLine::Get(),TEXT("DefenseAftermathSummary")))
+        { OpenEpisode();int Page=1;FParse::Value(FCommandLine::Get(),TEXT("DefenseAftermathPage="),Page);EpisodePage=FMath::Clamp(Page,0,EpisodeSnapshot.Lines.Num()-1);NovelElapsed=1000;NovelStageTime=NovelLineTime=1; }
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_DEFENSE_AFTERMATH_CAPTURE: %s (actual settled command results after an authored contact boundary)"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DefensePreview="),Defense))
     {
         CloseEpisode();bool Valid=PrepareCooperationCouncilPreview(Field,0);
