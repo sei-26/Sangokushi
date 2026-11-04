@@ -42,3 +42,5 @@ EditorのGPU重点７群が成功（0 FAIL）。実際の前戦から軍議・�
 重点検証は `-GunyuSmoke -GunyuDefenseOnly`。描画は `-GunyuCapture -GunyuSimple -DefensePreview=0`（連携直後）、`1`（守備未成立）、`2`（次の固守で復旧）。いずれも `-RenderOffscreen -windowed -ResX=1280 -ResY=720 -ForceRes` と、専用の `-UserDir` / `-SaveToUserDir` を指定した。描画用の配置を読み取るだけで結果を作らず、戦法と全軍更新は通常の処理で実行する。
 
 次の候補は、こうした「誰に攻めを任せ、誰を守りに残したか」を、実際の勝ち方と戦後の短い振り返りへつなぐこと。現在の札の報告だけから物語の手柄を増やさない。
+
+2026-11-05、戦後への接続は [攻めと守りの記憶](DEFENSE_AFTERMATH.md) へ進んだ。直前の札と別に、実判定の人物集合を版11で保存し、確認した事実だけを会話へ返す。
