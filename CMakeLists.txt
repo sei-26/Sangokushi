@@ -56,6 +56,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneySupportActionPreview.cpp
     NewGame/JourneySupportCombination.cpp
     NewGame/JourneySupportFollowup.cpp
+    NewGame/JourneyDefense.cpp
     NewGame/JourneyChainSignal.cpp
     NewGame/JourneyBattleWatch.cpp
     NewGame/JourneyOrderRead.cpp
@@ -133,6 +134,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_support tests/JourneySupportTests.cpp)
     add_rules_test(journey_support_actions tests/JourneySupportActionTests.cpp)
     add_rules_test(journey_support_combination tests/JourneySupportCombinationTests.cpp)
+    add_rules_test(journey_defense tests/JourneyDefenseTests.cpp)
     add_rules_test(journey_relief_advice tests/JourneyReliefAdviceTests.cpp)
     add_rules_test(journey_relief_approach tests/JourneyReliefApproachTests.cpp)
     add_rules_test(journey_opening tests/JourneyOpeningTests.cpp)

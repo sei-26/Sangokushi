@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+二つの烽火の現在条件と直前の実判定は `NewGame/JourneyDefense.cpp`。表示は `TacticalDefenseRead.cpp` と地図の札、実更新への返答は `TacticalDefenseResponse.cpp`。[行動消費と守備の結果](BEACON_DEFENSE.md)。
+
 守備役にも攻めを託す比較は `NewGame/JourneySupportCombination.cpp`、実記録からの単発追撃は `JourneySupportFollowup.cpp`。二手を見届けた返答は `TacticalSupportComboResponse.cpp`。[連携と固守の代償](SUPPORT_COMBINATION.md)。
 
 援護役の通常戦法を比べる読取は `NewGame/JourneySupportActions.cpp`、実際の予測と局所敵数は `JourneySupportActionPreview.cpp`。カードは `TacticalSupportActions.cpp`、守備隊との返答は `TacticalSupportResponse.cpp`。[一手と実結果の反応](SUPPORT_ACTIONS.md)。

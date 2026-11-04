@@ -4,6 +4,8 @@
 #include "TacticalWidgets.h"
 #include "TacticalTargetVisual.h"
 #include "TacticalActionFocus.h"
+#include "TacticalGoalLabelLayout.h"
+#include "TacticalBattleResponse.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBorder.h"
@@ -17,11 +19,16 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
         {
             const auto& H = Field->Presentation();
             const int Tile = Index == 0 ? H.GoalTile : H.SecondGoalTile;
-            return !H.bBattle || H.Journey.bVisible || Tile < 0 ? FVector2D(-2000, -2000) : MapLabelPosition(Field->SurfaceLocation(Tile) + FVector(0, 0, 240), FVector2D(140, 34));
-        }).Size(FVector2D(140, 34))
+            const FVector2D Size=H.Defenses.IsEmpty() ? FVector2D(140,34):FVector2D(180,70);
+            if(!H.bBattle || H.Journey.bVisible || Tile<0) return FVector2D(-2000,-2000);
+            return gunyugoallabel::Place(MapLabelPosition(Field->SurfaceLocation(Tile)+FVector(0,0,240),Size),Size,bTacticCinema && Field->ReadMissionResponse().Weight>.001f);
+        }).Size_Lambda([this] { return Field->Presentation().Defenses.IsEmpty() ? FVector2D(140,34):FVector2D(180,70); })
         [SNew(SBorder).Visibility(EVisibility::HitTestInvisible).Padding(FMargin(8, 4))
          .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.07f, .055f, .02f, .94f))
-         [Label([this,Index] { return TEXT("◆ ") + (Index==0 ? Field->Presentation().GoalLabel:Field->Presentation().SecondGoalLabel); }, 13, Gold)]];
+         [SNew(SVerticalBox)
+          + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { return TEXT("◆ ") + (Index==0 ? Field->Presentation().GoalLabel:Field->Presentation().SecondGoalLabel); }, 13, Gold)]
+          + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Current:FString(); },11)]
+          + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Last:FString(); },11,Gold)]]];
     for (int Index = 0; Index < 6; ++Index)
     {
         auto Contents=SNew(SVerticalBox).Visibility(EVisibility::HitTestInvisible)

@@ -197,6 +197,7 @@ public:
     gunyuresponse::FRead ReadMissionResponse() const;
     bool MissionMomentsSmokeTest();
     bool MissionCreditSmokeTest();
+    bool DefenseSmokeTest();
     const TArray<FVisualUnit>& VisualUnits() const;
     const FBattleBeat* CurrentBeat() const;
     float BeatProgress() const;
@@ -321,6 +322,7 @@ private:
     void IssueMarchPlan(ETacticalCommand Command);
     void BuildPresentation();
     void BuildMissionPresentation();
+    void BuildDefensePresentation();
     void BuildBattleChoices();
     bool BuildSupportActionChoices();
     void BuildSupportChoices();

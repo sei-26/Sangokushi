@@ -133,8 +133,9 @@ void ATacticalController::PlayerTick(float Delta)
     const bool bDecisionCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision"));
     int SupportPreviewMode=0;const bool bSupportActionCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportActionPreview="),SupportPreviewMode);
     int SupportComboMode=0;const bool bSupportComboCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportComboPreview="),SupportComboMode);
+    int DefenseMode=0;const bool bDefenseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefensePreview="),DefenseMode);
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
-    if (!bCinemaCapture && !bDecisionCapture && !bSupportActionCapture && !bSupportComboCapture)
+    if (!bCinemaCapture && !bDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture)
     {
         if (Field->bRealtimeCommand && !bCapture && !bSmoke && !FApp::HasFocus() && !Field->RealtimePaused())
             Field->Issue(ETacticalCommand::RealtimePause);
@@ -400,6 +401,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=gunyumission::SupportSmokeTest() && Field->SupportActionsSmokeTest() && Field->SupportChoicesSmokeTest() && Field->BattleChoicesSmokeTest() && Field->MissionMomentsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuSupportComboOnly")))
     { const bool Passed=gunyumission::SupportComboSmokeTest() && Field->SupportCombinationSmokeTest() && gunyumission::SupportSmokeTest() && Field->SupportActionsSmokeTest() && Field->SupportChoicesSmokeTest() && Field->BattleChoicesSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseOnly")))
+    { const bool Passed=gunyumission::DefenseSmokeTest() && Field->DefenseSmokeTest() && gunyumission::SupportComboSmokeTest() && Field->SupportCombinationSmokeTest() && Field->MissionMomentsSmokeTest() && MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTempoOnly")))
     { const bool Passed=Field->RealtimeSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
@@ -653,6 +656,15 @@ void ATacticalController::PlayerTick(float Delta)
     int CooperationCouncil=0;
     int SupportAction=0;
     int SupportCombo=0;
+    int Defense=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DefensePreview="),Defense))
+    {
+        CloseEpisode();bool Valid=PrepareCooperationCouncilPreview(Field,0);
+        if(Valid) { Field->Issue(ETacticalCommand::PlanExample);Field->Issue(ETacticalCommand::PlanAmbush);Field->Issue(ETacticalCommand::Deploy);Valid=PrepareDefensePreview(Field,Defense); }
+        Focus=ATacticalField::TileLocation(frontline::Campaign::At(7,7));Distance=2500;LabelLayoutFrame=MAX_uint64;
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_DEFENSE_CAPTURE: %s (explicit contact fixture, actual tactics and completed defense cycles)"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("SupportComboPreview="),SupportCombo))
     {
         CloseEpisode();bool Valid=PrepareCooperationCouncilPreview(Field,0);

@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyDefense.hpp"
 using namespace frontline;
 void ATacticalField::BuildMissionPresentation()
 {
@@ -48,18 +49,8 @@ void ATacticalField::BuildMissionPresentation()
     }
     else if(J.Definition().kind==JourneyObjective::HoldPositions)
     {
-        auto Ready=[&](int Tile)
-        {
-            const int Enemies=EnemiesNear(Tile);
-            for(int A=0;A<3;++A)
-            {
-                const auto& U=J.world.armies[A];
-                if(U.tile!=Tile || U.troops<150 || U.morale<25) continue;
-                return Enemies==0 || (Enemies==1 && J.guarding[A] && U.troops>=500 && U.morale>=40);
-            }
-            return false;
-        };
-        const bool North=Ready(J.goal),South=Ready(J.Definition().secondGoal);
+        BuildDefensePresentation();
+        const bool North=ReadJourneyDefense(J,J.goal).secured,South=ReadJourneyDefense(J,J.Definition().secondGoal).secured;
         H.MissionFocusTile=!North ? J.goal:!South ? J.Definition().secondGoal:J.goal;
         H.MissionAdvice=North && South ? TEXT("両翼を守り抜こう"):!North ? TEXT("北の守備を整えよう"):TEXT("南の守備を整えよう");
         H.MissionStep=FString::Printf(TEXT("烽火 %d/%d ｜ %s"),J.heldTurns,J.RequiredHoldTurns(),North && South ?

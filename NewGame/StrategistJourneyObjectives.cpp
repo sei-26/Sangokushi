@@ -96,6 +96,7 @@ namespace frontline
 	}
 	void StrategistJourney::AdvanceObjective()
 	{
+		RecordDefenseChecks();
 		if (Definition().kind == JourneyObjective::HoldPositions)
 		{
 			const int before = heldTurns;

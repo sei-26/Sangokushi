@@ -4,6 +4,7 @@
 #include "TacticalTargetVisual.h"
 #include "TacticalActionFocus.h"
 #include "TacticalBattleResponse.h"
+#include "TacticalGoalLabelLayout.h"
 
 void ATacticalController::LayoutMapLabels()
 {
@@ -51,7 +52,11 @@ void ATacticalController::LayoutMapLabels()
     if(bEnemyDetailsOpen && !Field->IsPlaying()) Occupied.Add(FSlateRect(16,174,716,306));
     for(int Tile:{Field->Presentation().GoalTile,Field->Presentation().SecondGoalTile})
         if(Tile>=0)
-        { const auto P=MapLabelPosition(Field->SurfaceLocation(Tile)+FVector(0,0,240),FVector2D(140,34));Occupied.Add(FSlateRect(P.X,P.Y,P.X+140,P.Y+34)); }
+        {
+            const FVector2D GoalSize=Field->Presentation().Defenses.IsEmpty() ? FVector2D(140,34):FVector2D(180,70);
+            const auto P=gunyugoallabel::Place(MapLabelPosition(Field->SurfaceLocation(Tile)+FVector(0,0,240),GoalSize),GoalSize,bTacticCinema && Field->ReadMissionResponse().Weight>.001f);
+            Occupied.Add(FSlateRect(P.X,P.Y,P.X+GoalSize.X,P.Y+GoalSize.Y));
+        }
     TArray<int> Priority;
     if(Focused) { Priority.Add(Action.Actor);Priority.AddUnique(Action.Target); }
     Priority.AddUnique(Field->Presentation().Selected);Priority.AddUnique(5);

@@ -7,6 +7,7 @@
 #include "JourneyStory.hpp"
 #include "JourneyAssignment.hpp"
 #include "JourneyDifficulty.hpp"
+#include "JourneyDefense.hpp"
 
 namespace frontline
 {
@@ -54,6 +55,7 @@ namespace frontline
 		static constexpr int ConvoyArmy = 5;
 		int heldTurns = 0, convoyStep = 0, convoyEscort = 0, recoveredCargo = 0;
 		std::array<bool, 3> guarding{};
+        std::array<JourneyDefenseRead,2> defenseChecks{}; // Transient local results, excluded from save/archive and rewards.
 		bool won = false, reinforced = false;
 		JourneyPromise promise = JourneyPromise::OpenRoad;
         JourneyConvoyRoute convoyRoute=JourneyConvoyRoute::Road;
@@ -134,6 +136,7 @@ namespace frontline
         bool CompleteCommandCycle(std::size_t previousReports);
 		void EnemyTurn();
 		void AdvanceObjective();
+        void RecordDefenseChecks();
 		void SetupBattlefield();
 		void Evaluate();
 		void Finish(bool success, const char32_t* reason);

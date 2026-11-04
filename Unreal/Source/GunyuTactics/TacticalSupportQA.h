@@ -5,3 +5,4 @@ bool PrepareSupportContactPreview(ATacticalField*);
 // A bounded tactical fixture after an ordinary paid deployment, never a settled victory.
 bool PrepareSupportActionPreview(ATacticalField*,int Variant);
 bool PrepareSupportCombinationPreview(ATacticalField*,int Variant);
+bool PrepareDefensePreview(ATacticalField*,int Variant);

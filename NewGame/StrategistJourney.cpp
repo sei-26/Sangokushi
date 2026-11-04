@@ -60,6 +60,7 @@ namespace frontline
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
+		defenseChecks = {};
 		enemyPolicy = 0;
 		won = reinforced = false;
 		withdrawn = false; promise = JourneyPromise::OpenRoad; history = {};
@@ -130,6 +131,7 @@ namespace frontline
         battleReview={};battleReview.preparationTracked=campaignFlow;battleReview.reliefTracked=campaignFlow;retryRelief.reset();
         for(auto& a:assignments) a.completed=false;
 		guarding = {};
+		defenseChecks = {};
 		goal = IsRescue() ? Campaign::At(12, 11) : Definition().goal;
         reserveFood=campaignFlow && choice==1 ? 1800:0;
         const auto starts=PreparationPositions(choice);

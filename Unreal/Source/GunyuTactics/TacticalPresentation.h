@@ -153,11 +153,25 @@ struct FVisualUnit
     bool bDisordered = false, bPressured = false, bInspired = false;
     float Motion = 0;
 };
+struct FBeaconDefenseProgress
+{
+    int Goal=-1,Guard=-1,Turn=0,Reason=0;
+    bool bSecured=false,bGuarded=false,bAttackSpent=false;
+};
+struct FBeaconDefensePresentation
+{
+    FString Current,Last,Detail;
+    int Goal=-1,Guard=-1;
+    bool bReady=false,bLastSecured=false;
+};
 struct FMissionProgress
 {
     int Convoy=-1,Total=0,Held=-1,Required=0;
     int ConvoyNext=-1,DirectedMovers=0;
     TArray<int> ConfirmedReliefs;
+    int CommandTurn=0;
+    int PrimaryGoal=-1,SecondaryGoal=-1;
+    TArray<FBeaconDefenseProgress> DefenseChecks;
     bool bBattle=false,bRescue=false;
 };
 struct FBattleBeat
@@ -195,6 +209,7 @@ struct FTacticalPresentation
     FString BattleChoiceReason,BattleChoiceTarget;
     int BattleChoiceVersion=0;
     FString MissionStep,MissionAdvice,MissionDetail;
+    TArray<FBeaconDefensePresentation> Defenses;
     FString BattleChoicePrompt;
     int MissionFocusTile=-1;
     bool bConvoyMission=false;
