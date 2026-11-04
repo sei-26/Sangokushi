@@ -40,7 +40,10 @@ int main()
     f.campaignFlow=false;assert(BuildJourneyEpisode(f).question.find(U"果たせなかった戦い")!=std::u32string::npos);
     auto early=Staged();MovePair(early->journey);assert(early->journey.Withdraw());
     assert(ReadRoleAftermath(early->journey).summary.find(U"未確認")!=std::u32string::npos);
-    auto order=Staged();assert(order->journey.Withdraw());assert(ReadRoleAftermath(order->journey).lines.empty());
+    auto order=Staged();assert(order->journey.Withdraw());const auto orderedOnly=ReadRoleAftermath(order->journey);
+    assert(orderedOnly.summary.find(U" → ")==std::u32string::npos && Text(orderedOnly)==Text(ReadDefenseAftermath(order->journey)));
+    order->journey.history[2].review.confirmedDefenders=order->journey.history[2].review.spentGuardFailures=0;
+    assert(ReadRoleAftermath(order->journey).lines.empty()); // Unknown old records do not invent a handover or defender.
     auto recovered=Staged();auto& a=recovered->journey;
     // Isolate the actual RT occupied-tile delay from enemy collision, as in the existing relief suite.
     for(int enemy:{3,4}) a.world.armies[enemy].tile=a.world.armies[enemy].target=Campaign::At(13,enemy==3 ? 12:2);
@@ -68,7 +71,10 @@ int main()
     v.history[2].story.pledge=JourneyPledge::None;v.history[2].review.relief.back().outgoing=1;
     assert(ReadRoleAftermath(v).lines[2].text.find(U"兄者が守りを預かってくださった")!=std::u32string::npos);
     v.world.armies[0].troops=0;const auto quiet=ReadRoleAftermath(v);for(const auto& l:quiet.lines) assert(l.speaker!=0);
-    v.history[2].review.relief.clear();assert(ReadRoleAftermath(v).lines.empty()); // Old/unknown records get no invented handover.
+    v.history[2].review.relief.clear();const auto noHandover=ReadRoleAftermath(v);
+    assert(noHandover.summary.find(U" → ")==std::u32string::npos && Text(noHandover)==Text(ReadDefenseAftermath(v)));
+    v.history[2].review.confirmedDefenders=v.history[2].review.spentGuardFailures=0;
+    assert(ReadRoleAftermath(v).lines.empty()); // Old/unknown records get no invented handover or defender.
     j.campaignFlow=false;assert(BuildJourneyEpisode(j).lines[2].text==role.lines[2].text);
     j.campaignFlow=true;assert(j.Continue());assert(ReadRoleAftermath(j).lines.empty() && BuildJourneyEpisode(j).lines.size()==4);
     std::cout<<"Role aftermath PASS: actual checked/failed/recovered/unchecked handovers, precise participants, partial guard and costs, immutable save/load, unknown history and finale\n";

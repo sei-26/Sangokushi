@@ -10,4 +10,5 @@ namespace frontline
     // Settled/public contributions only. Reading cannot award trust or change history.
     JourneyRoleAftermath ReadRoleAftermath(const StrategistJourney&);
     JourneyRoleAftermath ReadContributionAftermath(const StrategistJourney&);
+    JourneyRoleAftermath ReadDefenseAftermath(const StrategistJourney&);
 }

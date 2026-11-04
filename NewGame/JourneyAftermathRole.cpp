@@ -10,12 +10,14 @@ namespace frontline
         const auto& h=j.history[j.mission];const auto& review=h.review;
         if(!h.completed) return result;
         const auto contribution=ReadContributionAftermath(j);
-        if(!review.reliefTracked || (j.Definition().kind==JourneyObjective::CaptureCamp && !contribution.lines.empty())) return contribution;
+        const auto defense=ReadDefenseAftermath(j);
+        const auto fallback=defense.lines.empty() ? contribution:defense;
+        if(!review.reliefTracked || (j.Definition().kind==JourneyObjective::CaptureCamp && !contribution.lines.empty())) return fallback;
         const JourneyReliefRecord* record=nullptr;
         for(auto it=review.relief.rbegin();it!=review.relief.rend();++it)
             if(it->outgoing>=0 && it->outgoing<3 && it->incoming>=0 && it->incoming<3 && it->outgoing!=it->incoming && it->departedTurn>0 && it->arrivedTurn>0)
             { record=&*it;break; }
-        if(!record) return contribution;
+        if(!record) return fallback;
         const auto& r=*record;using O=JourneyReliefOutcome;
         if(r.outcome!=O::Held && r.outcome!=O::Recovered && r.outcome!=O::Lost && r.outcome!=O::Unconfirmed) return result;
         if(r.outcome!=O::Unconfirmed && r.checkedTurn<=0) return result;

@@ -42,5 +42,10 @@ namespace frontline
     {
         defenseChecks={};if(Definition().kind!=JourneyObjective::HoldPositions) return;
         defenseChecks[0]=Inspect(*this,goal,true);defenseChecks[1]=Inspect(*this,Definition().secondGoal,true);
+        for(const auto& r:defenseChecks) if(r.guard>=0 && r.guard<3)
+        {
+            if(r.secured) battleReview.confirmedDefenders|=1<<r.guard;
+            if(r.reason==JourneyDefenseReason::GuardSpent) battleReview.spentGuardFailures|=1<<r.guard;
+        }
     }
 }
