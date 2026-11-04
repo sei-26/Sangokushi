@@ -58,6 +58,13 @@ int main()
     auto unknown=std::make_unique<JourneySaveData>(*follow);unknown->journey.lastChain={};assert(Read(*unknown).empty() && JourneySupportActionContext(unknown->journey,unknown->realtime,0)!=followKey);
     auto wrong=std::make_unique<JourneySaveData>(*follow);wrong->journey.lastChain.events[0].army=2;assert(Read(*wrong).empty());
     auto carried=std::make_unique<JourneySaveData>(*follow);carried->journey.lastChain.events[0].tactic=ChainTactic::Breakthrough;assert(Read(*carried).empty());
+    auto mixed=Scene();auto& m=mixed->journey;std::swap(m.world.armies[0].general,m.world.armies[1].general);Place(m,2,5,5);
+    m.world.tiles[m.world.armies[0].tile].terrain=Terrain::Forest;m.chain.concealed[0]=true;m.RefreshIntelligence();
+    const auto exposed=m.Preview({{0,3,ChainTactic::Ambush,-1}});assert(!m.chain.concealed[0] && exposed.completed==1 && exposed.events[0].setupPercent==100);
+    m.chain.concealed[0]=true; // Authored prepared boundary: no observation between these two real orders.
+    const auto mixedChain=m.Execute({{2,3,ChainTactic::Feint,-1},{0,3,ChainTactic::Ambush,-1}});
+    assert(mixedChain.completed==2 && mixedChain.events[1].setupPercent==125 && m.chain.pressured[3] && m.chain.disordered[3]);
+    assert(Read(*mixed).empty()); // The guard's Disrupt benefits from officer 2's pressure, not supporter 0's disorder.
     const auto end=f.Execute(next[0].plan.orders);assert(end.completed==1 && end.events[0].comboPercent==100 && f.world.armies[1].tile==f.goal && f.chain.spent[1] && Read(*follow).empty());
     std::cout<<"Support combination PASS: comparable solo/pair, real 125 percent chain vs proven 100 percent follow-up, paid guard budget, stationary posts, morale/order/other-wing protection, private partial stop and saved provenance\n";
 }

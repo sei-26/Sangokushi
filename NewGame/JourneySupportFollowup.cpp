@@ -14,18 +14,20 @@ namespace frontline::supportactions
     }
     namespace
     {
-        bool Proven(const StrategistJourney& j,int actor,int target)
+        int Proven(const StrategistJourney& j,int actor,int target)
         {
-            if(j.lastChain.prediction || !j.chain.spent[actor]) return false;
-            const auto* seen=j.intelligence[0].Find(target);if(!seen || !seen->current) return false;
+            if(j.lastChain.prediction || !j.chain.spent[actor]) return 0;
+            const auto* seen=j.intelligence[0].Find(target);if(!seen || !seen->current) return 0;
+            int opening=0;
             for(const auto& e:j.lastChain.events) if(e.success && e.combo>0 && e.army==actor && e.enemy==target && e.to==seen->observed.tile)
             {
                 const bool pressure=e.tactic==ChainTactic::Feint || (e.tactic==ChainTactic::Ambush && e.setupPercent==100);
                 const bool disorder=(e.setupPercent==125 && (e.tactic==ChainTactic::Ambush || e.tactic==ChainTactic::Disrupt)) ||
                     e.tactic==ChainTactic::AzureDragon || e.tactic==ChainTactic::SerpentRoar;
-                for(const auto& c:e.changes) if(c.army==target && ((pressure && c.pressured && j.chain.pressured[target]) || (disorder && c.disordered && j.chain.disordered[target]))) return true;
+                for(const auto& c:e.changes) if(c.army==target)
+                { if(pressure && c.pressured && j.chain.pressured[target]) opening|=1;if(disorder && c.disordered && j.chain.disordered[target]) opening|=2; }
             }
-            return false;
+            return opening;
         }
     }
     std::vector<JourneySupportAction> Followups(const StrategistJourney& j,const JourneyRealtime& clock,int actor)
@@ -39,14 +41,16 @@ namespace frontline::supportactions
             for(const auto& seen:j.intelligence[0].contacts)
             {
                 if(!seen.current || seen.id<0 || seen.id>=int(j.chain.spent.size()) || seen.observed.troops<=0 ||
-                   !j.world.Hostile(j.world.player,seen.observed.faction) || j.world.MapDistance(seen.observed.tile,goal)>1 || !Proven(j,actor,seen.id)) continue;
+                   !j.world.Hostile(j.world.player,seen.observed.faction) || j.world.MapDistance(seen.observed.tile,goal)>1) continue;
+                const int opening=Proven(j,actor,seen.id);if(!opening) continue;
                 for(const auto tactic:TacticChain::Loadout(j.world,guard))
                 {
                     const auto& info=TacticChain::Definition(tactic);if(info.unique || !info.targetsEnemy || tactic==ChainTactic::Lure) continue;
                     const std::vector<ChainOrder> orders{{guard,seen.id,tactic,-1}};const auto prediction=j.Preview(orders);
                     if(prediction.completed!=1 || prediction.events.size()!=1 || prediction.events[0].setupPercent<=100) continue;
-                    // Only the present opening counts, rather than the guard's own prepared ambush.
-                    auto plain=std::make_unique<StrategistJourney>(j);plain->chain.pressured[seen.id]=plain->chain.disordered[seen.id]=false;
+                    // Remove only this supporter's proven effects; another officer's opening must remain.
+                    auto plain=std::make_unique<StrategistJourney>(j);
+                    if(opening&1) plain->chain.pressured[seen.id]=false;if(opening&2) plain->chain.disordered[seen.id]=false;
                     const auto baseline=plain->Preview(orders);
                     if(baseline.completed==1 && baseline.events[0].setupPercent>=prediction.events[0].setupPercent) continue;
                     auto c=Preview(j,actor,goal,guard,orders);if(c.goal>=0) result.push_back(std::move(c));
