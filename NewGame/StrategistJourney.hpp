@@ -8,6 +8,7 @@
 #include "JourneyAssignment.hpp"
 #include "JourneyDifficulty.hpp"
 #include "JourneyDefense.hpp"
+#include "JourneyDefenseAdvice.hpp"
 
 namespace frontline
 {
@@ -61,6 +62,7 @@ namespace frontline
         JourneyConvoyRoute convoyRoute=JourneyConvoyRoute::Road;
         JourneyBattleReview battleReview;
         std::optional<JourneyReliefRecord> retryRelief; // Non-canonical lesson, never a settled battle or reward.
+        std::optional<JourneyDefenseLesson> retryDefense; // Separate retry reference; never a confirmed battle result.
         JourneyDifficulty difficulty=JourneyDifficulty::Standard;
         bool campaignFlow=false;
         bool SelectDifficulty(JourneyDifficulty);

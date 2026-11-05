@@ -70,5 +70,5 @@ int main()
     auto old=Setup(false);old->journey.world.tiles[old->journey.world.armies[3].tile].terrain=Terrain::Mountain;
     old->journey.world.armies[3].stance=battle::Stance::Guard;old->journey.RefreshIntelligence();
     assert(old->journey.Execute({{0,3,ChainTactic::Feint,-1}}).events[0].damage==plain);
-    std::vector<std::uint8_t> bytes;assert(EncodeJourneySave(*old,bytes) && bytes[4]==11);
+    std::vector<std::uint8_t> bytes;assert(EncodeJourneySave(*old,bytes) && bytes[4]==12);
 }

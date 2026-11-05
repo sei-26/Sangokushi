@@ -4,6 +4,7 @@
 namespace frontline
 {
     CouncilExchange ContributionCouncil(const StrategistJourney&,const JourneyPlanExample&);
+    CouncilExchange DefenseRetryCouncil(const StrategistJourney&,const JourneyPlanExample&);
     std::u32string CouncilBattleVoice(const StrategistJourney& j,const ChainEvent& e,int step)
     {
         if(!j.campaignFlow || !j.battleReview.preparationTracked || !e.success || e.army<0 || e.army>2) return {};
@@ -71,7 +72,11 @@ namespace frontline
             return e;
         }
         if(voice==-1)
-        { const auto proposal=PlanExample(j);if(proposal.remembersCooperation) return ContributionCouncil(j,proposal); }
+        {
+            const auto proposal=PlanExample(j);
+            if(proposal.remembersDefenseRetry) return DefenseRetryCouncil(j,proposal);
+            if(proposal.remembersCooperation) return ContributionCouncil(j,proposal);
+        }
         if(voice==-1)
         {
             e.subject=j.mission==0 ? U"名もなき軍師、その最初の軍議":j.mission==1 ? U"大河の向こうへ、我らの旗を":U"この一戦で、戦役を動かす";

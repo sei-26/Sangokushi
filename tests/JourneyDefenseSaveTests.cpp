@@ -21,7 +21,7 @@ int main()
     j.history[1].review.confirmedDefenders=2;j.history[1].review.spentGuardFailures=6;
     s->beforeBattle->battleReview.confirmedDefenders=1;s->beforeBattle->battleReview.spentGuardFailures=4;
     s->beforeBattle->history[0].review.confirmedDefenders=7;s->beforeBattle->history[0].review.spentGuardFailures=7;
-    const auto saved=Bytes(*s);assert(saved[4]==11 && saved[5]==0 && saved[6]==0 && saved[7]==0);
+    const auto saved=Bytes(*s);assert(saved[4]==12 && saved[5]==0 && saved[6]==0 && saved[7]==0);
     auto loaded=std::make_unique<JourneySaveData>();assert(DecodeJourneySave(saved,*loaded) && Bytes(*loaded)==saved);
     assert(loaded->journey.battleReview.confirmedDefenders==5 && loaded->journey.battleReview.spentGuardFailures==3);
     assert(loaded->journey.history[1].review.confirmedDefenders==2 && loaded->journey.history[1].review.spentGuardFailures==6);

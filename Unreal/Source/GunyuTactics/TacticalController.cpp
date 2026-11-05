@@ -405,6 +405,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=gunyumission::DefenseSmokeTest() && Field->DefenseSmokeTest() && gunyumission::SupportComboSmokeTest() && Field->SupportCombinationSmokeTest() && Field->MissionMomentsSmokeTest() && MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseAftermathOnly")))
     { const bool Passed=DefenseAftermathSmokeTest() && Field->DefenseSmokeTest() && CampaignPacingSmokeTest() && ReliefStorySmokeTest() && EpisodeInterfaceSmokeTest() && NovelFlowSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseRetryOnly")))
+    { const bool Passed=DefenseRetrySmokeTest() && Field->DefenseSmokeTest() && ReliefAdviceSmokeTest() && PlanAdviceSmokeTest() && CouncilSceneSmokeTest() && DefenseAftermathSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTempoOnly")))
     { const bool Passed=Field->RealtimeSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
@@ -524,6 +526,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=ReliefInterfaceSmokeTest();
         if(bPassed) bPassed=ReliefStorySmokeTest();
         if(bPassed) bPassed=DefenseAftermathSmokeTest();
+        if(bPassed) bPassed=DefenseRetrySmokeTest();
         if(bPassed) bPassed=ReliefAdviceSmokeTest();
         if(bPassed) bPassed=Field->ReliefReadinessSmokeTest();
         if(bPassed) bPassed=Field->ReliefApproachSmokeTest();
@@ -661,6 +664,21 @@ void ATacticalController::PlayerTick(float Delta)
     int SupportCombo=0;
     int Defense=0;
     int DefenseAftermath=0;
+    int DefenseRetry=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DefenseRetry="),DefenseRetry))
+    {
+        CloseEpisode();bool Valid=PrepareCooperationCouncilPreview(Field,DefenseRetry==2 ? 2:0);
+        if(Valid) { Field->Issue(ETacticalCommand::PlanExample);Field->Issue(ETacticalCommand::PlanAmbush);Field->Issue(ETacticalCommand::Deploy);Valid=PrepareDefenseRetryPreview(Field,DefenseRetry); }
+        if(Valid)
+        {
+            OpenJourneyEntry();int Page=0;FParse::Value(FCommandLine::Get(),TEXT("DefenseRetryPage="),Page);CouncilPage=FMath::Clamp(Page,0,CouncilExchange.Lines.Num()-1);CouncilElapsed=1000;CouncilStageTime=CouncilLineTime=1;
+            if(FParse::Param(FCommandLine::Get(),TEXT("DefenseRetryMap"))) OpenPlanningExample();
+            if(FParse::Param(FCommandLine::Get(),TEXT("DefenseRetryAdopt"))) { OpenPlanningExample();ApplyPlanningExample(); }
+            if(FParse::Param(FCommandLine::Get(),TEXT("DefenseRetryDeployed"))) { OpenPlanningExample();ApplyPlanningExample();CloseEpisode();Field->Issue(ETacticalCommand::Deploy);Focus=ATacticalField::TileLocation(frontline::Campaign::At(7,7));Distance=3300; }
+        }
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_DEFENSE_RETRY_CAPTURE: %s (actual failed attempt, normal council rollback, explicit proposed/adopted roles)"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DefenseAftermath="),DefenseAftermath))
     {
         CloseEpisode();bool Valid=PrepareCooperationCouncilPreview(Field,0);

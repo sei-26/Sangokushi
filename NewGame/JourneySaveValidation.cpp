@@ -114,6 +114,13 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
+            if(j.retryDefense)
+            {
+                const auto& lesson=*j.retryDefense;
+                const bool failed=lesson.resolution==JourneyResolution::Withdrawn || lesson.resolution==JourneyResolution::ForceLost || lesson.resolution==JourneyResolution::Deadline;
+                if(!j.campaignFlow || j.stage!=JourneyStage::Preparation || !Range(j.mission,0,2) || j.Definition().kind!=JourneyObjective::HoldPositions ||
+                    lesson.mission!=j.mission || !Range(lesson.failedGuards,1,7) || !Range(lesson.endedAt,1,16) || !failed) return false;
+            }
             if(j.retryRelief)
             {
                 JourneyBattleReview lesson;lesson.reliefTracked=true;lesson.relief={*j.retryRelief};

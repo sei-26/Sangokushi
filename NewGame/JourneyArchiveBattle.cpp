@@ -22,6 +22,8 @@ namespace frontline
     { (*this)(v.events,v.completed,v.prediction); }
     void JourneyArchive::IO(JourneyReliefRecord& v)
     { (*this)(v.outgoing,v.incoming,v.source,v.destination,v.issuedTurn,v.departedTurn,v.arrivedTurn,v.checkedTurn,v.gapCycles,v.realtime,v.allSecured,v.outcome); }
+    void JourneyArchive::IO(JourneyDefenseLesson& v)
+    { (*this)(v.mission,v.failedGuards,v.endedAt,v.resolution); }
     void JourneyArchive::IO(JourneyBattleReview& v)
     { (*this)(v.resolution,v.endedAt,v.enemyStops,v.trafficStops,v.tacticAttempts,v.tacticSteps,v.longestChain);
       if(version>=3) IO(v.coordinatedOfficers);else if(reading) v.coordinatedOfficers=0;
@@ -45,5 +47,6 @@ namespace frontline
       if(version>=5) IO(v.difficulty);else if(reading) v.difficulty=JourneyDifficulty::Standard;
       if(version>=6) IO(v.campaignFlow);else if(reading) v.campaignFlow=false;
       if(version>=7) IO(v.reserveFood);else if(reading) v.reserveFood=0;
-      if(version>=10) IO(v.retryRelief);else if(reading) v.retryRelief.reset(); }
+      if(version>=10) IO(v.retryRelief);else if(reading) v.retryRelief.reset();
+      if(version>=12) IO(v.retryDefense);else if(reading) v.retryDefense.reset(); }
 }

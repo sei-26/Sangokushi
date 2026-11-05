@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "JourneyCampaign.hpp"
+#include "JourneyPlanExample.hpp"
 
 using namespace frontline;
 
@@ -28,6 +29,10 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     case ETacticalCommand::StoryReplyCoordinate: J.ChooseStoryReply(JourneyPledge::Coordinate);break;
     case ETacticalCommand::Reinforce: J.Reinforce(); break;
     case ETacticalCommand::Deploy:
+    {
+        int InitialOfficer=0;const auto Suggested=PlanExample(J);bool Adopted=Suggested.remembersDefenseRetry;
+        for(int A=0;A<3;++A) Adopted=Adopted && J.assignments[A].duty==Suggested.assignments[A].duty && J.assignments[A].tile==Suggested.assignments[A].tile;
+        if(Adopted) InitialOfficer=Suggested.adviser;
         CheckpointJourney(true);
         State->BeforeBattle = std::make_unique<StrategistJourney>(J);
         if(!J.Prepare(State->PreparationChoice, J.enemyPolicy)) { Refresh();return; }
@@ -35,15 +40,17 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
         State->bRealtimeStepping=false;State->bRealtimeChainRequested=false;State->bRealtimePauseAfterPlayback=false;
         State->ChainSignal.Cancel();State->BattleWatch.Reset();State->bWatchPending=State->bWatchPauseAfterPlayback=false;
         if(bRealtimeCommand) State->Realtime.ApplyAssignments(J);
-        State->Orders.clear(); State->Selected = 0; State->Target = 3;
+        State->Orders.clear(); State->Selected = InitialOfficer; State->Target = 3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
         break;
+    }
     case ETacticalCommand::Retry:
         if(!J.RetryAtCouncil(*State->BeforeBattle)) return;
         if(!bLegacyJourney) J.UpgradeCampaignAtCouncil();
         State->Orders.clear(); State->Selected = 0; State->Target = 3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
-        State->Report = J.retryRelief ? TEXT("出陣前の兵と物資へ戻しました。前回の交代を参考に、配置の提案を確認できます。信頼や戦果は持ち越しません。"):
+        State->Report = PlanExample(J).remembersDefenseRetry ? TEXT("出陣前の兵と物資へ戻しました。手を使い切った守備役の反省から、今回は援護へ回す配置案を確認できます。地図で比べてから採用できます。"):
+            J.retryRelief ? TEXT("出陣前の兵と物資へ戻しました。前回の交代を参考に、配置の提案を確認できます。信頼や戦果は持ち越しません。"):
             TEXT("戦い直前の軍議へ戻りました。前回の出陣費用と損耗を戻し、準備方針を見直せます。");
         Refresh(); return;
     default: return;

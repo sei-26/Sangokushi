@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+守備の反省から再挑戦の役を変える案は `JourneyDefenseAdvice.hpp/.cpp` と `JourneyDefenseRetryPlan.cpp`、４台詞は `JourneyDefenseRetryCouncil.cpp`。参考は歴史と分けて版12で保存する。[反省と役割の選び直し](DEFENSE_RETRY.md)。
+
 攻めと守りを振り返る戦後の会話は `NewGame/JourneyDefenseAftermath.cpp`、人物の声は `JourneyDefenseVoices.cpp`。根拠の実守備記録は `JourneyDefense.cpp`、保存は版11。[実記録と帰陣の会話](DEFENSE_AFTERMATH.md)。
 
 二つの烽火の現在条件と直前の実判定は `NewGame/JourneyDefense.cpp`。表示は `TacticalDefenseRead.cpp` と地図の札、実更新への返答は `TacticalDefenseResponse.cpp`。[行動消費と守備の結果](BEACON_DEFENSE.md)。

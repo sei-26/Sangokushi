@@ -47,7 +47,8 @@ namespace frontline
         if(stage!=JourneyStage::Debrief || won || beforeBattle.stage!=JourneyStage::Preparation || beforeBattle.mission!=mission) return false;
         std::optional<JourneyReliefRecord> lesson;
         if(campaignFlow && beforeBattle.campaignFlow) if(const auto* r=CheckedRelief(battleReview)) lesson=*r;
-        *this=beforeBattle;retryRelief=lesson;
+        const auto defense=ReadDefenseRetryLesson(*this,beforeBattle);
+        *this=beforeBattle;retryRelief=lesson;retryDefense=defense;
         return true;
     }
     void AdaptReliefPlanExample(const StrategistJourney& j,JourneyPlanExample& p)
