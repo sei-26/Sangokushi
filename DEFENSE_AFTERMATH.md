@@ -43,3 +43,5 @@ EditorのGPU重点７群が成功（0 FAIL）。実際の前戦の記録から�
 再現用の重点検証は `-GunyuSmoke -GunyuDefenseAftermathOnly`。描画は `-GunyuCapture -GunyuSimple -DefenseAftermath=0`（関羽の行動消費）、`3`（張飛）、`2`（守備優先）、`1`（撤退）。`-DefenseAftermathPage=1/2/3` で台詞、`-DefenseAftermathSummary` で通常の結果画面を確認する。720pの `-RenderOffscreen -windowed -ResX=1280 -ResY=720 -ForceRes` と、専用の `-UserDir` / `-SaveToUserDir` を使用した。配置は境界用に設定するが、決着と記録は通常の戦法・更新・撤退から作る。
 
 次の候補は、再挑戦の軍議で、使い切った守備役の余力を残す配置案へこの記憶をつなぐこと。会話の量よりも、前の采配が次の判断を変えることを優先する。
+
+2026-11-05追記：この再挑戦の提案を実装した。実記録のある本人を自由な援護役へ回し、他二人を守備へ提案する。配置は比較してから採用し、出陣は通常の費用と命令を使う。[守備の反省と再挑戦](DEFENSE_RETRY.md)。
