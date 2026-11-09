@@ -2,9 +2,26 @@
 #include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "JourneyBattlefield.hpp"
+#include <algorithm>
 #include <memory>
 
 using namespace frontline;
+
+namespace
+{
+    FString CouncilDutyBadge(const StrategistJourney& Journey, int Officer)
+    {
+        const auto& Duty=Journey.assignments[Officer];
+        if(Duty.duty==JourneyDuty::None) return TEXT("自由に指揮");
+        if(Duty.duty==JourneyDuty::Ambush) return TEXT("伏兵の準備");
+        if(Journey.Definition().kind==JourneyObjective::HoldPositions)
+        {
+            if(Duty.tile==Journey.goal) return TEXT("北の烽火を守る");
+            if(Duty.tile==Journey.Definition().secondGoal) return TEXT("南の烽火を守る");
+        }
+        return TEXT("指定地点を守る");
+    }
+}
 
 void ATacticalField::BuildPresentation()
 {
@@ -51,6 +68,7 @@ void ATacticalField::BuildPresentation()
         State->Reachable.Reset();
         return;
     }
+    const bool HasCouncilDuties=J.campaignFlow && std::any_of(J.assignments.begin(),J.assignments.end(),[](const auto& Duty) { return Duty.duty!=JourneyDuty::None; });
     for (int Id = 0; Id < 3; ++Id)
     {
         const auto& Unit = J.world.armies[Id];
@@ -84,6 +102,13 @@ void ATacticalField::BuildPresentation()
             Officer.Duty=JourneyText(J.AssignmentStatus(Id));
             Officer.Status+=TEXT("\n")+FString(J.assignments[Id].duty==JourneyDuty::Hold ? TEXT("守備"):TEXT("伏兵"))+
                 (J.assignments[Id].completed ? TEXT("○"):TEXT("未"));
+        }
+        if(HasCouncilDuties)
+        {
+            Officer.DutyBadge=CouncilDutyBadge(J,Id);
+            Officer.Duty=Officer.Duty.IsEmpty() ? Officer.DutyBadge:Officer.DutyBadge+TEXT("\n")+Officer.Duty;
+            Officer.Duty=TEXT("軍議の担当　")+Officer.Duty;
+            if(bRealtimeCommand) Officer.Duty+=TEXT("\n現在　")+Officer.Command;
         }
         HUD.Officers.Add(MoveTemp(Officer));
     }

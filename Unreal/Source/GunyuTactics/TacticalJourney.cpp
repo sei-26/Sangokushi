@@ -39,7 +39,12 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
         State->bRealtimeStepping=false;State->bRealtimeChainRequested=false;State->bRealtimePauseAfterPlayback=false;
         State->ChainSignal.Cancel();State->BattleWatch.Reset();State->bWatchPending=State->bWatchPauseAfterPlayback=false;
         if(bRealtimeCommand) State->Realtime.ApplyAssignments(J);
-        State->Orders.clear(); State->Selected = Supporter>=0 ? Supporter:0; State->Target = 3;
+        int ManualOfficer=0,FreeCount=0;
+        if(J.campaignFlow && bRealtimeCommand)
+            for(int Id=0;Id<3;++Id) if(J.assignments[Id].duty==JourneyDuty::None) { ManualOfficer=Id;++FreeCount; }
+        State->Orders.clear();
+        State->Selected=Supporter>=0 ? Supporter:FreeCount==1 ? ManualOfficer:0;
+        State->Target=3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
         break;
     }

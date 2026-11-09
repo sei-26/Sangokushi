@@ -169,6 +169,7 @@ void ATacticalController::PlayerTick(float Delta)
     }
     if (Frames == 3 && (bCapture || FParse::Param(FCommandLine::Get(), TEXT("GunyuBattlePreview")) || FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilPreview"))))
     {
+        const bool bDutyHandoffCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyHandoff"));
         // Explicit cinematic QA captures use fixed manual playback; editor map
         // speed/mode preferences must not turn CueTime into a different phase.
         if(bCinemaCapture) { Field->bRealtimeCommand=false;Field->PlaybackSpeed=1; }
@@ -180,7 +181,7 @@ void ATacticalController::PlayerTick(float Delta)
         }
         if (FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilPreview")))
         { Field->bStartWithCouncil=true;Field->FirstMission=0;Field->EnemyPolicy=1;Field->Issue(ETacticalCommand::Restart); }
-        if (FParse::Param(FCommandLine::Get(),TEXT("GunyuRealtime")))
+        if (bDutyHandoffCapture || FParse::Param(FCommandLine::Get(),TEXT("GunyuRealtime")))
         { Field->bRealtimeCommand=true;Field->Issue(ETacticalCommand::Restart); }
         if (bSignalCapture)
         {
@@ -197,12 +198,13 @@ void ATacticalController::PlayerTick(float Delta)
         const bool bDebrief = FParse::Param(FCommandLine::Get(), TEXT("GunyuDebrief"));
         const bool bWithdrawal = FParse::Param(FCommandLine::Get(), TEXT("GunyuWithdrawal"));
         const bool bBattle = bCinemaCapture || bDebrief || bWithdrawal || FParse::Param(FCommandLine::Get(), TEXT("GunyuPlan")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuMove")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuBattlePreview")) || FParse::Param(FCommandLine::Get(), TEXT("GunyuTacticMenu")) || FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision"));
-        if (bCouncil || bBattle)
+        if (bCouncil || bBattle || bDutyHandoffCapture)
             for (int Step = 0; Step < 3; ++Step) Field->Action(EKeys::Enter);
         if (bDebrief) Field->Issue(ETacticalCommand::PromiseRoad);
         if (bDecisionCapture && FParse::Param(FCommandLine::Get(),TEXT("ChoiceRoad"))) Field->Issue(ETacticalCommand::PromiseRoad);
         if (bSignatureCapture || FParse::Param(FCommandLine::Get(),TEXT("GunyuReserve"))) Field->Issue(ETacticalCommand::PlanSupplies);
-        if (bBattle) Field->Action(EKeys::Enter);
+        if(bDutyHandoffCapture) Field->Issue(ETacticalCommand::PlanExample);
+        if (bBattle || bDutyHandoffCapture) Field->Action(EKeys::Enter);
         if(bCapture && bBattle && FParse::Param(FCommandLine::Get(),TEXT("GunyuUseReserve")))
         { Field->Issue(ETacticalCommand::Resupply);Field->Issue(ETacticalCommand::Skip); }
         if (bCapture && bBattle && FParse::Param(FCommandLine::Get(), TEXT("GunyuReadAdvance")))

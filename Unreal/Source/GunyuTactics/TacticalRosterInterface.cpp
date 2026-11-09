@@ -21,7 +21,10 @@ void ATacticalController::BuildRosterInterface(TSharedRef<SCanvas> Canvas)
               + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([Index] { return Index; },66,84)]
               + SHorizontalBox::Slot().FillWidth(1).Padding(12,0)
                 [SNew(SVerticalBox)
-                 + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& O=Field->Presentation().Officers;return O.IsValidIndex(Index) ? O[Index].Name : FString(); },20,Gold)]
+                 + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot().AutoWidth()[Label([this,Index] { const auto& O=Field->Presentation().Officers;return O.IsValidIndex(Index) ? O[Index].Name:FString(); },20,Gold)]
+                    + SHorizontalBox::Slot().FillWidth(1).HAlign(HAlign_Right).VAlign(VAlign_Center)
+                      [Label([this,Index] { const auto& O=Field->Presentation().Officers;return O.IsValidIndex(Index) ? O[Index].DutyBadge:FString(); },12,Gold)]]
                  + SVerticalBox::Slot().AutoHeight().Padding(0,2)[Label([this,Index]
                     { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) ? FString::Printf(TEXT("兵 %d    士気 %d"),U[Index].Troops,U[Index].Morale) : FString(); },13)]
                  + SVerticalBox::Slot().AutoHeight()[Label([this,Index]

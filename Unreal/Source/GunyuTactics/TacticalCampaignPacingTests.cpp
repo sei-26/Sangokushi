@@ -15,6 +15,12 @@ bool ATacticalController::CampaignPacingSmokeTest()
     TogglePlanningMap();bPlanningExample=true;ApplyPlanningExample();HandleEpisodeKey(EKeys::D);
     Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*Save);
     if(!Check(Save->journey.world.armies.size()==5 && !Save->journey.HasConvoy() && Field->Presentation().GoalLabel==TEXT("河港の指揮所"),TEXT("real deployment is an assault with no cart or cargo"))) return false;
+    const auto& Battle=Field->Presentation();
+    if(!Check(Save->selected==2 && Battle.Selected==2 && Battle.Officers.Num()==3 &&
+        Battle.Officers[0].DutyBadge==TEXT("指定地点を守る") && Battle.Officers[1].DutyBadge==TEXT("伏兵の準備") &&
+        Battle.Officers[2].DutyBadge==TEXT("自由に指揮") && Save->realtime.orders[2].kind==JourneyDirective::None &&
+        Save->realtime.orders[0].kind==JourneyDirective::March,
+        TEXT("adopted river-port duties remain visible and the free officer is ready for the player's first order"))) return false;
     // Settled-objective fixture: UX and next chapter transitions, not combat balance.
     Save->journey.world.armies[3].troops=Save->journey.world.armies[4].troops=0;
     Save->journey.world.armies[0].tile=Save->journey.goal;Save->journey.RefreshIntelligence();Save->journey.EndTurn();
