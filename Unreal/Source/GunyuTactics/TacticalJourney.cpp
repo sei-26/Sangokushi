@@ -30,22 +30,22 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     case ETacticalCommand::Reinforce: J.Reinforce(); break;
     case ETacticalCommand::Deploy:
     {
-        int InitialOfficer=0;const auto Suggested=PlanExample(J);bool Adopted=Suggested.remembersDefenseRetry;
-        for(int A=0;A<3;++A) Adopted=Adopted && J.assignments[A].duty==Suggested.assignments[A].duty && J.assignments[A].tile==Suggested.assignments[A].tile;
-        if(Adopted) InitialOfficer=Suggested.adviser;
+        const int Supporter=RetryDefenseSupporter(J);
         CheckpointJourney(true);
         State->BeforeBattle = std::make_unique<StrategistJourney>(J);
         if(!J.Prepare(State->PreparationChoice, J.enemyPolicy)) { Refresh();return; }
+        State->RetryDefenseAid={};
         State->Realtime.Reset();State->bRealtimeInBattle=bRealtimeCommand;
         State->bRealtimeStepping=false;State->bRealtimeChainRequested=false;State->bRealtimePauseAfterPlayback=false;
         State->ChainSignal.Cancel();State->BattleWatch.Reset();State->bWatchPending=State->bWatchPauseAfterPlayback=false;
         if(bRealtimeCommand) State->Realtime.ApplyAssignments(J);
-        State->Orders.clear(); State->Selected = InitialOfficer; State->Target = 3;
+        State->Orders.clear(); State->Selected = Supporter>=0 ? Supporter:0; State->Target = 3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
         break;
     }
     case ETacticalCommand::Retry:
         if(!J.RetryAtCouncil(*State->BeforeBattle)) return;
+        State->RetryDefenseAid={};
         if(!bLegacyJourney) J.UpgradeCampaignAtCouncil();
         State->Orders.clear(); State->Selected = 0; State->Target = 3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;

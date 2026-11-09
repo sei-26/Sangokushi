@@ -134,8 +134,9 @@ void ATacticalController::PlayerTick(float Delta)
     int SupportPreviewMode=0;const bool bSupportActionCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportActionPreview="),SupportPreviewMode);
     int SupportComboMode=0;const bool bSupportComboCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportComboPreview="),SupportComboMode);
     int DefenseMode=0;const bool bDefenseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefensePreview="),DefenseMode);
+    int DefenseRetryPayoff=0;const bool bRetryPayoffCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefenseRetryPayoff="),DefenseRetryPayoff);
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
-    if (!bCinemaCapture && !bDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture)
+    if (!bCinemaCapture && !bDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture)
     {
         if (Field->bRealtimeCommand && !bCapture && !bSmoke && !FApp::HasFocus() && !Field->RealtimePaused())
             Field->Issue(ETacticalCommand::RealtimePause);
@@ -406,7 +407,7 @@ void ATacticalController::PlayerTick(float Delta)
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseAftermathOnly")))
     { const bool Passed=DefenseAftermathSmokeTest() && Field->DefenseSmokeTest() && CampaignPacingSmokeTest() && ReliefStorySmokeTest() && EpisodeInterfaceSmokeTest() && NovelFlowSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseRetryOnly")))
-    { const bool Passed=DefenseRetrySmokeTest() && Field->DefenseSmokeTest() && ReliefAdviceSmokeTest() && PlanAdviceSmokeTest() && CouncilSceneSmokeTest() && DefenseAftermathSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    { const bool Passed=DefenseRetryPayoffSmokeTest() && DefenseRetrySmokeTest() && Field->DefenseSmokeTest() && ReliefAdviceSmokeTest() && PlanAdviceSmokeTest() && CouncilSceneSmokeTest() && DefenseAftermathSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTempoOnly")))
     { const bool Passed=Field->RealtimeSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
@@ -527,6 +528,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=ReliefStorySmokeTest();
         if(bPassed) bPassed=DefenseAftermathSmokeTest();
         if(bPassed) bPassed=DefenseRetrySmokeTest();
+        if(bPassed) bPassed=DefenseRetryPayoffSmokeTest();
         if(bPassed) bPassed=ReliefAdviceSmokeTest();
         if(bPassed) bPassed=Field->ReliefReadinessSmokeTest();
         if(bPassed) bPassed=Field->ReliefApproachSmokeTest();
@@ -665,6 +667,12 @@ void ATacticalController::PlayerTick(float Delta)
     int Defense=0;
     int DefenseAftermath=0;
     int DefenseRetry=0;
+    if(bRetryPayoffCapture && Frames==8)
+    {
+        const bool Valid=PrepareDefenseRetryPayoffCapture(DefenseRetryPayoff);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_DEFENSE_RETRY_PAYOFF_CAPTURE: %s (normal aid and defense update from a paid retry)"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DefenseRetry="),DefenseRetry))
     {
         CloseEpisode();bool Valid=PrepareCooperationCouncilPreview(Field,DefenseRetry==2 ? 2:0);

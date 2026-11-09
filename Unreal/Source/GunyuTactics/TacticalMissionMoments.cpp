@@ -31,7 +31,11 @@ void ATacticalField::PublishMissionResponse()
 {
     if(State->bNoPlayback || State->Beats.IsEmpty()) return;
     auto Response=State->Beats.Num()==2 ? gunyumission::ReadSupportCombo(State->Beats):gunyumission::ReadSupport(&State->Beats.Last());
-    if(Response.Line.IsEmpty()) Response=gunyumission::Read(&State->Beats.Last());
+    if(Response.Line.IsEmpty())
+    {
+        const auto& Beat=State->Beats.Last();
+        Response=gunyumission::Read(&Beat,ReadRetryDefensePayoff(Beat));
+    }
     if(Response.Line.IsEmpty()) return;
     State->MissionResponse=MoveTemp(Response);State->MissionResponseRemaining=4.5f;
     const auto* Path=gunyuresponse::SoundPath(State->MissionResponse.Sound);

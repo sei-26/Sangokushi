@@ -45,6 +45,7 @@ TArray<FVisualUnit> ATacticalField::ObserveUnits() const
 
 void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const TArray<FVisualUnit>& Before,FMissionProgress MissionBefore)
 {
+    if(Kind==EBattleCue::Strike || Kind==EBattleCue::Withdraw) State->RetryDefenseAid={};
     FBattleBeat Beat;
     Beat.Before = Before; Beat.After = ObserveUnits();
     if(Kind==EBattleCue::Enemy) { Beat.MissionBefore=MissionBefore;Beat.MissionAfter=CaptureMissionProgress(); }
@@ -63,6 +64,7 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
 
 void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
 {
+    State->RetryDefenseAid={};
     if (State->bNoPlayback) return;
     State->Beats.Reset();
     auto Display = Before;
@@ -130,6 +132,7 @@ void ATacticalField::FinishPlayback(bool bShowMissionResponse)
     if (CueAudio) CueAudio->Stop();
     if(bShowMissionResponse) PublishMissionResponse();
     else { State->MissionResponse={};State->MissionResponseRemaining=0; }
+    if(!State->Beats.IsEmpty() && State->Beats.Last().Kind==EBattleCue::Enemy) State->RetryDefenseAid={};
     if(State->bSupplyPlayback && bRealtimeCommand) State->Realtime.paused=true;
     State->bSupplyPlayback=false;
     State->Beats.Reset(); State->BeatIndex = 0; State->BeatTime = 0;

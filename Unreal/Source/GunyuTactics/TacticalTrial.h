@@ -15,7 +15,7 @@ class UInstancedStaticMeshComponent;
 class ACameraActor;
 struct FJourneyState;
 struct FChainReview;
-namespace frontline { struct JourneyWatchSnapshot; }
+namespace frontline { class StrategistJourney; struct JourneyWatchSnapshot; }
 namespace gunyuresponse { struct FRead; }
 namespace TacticalMap { struct FSurface; }
 namespace gunyufocus { struct FRead; }
@@ -280,6 +280,9 @@ private:
     FMissionProgress CaptureMissionProgress() const;
     void AttachMissionCredit(FBattleBeat&);
     void PublishMissionResponse();
+    static int RetryDefenseSupporter(const frontline::StrategistJourney& Council);
+    void RememberRetryDefenseAid(const FBattleBeat& Beat);
+    gunyuresponse::FRead ReadRetryDefensePayoff(const FBattleBeat& Beat) const;
     void RenderUnits();
     FString ReadPlaybackReport() const;
     void RenderStandards();
@@ -385,6 +388,8 @@ private:
     bool ReliefStorySmokeTest();
     bool DefenseAftermathSmokeTest();
     bool DefenseRetrySmokeTest();
+    bool DefenseRetryPayoffSmokeTest();
+    bool PrepareDefenseRetryPayoffCapture(int Variant);
     bool ReliefAdviceSmokeTest();
     void PrepareReliefAdviceCapture(int Variant);
     void BuildBattleHeader(TSharedRef<class SCanvas>);

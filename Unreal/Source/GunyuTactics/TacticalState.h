@@ -10,6 +10,12 @@
 #include "TacticalMissionResponse.h"
 #include <memory>
 
+struct FRetryDefenseAid
+{
+    int Turn=-1,Supporter=-1,Guard=-1,Goal=-1,Target=-1;
+    bool bDefeated=false;
+};
+
 struct FJourneyState
 {
     frontline::StrategistJourney Journey;
@@ -56,6 +62,7 @@ struct FJourneyState
     bool bNoPlayback = false, bImpactPlayed = false;
     gunyuresponse::FRead MissionResponse;
     float MissionResponseRemaining=0;
+    FRetryDefenseAid RetryDefenseAid; // Observed solo support awaiting this cycle's real defense check.
     int RoadClearArmy=-1,RoadClearStep=-1,RoadClearTile=-1; // Transient observed contribution, never saved.
     int CheckpointStage=-1,CheckpointMission=-1;
     int DialogueIndex = 0, PreparationChoice = 0, Interlocutor = 0;

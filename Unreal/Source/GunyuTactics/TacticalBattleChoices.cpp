@@ -76,6 +76,8 @@ bool ATacticalField::UseBattleChoice(int Index,int ExpectedVersion)
     DispatchQueuedChain();
     if(Support.goal>=0) for(auto& Beat:State->Beats)
     { Beat.SupportGoal=Support.goal;Beat.SupportGuard=Support.guard;Beat.SupportNorth=Support.goal==State->Journey.goal; }
+    if(Support.goal>=0 && Plan.orders.size()==1 && !Support.guardActs && !Support.followup && State->Beats.Num()==1)
+        RememberRetryDefenseAid(State->Beats[0]);
     if(!IsPlaying() && WasPaused) { State->bRealtimeStepping=false;State->bRealtimePauseAfterPlayback=false;State->Realtime.paused=true; }
     Refresh();return true;
 }
