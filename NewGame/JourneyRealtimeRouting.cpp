@@ -1,4 +1,5 @@
 ﻿#include "JourneyRealtime.hpp"
+#include "JourneyMarchBlocker.hpp"
 #include <memory>
 #include <queue>
 
@@ -40,6 +41,28 @@ namespace frontline
     }
     bool JourneyRealtime::Ground(const Campaign& world,int tile)
     { return Walkable(world,tile); }
+    JourneyMarchBlocker ReadJourneyMarchBlocker(const StrategistJourney& journey,const JourneyRealtime& clock,int army)
+    {
+        if(journey.stage!=JourneyStage::Battle || army<0 || army>=3 || !TacticChain::Living(journey.world,army)) return {};
+        const auto& order=clock.orders[army];
+        if(order.kind!=JourneyDirective::March || !Walkable(journey.world,order.destination)) return {};
+        auto view=PlayerView(journey);
+        const int start=view->armies[army].tile;
+        if(!Path(*view,start,order.destination).empty()) return {};
+        JourneyMarchBlocker best;
+        std::size_t shortest=TileCount+1;
+        for(int id=0;id<int(view->armies.size());++id)
+        {
+            auto& unit=view->armies[id];
+            if(id==army || unit.troops<=0) continue;
+            const int troops=unit.troops;
+            unit.troops=0;
+            const auto route=Path(*view,start,order.destination);
+            unit.troops=troops;
+            if(!route.empty() && route.size()<shortest) { shortest=route.size();best={id,unit.tile}; }
+        }
+        return best;
+    }
     std::vector<int> JourneyRealtime::Route(const StrategistJourney& journey,int army) const
     {
         if (army<0 || army>=3 || !TacticChain::Living(journey.world,army)) return {};

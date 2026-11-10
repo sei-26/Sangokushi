@@ -1,5 +1,6 @@
 ﻿#include "../NewGame/JourneyRealtime.hpp"
 #include <cassert>
+#include "../NewGame/JourneyMarchBlocker.hpp"
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -52,6 +53,13 @@ int main()
         assert(j->world.revision==revision && j->world.armies[0].food==food && j->turn==1);
         const int hidden=route[1];j->world.armies[4].tile=hidden;j->world.armies[4].troops=500;
         assert(rt.Route(*j,0)==route); // Actual hidden occupancy cannot change a preview.
+        j->world.armies[4].tile=route.back();
+        assert(ReadJourneyMarchBlocker(*j,rt,0).army<0);
+        const int ally=j->world.armies[1].tile;
+        j->world.armies[4].troops=0;j->world.armies[1].tile=route.back();
+        const auto blocked=ReadJourneyMarchBlocker(*j,rt,0);
+        assert(rt.Route(*j,0).empty() && blocked.army==1 && blocked.tile==route.back());
+        j->world.armies[1].tile=ally;
         j->world.armies[4].troops=0;
         for (int i=0;i<6 && rt.orders[0].kind!=JourneyDirective::None;++i)
         {
