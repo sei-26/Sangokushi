@@ -11,7 +11,16 @@ int ATacticalController::SelectedDutyTile() const
 
 void ATacticalController::FocusSelectedDuty()
 {
-    const int Tile=SelectedDutyTile();
+    FocusBattleTile(SelectedDutyTile());
+}
+
+void ATacticalController::FocusDutyObstacle()
+{
+    if(SelectedDutyTile()>=0) FocusBattleTile(Field->Presentation().DutyProgress.InspectTile);
+}
+
+void ATacticalController::FocusBattleTile(int Tile)
+{
     if(Tile<0) return;
     Focus=Field->SurfaceLocation(Tile);Distance=2200;CameraPreset=-1;bOrbitDragging=false;
     IgnoreMapInputThroughFrame=Frames+1;LabelLayoutFrame=MAX_uint64;
@@ -22,6 +31,5 @@ void ATacticalController::FocusMissionObjective()
     if(!Field || Field->IsPlaying()) return;
     const auto& H=Field->Presentation();
     if(!H.bBattle || H.Journey.bVisible || !frontline::StrategistJourney::OnMap(H.MissionFocusTile)) return;
-    Focus=Field->SurfaceLocation(H.MissionFocusTile);Distance=2200;CameraPreset=-1;bOrbitDragging=false;
-    IgnoreMapInputThroughFrame=Frames+1;
+    FocusBattleTile(H.MissionFocusTile);
 }

@@ -9,7 +9,7 @@ enum class ETacticalCommand : uint8
     Dialogue, Reinforce, PlanAmbush, PlanSupplies, Deploy, Retry,
     PromiseRoad, PromiseRescue, Withdraw, TalkLiu, TalkGuan, TalkZhang,
     RealtimeMode, RealtimePause, RealtimeSpeed, RealtimeStep, RealtimeStop, RealtimeChainSignal, RealtimeAlertPause,
-    RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate, DifficultyStory, DifficultyStandard, PlanExample, Resupply, ReleaseGuard
+    RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate, DifficultyStory, DifficultyStandard, PlanExample, Resupply, ReleaseGuard, ResumeDuty
 };
 enum class ETacticalInput : uint8 { Select, Move, Lure, Position };
 
@@ -209,6 +209,12 @@ struct FTacticalPresentation
     FString BattleChoiceReason,BattleChoiceTarget;
     int BattleChoiceVersion=0;
     FString MissionStep,MissionAdvice,MissionDetail;
+    struct FDutyProgress
+    {
+        FString Caption,Detail,InspectLabel;
+        int Tile=-1,InspectTile=-1;
+        bool bCanResume=false,bTraffic=false;
+    } DutyProgress;
     TArray<FBeaconDefensePresentation> Defenses;
     FString BattleChoicePrompt;
     int MissionFocusTile=-1;

@@ -60,7 +60,7 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
         + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& H=Field->Presentation();return H.Officers.IsValidIndex(H.Selected) ? H.Officers[H.Selected].Name:FString(); },25,Gold)]
         + SVerticalBox::Slot().AutoHeight().Padding(0,5)[SNew(SBox).HeightOverride(28)
           .Visibility_Lambda([this] { return SelectedDutyTile()>=0 && !Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })
-          .ToolTipText_Lambda([this] { const auto& H=Field->Presentation();return FText::FromString(H.Officers.IsValidIndex(H.Selected) ? H.Officers[H.Selected].Duty:FString()); })
+          .ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().DutyProgress.Detail); })
           [Button([] { return TEXT("担当地点へ / P"); },[this] { FocusSelectedDuty(); },[] { return true; },true)]]
         + SVerticalBox::Slot().AutoHeight().Padding(0,8)[SNew(SBox)
           .Visibility_Lambda([this] { return SelectedDutyTile()<0 || Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })
@@ -72,6 +72,22 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
                 return TEXT("軍議　")+H.Officers[H.Selected].DutyBadge;
             return H.MissionAdvice;
         },14)]]]];
+    Simple->AddSlot().AutoHeight().Padding(0,2,0,4)[SNew(SBox).HeightOverride(30)
+      .Visibility_Lambda([this]
+      {
+          const auto& Duty=Field->Presentation().DutyProgress;
+          return SelectedDutyTile()>=0 && !Field->IsAutoBattle() && (Duty.InspectTile>=0 || Duty.bCanResume) ? EVisibility::Visible:EVisibility::Collapsed;
+      })
+      .ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().DutyProgress.Detail); })
+      [Button([this]
+      {
+          const auto& Duty=Field->Presentation().DutyProgress;
+          return Duty.InspectTile>=0 ? Duty.InspectLabel:FString(TEXT("担当へ行軍を指示"));
+      },[this]
+      {
+          if(Field->Presentation().DutyProgress.InspectTile>=0) FocusDutyObstacle();
+          else Field->Issue(ETacticalCommand::ResumeDuty);
+      })]];
     Simple->AddSlot().AutoHeight().Padding(0,6,0,2)[BuildBattleChoicesInterface()];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,4)[BuildSupportChoicesInterface()];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,6)[SNew(SBox).HeightOverride(38)

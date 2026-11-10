@@ -9,7 +9,7 @@
 void ATacticalController::LayoutMapLabels()
 {
     using namespace gunyumaplabel;
-    LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(Hidden,6);GoalLabelPositions.Init(Hidden,3);MapLabelLeaders.Reset();
+    LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(Hidden,6);GoalLabelPositions.Init(Hidden,4);MapLabelLeaders.Reset();
     if(!Field || Field->Presentation().Journey.bVisible) return;
     const auto& Units=Field->VisualUnits();const FVector2D Size(132,86);
     const bool WideShot=bTacticCinema && Field->ReadTacticCinema().bVisible;
@@ -53,19 +53,20 @@ void ATacticalController::LayoutMapLabels()
     if(bEnemyDetailsOpen && !Field->IsPlaying()) Occupied.Add(FSlateRect(16,174,716,306));
     const auto& H=Field->Presentation();
     const int DutyTile=SelectedDutyTile();
-    const int Tiles[]={H.GoalTile,H.SecondGoalTile,DutyTile};
-    for(int Index=0;Index<3 && H.bBattle;++Index)
+    const int TrafficTile=DutyTile>=0 && H.DutyProgress.bTraffic ? H.DutyProgress.InspectTile:-1;
+    const int Tiles[]={H.GoalTile,H.SecondGoalTile,DutyTile,TrafficTile};
+    for(int Index=0;Index<UE_ARRAY_COUNT(Tiles) && H.bBattle;++Index)
     {
         const int Tile=Tiles[Index];
-        if(Tile<0 || (Index>0 && Tile==Tiles[0]) || (Index==2 && Tile==Tiles[1])) continue;
+        if(Tile<0 || TConstArrayView<int>(Tiles,Index).Contains(Tile)) continue;
         const auto Surface=Field->SurfaceLocation(Tile);
         const auto Anchor=MapLabelPosition(Surface+FVector(0,0,22),FVector2D::ZeroVector);
         if(Anchor.X<0 || Anchor.X>1600 || Anchor.Y<0 || Anchor.Y>900) continue;
-        const FVector2D PlateSize=GoalSize(Index,!H.Defenses.IsEmpty());
+        const FVector2D PlateSize=GoalLabelSize(Index);
         const auto Base=MapLabelPosition(Surface+FVector(0,0,240),PlateSize);
         const auto P=Reserve(Base,PlateSize,gunyulayout::LabelOrigin,Max,Occupied);
         GoalLabelPositions[Index]=P;
-        if(P!=Hidden && (Index==2 || !P.Equals(Base,3)))
+        if(P!=Hidden && (Index>=2 || !P.Equals(Base,3)))
         {
             const FVector2D Edge(FMath::Clamp(Anchor.X,P.X,P.X+PlateSize.X),FMath::Clamp(Anchor.Y,P.Y,P.Y+PlateSize.Y));
             MapLabelLeaders.Add({Anchor,Edge});

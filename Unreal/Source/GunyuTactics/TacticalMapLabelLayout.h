@@ -5,7 +5,7 @@ namespace gunyumaplabel
 {
     inline const FVector2D Hidden(-2000,-2000);
     inline FVector2D GoalSize(int Index,bool bBeacons)
-    { return Index==2 ? FVector2D(174,34):bBeacons ? FVector2D(180,70):FVector2D(140,34); }
+    { return Index>=2 ? FVector2D(174,34):bBeacons ? FVector2D(180,70):FVector2D(140,34); }
     inline bool Intersects(const FSlateRect& A,const FSlateRect& B)
     {
         return A.Left<B.Right && B.Left<A.Right && A.Top<B.Bottom && B.Top<A.Bottom;

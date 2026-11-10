@@ -37,13 +37,14 @@ bool ATacticalField::IsRealtimeAction(ETacticalCommand Command) const
     if (Command==ETacticalCommand::RealtimeMode || Command==ETacticalCommand::RealtimePause ||
         Command==ETacticalCommand::RealtimeSpeed || Command==ETacticalCommand::RealtimeStep || Command==ETacticalCommand::RealtimeStop ||
         Command==ETacticalCommand::RealtimeChainSignal || Command==ETacticalCommand::RealtimeAlertPause ||
-        Command==ETacticalCommand::RealtimeUndoWaypoint || Command==ETacticalCommand::RealtimeArrival) return true;
+        Command==ETacticalCommand::RealtimeUndoWaypoint || Command==ETacticalCommand::RealtimeArrival || Command==ETacticalCommand::ResumeDuty) return true;
     return bRealtimeCommand && State->Journey.stage==JourneyStage::Battle &&
         (Command==ETacticalCommand::Move || Command==ETacticalCommand::Strike || Command==ETacticalCommand::Hold ||
          Command==ETacticalCommand::PrepareAmbush || Command==ETacticalCommand::Execute || Command==ETacticalCommand::EndTurn);
 }
 bool ATacticalField::CanRealtimeIssue(ETacticalCommand Command) const
 {
+    if(Command==ETacticalCommand::ResumeDuty) return CanResumeDuty();
     const bool Battle=State->Journey.stage==JourneyStage::Battle;
     if (Command==ETacticalCommand::RealtimeMode) return Battle && !IsPlaying();
     if (Command==ETacticalCommand::RealtimeSpeed) return Battle || IsPlaying();
@@ -72,6 +73,8 @@ void ATacticalField::IssueRealtime(ETacticalCommand Command)
     auto& RT=State->Realtime;
     switch (Command)
     {
+    case ETacticalCommand::ResumeDuty:
+        ResumeDuty();return;
     case ETacticalCommand::RealtimeMode:
         bRealtimeCommand=!bRealtimeCommand;State->bRealtimeInBattle=false;
         { const double Speed=RT.speed;RT.Reset();RT.speed=Speed; }

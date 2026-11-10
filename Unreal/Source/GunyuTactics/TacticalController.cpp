@@ -416,6 +416,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=Field->RealtimeSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
     { const bool Passed=MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyProgressOnly")))
+    { const bool Passed=DutyProgressSmokeTest() && MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMomentsOnly")))
     { const bool Passed=Field->MissionMomentsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionCreditOnly")))
@@ -537,6 +539,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=Field->ReliefReadinessSmokeTest();
         if(bPassed) bPassed=Field->ReliefApproachSmokeTest();
         if(bPassed) bPassed=MissionFocusSmokeTest();
+        if(bPassed) bPassed=DutyProgressSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -671,6 +674,13 @@ void ATacticalController::PlayerTick(float Delta)
     int Defense=0;
     int DefenseAftermath=0;
     int DefenseRetry=0;
+    int DutyProgress=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DutyProgress="),DutyProgress))
+    {
+        const bool Valid=PrepareDutyProgressPreview(DutyProgress);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_DUTY_PROGRESS_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bRetryPayoffCapture && Frames==8)
     {
         const bool Valid=PrepareDefenseRetryPayoffCapture(DefenseRetryPayoff);

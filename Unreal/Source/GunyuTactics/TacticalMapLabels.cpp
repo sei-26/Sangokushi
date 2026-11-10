@@ -12,21 +12,42 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Notifications/SProgressBar.h"
 using namespace gunyuui;
+FString ATacticalController::GoalDutyStatus(int Index) const
+{
+    if(Index>=3) return {};
+    const auto& H=Field->Presentation();
+    const int Tile=Index==0 ? H.GoalTile:Index==1 ? H.SecondGoalTile:SelectedDutyTile();
+    return Tile>=0 && Tile==SelectedDutyTile() && Tile==H.DutyProgress.Tile ? H.DutyProgress.Caption:FString();
+}
+
+FVector2D ATacticalController::GoalLabelSize(int Index) const
+{
+    auto Size=gunyumaplabel::GoalSize(Index,!Field->Presentation().Defenses.IsEmpty());
+    if(!GoalDutyStatus(Index).IsEmpty()) { Size.X=FMath::Max(Size.X,192.);Size.Y+=18; }
+    return Size;
+}
+
 void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
 {
-    for (int Index = 0; Index < 3; ++Index)
+    for (int Index = 0; Index < 4; ++Index)
         Canvas->AddSlot().Position_Lambda([this,Index] { return GoalLabelPosition(Index); })
-        .Size_Lambda([this,Index] { return gunyumaplabel::GoalSize(Index,!Field->Presentation().Defenses.IsEmpty()); })
-        [SNew(SBorder).Visibility(EVisibility::HitTestInvisible).Padding(FMargin(8, 4))
+        .Size_Lambda([this,Index] { return GoalLabelSize(Index); })
+        [SNew(SBorder).Visibility(EVisibility::HitTestInvisible).Clipping(EWidgetClipping::ClipToBounds).Padding(FMargin(8, 4))
          .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.07f, .055f, .02f, .94f))
          [SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[Label([this,Index]
           {
               const auto& H=Field->Presentation();
+              if(Index==3) return FString(TEXT("◆ 行軍が重なる地点"));
               return Index==2 ? FString(TEXT("◆ 軍議の担当地点")):TEXT("◆ ")+(Index==0 ? H.GoalLabel:H.SecondGoalLabel);
           },13,Gold)]
-          + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Current:FString(); },11)]
-          + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Last:FString(); },11,Gold)]]];
+          + SVerticalBox::Slot().AutoHeight()[SNew(SVerticalBox)
+             .Visibility_Lambda([this,Index] { return Field->Presentation().Defenses.IsValidIndex(Index) ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
+             + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Current:FString(); },11)]
+             + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Last:FString(); },11,Gold)]]
+          + SVerticalBox::Slot().AutoHeight()[SNew(SBox)
+             .Visibility_Lambda([this,Index] { return GoalDutyStatus(Index).IsEmpty() ? EVisibility::Collapsed:EVisibility::HitTestInvisible; })
+             [Label([this,Index] { return GoalDutyStatus(Index); },11,FLinearColor(.68f,.86f,.79f))]]]];
     for (int Index = 0; Index < 6; ++Index)
     {
         auto Contents=SNew(SVerticalBox).Visibility(EVisibility::HitTestInvisible)
