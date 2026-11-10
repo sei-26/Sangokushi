@@ -9,6 +9,17 @@ FMissionProgress ATacticalField::CaptureMissionProgress() const
     const auto& J=State->Journey;FMissionProgress P;
     P.CommandTurn=J.turn;
     P.bBattle=J.stage==frontline::JourneyStage::Battle;P.bRescue=J.IsRescue();
+    if(P.bBattle && J.campaignFlow)
+        for(int Id=0;Id<3;++Id)
+        {
+            const auto& Duty=J.assignments[Id];
+            if(!Duty.completed || Duty.duty==frontline::JourneyDuty::None) continue;
+            const bool Ambush=Duty.duty==frontline::JourneyDuty::Ambush;
+            P.CompletedDuties|=1<<Id;
+            if(Ambush) P.AmbushDuties|=1<<Id;
+            if(frontline::TacticChain::Living(J.world,Id) && J.world.armies[Id].tile==Duty.tile && (!Ambush || J.chain.concealed[Id]))
+                P.PresentDuties|=1<<Id;
+        }
     if(J.HasConvoy()) { P.Convoy=J.convoyStep;P.Total=int(J.ConvoyPath().size())-1;P.ConvoyNext=J.ConvoyPath()[FMath::Min(P.Convoy+1,P.Total)]; }
     if(J.Definition().kind==frontline::JourneyObjective::HoldPositions)
     {
@@ -35,6 +46,7 @@ void ATacticalField::PublishMissionResponse()
     {
         const auto& Beat=State->Beats.Last();
         Response=gunyumission::Read(&Beat,ReadRetryDefensePayoff(Beat));
+        if(Response.Line.IsEmpty()) Response=gunyumission::ReadDuty(Beat);
     }
     if(Response.Line.IsEmpty()) return;
     State->MissionResponse=MoveTemp(Response);State->MissionResponseRemaining=4.5f;

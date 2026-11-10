@@ -209,16 +209,18 @@ void ATacticalField::Issue(ETacticalCommand Command)
     }
     case ETacticalCommand::PrepareAmbush:
     {
+        const auto MissionBefore=CaptureMissionProgress();
         const bool bSuccess = J.Ambush(State->Selected);
         State->Input = ETacticalInput::Select; State->Report = JourneyText(J.message);
-        if (bSuccess) QueueAction(EBattleCue::Conceal, State->Selected, -1, Before);
+        if (bSuccess) QueueAction(EBattleCue::Conceal, State->Selected, -1, Before,MissionBefore);
         break;
     }
     case ETacticalCommand::Hold:
     {
+        const auto MissionBefore=CaptureMissionProgress();
         const bool bSuccess = J.Hold(State->Selected);
         State->Input = ETacticalInput::Select; State->Report = JourneyText(J.message);
-        if (bSuccess) QueueAction(EBattleCue::Guard, State->Selected, -1, Before);
+        if (bSuccess) QueueAction(EBattleCue::Guard, State->Selected, -1, Before,MissionBefore);
         break;
     }
     case ETacticalCommand::QueueTactic:

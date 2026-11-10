@@ -48,7 +48,8 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
     if(Kind==EBattleCue::Strike || Kind==EBattleCue::Withdraw) State->RetryDefenseAid={};
     FBattleBeat Beat;
     Beat.Before = Before; Beat.After = ObserveUnits();
-    if(Kind==EBattleCue::Enemy) { Beat.MissionBefore=MissionBefore;Beat.MissionAfter=CaptureMissionProgress(); }
+    if(Kind==EBattleCue::Enemy || Kind==EBattleCue::Guard || Kind==EBattleCue::Conceal)
+    { Beat.MissionBefore=MoveTemp(MissionBefore);Beat.MissionAfter=CaptureMissionProgress(); }
     Beat.Actor = Actor; Beat.Target = Target; Beat.Kind = Kind;
     if(Kind==EBattleCue::March) Beat.MissionBefore=Beat.MissionAfter=CaptureMissionProgress();
     if(Kind==EBattleCue::March || Kind==EBattleCue::Enemy) AttachMissionCredit(Beat);

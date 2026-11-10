@@ -168,6 +168,7 @@ struct FMissionProgress
 {
     int Convoy=-1,Total=0,Held=-1,Required=0;
     int ConvoyNext=-1,DirectedMovers=0;
+    int CompletedDuties=0,PresentDuties=0,AmbushDuties=0;
     TArray<int> ConfirmedReliefs;
     int CommandTurn=0;
     int PrimaryGoal=-1,SecondaryGoal=-1;

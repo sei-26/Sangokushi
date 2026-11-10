@@ -421,6 +421,9 @@ private:
     void FocusBattleTile(int Tile);
     bool MissionFocusSmokeTest();
     bool DutyProgressSmokeTest();
+    bool DutyResponseSmokeTest();
+    bool PrepareDutyResponseCase(int Variant);
+    bool PrepareDutyResponseCapture(int Variant);
     bool PrepareDutyProgressPreview(int Variant);
     void ResetBattleCamera();
     bool CameraPresentationSmokeTest();

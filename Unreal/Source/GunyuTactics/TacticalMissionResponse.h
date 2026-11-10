@@ -10,6 +10,7 @@ namespace gunyumission
     gunyuresponse::FRead ReadSupportCombo(const TArray<FBattleBeat>& Beats);
     bool SupportComboSmokeTest();
     gunyuresponse::FRead ReadDefense(const FBattleBeat* Beat);
+    gunyuresponse::FRead ReadDuty(const FBattleBeat& Beat);
     gunyuresponse::FRead RetryDefenseVoices(const FBattleBeat& Beat,int Guard,int Supporter,bool bNorth);
     bool DefenseSmokeTest();
     bool CreditSmokeTest();

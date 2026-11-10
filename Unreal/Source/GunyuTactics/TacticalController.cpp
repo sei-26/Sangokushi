@@ -135,8 +135,9 @@ void ATacticalController::PlayerTick(float Delta)
     int SupportComboMode=0;const bool bSupportComboCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportComboPreview="),SupportComboMode);
     int DefenseMode=0;const bool bDefenseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefensePreview="),DefenseMode);
     int DefenseRetryPayoff=0;const bool bRetryPayoffCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefenseRetryPayoff="),DefenseRetryPayoff);
+    int DutyResponse=0;const bool bDutyResponseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DutyResponse="),DutyResponse);
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
-    if (!bCinemaCapture && !bDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture)
+    if (!bCinemaCapture && !bDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture && !bDutyResponseCapture)
     {
         if (Field->bRealtimeCommand && !bCapture && !bSmoke && !FApp::HasFocus() && !Field->RealtimePaused())
             Field->Issue(ETacticalCommand::RealtimePause);
@@ -418,6 +419,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyProgressOnly")))
     { const bool Passed=DutyProgressSmokeTest() && MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyResponseOnly")))
+    { const bool Passed=DutyResponseSmokeTest() && Field->MissionMomentsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMomentsOnly")))
     { const bool Passed=Field->MissionMomentsSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionCreditOnly")))
@@ -540,6 +543,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=Field->ReliefApproachSmokeTest();
         if(bPassed) bPassed=MissionFocusSmokeTest();
         if(bPassed) bPassed=DutyProgressSmokeTest();
+        if(bPassed) bPassed=DutyResponseSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR
@@ -675,6 +679,12 @@ void ATacticalController::PlayerTick(float Delta)
     int DefenseAftermath=0;
     int DefenseRetry=0;
     int DutyProgress=0;
+    if(bDutyResponseCapture && Frames==8)
+    {
+        const bool Valid=PrepareDutyResponseCapture(DutyResponse);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_DUTY_RESPONSE_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DutyProgress="),DutyProgress))
     {
         const bool Valid=PrepareDutyProgressPreview(DutyProgress);
