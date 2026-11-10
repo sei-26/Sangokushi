@@ -4,7 +4,7 @@
 #include "TacticalWidgets.h"
 #include "TacticalTargetVisual.h"
 #include "TacticalActionFocus.h"
-#include "TacticalGoalLabelLayout.h"
+#include "TacticalMapLabelLayout.h"
 #include "TacticalBattleResponse.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
@@ -14,19 +14,17 @@
 using namespace gunyuui;
 void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
 {
-    for (int Index = 0; Index < 2; ++Index)
-        Canvas->AddSlot().Position_Lambda([this, Index]
-        {
-            const auto& H = Field->Presentation();
-            const int Tile = Index == 0 ? H.GoalTile : H.SecondGoalTile;
-            const FVector2D Size=H.Defenses.IsEmpty() ? FVector2D(140,34):FVector2D(180,70);
-            if(!H.bBattle || H.Journey.bVisible || Tile<0) return FVector2D(-2000,-2000);
-            return gunyugoallabel::Place(MapLabelPosition(Field->SurfaceLocation(Tile)+FVector(0,0,240),Size),Size,bTacticCinema && Field->ReadMissionResponse().Weight>.001f);
-        }).Size_Lambda([this] { return Field->Presentation().Defenses.IsEmpty() ? FVector2D(140,34):FVector2D(180,70); })
+    for (int Index = 0; Index < 3; ++Index)
+        Canvas->AddSlot().Position_Lambda([this,Index] { return GoalLabelPosition(Index); })
+        .Size_Lambda([this,Index] { return gunyumaplabel::GoalSize(Index,!Field->Presentation().Defenses.IsEmpty()); })
         [SNew(SBorder).Visibility(EVisibility::HitTestInvisible).Padding(FMargin(8, 4))
          .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.07f, .055f, .02f, .94f))
          [SNew(SVerticalBox)
-          + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { return TEXT("◆ ") + (Index==0 ? Field->Presentation().GoalLabel:Field->Presentation().SecondGoalLabel); }, 13, Gold)]
+          + SVerticalBox::Slot().AutoHeight()[Label([this,Index]
+          {
+              const auto& H=Field->Presentation();
+              return Index==2 ? FString(TEXT("◆ 軍議の担当地点")):TEXT("◆ ")+(Index==0 ? H.GoalLabel:H.SecondGoalLabel);
+          },13,Gold)]
           + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Current:FString(); },11)]
           + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Last:FString(); },11,Gold)]]];
     for (int Index = 0; Index < 6; ++Index)

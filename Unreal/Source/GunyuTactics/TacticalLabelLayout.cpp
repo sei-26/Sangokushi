@@ -4,11 +4,12 @@
 #include "TacticalTargetVisual.h"
 #include "TacticalActionFocus.h"
 #include "TacticalBattleResponse.h"
-#include "TacticalGoalLabelLayout.h"
+#include "TacticalMapLabelLayout.h"
 
 void ATacticalController::LayoutMapLabels()
 {
-    LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(FVector2D(-2000,-2000),6);UnitLabelLeaders.Reset();
+    using namespace gunyumaplabel;
+    LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(Hidden,6);GoalLabelPositions.Init(Hidden,3);MapLabelLeaders.Reset();
     if(!Field || Field->Presentation().Journey.bVisible) return;
     const auto& Units=Field->VisualUnits();const FVector2D Size(132,86);
     const bool WideShot=bTacticCinema && Field->ReadTacticCinema().bVisible;
@@ -50,19 +51,30 @@ void ATacticalController::LayoutMapLabels()
         else Occupied.Add(FSlateRect(290,106,1050,210));
     }
     if(bEnemyDetailsOpen && !Field->IsPlaying()) Occupied.Add(FSlateRect(16,174,716,306));
-    for(int Tile:{Field->Presentation().GoalTile,Field->Presentation().SecondGoalTile})
-        if(Tile>=0)
+    const auto& H=Field->Presentation();
+    const int DutyTile=SelectedDutyTile();
+    const int Tiles[]={H.GoalTile,H.SecondGoalTile,DutyTile};
+    for(int Index=0;Index<3 && H.bBattle;++Index)
+    {
+        const int Tile=Tiles[Index];
+        if(Tile<0 || (Index>0 && Tile==Tiles[0]) || (Index==2 && Tile==Tiles[1])) continue;
+        const auto Surface=Field->SurfaceLocation(Tile);
+        const auto Anchor=MapLabelPosition(Surface+FVector(0,0,22),FVector2D::ZeroVector);
+        if(Anchor.X<0 || Anchor.X>1600 || Anchor.Y<0 || Anchor.Y>900) continue;
+        const FVector2D PlateSize=GoalSize(Index,!H.Defenses.IsEmpty());
+        const auto Base=MapLabelPosition(Surface+FVector(0,0,240),PlateSize);
+        const auto P=Reserve(Base,PlateSize,gunyulayout::LabelOrigin,Max,Occupied);
+        GoalLabelPositions[Index]=P;
+        if(P!=Hidden && (Index==2 || !P.Equals(Base,3)))
         {
-            const FVector2D GoalSize=Field->Presentation().Defenses.IsEmpty() ? FVector2D(140,34):FVector2D(180,70);
-            const auto P=gunyugoallabel::Place(MapLabelPosition(Field->SurfaceLocation(Tile)+FVector(0,0,240),GoalSize),GoalSize,bTacticCinema && Field->ReadMissionResponse().Weight>.001f);
-            Occupied.Add(FSlateRect(P.X,P.Y,P.X+GoalSize.X,P.Y+GoalSize.Y));
+            const FVector2D Edge(FMath::Clamp(Anchor.X,P.X,P.X+PlateSize.X),FMath::Clamp(Anchor.Y,P.Y,P.Y+PlateSize.Y));
+            MapLabelLeaders.Add({Anchor,Edge});
         }
+    }
     TArray<int> Priority;
     if(Focused) { Priority.Add(Action.Actor);Priority.AddUnique(Action.Target); }
     Priority.AddUnique(Field->Presentation().Selected);Priority.AddUnique(5);
     for(int Id=0;Id<6;++Id) Priority.AddUnique(Id);
-    auto Intersects=[](const FSlateRect& A,const FSlateRect& B)
-    { return A.Left<B.Right && B.Left<A.Right && A.Top<B.Bottom && B.Top<A.Bottom; };
     for(int Id:Priority)
     {
         if(!Units.IsValidIndex(Id) || Units[Id].Id<0 || (Units[Id].Troops<=0 && !Field->IsPlaying())) continue;
@@ -70,30 +82,9 @@ void ATacticalController::LayoutMapLabels()
         const auto& U=Units[Id];const auto Anchor=MapLabelPosition(U.Position+FVector(0,0,70),FVector2D::ZeroVector);
         if(Anchor.X<Min.X-60 || Anchor.X>Max.X+60 || Anchor.Y<Min.Y-60 || Anchor.Y>Max.Y+60) continue;
         const auto Base=MapLabelPosition(U.Position+FVector(0,0,240),Size);
-        TArray<double> Xs{FMath::Clamp(Base.X,Min.X,Max.X-Size.X),Min.X,Max.X-Size.X};
-        TArray<double> Ys{FMath::Clamp(Base.Y,Min.Y,Max.Y-Size.Y),Min.Y,Max.Y-Size.Y};
-        // Rectangle edges also find narrow free gaps; fixed offsets can miss
-        // such a gap and unnecessarily hide a visible officer's plate.
-        for(const auto& R:Occupied)
-        {
-            Xs.AddUnique(FMath::Clamp(double(R.Left)-Size.X-4,Min.X,Max.X-Size.X));
-            Xs.AddUnique(FMath::Clamp(double(R.Right)+4,Min.X,Max.X-Size.X));
-            Ys.AddUnique(FMath::Clamp(double(R.Top)-Size.Y-4,Min.Y,Max.Y-Size.Y));
-            Ys.AddUnique(FMath::Clamp(double(R.Bottom)+4,Min.Y,Max.Y-Size.Y));
-        }
-        double Best=1e30;FVector2D Chosen(-2000,-2000);
-        for(double X:Xs) for(double Y:Ys)
-        {
-            const FVector2D P(X,Y);const double Cost=(P-Base).SizeSquared();if(Cost>=Best) continue;
-            const FSlateRect Bounds(X-3,Y-3,X+Size.X+3,Y+Size.Y+3);
-            bool Free=true;for(const auto& Other:Occupied) if(Intersects(Bounds,Other)) { Free=false;break; }
-            if(Free) { Best=Cost;Chosen=P; }
-        }
-        if(Best<1e29)
-        {
-            UnitLabelPositions[Id]=Chosen;Occupied.Add(FSlateRect(Chosen.X-3,Chosen.Y-3,Chosen.X+Size.X+3,Chosen.Y+Size.Y+3));
-            if(!Chosen.Equals(Base,3)) UnitLabelLeaders.Add({Anchor,Chosen+FVector2D(Size.X*.5,U.Loss>0 ? 82:56)});
-        }
+        const auto Chosen=Reserve(Base,Size,Min,Max,Occupied);
+        UnitLabelPositions[Id]=Chosen;
+        if(Chosen!=Hidden && !Chosen.Equals(Base,3)) MapLabelLeaders.Add({Anchor,Chosen+FVector2D(Size.X*.5,U.Loss>0 ? 82:56)});
     }
 }
 FString ATacticalController::UnitMapStatus(int Index) const

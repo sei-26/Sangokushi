@@ -22,5 +22,6 @@ private:
 namespace gunyulayout
 {
     inline const FVector2D MapOrigin(16,174),MapSize(1240,538);
+    inline const FVector2D LabelOrigin(16,112),LabelSize(1568,606);
     inline const FVector2D CommandOrigin(1268,116),CommandSize(316,578);
 }

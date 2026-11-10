@@ -106,6 +106,7 @@ void ATacticalField::BuildPresentation()
         if(HasCouncilDuties)
         {
             Officer.DutyBadge=CouncilDutyBadge(J,Id);
+            if(J.assignments[Id].duty!=JourneyDuty::None) Officer.DutyTile=J.assignments[Id].tile;
             Officer.Duty=Officer.Duty.IsEmpty() ? Officer.DutyBadge:Officer.DutyBadge+TEXT("\n")+Officer.Duty;
             Officer.Duty=TEXT("軍議の担当　")+Officer.Duty;
             if(bRealtimeCommand) Officer.Duty+=TEXT("\n現在　")+Officer.Command;

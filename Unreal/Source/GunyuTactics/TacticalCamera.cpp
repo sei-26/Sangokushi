@@ -51,6 +51,7 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
         if(WasInputKeyJustPressed(EKeys::K)) CycleCameraView();
         if(WasInputKeyJustPressed(EKeys::J)) FocusSelectedOfficer();
         if(WasInputKeyJustPressed(EKeys::U)) FocusMissionObjective();
+        if(WasInputKeyJustPressed(EKeys::P)) FocusSelectedDuty();
         if(WasInputKeyJustPressed(EKeys::Home)) ResetBattleCamera();
         if(!OverUI && WasInputKeyJustPressed(EKeys::MouseScrollUp)) Distance-=220;
         if(!OverUI && WasInputKeyJustPressed(EKeys::MouseScrollDown)) Distance+=220;

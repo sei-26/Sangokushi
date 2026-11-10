@@ -58,14 +58,20 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
       + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([this] { return Field->Presentation().Selected; },62,74)]
       + SHorizontalBox::Slot().FillWidth(1).Padding(14,8)[SNew(SVerticalBox)
         + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& H=Field->Presentation();return H.Officers.IsValidIndex(H.Selected) ? H.Officers[H.Selected].Name:FString(); },25,Gold)]
-        + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this]
+        + SVerticalBox::Slot().AutoHeight().Padding(0,5)[SNew(SBox).HeightOverride(28)
+          .Visibility_Lambda([this] { return SelectedDutyTile()>=0 && !Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })
+          .ToolTipText_Lambda([this] { const auto& H=Field->Presentation();return FText::FromString(H.Officers.IsValidIndex(H.Selected) ? H.Officers[H.Selected].Duty:FString()); })
+          [Button([] { return TEXT("担当地点へ / P"); },[this] { FocusSelectedDuty(); },[] { return true; },true)]]
+        + SVerticalBox::Slot().AutoHeight().Padding(0,8)[SNew(SBox)
+          .Visibility_Lambda([this] { return SelectedDutyTile()<0 || Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })
+          [Label([this]
         {
             const auto& H=Field->Presentation();
             if(Field->IsAutoBattle()) return H.ClockLabel;
             if(H.Officers.IsValidIndex(H.Selected) && !H.Officers[H.Selected].DutyBadge.IsEmpty())
                 return TEXT("軍議　")+H.Officers[H.Selected].DutyBadge;
             return H.MissionAdvice;
-        },14)]]];
+        },14)]]]];
     Simple->AddSlot().AutoHeight().Padding(0,6,0,2)[BuildBattleChoicesInterface()];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,4)[BuildSupportChoicesInterface()];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,6)[SNew(SBox).HeightOverride(38)

@@ -30,6 +30,11 @@ FVector2D ATacticalController::LabelPosition(int Index) const
     if(LabelLayoutFrame!=GFrameCounter) const_cast<ATacticalController*>(this)->LayoutMapLabels();
     return UnitLabelPositions.IsValidIndex(Index) ? UnitLabelPositions[Index] : FVector2D(-2000,-2000);
 }
+FVector2D ATacticalController::GoalLabelPosition(int Index) const
+{
+    if(LabelLayoutFrame!=GFrameCounter) const_cast<ATacticalController*>(this)->LayoutMapLabels();
+    return GoalLabelPositions.IsValidIndex(Index) ? GoalLabelPositions[Index]:FVector2D(-2000,-2000);
+}
 FVector2D ATacticalController::MapLabelPosition(FVector World, FVector2D Size) const
 {
     FVector2D Point;
@@ -81,7 +86,7 @@ void ATacticalController::BuildInterface()
     auto Canvas=SNew(SCanvas).Visibility(EVisibility::SelfHitTestInvisible);
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MarchRouteOverlay(true)];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MarchRouteOverlay()];
-    Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MapLabelLeaderOverlay()];
+    Canvas->AddSlot().Position(gunyulayout::LabelOrigin).Size(gunyulayout::LabelSize)[MapLabelLeaderOverlay()];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[ChainPlanOverlay()];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[BattleActivityOverlay()];
     BuildMapLabels(Canvas);

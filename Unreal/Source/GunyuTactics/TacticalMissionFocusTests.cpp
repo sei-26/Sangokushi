@@ -1,4 +1,6 @@
 ﻿#include "TacticalTrial.h"
+#include "TacticalChrome.h"
+#include "TacticalMapLabelLayout.h"
 #include "JourneySave.hpp"
 #include <memory>
 bool ATacticalController::MissionFocusSmokeTest()
@@ -7,6 +9,14 @@ bool ATacticalController::MissionFocusSmokeTest()
     const bool Council=Field->bStartWithCouncil,Mode=Field->bRealtimeCommand,Legacy=Field->bLegacyJourney;
     const int Mission=Field->FirstMission,Policy=Field->EnemyPolicy,Preset=CameraPreset;const auto OldFocus=Focus;const float OldDistance=Distance;
     auto Check=[](bool V,const TCHAR* Why) { if(!V) UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_FOCUS: FAIL %s"),Why);return V; };
+    TArray<FSlateRect> Occupied{FSlateRect(260,120,620,230)};
+    const FVector2D Size(180,70),Min=gunyulayout::LabelOrigin,Max(1256,712);
+    const auto First=gunyumaplabel::Reserve(FVector2D(350,92),Size,Min,Max,Occupied);
+    const auto Second=gunyumaplabel::Reserve(FVector2D(350,92),Size,Min,Max,Occupied);
+    if(!Check(First.Y>=Min.Y && Second.Y>=Min.Y && Occupied.Num()==3 &&
+        !gunyumaplabel::Intersects(Occupied[0],Occupied[1]) && !gunyumaplabel::Intersects(Occupied[0],Occupied[2]) &&
+        !gunyumaplabel::Intersects(Occupied[1],Occupied[2]),
+        TEXT("two overlapping projected beacons stay below the header and clear the response and each other"))) return false;
     CloseEpisode();Field->bStartWithCouncil=true;Field->bRealtimeCommand=false;Field->bLegacyJourney=false;Field->FirstMission=0;Field->EnemyPolicy=0;
     Field->Issue(ETacticalCommand::Restart);
     for(int I=0;I<4;++I) Field->Action(EKeys::Enter);
@@ -53,7 +63,21 @@ bool ATacticalController::MissionFocusSmokeTest()
         FocusMissionObjective();Field->ExportSession(After);
         if(!Check(Before==After,TEXT("reading and focusing every objective preserve the saved session"))) return false;
     }
+    Field->bStartWithCouncil=true;Field->bRealtimeCommand=true;Field->FirstMission=1;Field->Issue(ETacticalCommand::Restart);
+    for(int I=0;I<3;++I) Field->Action(EKeys::Enter);
+    Field->Issue(ETacticalCommand::PlanExample);Field->Issue(ETacticalCommand::Deploy);
+    const auto BeforeFreeFocus=Focus;FocusSelectedDuty();
+    if(!Check(SelectedDutyTile()<0 && Focus==BeforeFreeFocus,TEXT("free Zhang has no council destination to focus"))) return false;
+    Field->SelectOfficer(0);
+    if(!Check(Field->ExportSession(Before) && DecodeJourneySave(Before,*Save) && SelectedDutyTile()==Save->journey.assignments[0].tile &&
+        SelectedDutyTile()!=Field->Presentation().MissionFocusTile,TEXT("the real council destination is distinct from the river-port objective"))) return false;
+    const auto DutyFocus=Field->SurfaceLocation(SelectedDutyTile());FocusSelectedDuty();
+    if(!Check(Focus.Equals(DutyFocus) && Field->ExportSession(After) && Before==After,
+        TEXT("duty focus frames the public assignment without changing the officer or save"))) return false;
+    Field->Issue(ETacticalCommand::RealtimeStep);FocusSelectedDuty();
+    if(!Check(Field->IsPlaying() && SelectedDutyTile()<0 && Focus.Equals(DutyFocus),TEXT("duty focus is unavailable while the cycle plays"))) return false;
+    Field->Issue(ETacticalCommand::Skip);
     Field->bStartWithCouncil=Council;Field->bRealtimeCommand=Mode;Field->bLegacyJourney=Legacy;Field->FirstMission=Mission;Field->EnemyPolicy=Policy;Field->Issue(ETacticalCommand::Restart);
     Focus=OldFocus;Distance=OldDistance;CameraPreset=Preset;
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_FOCUS: PASS (public council escort, actual route/traffic/progress, fog privacy, immutable camera-only focus, playback guards, port/beacon/breakout goals)"));return true;
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_FOCUS: PASS (escort route, fog, public goals, collision-safe plates, actual council destination, immutable view controls and playback guards)"));return true;
 }

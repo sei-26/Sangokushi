@@ -17,7 +17,7 @@ struct FOfficerPresentation
 {
     FString Name, Status, Tactic, Command, Duty, DutyBadge;
     bool bLiving = false, bSelected = false;
-    int Tile = -1;
+    int Tile = -1, DutyTile = -1;
 };
 struct FOrderPresentation
 {

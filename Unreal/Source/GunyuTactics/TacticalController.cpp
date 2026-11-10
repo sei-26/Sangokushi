@@ -338,6 +338,8 @@ void ATacticalController::PlayerTick(float Delta)
     }
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAuto"))) Field->Issue(ETacticalCommand::AutoBattle);
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGoalFocus"))) FocusMissionObjective();
+    if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyFocus")))
+    { Field->SelectOfficer(0);FocusSelectedDuty(); }
     if(bCapture && Frames==3 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision")))
     {
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuTripleSpeed")))
