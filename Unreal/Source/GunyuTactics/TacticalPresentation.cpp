@@ -63,6 +63,11 @@ void ATacticalField::BuildPresentation()
         HUD.Objective = J.stage == JourneyStage::Debrief
             ? FString::Printf(TEXT("%s  帰還兵 %d / 損失 %d / 信頼 %d"), J.won ? TEXT("勝利") : J.withdrawn ? TEXT("任務中止・撤収") : TEXT("敗北"), J.survivors, J.casualties, J.trust)
             : J.stage == JourneyStage::Complete ? TEXT("突破・護送・防衛の３戦を完了") : JourneyText(J.ObjectiveBrief());
+        if (!HUD.Journey.CoalitionEpisode.Lines.IsEmpty())
+        {
+            HUD.Title = TEXT("序章の記録");
+            HUD.Objective = TEXT("民の退路、河港、決戦の両翼を越えて");
+        }
         if (J.stage == JourneyStage::Encounter) HUD.Objective = TEXT("出会いから、任された一つの仕事へ");
         if (J.stage == JourneyStage::Preparation && J.IsRescue()) HUD.Objective = FString::Printf(TEXT("作戦の約束: 季安の避難車を東の出口へ護送 / 全軍更新%d回まで"),J.TurnBudget());
         State->Reachable.Reset();

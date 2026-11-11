@@ -29,7 +29,7 @@ bool ATacticalController::PrepareCoalitionStoryPreview(int Page)
     std::vector<std::uint8_t> Bytes;
     if(!EncodeJourneySave(*Save,Bytes) || !Field->ImportSession(Bytes)) return false;
     const auto& P=Field->Presentation().Journey;
-    if(!P.bComplete || P.CoalitionEpisode.Lines.Num()!=9) return false;
+    if(!P.bComplete || P.CoalitionEpisode.Lines.Num()!=9 || Field->Presentation().Title!=TEXT("序章の記録")) return false;
     if(Page<0) return true;
     OpenEpisode(true);
     if(!bEpisodeOpen || !EpisodeSnapshot.Lines.IsValidIndex(Page)) return false;
@@ -60,6 +60,7 @@ bool ATacticalController::CoalitionStorySmokeTest()
     int Pages=0;
     while(bEpisodeOpen)
     {
+        if(CurrentEpisodeLine().Speaker==3 && !Check(!IsEnsembleEpisode(),TEXT("the strategist appears when speaking"))) return false;
         NovelElapsed=1000;
         HandleEpisodeKey(EKeys::Enter);
         ++Pages;
