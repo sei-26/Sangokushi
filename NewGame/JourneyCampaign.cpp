@@ -16,7 +16,7 @@ namespace frontline
         if(!j.campaignFlow) return b;
         const bool finished=j.stage==JourneyStage::Debrief && j.won;
         if(j.stage==JourneyStage::Complete)
-            return {U"序章 完 ／ 黄巾の戦役を越えて",j.history[0].won && j.history[1].won ? U"民の退路、河港、決戦の両翼。三つの采配が、一人の軍師の実績になった。":U"任された戦いを越え、主人公は義勇軍の正式な軍師として迎えられた。",U"序章の終幕。最後の語らいを読み、ここまでの采配を記録しよう。",U"義勇軍の正式な軍師"};
+            return {U"序章 完 ／ 黄巾の戦役を越えて",j.history[0].won && j.history[1].won ? U"民の退路、河港、決戦の両翼。三つの采配が、一人の軍師の実績になった。":U"任された戦いを越え、主人公は義勇軍の正式な軍師として迎えられた。",U"五年後、洛陽の政変が諸侯を動かす。第一章「反董卓連合」へ。",U"義勇軍の正式な軍師"};
         if(j.mission==0)
         {
             b.phase=U"第一幕 ／ 民の退路から、義勇軍へ";

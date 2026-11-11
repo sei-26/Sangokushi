@@ -17,10 +17,12 @@ void ATacticalField::BuildStoryPresentation()
         if(J.CurrentPledge()!=JourneyPledge::None) P.PledgeText=TEXT("主人公が交わした約束：")+JourneyText(PledgeName(J.CurrentPledge()));
     }
     const auto& Story=J.history[J.mission].story;
+    const auto Duty=ReadDutyAftermath(J);
     if(P.bCampaignFlow && P.bDebrief)
     {
         const auto Aftermath=ReadRoleAftermath(J);
         if(!Aftermath.lines.empty()) P.CampaignChange+=TEXT("\n")+JourneyText(Aftermath.summary);
+        if(!Duty.summary.empty()) P.CampaignChange+=TEXT("\n")+JourneyText(Duty.summary);
     }
     if(P.bDebrief || P.bComplete)
     {
@@ -41,6 +43,7 @@ void ATacticalField::BuildStoryPresentation()
             else P.StoryFacts+=FString::Printf(TEXT("第%d指揮で補給。主力の士気を合計%d回復し、その後に戦法%d手が成功。"),R.resupplyTurn,R.resupplyMorale,R.postSupplySteps);
         }
         const auto Relief=ReliefReviewText(J);if(!Relief.empty()) P.StoryFacts+=TEXT("\n")+JourneyText(Relief);
+        if(!P.bCampaignFlow && !Duty.summary.empty()) P.StoryFacts+=TEXT("\n")+JourneyText(Duty.summary);
         P.bNeedsReply=J.NeedsStoryReply();
         if(P.bNeedsReply)
         {

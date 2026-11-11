@@ -1,5 +1,5 @@
-﻿#include "TacticalTrial.h"
-#include "TacticalContributionQA.h"
+﻿#include "TacticalContributionQA.h"
+#include "TacticalTrial.h"
 #include "../../../tests/JourneyContributionPlayer.hpp"
 bool PrepareContributionPreview(ATacticalField* Field,int Variant)
 {

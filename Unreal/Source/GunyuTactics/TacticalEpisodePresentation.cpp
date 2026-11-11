@@ -3,15 +3,21 @@
 #include "JourneyEpisode.hpp"
 void ATacticalField::BuildEpisodePresentation()
 {
-    const auto& J=State->Journey;const auto E=frontline::BuildJourneyEpisode(J);
-    if(E.lines.empty()) return;
-    auto& P=State->HUD.Journey.Episode;
-    P.Key=FString::Printf(TEXT("%d:%d"),J.mission,int(J.stage));
-    P.Title=JourneyText(E.title);P.Place=JourneyText(E.place);P.Setting=JourneyText(E.setting);P.Question=JourneyText(E.question);
-    for(const auto& Line:E.lines)
+    const auto& J=State->Journey;
+    auto& Journey=State->HUD.Journey;
+    const auto Copy=[&](const frontline::JourneyEpisode& Episode,FJourneyEpisodePresentation& P)
     {
-        FDialoguePresentation D;D.Speaker=Line.speaker;D.Name=JourneyText(frontline::EpisodeSpeakerName(Line.speaker));
-        D.Text=JourneyText(Line.text);D.Direction=JourneyText(Line.direction);D.bProtagonist=Line.speaker==3;D.WarmMask=Line.warmMask;
-        P.Lines.Add(MoveTemp(D));
-    }
+        if(Episode.lines.empty()) return;
+        P.Key=FString::Printf(TEXT("%d:%d"),J.mission,int(J.stage));
+        P.Title=JourneyText(Episode.title);P.Place=JourneyText(Episode.place);
+        P.Setting=JourneyText(Episode.setting);P.Question=JourneyText(Episode.question);
+        for(const auto& Line:Episode.lines)
+        {
+            FDialoguePresentation D;D.Speaker=Line.speaker;D.Name=JourneyText(frontline::EpisodeSpeakerName(Line.speaker));
+            D.Text=JourneyText(Line.text);D.Direction=JourneyText(Line.direction);D.bProtagonist=Line.speaker==3;D.WarmMask=Line.warmMask;
+            P.Lines.Add(MoveTemp(D));
+        }
+    };
+    Copy(frontline::BuildJourneyEpisode(J),Journey.Episode);
+    if(Journey.bComplete) Copy(frontline::BuildCoalitionEpisode(J),Journey.CoalitionEpisode);
 }

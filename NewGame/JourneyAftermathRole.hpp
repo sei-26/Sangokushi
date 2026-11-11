@@ -11,4 +11,5 @@ namespace frontline
     JourneyRoleAftermath ReadRoleAftermath(const StrategistJourney&);
     JourneyRoleAftermath ReadContributionAftermath(const StrategistJourney&);
     JourneyRoleAftermath ReadDefenseAftermath(const StrategistJourney&);
+    JourneyRoleAftermath ReadDutyAftermath(const StrategistJourney&);
 }

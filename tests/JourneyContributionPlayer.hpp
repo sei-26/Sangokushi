@@ -5,11 +5,15 @@
 namespace contributionqa
 {
     // Actual public commands, not a fabricated settled victory or hidden enemy policy.
-    inline std::unique_ptr<JourneySaveData> Play(int variant)
+    inline std::unique_ptr<JourneySaveData> Play(int variant,bool withDuties=false)
     {
         auto save=std::make_unique<JourneySaveData>();auto& j=save->journey;
-        j.ResetCampaign();j.SelectDifficulty(JourneyDifficulty::Story);j.Meet();j.mission=variant==3 ? 0:1;save->beforeBattle=j;
+        j.ResetCampaign();j.SelectDifficulty(JourneyDifficulty::Story);j.Meet();j.mission=variant==3 ? 0:1;
+        if(withDuties && (!j.AssignDuty(0,j.Definition().positions[0],JourneyDuty::Hold) ||
+                          !j.AssignDuty(1,j.Definition().positions[1],JourneyDuty::Ambush))) return {};
+        save->beforeBattle=j;
         if(!j.Prepare(variant==3 ? 0:1,0)) return {};
+        if(withDuties && !j.Hold(0)) return {};
         if(variant==3)
         {
             j.Execute({{0,3,ChainTactic::Lure,Campaign::At(8,11)},{1,3,ChainTactic::Ambush,-1},{2,3,ChainTactic::Breakthrough,-1}});

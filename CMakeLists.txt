@@ -44,6 +44,8 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyEpisode.cpp
     NewGame/JourneyEpisodeCouncil.cpp
     NewGame/JourneyEpisodeAftermath.cpp
+    NewGame/JourneyDutyAftermath.cpp
+    NewGame/JourneyCoalitionEpisode.cpp
     NewGame/JourneyAftermathRole.cpp
     NewGame/JourneyAftermathRoleVoices.cpp
     NewGame/JourneyContributionAftermath.cpp
@@ -128,6 +130,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_march tests/JourneyMarchTests.cpp)
     add_rules_test(journey_save tests/JourneySaveTests.cpp)
     add_rules_test(journey_assignments tests/JourneyAssignmentTests.cpp)
+    add_rules_test(journey_duty_aftermath tests/JourneyDutyAftermathTests.cpp)
     add_rules_test(journey_accessibility tests/JourneyAccessibilityTests.cpp)
     add_rules_test(journey_plan_advice tests/JourneyPlanAdviceTests.cpp)
     add_rules_test(journey_campaign_pacing tests/JourneyCampaignPacingTests.cpp)

@@ -411,6 +411,10 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=gunyumission::DefenseSmokeTest() && Field->DefenseSmokeTest() && gunyumission::SupportComboSmokeTest() && Field->SupportCombinationSmokeTest() && Field->MissionMomentsSmokeTest() && MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseAftermathOnly")))
     { const bool Passed=DefenseAftermathSmokeTest() && Field->DefenseSmokeTest() && CampaignPacingSmokeTest() && ReliefStorySmokeTest() && EpisodeInterfaceSmokeTest() && NovelFlowSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyAftermathOnly")))
+    { const bool Passed=DutyAftermathSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCoalitionOnly")))
+    { const bool Passed=CoalitionStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseRetryOnly")))
     { const bool Passed=DefenseRetryPayoffSmokeTest() && DefenseRetrySmokeTest() && Field->DefenseSmokeTest() && ReliefAdviceSmokeTest() && PlanAdviceSmokeTest() && CouncilSceneSmokeTest() && DefenseAftermathSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTempoOnly")))
@@ -678,7 +682,19 @@ void ATacticalController::PlayerTick(float Delta)
     int Defense=0;
     int DefenseAftermath=0;
     int DefenseRetry=0;
-    int DutyProgress=0;
+    int DutyProgress=0,DutyAftermath=0,CoalitionPage=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("CoalitionPage="),CoalitionPage))
+    {
+        const bool Valid=PrepareCoalitionStoryPreview(CoalitionPage);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_COALITION_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("DutyAftermath="),DutyAftermath))
+    {
+        const bool Valid=PrepareDutyAftermathPreview(DutyAftermath,FParse::Param(FCommandLine::Get(),TEXT("DutyAftermathSummary")));
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_DUTY_AFTERMATH_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bDutyResponseCapture && Frames==8)
     {
         const bool Valid=PrepareDutyResponseCapture(DutyResponse);

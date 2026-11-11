@@ -59,7 +59,14 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
         + SHorizontalBox::Slot().FillWidth(1)
         + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("閉じる / Esc"); },[this] { CloseEpisode(); })]
         + SHorizontalBox::Slot().AutoWidth().Padding(18,0,0,0)[SNew(SBox).WidthOverride(280)
-            [Button([this] { return !NovelTextComplete() ? TEXT("全文を表示 / Enter"):EpisodePage+1<EpisodeSnapshot.Lines.Num() ? TEXT("続きを読む / Enter"):Field->Presentation().Journey.bPreparation && !bNovelPersonal ? TEXT("皆と策を決める / Enter"):TEXT("采配へ戻る / Enter"); },[this] { ReadNextNovel(); })]]];
+            [Button([this]
+            {
+                if(!NovelTextComplete()) return TEXT("全文を表示 / Enter");
+                if(EpisodePage+1<EpisodeSnapshot.Lines.Num()) return TEXT("続きを読む / Enter");
+                if(CanOpenCoalitionFromEpilogue()) return TEXT("反董卓連合へ / Enter");
+                if(Field->Presentation().Journey.bPreparation && !bNovelPersonal) return TEXT("皆と策を決める / Enter");
+                return Field->Presentation().Journey.bComplete ? TEXT("章の記録へ戻る / Enter"):TEXT("采配へ戻る / Enter");
+            },[this] { ReadNextNovel(); })]]];
     Canvas->AddSlot().Position(FVector2D(64,850)).Size(FVector2D(1472,34))[Controls];InputPanels.Add(Controls);
     auto Choices=SNew(SVerticalBox).Visibility_Lambda([this]
         { return bEpisodeOpen && !bNovelHistory && !bNovelPlan && NovelTextComplete() && EpisodePage+1==EpisodeSnapshot.Lines.Num() && Field->Presentation().Journey.bNeedsReply ? EVisibility::Visible:EVisibility::Collapsed; })

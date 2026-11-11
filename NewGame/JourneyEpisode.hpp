@@ -13,6 +13,7 @@ namespace frontline
     };
     const char32_t* EpisodeSpeakerName(int speaker);
     JourneyEpisode BuildJourneyEpisode(const StrategistJourney& journey);
+    JourneyEpisode BuildCoalitionEpisode(const StrategistJourney& journey);
     void BuildEpisodeCouncil(const StrategistJourney&,JourneyEpisode&);
     void BuildEpisodeAftermath(const StrategistJourney&,JourneyEpisode&);
 }

@@ -57,6 +57,9 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
           + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? P.CampaignChange:P.Episode.Setting; },15)]
           + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.Episode.Question; },16,Gold)]]];
     Text->AddSlot().AutoHeight()[OpeningRouteChoices()];
+    Text->AddSlot().AutoHeight().Padding(0,0,0,12)
+      [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.CoalitionEpisode.Lines.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+       [Button([] { return TEXT("第一章　反董卓連合へ"); },[this] { OpenEpisode(true); })]];
     Text->AddSlot().AutoHeight()[People];
     Text->AddSlot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? EVisibility::Collapsed:EVisibility::Visible; })[Label([this] { return Field->Presentation().Journey.Speaker; }, 25, Gold)]];
     Text->AddSlot().AutoHeight().Padding(0,10,0,12)[SNew(SBox).Visibility_Lambda([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? EVisibility::Collapsed:EVisibility::Visible; })[StoryConversationWidget()]];

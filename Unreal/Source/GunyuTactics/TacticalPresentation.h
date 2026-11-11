@@ -112,7 +112,7 @@ struct FJourneyPresentation
     FString ConvoyRouteInfo,ReviewFacts,ReviewLesson;
     TArray<FDialoguePresentation> Conversation;
     FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
-    FJourneyEpisodePresentation Episode;
+    FJourneyEpisodePresentation Episode,CoalitionEpisode;
     FString PlanDifference,PlanReadiness,PlanObjective,PlanRoute;
     FString DifficultyName,DifficultyDetail,ExampleName,ExamplePurpose,ExampleManual,ExampleCaution,ExampleReason,ExampleWarning;
     int ExampleAdviser=-1;

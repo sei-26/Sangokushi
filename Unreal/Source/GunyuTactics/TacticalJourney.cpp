@@ -148,6 +148,11 @@ void ATacticalField::BuildJourneyPresentation()
     BuildOpeningPresentation();
     BuildStoryPresentation();
     BuildEpisodePresentation();
+    if(P.bComplete && !P.CoalitionEpisode.Lines.IsEmpty())
+    {
+        P.Dialogue=P.CampaignChange;
+        P.Outcome=P.CampaignNext;
+    }
     if(J.campaignFlow && P.bPreparation)
     {
         P.PrimaryLabel=TEXT("作戦書へ進む ／ Enter");P.Outcome=P.CampaignChange+TEXT("\n")+P.CampaignNext;

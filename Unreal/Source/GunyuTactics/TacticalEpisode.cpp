@@ -1,13 +1,20 @@
 ﻿#include "TacticalTrial.h"
 FDialoguePresentation ATacticalController::CurrentEpisodeLine() const
 { return EpisodeSnapshot.Lines.IsValidIndex(EpisodePage) ? EpisodeSnapshot.Lines[EpisodePage]:FDialoguePresentation{}; }
-void ATacticalController::OpenEpisode()
+void ATacticalController::OpenEpisode(bool bCoalition)
 {
-    if(!Field || Field->IsPlaying() || bSaveMenuOpen || Field->Presentation().Journey.Episode.Lines.IsEmpty()) return;
-    EpisodeSnapshot=Field->Presentation().Journey.Episode;EpisodeSeenKey=EpisodeSnapshot.Key;
+    if(!Field || Field->IsPlaying() || bSaveMenuOpen) return;
+    const auto& Journey=Field->Presentation().Journey;
+    const auto& Episode=bCoalition ? Journey.CoalitionEpisode:Journey.Episode;
+    if(Episode.Lines.IsEmpty()) return;
+    EpisodeSnapshot=Episode;EpisodeSeenKey=Episode.Key;bCoalitionEpisode=bCoalition;
     EpisodePage=0;NovelElapsed=NovelStageTime=NovelLineTime=0;NovelPreviousSpeaker=-1;bNovelPlan=bNovelMap=bNovelPersonal=false;bNovelHistory=false;bEpisodeOpen=true;bInterfaceVisible=true;
     bBattleLogOpen=bMarchPlanOpen=bTacticPickerOpen=false;CloseChainReview();
     IgnoreMapInputThroughFrame=Frames+1;
+}
+bool ATacticalController::CanOpenCoalitionFromEpilogue() const
+{
+    return !bCoalitionEpisode && !bNovelPersonal && !Field->Presentation().Journey.CoalitionEpisode.Lines.IsEmpty();
 }
 void ATacticalController::OpenJourneyEntry()
 {

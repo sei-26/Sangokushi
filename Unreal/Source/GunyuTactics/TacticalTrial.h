@@ -422,6 +422,8 @@ private:
     bool MissionFocusSmokeTest();
     bool DutyProgressSmokeTest();
     bool DutyResponseSmokeTest();
+    bool DutyAftermathSmokeTest();
+    bool PrepareDutyAftermathPreview(int Variant,bool bSummary);
     bool PrepareDutyResponseCase(int Variant);
     bool PrepareDutyResponseCapture(int Variant);
     bool PrepareDutyProgressPreview(int Variant);
@@ -569,7 +571,10 @@ private:
     TArray<TSharedPtr<struct FSlateBrush>> NovelBackgroundBrushes;
     bool bNovelHistory=false,bNovelInstant=false;
     float NovelElapsed=0;
-    void OpenEpisode();
+    void OpenEpisode(bool bCoalition=false);
+    bool CanOpenCoalitionFromEpilogue() const;
+    bool CoalitionStorySmokeTest();
+    bool PrepareCoalitionStoryPreview(int Page);
     void OpenJourneyEntry();
     bool CampaignPacingSmokeTest();
     void CloseEpisode();
@@ -579,6 +584,7 @@ private:
     bool EpisodeInterfaceSmokeTest();
     FDialoguePresentation CurrentEpisodeLine() const;
     FJourneyEpisodePresentation EpisodeSnapshot;
+    bool bCoalitionEpisode=false;
     FString EpisodeSeenKey;
     int EpisodePage=0;
     bool bEpisodeOpen=false;

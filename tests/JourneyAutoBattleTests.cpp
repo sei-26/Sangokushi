@@ -63,6 +63,7 @@ int main()
     // A complete new-player campaign carries its real losses/resources forward
     // and uses the next council's default enemy policy, rather than resetting battles.
     auto career=std::make_unique<StrategistJourney>();career->ResetCampaign();career->SelectDifficulty(JourneyDifficulty::Story);career->Meet();
+    assert(BuildCoalitionEpisode(*career).lines.empty());
     for(int mission=0;mission<3;++mission)
     {
         assert(career->mission==mission && career->Prepare(1,career->enemyPolicy));
@@ -81,6 +82,15 @@ int main()
     assert(CampaignBeat(*career).phase.find(U"序章 完")!=std::u32string::npos);
     const auto ending=BuildJourneyEpisode(*career);
     assert(!ending.lines.empty() && ending.lines.back().direction.find(U"序章、完")!=std::u32string::npos);
+    const auto nextChapter=BuildCoalitionEpisode(*career);
+    assert(nextChapter.title.find(U"反董卓連合")!=std::u32string::npos && nextChapter.lines.size()==9);
+    assert(nextChapter.lines.front().text.find(U"何進")!=std::u32string::npos);
+    assert(nextChapter.lines[5].text.find(U"袁紹")!=std::u32string::npos && nextChapter.lines.back().speaker==3);
+    auto earlierResult=std::make_unique<StrategistJourney>(*career);
+    earlierResult->history[0].rescued=true;
+    assert(BuildCoalitionEpisode(*earlierResult).lines[4].text!=nextChapter.lines[4].text);
+    earlierResult->campaignFlow=false;
+    assert(BuildCoalitionEpisode(*earlierResult).lines.empty());
     hold->stage=JourneyStage::Debrief;const auto ended=PlanJourneyAutoBattle(*hold);assert(ended.tactics.empty());
     for(const auto& order:ended.movement.orders) assert(order.kind==JourneyDirective::None);
 }
