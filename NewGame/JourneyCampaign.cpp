@@ -15,8 +15,17 @@ namespace frontline
         JourneyCampaignBeat b;
         if(!j.campaignFlow) return b;
         const bool finished=j.stage==JourneyStage::Debrief && j.won;
+        if(j.mission==YellowTurbanMission)
+        {
+            if(j.stage==JourneyStage::Complete)
+                return {U"第一章 完 ／ 黄巾の乱",U"広宗と下曲陽で張角の一族が率いた蜂起は大きく崩れた。",U"第二章「反董卓連合」へ。洛陽の政変が諸侯を動かす。",U"義勇軍の軍師"};
+            if(j.stage==JourneyStage::Debrief && !j.won)
+                return {U"第一章 ／ 黄巾の乱",U"広宗の前陣は落ちなかった。",U"直前の軍議へ戻り、どの隊を先に通すか決め直す。",U"鄒靖に従う義勇軍"};
+            return {U"第一章 ／ 黄巾の乱",finished ? U"黄巾の前陣を奪い、官軍が前へ出る道を開いた。":U"鄒靖の軍に従い、広宗の前陣を攻める。",finished ?
+                U"広宗と下曲陽の戦いを経て、黄巾の乱は大きな転機を迎える。":U"正面の守備隊を引きつけ、南の平地から別の隊を前陣へ通す。",U"鄒靖に従う義勇軍"};
+        }
         if(j.stage==JourneyStage::Complete)
-            return {U"序章 完 ／ 黄巾の戦役を越えて",j.history[0].won && j.history[1].won ? U"民の退路、河港、決戦の両翼。三つの采配が、一人の軍師の実績になった。":U"任された戦いを越え、主人公は義勇軍の正式な軍師として迎えられた。",U"五年後、洛陽の政変が諸侯を動かす。第一章「反董卓連合」へ。",U"義勇軍の正式な軍師"};
+            return {U"序章 完 ／ 義勇軍の軍師へ",j.history[0].won && j.history[1].won ? U"民の退路、河港、決戦の両翼。三つの采配が、一人の軍師の実績になった。":U"任された戦いを越え、主人公は義勇軍の正式な軍師として迎えられた。",U"第一章「黄巾の乱」へ。鄒靖の軍に従い、広宗へ向かう。",U"義勇軍の正式な軍師"};
         if(j.mission==0)
         {
             b.phase=U"第一幕 ／ 民の退路から、義勇軍へ";
@@ -40,7 +49,7 @@ namespace frontline
             b.phase=U"第三幕 ／ 数週間後、本隊の決戦を支える";
             b.change=finished ? U"両翼の烽火をそろえ、本隊の包囲が完成した。主人公は劉備から正式に軍師として迎えられる。":
                 (j.history[1].campaignFlow ? U"河港の制圧を足場に決戦へ進んだ。左右の守備を分担し、本隊の攻撃が決まる時間を作る。":U"前の任務を足場に決戦へ進む。左右の守備を分担し、本隊の攻撃が決まる時間を作る。");
-            b.next=U"この戦いの先：黄巾の戦役に決着をつけ、義勇軍の正式な軍師として次の時代を見据える。";
+            b.next=U"この戦いの先：義勇軍の軍師として迎えられ、黄巾の前陣を攻める役目が待つ。";
             b.standing=finished ? U"義勇軍の正式な軍師":U"決戦の両翼を預かる軍師";
         }
         if(j.mission==1)

@@ -27,6 +27,15 @@ namespace frontline
             p.manualTask=U"まず両拠点の配置を待つ。敵が隣接したら、関羽の戦法や他隊の単独戦法で守りを助ける。";
             p.caution=j.RequiredHoldTurns()==2 ? U"河港での連携が効き、両方を２指揮維持すれば包囲が完成する。敵２隊の隣接や救援で守りを空ける判断には注意。":U"両方を同時に３指揮維持する。固守でも隣接敵が２隊になると維持できない。救援に出れば元の拠点が空く。";
         }
+        else if(j.mission==YellowTurbanMission)
+        {
+            p.name=U"北の林で引きつけ、南から前陣へ";
+            p.purpose=U"劉備は林の南端を固め、関羽は北の林で伏兵。張飛は南の平地から前陣へ。";
+            p.assignments={JourneyAssignment{JourneyDuty::Hold,Campaign::At(8,9)},
+                JourneyAssignment{JourneyDuty::Ambush,Campaign::At(8,8)},JourneyAssignment{}};
+            p.manualTask=U"張飛を南へ進め、反撃隊を退ける。劉備か関羽で守備隊を前陣から引き離し、一隊を入れる。";
+            p.caution=U"敵が前陣に隣接したままでは占領できない。先に引き離すか押し返そう。";
+        }
         else if(j.Definition().kind==JourneyObjective::CaptureCamp)
         {
             p.name=U"南橋から突破し、河港を奪う";

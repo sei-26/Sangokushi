@@ -36,7 +36,7 @@ void ATacticalField::BuildPresentation()
     HUD.Selected = State->Selected;
     HUD.GoalTile = J.goal;
     HUD.SecondGoalTile = J.Definition().secondGoal;
-    HUD.GoalLabel = J.mission == 0 ? TEXT("脱出地点") : J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("河港の指揮所"):J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("北の烽火");
+    HUD.GoalLabel = J.mission == YellowTurbanMission ? TEXT("黄巾の前陣"):J.mission == 0 ? TEXT("脱出地点") : J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("河港の指揮所"):J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("北の烽火");
     HUD.SecondGoalLabel=J.mission==2 ? TEXT("南の烽火"):HUD.GoalLabel;
     HUD.bHasResupplyPlan=J.campaignFlow && J.preparation==1;
     HUD.ResupplyLabel=J.CanResupply() ? TEXT("全軍へ補給  ／ 残り１回"):TEXT("予備糧なし ／ 補給できない");
@@ -63,10 +63,10 @@ void ATacticalField::BuildPresentation()
         HUD.Objective = J.stage == JourneyStage::Debrief
             ? FString::Printf(TEXT("%s  帰還兵 %d / 損失 %d / 信頼 %d"), J.won ? TEXT("勝利") : J.withdrawn ? TEXT("任務中止・撤収") : TEXT("敗北"), J.survivors, J.casualties, J.trust)
             : J.stage == JourneyStage::Complete ? TEXT("突破・護送・防衛の３戦を完了") : JourneyText(J.ObjectiveBrief());
-        if (!HUD.Journey.CoalitionEpisode.Lines.IsEmpty())
+        if (HUD.bComplete && J.campaignFlow)
         {
-            HUD.Title = TEXT("序章の記録");
-            HUD.Objective = TEXT("民の退路、河港、決戦の両翼を越えて");
+            HUD.Title = J.mission==YellowTurbanMission ? TEXT("黄巾の乱の記録"):TEXT("序章の記録");
+            HUD.Objective = HUD.Journey.CampaignNext;
         }
         if (J.stage == JourneyStage::Encounter) HUD.Objective = TEXT("出会いから、任された一つの仕事へ");
         if (J.stage == JourneyStage::Preparation && J.IsRescue()) HUD.Objective = FString::Printf(TEXT("作戦の約束: 季安の避難車を東の出口へ護送 / 全軍更新%d回まで"),J.TurnBudget());

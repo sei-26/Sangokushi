@@ -114,6 +114,14 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
+            if(!Range(j.mission,0,j.campaignFlow ? YellowTurbanMission:YellowTurbanMission-1)) return false;
+            if(j.mission==YellowTurbanMission)
+            {
+                const auto& prologue=j.history[YellowTurbanMission-1];
+                const auto& battle=j.history[YellowTurbanMission];
+                if(!prologue.completed || !prologue.won || j.stage==JourneyStage::Encounter ||
+                    (j.stage==JourneyStage::Complete && (!battle.completed || !battle.won || !j.won))) return false;
+            }
             if(j.retryDefense)
             {
                 const auto& lesson=*j.retryDefense;
@@ -128,7 +136,7 @@ namespace frontline
             }
             if((j.reserveFood!=0 && j.reserveFood!=1800) || (j.reserveFood &&
                 (!j.campaignFlow || j.preparation!=1 || j.stage!=JourneyStage::Battle))) return false;
-            if(!Enum(j.stage,4) || !Range(j.mission,0,2) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||
+            if(!Enum(j.stage,4) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
                !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.IsRescue(),j.stage==JourneyStage::Preparation) ||
                w.cities.size()!=2 || w.generals.size()<5 || w.generals.size()>6 || n>6 ||
@@ -151,7 +159,7 @@ namespace frontline
                     !ArmyValid(c.observed,static_cast<int>(w.generals.size()))) return false;
             }
             for(int t:j.officerTrust) if(!Range(t,-20,100)) return false;
-            for(int m=0;m<3;++m)
+            for(int m=0;m<int(j.history.size());++m)
             {
                 const auto& h=j.history[m];
                 // Mission 0 history lacks a failed escort's promise; both authored woodland variants are valid there.

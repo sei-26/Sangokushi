@@ -18,7 +18,7 @@ int main()
     // Archive-only fixtures. Actual failed-battle evidence and rollback are tested by the retry rules.
     j.retryDefense=JourneyDefenseLesson{2,2,5,JourneyResolution::Withdrawn};s->beforeBattle=j;
     s->beforeBattle->retryDefense=JourneyDefenseLesson{2,5,7,JourneyResolution::Deadline};
-    const auto saved=Bytes(*s);assert(saved[4]==12 && saved[5]==0 && saved[6]==0 && saved[7]==0);
+    const auto saved=Bytes(*s);assert(saved[4]==JourneySaveVersion && saved[5]==0 && saved[6]==0 && saved[7]==0);
     auto loaded=std::make_unique<JourneySaveData>();assert(DecodeJourneySave(saved,*loaded) && Bytes(*loaded)==saved);
     const auto& live=*loaded->journey.retryDefense;const auto& before=*loaded->beforeBattle->retryDefense;
     assert(live.mission==2 && live.failedGuards==2 && live.endedAt==5 && live.resolution==JourneyResolution::Withdrawn);

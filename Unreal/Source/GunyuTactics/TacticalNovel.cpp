@@ -19,6 +19,12 @@ void ATacticalController::ReadNextNovel()
 {
     if(!bEpisodeOpen || bNovelHistory || bNovelPlan) return;
     if(!NovelTextComplete()) NovelElapsed=1000;
+    else if(EpisodePage+1==EpisodeSnapshot.Lines.Num() && !bNovelPersonal &&
+        Field->Presentation().Journey.bComplete && Field->CanIssue(ETacticalCommand::Continue))
+    {
+        Field->Issue(ETacticalCommand::Continue);
+        OpenJourneyEntry();
+    }
     else if(EpisodePage+1==EpisodeSnapshot.Lines.Num() && CanOpenCoalitionFromEpilogue()) OpenEpisode(true);
     else if(EpisodePage+1==EpisodeSnapshot.Lines.Num() && !bNovelPersonal && Field->Presentation().Journey.bPreparation) OpenNovelPlan();
     else StepEpisode(1);

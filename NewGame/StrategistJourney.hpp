@@ -73,7 +73,7 @@ namespace frontline
         bool AssignDuty(int officer,int tile,JourneyDuty);
         std::u32string AssignmentStatus(int officer) const;
 		bool withdrawn = false;
-		std::array<JourneyResult, 3> history{};
+		std::array<JourneyResult, YellowTurbanMission+1> history{};
 		ChainResult lastChain;
 		std::vector<Chronicle> reports;
 		std::u32string message;
@@ -117,6 +117,7 @@ namespace frontline
 		bool EndTurn();
 		bool Continue();
         bool CanContinue() const;
+        bool CanBeginYellowTurban() const;
         bool NeedsStoryReply() const;
         bool ChooseStoryReply(JourneyPledge);
         JourneyPledge CurrentPledge() const;

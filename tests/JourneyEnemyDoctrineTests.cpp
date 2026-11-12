@@ -91,7 +91,7 @@ int main()
     auto stable=Battle(0);auto session=std::make_unique<JourneySaveData>();session->journey=*stable;
     auto before=std::make_unique<StrategistJourney>();before->ResetCampaign();before->Meet();session->beforeBattle=*before;
     std::vector<std::uint8_t> bytes,after;assert(EncodeJourneySave(*session,bytes));
-    stable->ReadEnemyPlans();session->journey=*stable;assert(EncodeJourneySave(*session,after) && bytes==after && bytes[4]==12);
+    stable->ReadEnemyPlans();session->journey=*stable;assert(EncodeJourneySave(*session,after) && bytes==after && bytes[4]==JourneySaveVersion);
     context.campaign=false;plans=PlanJourneyEnemies(f.world,f.chain,context);
     for(const auto& plan:plans) assert(plan.role==JourneyEnemyRole::None && plan.intent==JourneyEnemyIntent::Assault);
 }

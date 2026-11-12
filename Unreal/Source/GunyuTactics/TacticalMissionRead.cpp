@@ -59,10 +59,11 @@ void ATacticalField::BuildMissionPresentation()
     }
     else if(J.Definition().kind==JourneyObjective::CaptureCamp)
     {
-        H.MissionAdvice=TEXT("指揮所を押さえよう");
-        H.MissionStep=EnemiesNear(J.goal)>0 ? TEXT("河港占領 ｜ 指揮所付近の敵を離し、占領する隊を通そう。"):
-            TEXT("河港占領 ｜ 指揮所へ一隊を入れよう。見えていない周囲は確認を。");
-        H.MissionDetail+=TEXT("\n目標へ / U：河港の指揮所を見る。残敵を追うより、占領を優先する。");
+        H.MissionAdvice=H.GoalLabel+TEXT("を押さえよう");
+        H.MissionStep=(J.mission==YellowTurbanMission ? FString(TEXT("前陣占領")):FString(TEXT("河港占領")))+
+            (EnemiesNear(J.goal)>0 ? TEXT(" ｜ 付近の敵を離し、占領する隊を通そう。"):
+                TEXT(" ｜ 一隊を入れよう。見えていない周囲は確認を。"));
+        H.MissionDetail+=TEXT("\n目標へ / U：")+H.GoalLabel+TEXT("を見る。周囲を確保して一隊を入れる。");
     }
     else
     {

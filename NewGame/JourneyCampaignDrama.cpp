@@ -4,8 +4,10 @@
 #include "StrategistJourney.hpp"
 namespace frontline
 {
+    JourneyEpisode BuildYellowTurbanEpisode(const StrategistJourney&);
     JourneyEpisode CampaignEpisode(const StrategistJourney& j)
     {
+        if(j.mission==YellowTurbanMission) return BuildYellowTurbanEpisode(j);
         JourneyEpisode e;const auto beat=CampaignBeat(j);e.title=beat.phase;
         e.place=U"一八四年・黄巾の乱を背景とする創作戦役";e.setting=beat.standing;e.question=beat.next;
         if(j.stage==JourneyStage::Preparation)

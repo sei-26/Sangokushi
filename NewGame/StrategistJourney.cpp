@@ -138,10 +138,10 @@ namespace frontline
 		world.armies.clear();
 		if(campaignFlow)
         {
-            const char32_t* fronts[]={U"黄巾の先鋒",U"河港の守備隊",U"黄巾の牽制隊"};
-            const char32_t* reserves[]={U"黄巾の後詰",U"河港の反撃隊",U"黄巾の主攻隊"};
-            world.generals[3].name=fronts[std::clamp(mission,0,2)];
-            world.generals[4].name=reserves[std::clamp(mission,0,2)];
+            const char32_t* fronts[]={U"黄巾の先鋒",U"河港の守備隊",U"黄巾の牽制隊",U"黄巾の前陣守備隊"};
+            const char32_t* reserves[]={U"黄巾の後詰",U"河港の反撃隊",U"黄巾の主攻隊",U"黄巾の南翼"};
+            world.generals[3].name=fronts[std::clamp(mission,0,YellowTurbanMission)];
+            world.generals[4].name=reserves[std::clamp(mission,0,YellowTurbanMission)];
         }
 		for (int i = 0; i < 5; ++i)
 		{
@@ -336,15 +336,23 @@ namespace frontline
 		}
 		Report(reason);
 	}
+    bool StrategistJourney::CanBeginYellowTurban() const
+    {
+        return campaignFlow && stage==JourneyStage::Complete && mission==YellowTurbanMission-1 &&
+            history[mission].completed && history[mission].won;
+    }
 	bool StrategistJourney::Continue()
 	{
 		if (!CanContinue())
 			return false;
         retryDefense.reset();
-		if (mission == 2)
+        const bool beginYellowTurban=CanBeginYellowTurban();
+		if (!beginYellowTurban && mission>=YellowTurbanMission-1)
 		{
 			stage = JourneyStage::Complete;
-			Report(campaignFlow ? U"序章 完。退路、河港、決戦の両翼――三つの采配を経て、義勇軍の正式な軍師となった。":U"突破・護送・防衛の３戦を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");
+            if(mission==YellowTurbanMission)
+                Report(U"第一章 完。広宗での役目を果たし、黄巾の戦いを終えた。");
+            else Report(campaignFlow ? U"序章 完。退路、河港、決戦の両翼――三つの采配を経て、義勇軍の正式な軍師となった。":U"突破・護送・防衛の３戦を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");
 		}
 		else
 		{
@@ -354,7 +362,12 @@ namespace frontline
 			stage = JourneyStage::Preparation;
 			reinforced = false;
 			enemyPolicy = 1;
-			Report(campaignFlow ? U"戦役が次の局面へ進む。前戦の生存兵・糧・人物の信頼を持って、新しい役目へ。":U"前の戦果を受けて、新たな退路の確保を任された。残った兵・兵糧・信頼で次の軍議へ。");
+            if(beginYellowTurban)
+            {
+                goal=Definition().goal;
+                Report(U"第一章「黄巾の乱」。劉備は鄒靖の軍に従い、義勇軍は広宗の前陣を攻める軍議を開いた。");
+            }
+            else Report(campaignFlow ? U"戦役が次の局面へ進む。前戦の生存兵・糧・人物の信頼を持って、新しい役目へ。":U"前の戦果を受けて、新たな退路の確保を任された。残った兵・兵糧・信頼で次の軍議へ。");
 		}
 		return true;
 	}

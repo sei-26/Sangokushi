@@ -59,7 +59,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
     Text->AddSlot().AutoHeight()[OpeningRouteChoices()];
     Text->AddSlot().AutoHeight().Padding(0,0,0,12)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.CoalitionEpisode.Lines.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
-       [Button([] { return TEXT("第一章　反董卓連合へ"); },[this] { OpenEpisode(true); })]];
+       [Button([] { return TEXT("第二章　反董卓連合へ"); },[this] { OpenEpisode(true); })]];
     Text->AddSlot().AutoHeight()[People];
     Text->AddSlot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? EVisibility::Collapsed:EVisibility::Visible; })[Label([this] { return Field->Presentation().Journey.Speaker; }, 25, Gold)]];
     Text->AddSlot().AutoHeight().Padding(0,10,0,12)[SNew(SBox).Visibility_Lambda([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? EVisibility::Collapsed:EVisibility::Visible; })[StoryConversationWidget()]];

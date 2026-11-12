@@ -46,6 +46,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyEpisodeAftermath.cpp
     NewGame/JourneyDutyAftermath.cpp
     NewGame/JourneyCoalitionEpisode.cpp
+    NewGame/JourneyYellowTurbanEpisode.cpp
     NewGame/JourneyAftermathRole.cpp
     NewGame/JourneyAftermathRoleVoices.cpp
     NewGame/JourneyContributionAftermath.cpp

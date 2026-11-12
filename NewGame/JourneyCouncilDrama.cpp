@@ -3,6 +3,15 @@ namespace frontline
 {
     std::vector<JourneyDialogueLine> JourneyCouncilConversation(const StrategistJourney& j,int who)
     {
+        if(j.mission==YellowTurbanMission)
+        {
+            if(who==0) return {{0,U"官軍の役目は前陣を取るところまでだ。落ちた旗を追うより、戻る者を迎えたい。"},
+                {3,U"占領役は一隊でいい。残りは帰る道を残そう。"}};
+            if(who==1) return {{1,U"正面の守備を林へ引ければ、南から前陣へ届く。私を使うなら、合図を先に決めておけ。"},
+                {3,U"合図まで待ってくれ。南の敵が動いたら、俺が先に知らせる。"}};
+            return {{2,U"南には反撃隊がいるぜ。先頭に出るなら、こいつを押しのける手を残しとく。"},
+                {3,U"前陣に着く前に全部使うなよ。誰を通すかは、俺が呼ぶ。"}};
+        }
         if(j.mission==0 && j.IsRescue() && j.convoyRoute==JourneyConvoyRoute::SouthernWood)
         {
             if(who==0) return {{0,U"南の林を通れる者を、季安が見つけてきたよ。"},

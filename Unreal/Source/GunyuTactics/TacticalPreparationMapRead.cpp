@@ -30,6 +30,13 @@ void ATacticalField::BuildPreparationMap()
                 FString::Printf(TEXT("両方を同時に%d指揮守る。固守は兵500・士気40以上で、隣接敵１隊まで耐えられる。"),J.RequiredHoldTurns()),
                 {TEXT("片方だけ守っても役目は果たせない。残る隊を先に決めよう。"),TEXT("救援に出るなら、元いた場所の守りも確かめよ。"),TEXT("呼ばれりゃ走るぜ。でも両方を空っぽにするなよ！")});
     }
+    else if(J.mission==YellowTurbanMission)
+    {
+        Add(J.Definition().goal,TEXT("黄巾の前陣"),TEXT("隣接する敵を退け、一隊を入れると占領できる。"),
+            {TEXT("占領したら、追う隊にも戻る合図を。"),TEXT("守備隊を前陣から引き離す。"),TEXT("俺を通すなら、南の敵に一発食らわせようぜ！")});
+        Add(Campaign::At(10,10),TEXT("南の平地"),TEXT("前陣へ回り込む道。南から来る反撃隊に注意。"),
+            {TEXT("正面へ全員を出さず、ここを通る隊を残そう。"),TEXT("南へ敵が向いたなら、正面にも道が開く。"),TEXT("合図が来たら、ここから行くぜ。")});
+    }
     else if(J.Definition().kind==JourneyObjective::CaptureCamp)
         Add(J.Definition().goal,TEXT("河港の指揮所"),TEXT("一隊を入れ、隣接する敵を退けて安全に占領すると決着。全滅させたり護送車を待ったりする必要はない。"),
             {TEXT("ここを取れば、本隊が動ける。追撃する隊と占領する隊を決めよう。"),TEXT("斬った数で終わる戦いではない。最後にここへ入るのは誰だ。"),TEXT("橋は俺が抜く！ その後、旗を立てる奴も呼んどけよ！")});
@@ -54,7 +61,7 @@ void ATacticalField::BuildPreparationMap()
                  TEXT("狭い所は一隊ずつだ。行く順番を決めようぜ！")});
             ++Bridge;
         }
-    if(J.mission==0)
+    if(J.mission==0 || J.mission==YellowTurbanMission)
     {
         Add(J.Definition().positions[1],TEXT("伏兵の森"),J.campaignFlow ? FString(TEXT("関羽の通常出陣位置。先遣伏兵なら、ここから陸路２歩以内の森へ開戦前に入れる。関羽を選び、森林と伏兵を指定しよう。")):FString(TEXT("関羽の出陣位置。森林で伏兵を準備し、敵を近づける配置を考える。敵が動かない場合の手も残す。")),
             {TEXT("敵の目を引くなら、戻る場所も残しておきたい。"),TEXT("森で備える。敵が寄らぬ時の手も考えておけ。"),TEXT("敵が崩れたら俺だ。飛び出す道は空けとけよ！")});

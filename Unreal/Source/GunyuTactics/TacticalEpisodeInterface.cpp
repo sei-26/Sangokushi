@@ -63,6 +63,8 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
             {
                 if(!NovelTextComplete()) return TEXT("全文を表示 / Enter");
                 if(EpisodePage+1<EpisodeSnapshot.Lines.Num()) return TEXT("続きを読む / Enter");
+                if(Field->Presentation().Journey.bComplete && !bNovelPersonal && Field->CanIssue(ETacticalCommand::Continue))
+                    return TEXT("黄巾の乱へ / Enter");
                 if(CanOpenCoalitionFromEpilogue()) return TEXT("反董卓連合へ / Enter");
                 if(Field->Presentation().Journey.bPreparation && !bNovelPersonal) return TEXT("皆と策を決める / Enter");
                 return Field->Presentation().Journey.bComplete ? TEXT("章の記録へ戻る / Enter"):TEXT("采配へ戻る / Enter");

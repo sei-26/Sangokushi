@@ -41,12 +41,15 @@ namespace frontline
     void JourneyArchive::IO(JourneyBattleStory& v)
     { (*this)(v.recorded,v.protectedPeople,v.lowLoss,v.costly,v.pledgeKept,v.coordinatedOfficers,v.loss,v.pledge,v.reply,v.trustDelta); }
     void JourneyArchive::IO(StrategistJourney& v)
-    { (*this)(v.world,v.chain,v.intelligence,v.stage,v.mission,v.turn,v.enemyPolicy,v.trust,v.bestChain,v.preparation,v.deployed,v.casualties,v.survivors,v.goal,v.heldTurns,v.convoyStep,v.convoyEscort,v.recoveredCargo,v.guarding,v.won,v.reinforced,v.promise,v.convoyRoute,v.battleReview,v.withdrawn,v.history,v.lastChain,v.reports,v.message);
+    { (*this)(v.world,v.chain,v.intelligence,v.stage,v.mission,v.turn,v.enemyPolicy,v.trust,v.bestChain,v.preparation,v.deployed,v.casualties,v.survivors,v.goal,v.heldTurns,v.convoyStep,v.convoyEscort,v.recoveredCargo,v.guarding,v.won,v.reinforced,v.promise,v.convoyRoute,v.battleReview,v.withdrawn);
+      for(int m=0;m<YellowTurbanMission;++m) IO(v.history[m]);
+      (*this)(v.lastChain,v.reports,v.message);
       if(version>=3) IO(v.officerTrust);else if(reading) v.officerTrust={};
       if(version>=4) IO(v.assignments);else if(reading) v.assignments={};
       if(version>=5) IO(v.difficulty);else if(reading) v.difficulty=JourneyDifficulty::Standard;
       if(version>=6) IO(v.campaignFlow);else if(reading) v.campaignFlow=false;
       if(version>=7) IO(v.reserveFood);else if(reading) v.reserveFood=0;
       if(version>=10) IO(v.retryRelief);else if(reading) v.retryRelief.reset();
-      if(version>=12) IO(v.retryDefense);else if(reading) v.retryDefense.reset(); }
+      if(version>=12) IO(v.retryDefense);else if(reading) v.retryDefense.reset();
+      if(version>=13) IO(v.history[YellowTurbanMission]);else if(reading) v.history[YellowTurbanMission]={}; }
 }

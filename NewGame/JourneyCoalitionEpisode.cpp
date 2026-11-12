@@ -6,14 +6,16 @@ namespace frontline
     JourneyEpisode BuildCoalitionEpisode(const StrategistJourney& j)
     {
         JourneyEpisode episode;
-        if(!j.campaignFlow || j.stage!=JourneyStage::Complete || !j.history[2].won) return episode;
+        const auto& yellowTurban=j.history[YellowTurbanMission];
+        if(!j.campaignFlow || j.stage!=JourneyStage::Complete || j.mission!=YellowTurbanMission ||
+            !yellowTurban.completed || !yellowTurban.won) return episode;
 
-        episode.title=U"第一章　反董卓連合";
+        episode.title=U"第二章　反董卓連合";
         episode.place=U"一八九年 ― 一九〇年　洛陽から関東へ";
         episode.setting=U"史実の政変と挙兵を背景に、義勇軍の軍師を描く。";
         episode.question=U"大軍が集うとき、小さな旗は何のために立つか。";
         episode.lines={
-            {-1,U"黄巾の旗を追ってから五年。霊帝が崩じ、大将軍・何進は董卓を都へ呼び寄せた。董卓が着く前に、何進は宦官たちに殺された。",
+            {-1,U"広宗の戦いから五年。霊帝が崩じ、大将軍・何進は董卓を都へ呼び寄せた。董卓が着く前に、何進は宦官たちに殺された。",
                 U"一八九年・洛陽。宮門が閉じられ、都からの報せは途切れた。"},
             {-1,U"混乱の中で軍を握った董卓は、少帝を退け、陳留王・劉協を帝に立てた。都から逃れた者が、街道を東へ向かった。",
                 U"洛陽からの書状が、劉備たちの野営地へ届く。"},

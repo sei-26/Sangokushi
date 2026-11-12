@@ -4,6 +4,7 @@
 
 namespace frontline
 {
+    inline constexpr int YellowTurbanMission=3;
 	enum class JourneyObjective
 	{
 		Breakout,
@@ -62,6 +63,12 @@ namespace frontline
             JourneyObjective::CaptureCamp,10,12+11*Width,-1,0,
             {{9+10*Width,8+9*Width,8+10*Width,12+11*Width,12+7*Width}}};
         static const JourneyMission north=[] { auto m=port;m.positions[0]=9+8*Width;m.positions[1]=8+8*Width;m.positions[2]=9+9*Width;return m; }();
+        static const JourneyMission guangzong{U"広宗の戦い ／ 黄巾の前陣を奪え",
+            U"黄巾の前陣に一隊を入れ、周囲の敵を退けて確保する",
+            U"正面の守備隊と南からの反撃に注意。林で敵を引きつけ、別の隊を前陣へ進めよう。",
+            JourneyObjective::CaptureCamp,11,12+8*Width,-1,0,
+            {{8+9*Width,8+8*Width,9+10*Width,12+8*Width,12+11*Width}}};
+        if(index==YellowTurbanMission) return guangzong;
         return index==1 ? (northApproach ? north:port):MissionDefinition(index);
     }
 } // namespace frontline

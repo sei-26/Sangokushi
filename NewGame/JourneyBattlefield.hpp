@@ -17,7 +17,7 @@ namespace frontline
     };
     inline const JourneyBattlefield& BattlefieldDefinition(int mission)
     {
-        static const std::array<JourneyBattlefield, 3> fields{{
+        static const std::array<JourneyBattlefield, 4> fields{{
             {U"林間の退路", U"森で誘い、街道を開く",
              {{"..MMM...MMMMM.",
                "..MMM..MMMMMMM",
@@ -56,9 +56,22 @@ namespace frontline
                ".........FFF..",
                "..MMM....FFFMM",
                "..MMM....FFFMM",
-               "..MMM.......MM"}}}
+               "..MMM.......MM"}}},
+            {U"広宗郊外", U"北の林で敵を引きつけ、南の平地から前陣へ入る",
+             {{"..MM...MMMM...",
+               "..MM...MMMM...",
+               "...F..........",
+               "...FFFF.......",
+               "....FFFFFF....",
+               ".....FFFFF....",
+               ".....FFF......",
+               ".....FFF......",
+               "..............",
+               "..............",
+               "....MM........",
+               "....MMMM......"}}}
         }};
-        return fields[std::clamp(mission, 0, 2)];
+        return fields[std::clamp(mission, 0, int(fields.size())-1)];
     }
     inline Terrain BattlefieldTerrain(int mission, int x, int y, bool rescue = false)
     {

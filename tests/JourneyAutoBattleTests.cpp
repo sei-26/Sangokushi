@@ -1,7 +1,10 @@
 ﻿#include "JourneyAutoBattle.hpp"
 #include "JourneySave.hpp"
+#include "JourneyArchive.hpp"
 #include "JourneyEpisode.hpp"
 #include "JourneyCampaign.hpp"
+#include "JourneyBattlefield.hpp"
+#include "JourneyPlanExample.hpp"
 #include <cassert>
 #include <memory>
 #include <iostream>
@@ -82,8 +85,54 @@ int main()
     assert(CampaignBeat(*career).phase.find(U"序章 完")!=std::u32string::npos);
     const auto ending=BuildJourneyEpisode(*career);
     assert(!ending.lines.empty() && ending.lines.back().direction.find(U"序章、完")!=std::u32string::npos);
+    assert(BuildCoalitionEpisode(*career).lines.empty() && career->CanBeginYellowTurban());
+
+    auto old=std::make_unique<JourneySaveData>();
+    old->journey=*career;
+    std::vector<std::uint8_t> previous;
+    JourneyArchive writer{false,previous};writer.version=12;
+    unsigned magic=0x53594e47,version=12,checksum=0;
+    writer(magic,version,checksum);writer(*old);
+    checksum=2166136261u;
+    for(std::size_t i=12;i<previous.size();++i) { checksum^=previous[i];checksum*=16777619u; }
+    for(int i=0;i<4;++i) previous[8+i]=static_cast<std::uint8_t>(checksum>>(i*8));
+    assert(DecodeJourneySave(previous,*old) && old->journey.CanBeginYellowTurban());
+    const auto camp=old->journey.world.cities[0];
+    const auto trust=old->journey.officerTrust;
+    assert(!old->journey.history[YellowTurbanMission].completed && old->journey.Continue());
+    assert(old->journey.stage==JourneyStage::Preparation && old->journey.mission==YellowTurbanMission);
+    assert(old->journey.world.cities[0].troops==camp.troops && old->journey.world.cities[0].food==camp.food && old->journey.officerTrust==trust);
+    assert(BuildJourneyEpisode(old->journey).lines[0].text.find(U"鄒靖")!=std::u32string::npos);
+    assert(BuildCoalitionEpisode(old->journey).lines.empty() && !old->journey.CanContinue());
+    auto& previousReview=old->journey.history[YellowTurbanMission-1].review;
+    previousReview.relief.push_back({2,0,Campaign::At(8,9),Campaign::At(9,9),1,1,2,3,1,true,true,JourneyReliefOutcome::Recovered});
+    assert(PlanExample(old->journey).name.find(U"前陣")!=std::u32string::npos);
+    previousReview.relief.pop_back();
+    assert(old->journey.ApplyPlanExample());
+    old->beforeBattle=old->journey;
+    assert(old->journey.Prepare(1,old->journey.enemyPolicy) && old->journey.goal==old->journey.Definition().goal && !old->journey.HasConvoy());
+    assert(BattlefieldTerrain(YellowTurbanMission,8,8)==Terrain::Forest);
+    assert(EncodeJourneySave(*old,after) && DecodeJourneySave(after,*old));
+    assert(old->journey.Withdraw() && !old->journey.CanContinue() && BuildCoalitionEpisode(old->journey).lines.empty());
+    assert(old->journey.RetryAtCouncil(*old->beforeBattle));
+    assert(old->journey.world.cities[0].food==camp.food && !old->journey.history[YellowTurbanMission].completed);
+    assert(career->Continue());
+    assert(career->Prepare(1,career->enemyPolicy));
+    for(int cycle=0;cycle<18 && career->stage==JourneyStage::Battle;++cycle)
+    {
+        auto next=PlanJourneyAutoBattle(*career);
+        if(!next.tactics.empty()) career->Execute(next.tactics);
+        if(career->stage==JourneyStage::Battle) assert(next.movement.Resolve(*career));
+    }
+    assert(career->won && career->history[YellowTurbanMission].review.resolution==JourneyResolution::Captured);
+    assert(BuildCoalitionEpisode(*career).lines.empty() && career->Continue());
+    const auto yellowEnding=BuildJourneyEpisode(*career);
+    assert(yellowEnding.lines.front().text.find(U"皇甫嵩")!=std::u32string::npos);
+    session->beforeBattle.reset();session->journey=*career;
+    assert(EncodeJourneySave(*session,after) && DecodeJourneySave(after,*old));
+    assert(old->journey.history[YellowTurbanMission].won && BuildCoalitionEpisode(old->journey).lines.size()==9);
     const auto nextChapter=BuildCoalitionEpisode(*career);
-    assert(nextChapter.title.find(U"反董卓連合")!=std::u32string::npos && nextChapter.lines.size()==9);
+    assert(nextChapter.title.find(U"第二章　反董卓連合")!=std::u32string::npos && nextChapter.lines.size()==9);
     assert(nextChapter.lines.front().text.find(U"何進")!=std::u32string::npos);
     assert(nextChapter.lines[5].text.find(U"袁紹")!=std::u32string::npos && nextChapter.lines.back().speaker==3);
     auto earlierResult=std::make_unique<StrategistJourney>(*career);

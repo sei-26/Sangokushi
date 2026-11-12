@@ -21,6 +21,7 @@ namespace frontline
         bool realtimeMode=false,pauseOnAlert=true,threatOverlay=true;
     };
     constexpr std::size_t JourneySaveLimit=4*1024*1024;
+    inline constexpr unsigned JourneySaveVersion=13;
     // Versioned, checksummed little-endian data. Failure never mutates the destination.
     bool EncodeJourneySave(const JourneySaveData&,std::vector<std::uint8_t>&);
     bool DecodeJourneySave(const std::vector<std::uint8_t>&,JourneySaveData&);

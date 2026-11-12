@@ -158,7 +158,8 @@ namespace frontline
             if(PositionSecured(goal))
             {
                 world.tiles[goal].owner=world.player;++world.revision;
-                Finish(true,U"河港の指揮所を占領。敵の連絡路が断たれ、義勇軍は官軍の共同作戦へ合流する。残敵を追う必要はない。");
+                Finish(true,mission==YellowTurbanMission ? U"黄巾の前陣を占領。官軍が前へ出る道を開いた。":
+                    U"河港の指揮所を占領。敵の連絡路が断たれ、義勇軍は官軍の共同作戦へ合流する。残敵を追う必要はない。");
                 return;
             }
         }

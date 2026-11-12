@@ -11,7 +11,7 @@ namespace frontline
         if(!h.completed || r.endedAt<=0 || r.endedAt!=j.turn) return result;
         auto living=[&](int id) { return id>=0 && id<3 && id<int(j.world.armies.size()) && j.world.armies[id].faction==j.world.player && j.world.armies[id].troops>0; };
         int captor=-1;
-        if(j.Definition().kind==JourneyObjective::CaptureCamp && r.resolution==JourneyResolution::Captured && h.won && j.won && !h.withdrawn && !j.withdrawn &&
+        if(j.mission==1 && j.Definition().kind==JourneyObjective::CaptureCamp && r.resolution==JourneyResolution::Captured && h.won && j.won && !h.withdrawn && !j.withdrawn &&
            StrategistJourney::OnMap(j.goal) && j.world.tiles[j.goal].owner==j.world.player)
             for(int id=0;id<3;++id) if(living(id) && j.world.armies[id].tile==j.goal && j.world.armies[id].troops>=150 && j.world.armies[id].morale>=25)
             { if(captor>=0) { captor=-1;break; }captor=id; }

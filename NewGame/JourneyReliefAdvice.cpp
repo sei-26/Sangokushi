@@ -55,7 +55,7 @@ namespace frontline
     {
         if(!j.campaignFlow || j.stage!=JourneyStage::Preparation) return;
         const bool retry=j.retryRelief.has_value();const JourneyReliefRecord* record=retry ? &*j.retryRelief:nullptr;
-        if(!record && j.mission>0)
+        if(!record && j.mission>0 && j.mission<YellowTurbanMission)
         {
             const auto& previous=j.history[j.mission-1];
             if(previous.completed && previous.won) record=CheckedRelief(previous.review);

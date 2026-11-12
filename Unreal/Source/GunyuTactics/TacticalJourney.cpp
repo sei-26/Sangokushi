@@ -80,7 +80,8 @@ void ATacticalField::BuildJourneyPresentation()
     P.bPreparation = J.stage == JourneyStage::Preparation;
     P.bDebrief = J.stage == JourneyStage::Debrief;
     P.bComplete = J.stage == JourneyStage::Complete;
-    P.Context = TEXT("184年・黄巾の乱を背景とする序章。局地戦・会話・主人公の関与は創作です。");
+    P.Context = J.mission==YellowTurbanMission ? TEXT("184年・黄巾の乱。広宗郊外での義勇軍の作戦、会話、主人公の関与は創作です。"):
+        TEXT("184年・黄巾の乱を背景とする序章。局地戦・会話・主人公の関与は創作です。");
     const auto& Camp = J.world.cities[0];
     P.Resources = FString::Printf(TEXT("野営地  兵 %d    兵糧 %d    軍資金 %d    信頼 %d"), Camp.troops, Camp.food, Camp.gold, J.trust);
     P.Relationships = FString::Printf(TEXT("共同任務の絆  劉備―関羽 %d / 劉備―張飛 %d / 関羽―張飛 %d"), J.world.Affinity(0, 1), J.world.Affinity(0, 2), J.world.Affinity(1, 2));
@@ -137,9 +138,10 @@ void ATacticalField::BuildJourneyPresentation()
         P.Heading = TEXT("序章  ―  三つの策を越えて"); P.Speaker = TEXT("劉備"); P.Portrait = 0;
         P.Dialogue = TEXT("退路を開き、糧を届け、烽火を守り抜いた。君はもう、我らとともに戦った軍師だ。乱世の道は続く。これまでの采配を、忘れずにいてほしい。");
         P.Outcome = FString::Printf(TEXT("序章の３任務を達成。信頼 %d\n仕官先の選択と、この先の歴史戦役は今後の実装です。"), J.trust);
-        P.PrimaryLabel = TEXT("序章を最初から");
+        if(J.CanBeginYellowTurban()) P.PrimaryLabel=TEXT("第一章　黄巾の乱へ ／ Enter");
+        else P.PrimaryLabel=TEXT("序章を最初から");
     }
-    for (int Index = 0; Index < 3; ++Index)
+    for (int Index = 0; Index < int(J.history.size()); ++Index)
         if (J.history[Index].completed)
             P.History += FString::Printf(TEXT("第%d戦: %s / 帰還 %d / 損失 %d  "), Index + 1,
                 J.history[Index].rescued ? TEXT("季安の避難車を護送") : J.history[Index].won ? TEXT("任務達成") : J.history[Index].withdrawn ? TEXT("任務中止・撤収") : TEXT("未達"),
@@ -148,8 +150,9 @@ void ATacticalField::BuildJourneyPresentation()
     BuildOpeningPresentation();
     BuildStoryPresentation();
     BuildEpisodePresentation();
-    if(P.bComplete && !P.CoalitionEpisode.Lines.IsEmpty())
+    if(P.bComplete && J.campaignFlow)
     {
+        if(J.mission==YellowTurbanMission) P.Heading=TEXT("第一章 完  ―  黄巾の乱");
         P.Dialogue=P.CampaignChange;
         P.Outcome=P.CampaignNext;
     }
@@ -163,6 +166,7 @@ void ATacticalField::BuildJourneyPresentation()
         P.Heading=J.won ? TEXT("戦役が動いた ／ 次の局面へ"):TEXT("再挑戦 ／ 次に変える一手");
         P.Dialogue=P.CampaignChange;P.Outcome=P.CampaignNext+TEXT("\n")+P.ReviewFacts;
         if(P.bNeedsReply) P.ReplyPrompt=TEXT("次戦の方針を会話で決める。返答は次戦の方針・約束につながり、実行結果で関係が分かれる。選ばず進むこともできる。");
-        P.PrimaryLabel=J.won ? (J.mission==2 ? TEXT("正式な軍師として、終幕へ"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
+        P.PrimaryLabel=J.won ? (J.mission==2 ? TEXT("正式な軍師として、序章の終幕へ"):
+            J.mission==YellowTurbanMission ? TEXT("黄巾の乱の結末へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
     }
 }
