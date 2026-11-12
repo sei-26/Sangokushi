@@ -64,6 +64,7 @@ namespace frontline
 		enemyPolicy = 0;
 		won = reinforced = false;
 		withdrawn = false; promise = JourneyPromise::OpenRoad; history = {};
+        coalitionPlan=CoalitionPlan::None;
         convoyRoute=JourneyConvoyRoute::Road;battleReview={};retryRelief.reset();retryDefense.reset();
 		goal = Campaign::At(12, 10);
 		lastChain = {};
@@ -138,10 +139,10 @@ namespace frontline
 		world.armies.clear();
 		if(campaignFlow)
         {
-            const char32_t* fronts[]={U"黄巾の先鋒",U"河港の守備隊",U"黄巾の牽制隊",U"黄巾の前陣守備隊"};
-            const char32_t* reserves[]={U"黄巾の後詰",U"河港の反撃隊",U"黄巾の主攻隊",U"黄巾の南翼"};
-            world.generals[3].name=fronts[std::clamp(mission,0,YellowTurbanMission)];
-            world.generals[4].name=reserves[std::clamp(mission,0,YellowTurbanMission)];
+            const char32_t* fronts[]={U"黄巾の先鋒",U"河港の守備隊",U"黄巾の牽制隊",U"黄巾の前陣守備隊",U"董卓軍の前衛"};
+            const char32_t* reserves[]={U"黄巾の後詰",U"河港の反撃隊",U"黄巾の主攻隊",U"黄巾の南翼",U"董卓軍の別働隊"};
+            world.generals[3].name=fronts[std::clamp(mission,0,CoalitionMission)];
+            world.generals[4].name=reserves[std::clamp(mission,0,CoalitionMission)];
         }
 		for (int i = 0; i < 5; ++i)
 		{
@@ -350,7 +351,9 @@ namespace frontline
 		if (!beginYellowTurban && mission>=YellowTurbanMission-1)
 		{
 			stage = JourneyStage::Complete;
-            if(mission==YellowTurbanMission)
+            if(mission==CoalitionMission)
+                Report(U"酸棗で引き受けた任務を果たした。帰陣の記録で協力先への報告を読める。");
+            else if(mission==YellowTurbanMission)
                 Report(U"第一章 完。広宗での役目を果たし、黄巾の戦いを終えた。");
             else Report(campaignFlow ? U"序章 完。退路、河港、決戦の両翼――三つの采配を経て、義勇軍の正式な軍師となった。":U"突破・護送・防衛の３戦を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");
 		}

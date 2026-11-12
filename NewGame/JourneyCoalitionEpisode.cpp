@@ -1,4 +1,5 @@
 #include "JourneyEpisode.hpp"
+#include "JourneyCampaign.hpp"
 #include "StrategistJourney.hpp"
 
 namespace frontline
@@ -6,9 +7,7 @@ namespace frontline
     JourneyEpisode BuildCoalitionEpisode(const StrategistJourney& j)
     {
         JourneyEpisode episode;
-        const auto& yellowTurban=j.history[YellowTurbanMission];
-        if(!j.campaignFlow || j.stage!=JourneyStage::Complete || j.mission!=YellowTurbanMission ||
-            !yellowTurban.completed || !yellowTurban.won) return episode;
+        if(!j.CanChooseCoalitionPlan()) return episode;
 
         episode.title=U"第二章　反董卓連合";
         episode.place=U"一八九年 ― 一九〇年　洛陽から関東へ";
@@ -32,7 +31,51 @@ namespace frontline
             {0,U"それを聞きに行こう。私たちからも、街道の村を戦場にしないよう頼む。誰がその話を聞くか、私が見てくるよ。",
                 U"劉備は立ち上がり、畳んでいた自分たちの旗を張飛に預ける。"},
             {3,U"張飛、旗を立ててくれ。関羽は俺と来てくれ。諸侯の返事を待つ間に、村を抜ける道を一緒に見よう。",
-                U"軍師は地図を折る。次の軍議へ持っていくのは、村の名が見える地図だ。"}};
+                U"軍師は村の名を書き込んだ地図を持って、軍議に向かう。"},
+            {0,U"返事が二つ来た。曹操の使いは先行隊のために北橋の前哨を奪えと。張邈の使いは、街道の烽火を守って人を通してほしいと。",
+                U"酸棗の軍議。劉備が二通の書状を地図に置く。"},
+            {1,U"前哨を取れば先行隊が渡れる。街道を守れば人は通れるが、その間、こちらの兵は橋を越せぬ。",
+                U"関羽が二通の書状の間に、義勇軍の駒を置いた。"},
+            {3,U"兵は分けられない。どちらか一つ、俺が引き受ける。決めた役目を、皆で果たそう。",
+                U"軍師は、返事を待つ使者たちへ向き直る。"}};
+        return episode;
+    }
+
+    JourneyEpisode BuildCoalitionBattleEpisode(const StrategistJourney& j)
+    {
+        const auto beat=CampaignBeat(j);
+        const bool protect=j.coalitionPlan==CoalitionPlan::Protect;
+        JourneyEpisode episode;
+        episode.title=beat.phase;
+        episode.place=U"一九〇年・反董卓連合 ／ 酸棗西の渡し";
+        episode.setting=beat.change;
+        episode.question=beat.next;
+        if(j.stage==JourneyStage::Preparation)
+        {
+            episode.lines={
+                {0,protect ? U"張邈の使者に返事を届けたよ。街道沿いの二つの火を、隊列が抜けるまで預かる。":
+                    U"曹操の使者に返事を届けたよ。私たちが北橋の前哨を取り、先行隊へ合図を出す。",U"劉備が、引き受けた方の書状を地図に留める。"},
+                {1,protect ? U"南へ敵を寄せられても、北の隊は持ち場を離れるな。翼徳、手を貸すなら火を空けずにできる形で頼む。":
+                    U"北橋に全員を詰めるな。南橋に別の隊を出せば、前哨を守る兵にこちらの行き先を絞らせずに済む。",U"関羽は北と南に駒を置く。"},
+                {2,protect ? U"持ち場は離れねえよ。けど敵が川を渡ってきたら、こっちで受け止めていいんだな？":
+                    U"橋の先に立ったら、追うより先に合図だな！ 向こうの連中が聞き逃さねえ声で呼んでやる。",U"張飛は自分の駒に手をかけ、軍師を見る。"},
+                {3,protect ? U"二つとも火が見えるまで待て。誰を残し、誰を援護へ回すか、出る前に俺が決める。":
+                    U"北橋へ誰を渡すか、先に決める。陣に入る隊と、敵を引き受ける隊で合図を合わせよう。",U"主人公が地図を三人の間へ寄せる。"}};
+        }
+        else if(j.won)
+        {
+            episode.lines={
+                {-1,beat.change,U"酸棗の陣へ、義勇軍の報せが届く。"},
+                {0,protect ? U"張邈殿の使者が、火を見て村を抜けられたと話していた。守りに残った隊の名も伝えておいたよ。":
+                    U"曹操殿の使いに、北橋が開いたと知らせた。次の行軍に使えるよう、南から来た敵のことも伝えておいたよ。",U"劉備は報告を受け、主人公に書状を渡す。"},
+                {3,protect ? U"人が通れたなら、今日の約束は果たせた。残った火の場所も、次の地図に書いておこう。":
+                    U"橋は開いた。その先へ進む隊にも、戻る道まで教えておこう。俺たちの役目はそこまでだ。",U"軍師は、引き受けた役目の結果を書状に添えた。"}};
+        }
+        else
+            episode.lines={
+                {0,protect ? U"使者には、街道がまだ危ないと伝えたよ。今は返事を急がなくていい。次の配置を一緒に決めよう。":
+                    U"先行隊には、北橋の向こうへ踏み込むなと報せた。次は誰が前哨に届くか、最初の配置から見よう。",U"劉備が、軍議で受け取った書状を開き直す。"},
+                {3,U"引き受けた役目は覚えている。次は、どこで援護が届かなかったかから考える。",U"主人公は三人を呼び戻した。"}};
         return episode;
     }
 }

@@ -573,6 +573,7 @@ private:
     float NovelElapsed=0;
     void OpenEpisode(bool bCoalition=false);
     bool CanOpenCoalitionFromEpilogue() const;
+    bool CanChooseCoalitionFromNovel() const;
     bool CoalitionStorySmokeTest();
     bool PrepareCoalitionStoryPreview(int Page);
     void OpenJourneyEntry();

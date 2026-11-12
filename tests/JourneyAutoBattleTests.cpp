@@ -130,9 +130,9 @@ int main()
     assert(yellowEnding.lines.front().text.find(U"皇甫嵩")!=std::u32string::npos);
     session->beforeBattle.reset();session->journey=*career;
     assert(EncodeJourneySave(*session,after) && DecodeJourneySave(after,*old));
-    assert(old->journey.history[YellowTurbanMission].won && BuildCoalitionEpisode(old->journey).lines.size()==9);
+    assert(old->journey.history[YellowTurbanMission].won && BuildCoalitionEpisode(old->journey).lines.size()==12);
     const auto nextChapter=BuildCoalitionEpisode(*career);
-    assert(nextChapter.title.find(U"第二章　反董卓連合")!=std::u32string::npos && nextChapter.lines.size()==9);
+    assert(nextChapter.title.find(U"第二章　反董卓連合")!=std::u32string::npos && nextChapter.lines.size()==12);
     assert(nextChapter.lines.front().text.find(U"何進")!=std::u32string::npos);
     assert(nextChapter.lines[5].text.find(U"袁紹")!=std::u32string::npos && nextChapter.lines.back().speaker==3);
     auto earlierResult=std::make_unique<StrategistJourney>(*career);
@@ -140,6 +140,46 @@ int main()
     assert(BuildCoalitionEpisode(*earlierResult).lines[4].text!=nextChapter.lines[4].text);
     earlierResult->campaignFlow=false;
     assert(BuildCoalitionEpisode(*earlierResult).lines.empty());
+    previous.clear();
+    JourneyArchive previousCoalitionWriter{false,previous};previousCoalitionWriter.version=13;
+    version=13;checksum=0;
+    previousCoalitionWriter(magic,version,checksum);previousCoalitionWriter(*session);
+    checksum=2166136261u;
+    for(std::size_t i=12;i<previous.size();++i) { checksum^=previous[i];checksum*=16777619u; }
+    for(int i=0;i<4;++i) previous[8+i]=static_cast<std::uint8_t>(checksum>>(i*8));
+    for(auto plan:{CoalitionPlan::Advance,CoalitionPlan::Protect})
+    {
+        assert(DecodeJourneySave(previous,*old));
+        auto& battle=old->journey;
+        const auto campBefore=battle.world.cities[0];
+        const auto officersBefore=battle.officerTrust;
+        const bool protect=plan==CoalitionPlan::Protect;
+        assert(!battle.ChooseCoalitionPlan(CoalitionPlan::None) && battle.ChooseCoalitionPlan(plan));
+        assert(!battle.CanChooseCoalitionPlan() && battle.mission==CoalitionMission && battle.stage==JourneyStage::Preparation);
+        assert(battle.world.cities[0].gold==campBefore.gold && battle.world.cities[0].food==campBefore.food &&
+            battle.world.cities[0].troops==campBefore.troops && battle.officerTrust==officersBefore);
+        assert(battle.Definition().kind==(protect ? JourneyObjective::HoldPositions:JourneyObjective::CaptureCamp));
+        assert(battle.ApplyPlanExample());
+        old->beforeBattle=battle;
+        assert(battle.Prepare(1,battle.enemyPolicy));
+        assert(!battle.HasConvoy() && battle.world.armies[0].tile==Campaign::At(protect ? 8:9,6));
+        assert(EncodeJourneySave(*old,before) && DecodeJourneySave(before,*old) && battle.coalitionPlan==plan);
+        assert(battle.Withdraw() && !battle.CanContinue() && battle.RetryAtCouncil(*old->beforeBattle));
+        assert(battle.coalitionPlan==plan && battle.world.cities[0].food==campBefore.food && battle.Prepare(1,battle.enemyPolicy));
+        for(int cycle=0;cycle<18 && battle.stage==JourneyStage::Battle;++cycle)
+        {
+            auto next=PlanJourneyAutoBattle(battle);
+            if(!next.tactics.empty()) battle.Execute(next.tactics);
+            if(battle.stage==JourneyStage::Battle) assert(next.movement.Resolve(battle));
+        }
+        std::cerr<<"coalition plan="<<int(plan)<<" won="<<battle.won<<" turn="<<battle.turn<<" held="<<battle.heldTurns<<" survivors="<<battle.survivors<<"\n";
+        assert(battle.won && battle.history[CoalitionMission].review.resolution==(protect ? JourneyResolution::Held:JourneyResolution::Captured));
+        assert(battle.Continue() && battle.stage==JourneyStage::Complete);
+        assert(EncodeJourneySave(*old,before) && DecodeJourneySave(before,*old) && battle.coalitionPlan==plan);
+        assert(BuildJourneyEpisode(battle).lines[1].text.find(protect ? U"張邈":U"曹操")!=std::u32string::npos);
+        battle.ResetCampaign();
+        assert(battle.coalitionPlan==CoalitionPlan::None && !battle.history[CoalitionMission].completed && EncodeJourneySave(*old,before));
+    }
     hold->stage=JourneyStage::Debrief;const auto ended=PlanJourneyAutoBattle(*hold);assert(ended.tactics.empty());
     for(const auto& order:ended.movement.orders) assert(order.kind==JourneyDirective::None);
 }

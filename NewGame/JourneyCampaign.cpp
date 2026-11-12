@@ -5,6 +5,29 @@ namespace frontline
     void StrategistJourney::ResetCampaign() { Reset();campaignFlow=true; }
     bool StrategistJourney::UpgradeCampaignAtCouncil()
     { if(stage!=JourneyStage::Preparation) return false;campaignFlow=true;return true; }
+    bool StrategistJourney::CanChooseCoalitionPlan() const
+    {
+        const auto& yellowTurban=history[YellowTurbanMission];
+        return campaignFlow && stage==JourneyStage::Complete && mission==YellowTurbanMission &&
+            won && yellowTurban.completed && yellowTurban.won && coalitionPlan==CoalitionPlan::None;
+    }
+    bool StrategistJourney::ChooseCoalitionPlan(CoalitionPlan plan)
+    {
+        if(!CanChooseCoalitionPlan() || (plan!=CoalitionPlan::Advance && plan!=CoalitionPlan::Protect)) return false;
+        coalitionPlan=plan;
+        mission=CoalitionMission;
+        stage=JourneyStage::Preparation;
+        turn=1;
+        enemyPolicy=1;
+        goal=Definition().goal;
+        assignments={};
+        convoyRoute=JourneyConvoyRoute::Road;
+        reinforced=false;
+        retryRelief.reset();
+        retryDefense.reset();
+        Report(std::u32string(CoalitionPlanName(plan))+U"。酸棗で出陣の軍議を開いた。");
+        return true;
+    }
     std::u32string StrategistJourney::ObjectiveBrief() const
     {
         if(campaignFlow && mission==2) return RequiredHoldTurns()==2 ? U"両翼の烽火を２指揮維持し、本隊の包囲を完成させる":U"両翼の烽火を３指揮維持し、本隊の包囲を完成させる";
@@ -15,6 +38,18 @@ namespace frontline
         JourneyCampaignBeat b;
         if(!j.campaignFlow) return b;
         const bool finished=j.stage==JourneyStage::Debrief && j.won;
+        if(j.mission==CoalitionMission)
+        {
+            const bool protect=j.coalitionPlan==CoalitionPlan::Protect;
+            const auto* plan=CoalitionPlanName(j.coalitionPlan);
+            if(j.stage==JourneyStage::Complete || finished)
+                return {U"第二章 ／ 酸棗の初戦",protect ? U"両方の烽火が残り、張邈の使者と街道沿いの人々が通れた。":
+                    U"董卓軍の前哨が落ち、曹操の先行隊が北橋を通れるようになった。",U"帰陣の記録から、協力先への報告を読む。",plan};
+            if(j.stage==JourneyStage::Debrief)
+                return {U"第二章 ／ 酸棗の初戦",protect ? U"街道を守り切れなかった。":U"前哨を取れなかった。",
+                    U"出陣前の軍議に戻り、配置を練り直す。",plan};
+            return {U"第二章 ／ 酸棗の初戦",j.Definition().briefing,j.Definition().objective,plan};
+        }
         if(j.mission==YellowTurbanMission)
         {
             if(j.stage==JourneyStage::Complete)

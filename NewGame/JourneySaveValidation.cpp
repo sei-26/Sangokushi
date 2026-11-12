@@ -114,12 +114,14 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
-            if(!Range(j.mission,0,j.campaignFlow ? YellowTurbanMission:YellowTurbanMission-1)) return false;
-            if(j.mission==YellowTurbanMission)
+            if(!Range(j.mission,0,j.campaignFlow ? CoalitionMission:YellowTurbanMission-1) || !Enum(j.coalitionPlan,2) ||
+                (j.mission==CoalitionMission)!=(j.coalitionPlan!=CoalitionPlan::None) ||
+                (j.mission!=CoalitionMission && j.history[CoalitionMission].completed)) return false;
+            if(j.mission>=YellowTurbanMission)
             {
-                const auto& prologue=j.history[YellowTurbanMission-1];
-                const auto& battle=j.history[YellowTurbanMission];
-                if(!prologue.completed || !prologue.won || j.stage==JourneyStage::Encounter ||
+                const auto& previous=j.history[j.mission-1];
+                const auto& battle=j.history[j.mission];
+                if(!previous.completed || !previous.won || j.stage==JourneyStage::Encounter ||
                     (j.stage==JourneyStage::Complete && (!battle.completed || !battle.won || !j.won))) return false;
             }
             if(j.retryDefense)
@@ -175,7 +177,7 @@ namespace frontline
            !Range(s.selected,0,2) || !Range(s.target,-1,4) || !Range(s.dialogue,0,3) ||
            !Range(s.preparation,0,1) || !Range(s.interlocutor,0,2) || !ChainOrders(s.orders) || !ChainOrders(s.signal.sequence)) return false;
         if((s.journey.stage==JourneyStage::Battle || s.journey.stage==JourneyStage::Debrief) &&
-            (!s.beforeBattle || s.beforeBattle->mission!=s.journey.mission)) return false;
+            (!s.beforeBattle || s.beforeBattle->mission!=s.journey.mission || s.beforeBattle->coalitionPlan!=s.journey.coalitionPlan)) return false;
         const auto& r=s.realtime;
         if(!std::isfinite(r.elapsed) || r.elapsed<0 || r.elapsed>JourneyRealtime::Period ||
             !std::isfinite(r.activeSeconds) || r.activeSeconds<0 || r.activeSeconds>1000000 ||

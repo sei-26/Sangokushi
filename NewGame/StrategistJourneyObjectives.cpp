@@ -60,7 +60,7 @@ namespace frontline
 		bool occupied = false;
 		bool braced = false;
 		for (int i = 0; i < 3; ++i)
-			if (world.armies[i].tile == tile && world.armies[i].troops >= 150 && world.armies[i].morale >= 25)
+			if (world.armies[i].tile == tile && CanOccupyObjective(world.armies[i]))
 			{
 				occupied = true;
 				braced = guarding[i] && world.armies[i].troops >= 500 && world.armies[i].morale >= 40;
@@ -158,7 +158,8 @@ namespace frontline
             if(PositionSecured(goal))
             {
                 world.tiles[goal].owner=world.player;++world.revision;
-                Finish(true,mission==YellowTurbanMission ? U"黄巾の前陣を占領。官軍が前へ出る道を開いた。":
+                Finish(true,mission==CoalitionMission ? U"董卓軍の前哨を占領。曹操の先行隊に渡河の合図を送った。":
+                    mission==YellowTurbanMission ? U"黄巾の前陣を占領。官軍が前へ出る道を開いた。":
                     U"河港の指揮所を占領。敵の連絡路が断たれ、義勇軍は官軍の共同作戦へ合流する。残敵を追う必要はない。");
                 return;
             }
@@ -167,7 +168,8 @@ namespace frontline
 		{
 			if (heldTurns >= RequiredHoldTurns())
 			{
-				Finish(true, campaignFlow ? U"両翼の烽火を守り、本隊の包囲が完成。主人公の采配が決戦を動かし、義勇軍の正式な軍師として迎えられた。":U"二つの烽火を３指揮守り抜いた。守備と支援の配分で本隊の退路をつないだ。");
+				Finish(true, mission==CoalitionMission ? U"街道の烽火を二つとも維持。張邈の使者と住民が通れる道を守った。":
+                    campaignFlow ? U"両翼の烽火を守り、本隊の包囲が完成。主人公の采配が決戦を動かし、義勇軍の正式な軍師として迎えられた。":U"二つの烽火を３指揮守り抜いた。守備と支援の配分で本隊の退路をつないだ。");
 				return;
 			}
 		}

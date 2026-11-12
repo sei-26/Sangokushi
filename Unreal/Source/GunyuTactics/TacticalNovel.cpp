@@ -9,6 +9,11 @@ FString ATacticalController::VisibleNovelText() const
 { const auto Text=CurrentEpisodeLine().Text;return bNovelInstant ? Text:SafeNovelPrefix(Text,FMath::FloorToInt(NovelElapsed*36.f)); }
 bool ATacticalController::NovelTextComplete() const
 { return VisibleNovelText().Len()==CurrentEpisodeLine().Text.Len(); }
+bool ATacticalController::CanChooseCoalitionFromNovel() const
+{
+    return bEpisodeOpen && bCoalitionEpisode && !bNovelHistory && !bNovelPlan &&
+        EpisodePage+1==EpisodeSnapshot.Lines.Num() && NovelTextComplete() && Field->CanIssue(ETacticalCommand::CoalitionAdvance);
+}
 void ATacticalController::AdvanceNovel(float Delta)
 {
     AdvanceCouncilScene(Delta);
@@ -18,6 +23,7 @@ void ATacticalController::AdvanceNovel(float Delta)
 void ATacticalController::ReadNextNovel()
 {
     if(!bEpisodeOpen || bNovelHistory || bNovelPlan) return;
+    if(CanChooseCoalitionFromNovel()) return;
     if(!NovelTextComplete()) NovelElapsed=1000;
     else if(EpisodePage+1==EpisodeSnapshot.Lines.Num() && !bNovelPersonal &&
         Field->Presentation().Journey.bComplete && Field->CanIssue(ETacticalCommand::Continue))
@@ -44,10 +50,16 @@ void ATacticalController::OpenOfficerNovel()
     EpisodeSnapshot.Lines=P.Conversation;
     EpisodeSnapshot.Title=(P.bPreparation ? FString(TEXT("軍議の語らい ／ ")):FString(TEXT("帰陣の語らい ／ ")))+P.Speaker;
 }
-void ATacticalController::ChooseNovelReply(bool Preserve)
+void ATacticalController::ChooseNovelReply(bool bFirst)
 {
     if(!bEpisodeOpen || bNovelHistory || bNovelPlan || !NovelTextComplete() || EpisodePage+1!=EpisodeSnapshot.Lines.Num()) return;
-    const auto Command=Preserve ? ETacticalCommand::StoryReplyPreserve:ETacticalCommand::StoryReplyCoordinate;
+    if(CanChooseCoalitionFromNovel())
+    {
+        Field->Issue(bFirst ? ETacticalCommand::CoalitionAdvance:ETacticalCommand::CoalitionProtect);
+        if(Field->Presentation().Journey.bPreparation) OpenJourneyEntry();
+        return;
+    }
+    const auto Command=bFirst ? ETacticalCommand::StoryReplyPreserve:ETacticalCommand::StoryReplyCoordinate;
     if(!Field->CanIssue(Command)) return;
     Field->Issue(Command);CloseEpisode();
 }

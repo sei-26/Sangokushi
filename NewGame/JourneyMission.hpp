@@ -5,6 +5,16 @@
 namespace frontline
 {
     inline constexpr int YellowTurbanMission=3;
+    inline constexpr int CoalitionMission=4;
+    enum class CoalitionPlan { None, Advance, Protect };
+    inline bool CanOccupyObjective(const Army& unit)
+    { return unit.troops>=150 && unit.morale>=25; }
+    inline const char32_t* CoalitionPlanName(CoalitionPlan plan)
+    {
+        if(plan==CoalitionPlan::Advance) return U"曹操の先行隊に協力";
+        if(plan==CoalitionPlan::Protect) return U"張邈の街道を守る";
+        return U"協力先を選ぶ";
+    }
 	enum class JourneyObjective
 	{
 		Breakout,
@@ -55,7 +65,7 @@ namespace frontline
 		      {{7 + 7 * Width, 7 + 5 * Width, 8 + 9 * Width, 11 + 9 * Width, 10 + 5 * Width}}}}};
 		return missions[std::clamp(index, 0, 2)];
 	}
-    inline const JourneyMission& CampaignMissionDefinition(int index,bool northApproach=false)
+    inline const JourneyMission& CampaignMissionDefinition(int index,bool northApproach=false,CoalitionPlan plan=CoalitionPlan::None)
     {
         static const JourneyMission port{U"第二策 / 河港の指揮所を奪え",
             U"川を渡り、敵の指揮所を安全に占領する",
@@ -69,6 +79,20 @@ namespace frontline
             JourneyObjective::CaptureCamp,11,12+8*Width,-1,0,
             {{8+9*Width,8+8*Width,9+10*Width,12+8*Width,12+11*Width}}};
         if(index==YellowTurbanMission) return guangzong;
+        if(index==CoalitionMission)
+        {
+            static const JourneyMission advance{U"酸棗の先陣 ／ 董卓軍の前哨を奪え",
+                U"渡河して敵の前哨を占領する",
+                U"北橋の先にある敵の前哨へ一隊を入れる。南橋へ別の隊を回せば、反撃を引き受けられる。",
+                JourneyObjective::CaptureCamp,11,12+6*Width,-1,0,
+                {{9+6*Width,8+6*Width,9+9*Width,12+6*Width,12+10*Width}}};
+            static const JourneyMission protect{U"酸棗の街道 ／ 二つの烽火を守れ",
+                U"街道の二つの烽火を同時に２指揮守る",
+                U"街道の南北に守備を置き、二つの烽火を同時に２指揮維持する。渡河してくる敵の足を止めよう。",
+                JourneyObjective::HoldPositions,10,9+6*Width,9+10*Width,2,
+                {{8+6*Width,8+8*Width,8+10*Width,12+10*Width,12+6*Width}}};
+            return plan==CoalitionPlan::Protect ? protect:advance;
+        }
         return index==1 ? (northApproach ? north:port):MissionDefinition(index);
     }
 } // namespace frontline

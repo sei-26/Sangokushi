@@ -73,7 +73,8 @@ namespace frontline
         bool AssignDuty(int officer,int tile,JourneyDuty);
         std::u32string AssignmentStatus(int officer) const;
 		bool withdrawn = false;
-		std::array<JourneyResult, YellowTurbanMission+1> history{};
+		std::array<JourneyResult, CoalitionMission+1> history{};
+        CoalitionPlan coalitionPlan=CoalitionPlan::None;
 		ChainResult lastChain;
 		std::vector<Chronicle> reports;
 		std::u32string message;
@@ -108,7 +109,7 @@ namespace frontline
 		bool Hold(int army);
 		const JourneyMission& Definition() const
 		{
-			return campaignFlow ? CampaignMissionDefinition(mission,CurrentPledge()==JourneyPledge::Preserve):MissionDefinition(mission);
+			return campaignFlow ? CampaignMissionDefinition(mission,CurrentPledge()==JourneyPledge::Preserve,coalitionPlan):MissionDefinition(mission);
 		}
 		bool PositionSecured(int tile) const;
 		std::u32string ObjectiveProgress() const;
@@ -118,6 +119,8 @@ namespace frontline
 		bool Continue();
         bool CanContinue() const;
         bool CanBeginYellowTurban() const;
+        bool CanChooseCoalitionPlan() const;
+        bool ChooseCoalitionPlan(CoalitionPlan);
         bool NeedsStoryReply() const;
         bool ChooseStoryReply(JourneyPledge);
         JourneyPledge CurrentPledge() const;

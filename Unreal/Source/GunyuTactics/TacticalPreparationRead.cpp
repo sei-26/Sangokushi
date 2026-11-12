@@ -72,6 +72,7 @@ void ATacticalField::BuildPreparationPresentation()
         P.PlanReadiness+=FString::Printf(TEXT("　案%dなら現在の資源で出陣できる。"),2-State->PreparationChoice);
     const TCHAR* Names[]={TEXT("劉備"),TEXT("関羽"),TEXT("張飛")};
     const FString Liu=J.IsRescue() ? TEXT("敵の旗が倒れても、季安の車が着くまでは終わらない。道に残す隊を、先に決めよう。"):
+        J.mission==CoalitionMission ? JourneyText(J.Definition().briefing):
         J.mission==YellowTurbanMission ? TEXT("正面の守備を林へ引きつけ、南から一隊を前陣へ入れよう。南の反撃隊の動きも確かめたい。"):
         J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("北橋か南橋を渡り、指揮所を取る。勝利後は本隊との共同作戦へ進む。二隊連鎖も成せば、決戦の合図が早くなる。"):
         J.mission==1 ? TEXT("積荷は1,200以上残して届ける。追撃より先に、糧車が通る場所を考えてほしい。"):

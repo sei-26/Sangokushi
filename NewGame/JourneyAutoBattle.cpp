@@ -9,12 +9,14 @@ namespace frontline
         JourneyAutoPlan plan;
         if(j.stage!=JourneyStage::Battle) return plan;
         const auto& w=j.world;
+        const bool capture=j.Definition().kind==JourneyObjective::CaptureCamp;
         std::array<int,3> duties{-1,-1,-1};
         auto Assign=[&](int tile)
         {
             int best=-1,score=100000;
             for(int a=0;a<3;++a) if(TacticChain::Living(w,a) && duties[a]<0)
             {
+                if(capture && !CanOccupyObjective(w.armies[a])) continue;
                 const int value=w.MapDistance(w.armies[a].tile,tile)*10+
                     (w.armies[a].troops<500 ? 20:0);
                 if(value<score) { score=value;best=a; }
@@ -23,7 +25,7 @@ namespace frontline
         };
         if(j.Definition().kind==JourneyObjective::HoldPositions)
         { Assign(j.goal);Assign(j.Definition().secondGoal); }
-        else if(j.Definition().kind==JourneyObjective::CaptureCamp) Assign(j.goal);
+        else if(capture) Assign(j.goal);
         std::array<bool,3> defending{};
         for(int a=0;a<3;++a)
         {
@@ -76,6 +78,7 @@ namespace frontline
                 bool queued=false;
                 for(int cell:candidates)
                 {
+                    if(capture && cell==j.goal && !CanOccupyObjective(w.armies[a])) continue;
                     if(j.HasConvoy() && std::find(j.ConvoyPath().begin(),j.ConvoyPath().end(),cell)!=j.ConvoyPath().end()) continue;
                     if(plan.movement.Queue(j,a,JourneyDirective::March,cell) && !plan.movement.Route(j,a).empty()) { queued=true;break; }
                 }

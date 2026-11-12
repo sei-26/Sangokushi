@@ -27,6 +27,11 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     case ETacticalCommand::TalkZhang: State->Interlocutor = 2; break;
     case ETacticalCommand::StoryReplyPreserve: J.ChooseStoryReply(JourneyPledge::Preserve);break;
     case ETacticalCommand::StoryReplyCoordinate: J.ChooseStoryReply(JourneyPledge::Coordinate);break;
+    case ETacticalCommand::CoalitionAdvance:
+    case ETacticalCommand::CoalitionProtect:
+        if(!J.ChooseCoalitionPlan(Command==ETacticalCommand::CoalitionAdvance ? CoalitionPlan::Advance:CoalitionPlan::Protect)) return;
+        State->Orders.clear();State->Selected=0;State->Target=3;State->Input=ETacticalInput::Select;
+        break;
     case ETacticalCommand::Reinforce: J.Reinforce(); break;
     case ETacticalCommand::Deploy:
     {
@@ -81,6 +86,7 @@ void ATacticalField::BuildJourneyPresentation()
     P.bDebrief = J.stage == JourneyStage::Debrief;
     P.bComplete = J.stage == JourneyStage::Complete;
     P.Context = J.mission==YellowTurbanMission ? TEXT("184年・黄巾の乱。広宗郊外での義勇軍の作戦、会話、主人公の関与は創作です。"):
+        J.mission==CoalitionMission ? TEXT("190年・反董卓連合。酸棗西での義勇軍の任務は創作です。"):
         TEXT("184年・黄巾の乱を背景とする序章。局地戦・会話・主人公の関与は創作です。");
     const auto& Camp = J.world.cities[0];
     P.Resources = FString::Printf(TEXT("野営地  兵 %d    兵糧 %d    軍資金 %d    信頼 %d"), Camp.troops, Camp.food, Camp.gold, J.trust);
@@ -150,9 +156,17 @@ void ATacticalField::BuildJourneyPresentation()
     BuildOpeningPresentation();
     BuildStoryPresentation();
     BuildEpisodePresentation();
+    if(!P.CoalitionEpisode.Lines.IsEmpty())
+    {
+        const CoalitionPlan Plans[]={CoalitionPlan::Advance,CoalitionPlan::Protect};
+        for(int Index=0;Index<2;++Index)
+            P.CoalitionChoices[Index]=FString::Printf(TEXT("%d　%s\n%s"),Index+1,*JourneyText(CoalitionPlanName(Plans[Index])),
+                *JourneyText(CampaignMissionDefinition(CoalitionMission,false,Plans[Index]).objective));
+    }
     if(P.bComplete && J.campaignFlow)
     {
         if(J.mission==YellowTurbanMission) P.Heading=TEXT("第一章 完  ―  黄巾の乱");
+        if(J.mission==CoalitionMission) P.Heading=TEXT("第二章  ―  酸棗の初戦の記録");
         P.Dialogue=P.CampaignChange;
         P.Outcome=P.CampaignNext;
     }
@@ -167,6 +181,7 @@ void ATacticalField::BuildJourneyPresentation()
         P.Dialogue=P.CampaignChange;P.Outcome=P.CampaignNext+TEXT("\n")+P.ReviewFacts;
         if(P.bNeedsReply) P.ReplyPrompt=TEXT("次戦の方針を会話で決める。返答は次戦の方針・約束につながり、実行結果で関係が分かれる。選ばず進むこともできる。");
         P.PrimaryLabel=J.won ? (J.mission==2 ? TEXT("正式な軍師として、序章の終幕へ"):
-            J.mission==YellowTurbanMission ? TEXT("黄巾の乱の結末へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
+            J.mission==YellowTurbanMission ? TEXT("黄巾の乱の結末へ ／ Enter"):
+            J.mission==CoalitionMission ? TEXT("初戦の記録へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
     }
 }

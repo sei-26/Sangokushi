@@ -30,6 +30,9 @@ void ATacticalField::BuildPreparationMap()
                 FString::Printf(TEXT("両方を同時に%d指揮守る。固守は兵500・士気40以上で、隣接敵１隊まで耐えられる。"),J.RequiredHoldTurns()),
                 {TEXT("片方だけ守っても役目は果たせない。残る隊を先に決めよう。"),TEXT("救援に出るなら、元いた場所の守りも確かめよ。"),TEXT("呼ばれりゃ走るぜ。でも両方を空っぽにするなよ！")});
     }
+    else if(J.mission==CoalitionMission)
+        Add(J.Definition().goal,TEXT("董卓軍の前哨"),TEXT("北橋を渡り、隣接する敵を退けて一隊を入れる。"),
+            {TEXT("先行隊へ合図を送れる場所だ。"),TEXT("前哨の守備を引き離そう。"),TEXT("俺を通す橋を決めてくれ！")});
     else if(J.mission==YellowTurbanMission)
     {
         Add(J.Definition().goal,TEXT("黄巾の前陣"),TEXT("隣接する敵を退け、一隊を入れると占領できる。"),
@@ -52,6 +55,7 @@ void ATacticalField::BuildPreparationMap()
             const bool Defense=J.Definition().kind==JourneyObjective::HoldPositions;
             const TCHAR* Name=Defense ? (Bridge==0 ? TEXT("西の橋"):TEXT("東の橋")) : (Bridge==0 ? TEXT("北橋"):TEXT("南橋"));
             Add(Cell.Tile,Name,Defense ? TEXT("川の両岸へ援護を送る道。橋に留まる隊と、通り抜ける隊が重ならないように考える。"):
+                J.mission==CoalitionMission ? (Bridge==0 ? TEXT("前哨に近い渡河点。占領する隊を通す。"):TEXT("反撃隊の正面に出る渡河点。北橋へ向かう隊を援護できる。")):
                 J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("河港へ攻め入る渡河点。北から回るか、南から突破するか。渡河後に指揮所へ向かう隊を決める。"):
                 Bridge==0 ? TEXT("護送路とは別の渡河点。北へ回す隊と、車の側に残す隊を分けて考えられる。"):
                     TEXT("糧車の通る橋。味方が止まっていても車は進めない。渡った後の配置まで考える。"),

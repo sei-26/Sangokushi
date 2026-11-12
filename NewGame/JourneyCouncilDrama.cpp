@@ -1,8 +1,14 @@
 ﻿#include "StrategistJourney.hpp"
+#include "JourneyEpisode.hpp"
 namespace frontline
 {
     std::vector<JourneyDialogueLine> JourneyCouncilConversation(const StrategistJourney& j,int who)
     {
+        if(j.mission==CoalitionMission)
+        {
+            const auto episode=BuildJourneyEpisode(j);
+            return {{who,episode.lines[who].text},{3,episode.lines.back().text}};
+        }
         if(j.mission==YellowTurbanMission)
         {
             if(who==0) return {{0,U"官軍の役目は前陣を取るところまでだ。落ちた旗を追うより、戻る者を迎えたい。"},

@@ -16,6 +16,7 @@ bool ATacticalField::CanIssue(ETacticalCommand Command) const
     const auto& J = State->Journey;
     if (Command == ETacticalCommand::Restart || Command == ETacticalCommand::Cancel) return true;
     if (Command == ETacticalCommand::Continue) return J.CanContinue();
+    if (Command == ETacticalCommand::CoalitionAdvance || Command == ETacticalCommand::CoalitionProtect) return J.CanChooseCoalitionPlan();
     if(Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate) return J.NeedsStoryReply();
     if (Command == ETacticalCommand::Dialogue) return J.stage == JourneyStage::Encounter;
     if(Command==ETacticalCommand::DifficultyStory || Command==ETacticalCommand::DifficultyStandard) return J.stage==JourneyStage::Preparation || J.stage==JourneyStage::Encounter;
@@ -181,7 +182,8 @@ void ATacticalField::Issue(ETacticalCommand Command)
     if(State->bAutoBattle && Command!=ETacticalCommand::RealtimePause && Command!=ETacticalCommand::RealtimeSpeed && Command!=ETacticalCommand::RealtimeAlertPause && Command!=ETacticalCommand::Skip) StopAutoBattle();
     if(State->Input==ETacticalInput::Position) State->Input=ETacticalInput::Select;
     if (IsRealtimeAction(Command)) { IssueRealtime(Command);return; }
-    if (Command==ETacticalCommand::DifficultyStory || Command==ETacticalCommand::DifficultyStandard || Command==ETacticalCommand::PlanExample || Command == ETacticalCommand::Dialogue || Command == ETacticalCommand::Reinforce || Command == ETacticalCommand::PlanAmbush || Command == ETacticalCommand::PlanSupplies || Command == ETacticalCommand::Deploy || Command == ETacticalCommand::Retry || Command == ETacticalCommand::PromiseRoad || Command == ETacticalCommand::PromiseRescue || Command == ETacticalCommand::TalkLiu || Command == ETacticalCommand::TalkGuan || Command == ETacticalCommand::TalkZhang || Command==ETacticalCommand::RouteRoad || Command==ETacticalCommand::RouteSouthernWood || Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate)
+    if (Command==ETacticalCommand::CoalitionAdvance || Command==ETacticalCommand::CoalitionProtect ||
+        Command==ETacticalCommand::DifficultyStory || Command==ETacticalCommand::DifficultyStandard || Command==ETacticalCommand::PlanExample || Command == ETacticalCommand::Dialogue || Command == ETacticalCommand::Reinforce || Command == ETacticalCommand::PlanAmbush || Command == ETacticalCommand::PlanSupplies || Command == ETacticalCommand::Deploy || Command == ETacticalCommand::Retry || Command == ETacticalCommand::PromiseRoad || Command == ETacticalCommand::PromiseRescue || Command == ETacticalCommand::TalkLiu || Command == ETacticalCommand::TalkGuan || Command == ETacticalCommand::TalkZhang || Command==ETacticalCommand::RouteRoad || Command==ETacticalCommand::RouteSouthernWood || Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate)
     { IssueJourney(Command); return; }
     if (bRealtimeCommand && (Command==ETacticalCommand::QueueTactic || Command==ETacticalCommand::Sample)) State->Realtime.paused=true;
     const auto Before = ObserveUnits();

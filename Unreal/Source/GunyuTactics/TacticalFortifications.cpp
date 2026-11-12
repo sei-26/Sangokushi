@@ -72,7 +72,7 @@ void ATacticalField::BuildFortifications()
         Roofs->AddInstance(FTransform(FRotator::ZeroRotator,P+FVector(0,0,275),FVector(.92,2.58,.48)));
         Flag(P+FVector(10,127,0),FLinearColor(.48f,.24f,.035f),.95f);
     };
-    if (J.mission==2)
+    if (J.Definition().kind==frontline::JourneyObjective::HoldPositions)
     {
         // Actual defense sites have beacon towers, rather than two exit gates.
         // Keep the fire and structure in a corner, clear of the formation center.
