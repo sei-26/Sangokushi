@@ -7,6 +7,7 @@ namespace gunyucompany
         E.VisualScale=.70f+.025f*FMath::Sin(Soldier*2.37f+U.Id*.71f);
         E.bCommander=!U.bEnemy && U.Id>=0 && U.Id<3 && Soldier==3;
         E.bShield=Soldier<FMath::DivideAndRoundUp(Count,2);
+        if(U.bCavalry) E.bShield=false;
         if(E.bCommander)
         {
             E.VisualScale=.94f;
@@ -16,9 +17,12 @@ namespace gunyucompany
         E.ShaftLength=E.bShield ? 92:116;
         return E;
     }
-    int RepresentativeCount(const FVisualUnit& U) { return FMath::Clamp(FMath::CeilToInt(U.Troops/35.f),6,48); }
+    int RepresentativeCount(const FVisualUnit& U)
+    { return U.bCavalry ? FMath::Clamp(FMath::CeilToInt(U.Troops/95.f),5,16):FMath::Clamp(FMath::CeilToInt(U.Troops/35.f),6,48); }
     FLinearColor Livery(const FVisualUnit& U)
     {
+        if(U.bCavalry) return FLinearColor(.30f,.045f,.075f);
+        if(U.HistoricalSpeaker>=0 && !U.bEnemy) return FLinearColor(.62f,.16f,.038f);
         if(U.bEnemy) return FLinearColor(.46f,.23f,.035f);
         if(U.Id==1) return FLinearColor(.025f,.25f,.105f);
         if(U.Id==2) return FLinearColor(.34f,.055f,.035f);

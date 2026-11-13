@@ -9,7 +9,7 @@ namespace frontline
         JourneyEnemyContext Context(const StrategistJourney& journey)
         {
             return {journey.Definition().kind, journey.goal, journey.Definition().secondGoal,
-                    journey.enemyPolicy, journey.HasConvoy(),journey.campaignFlow};
+                    journey.enemyPolicy, journey.HasConvoy(),journey.campaignFlow,journey.HasSunJian()};
         }
         std::unique_ptr<Campaign> EnemyView(const Campaign& world, const BattleIntelligence& known)
         {
@@ -136,6 +136,14 @@ namespace frontline
     }
     bool StrategistJourney::CompleteCommandCycle(std::size_t previousReports)
     {
+        if(HasSunJian())
+        {
+            AdvanceSunJian();
+            const auto& cavalry=world.armies[3];
+            if(!chain.disordered[3] && world.tiles[cavalry.tile].terrain==Terrain::Plain &&
+               intelligence[1].EnemyNear(world,cavalry.tile,1))
+                world.ActivateTactic(3,true);
+        }
         if(campaignFlow && mission==YellowTurbanMission && world.generals[3].tactic==Tactic::Rally &&
            !chain.disordered[3] && world.armies[3].morale<=85 &&
            intelligence[1].EnemyNear(world,world.armies[3].tile,1))
@@ -148,6 +156,8 @@ namespace frontline
             const auto* enemy=intelligence[0].Find(3);
             if(event.general==3 && event.tactic==Tactic::Rally && enemy && enemy->current)
                 Report(U"張梁が「鼓舞」を発動。近くの黄巾兵の士気が上がった。");
+            if(event.general==3 && event.tactic==Tactic::MountedCharge && enemy && enemy->current)
+                Report(U"呂布が騎兵突撃。平地を離れ、森で受け止めよう！");
         }
         for (int i = 0; i < 3; ++i) world.armies[i].scouting = false;
         ++turn;

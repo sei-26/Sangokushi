@@ -15,7 +15,19 @@ void ATacticalField::BuildMissionPresentation()
             if(Seen.current && Seen.observed.troops>0 && J.world.Hostile(0,Seen.observed.faction) && J.world.MapDistance(Seen.observed.tile,Tile)<=1) ++Count;
         return Count;
     };
-    if(J.HasConvoy() && TacticChain::Living(J.world,StrategistJourney::ConvoyArmy))
+    if(J.HasSunJian())
+    {
+        const auto& Ally=J.world.armies[StrategistJourney::AlliedArmy];
+        const bool Joined=J.SunJianAtRally();
+        const bool Contested=EnemiesNear(Ally.tile)>0;
+        H.MissionFocusTile=Joined ? J.goal:Contested ? Ally.tile:YangrenRally;
+        H.MissionAdvice=Joined ? TEXT("辻を押さえよう"):Contested ? TEXT("孫堅の前を開こう"):TEXT("辻と南道を見よう");
+        H.MissionStep=Joined ? TEXT("孫堅隊が到着 ｜ 敵を退け、辻に一隊を入れよう。"):
+            Contested ? TEXT("孫堅隊が交戦中 ｜ 南道を開き、合流を助けよう。"):
+            TEXT("孫堅隊が南から進軍中 ｜ 辻を確保し、合流を待とう。");
+        H.MissionDetail+=TEXT("\n孫堅隊は毎指揮進む。接敵すると止まるので、南道から敵を引き離そう。");
+    }
+    else if(J.HasConvoy() && TacticChain::Living(J.world,StrategistJourney::ConvoyArmy))
     {
         const auto& Path=J.ConvoyPath();const int Next=Path[FMath::Min(J.convoyStep+1,int(Path.size())-1)];
         H.MissionFocusTile=Next;

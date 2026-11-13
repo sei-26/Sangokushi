@@ -259,3 +259,85 @@ bool ATacticalController::CoalitionStorySmokeTest()
     UE_LOG(LogTemp,Display,TEXT("GUNYU_COALITION_UI: PASS (Yellow Turban gate, explicit route choice, both deployments, retry/reload and both actual victories)"));
     return true;
 }
+
+bool ATacticalController::PrepareYangrenPreview(int View)
+{
+    using namespace frontline;
+    if(View<0 || View>4 || !PrepareCoalitionStoryPreview(View==1 ? -9:-8)) return false;
+    CloseEpisode();
+    if(!Field->CanIssue(ETacticalCommand::Continue)) return false;
+    Field->Issue(ETacticalCommand::Continue);
+    OpenJourneyEntry();
+    if(!bEpisodeOpen || bNovelPlan || Field->Presentation().Mission!=YangrenMission) return false;
+    if(View<2)
+    {
+        StepEpisode(1);
+        NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+        return CurrentEpisodeLine().Speaker==(View==0 ? CaoCao:ZhangMiao);
+    }
+    while(EpisodePage+1<EpisodeSnapshot.Lines.Num()) StepEpisode(1);
+    NovelElapsed=1000;
+    HandleEpisodeKey(EKeys::Enter);
+    if(!bNovelPlan) return false;
+    if(View==2) { TogglePlanningMap();return bNovelMap; }
+    DeployNovelPlan();
+    if(!Field->Presentation().bBattle) return false;
+    const auto& U=Field->VisualUnits();
+    if(!U.IsValidIndex(5) || U[5].HistoricalSpeaker!=SunJian || U[5].bTransport) return false;
+    std::vector<std::uint8_t> Bytes;
+    auto Save=std::make_unique<JourneySaveData>();
+    if(!Field->ExportSession(Bytes) || !DecodeJourneySave(Bytes,*Save)) return false;
+    auto& J=Save->journey;
+    if(View==3)
+    {
+        // The starting forest can conceal the enemy. March the lead company
+        // along the open road until the normal observation reveals the cavalry.
+        JourneyRealtime Orders;
+        if(!Orders.Queue(J,0,JourneyDirective::March,Campaign::At(10,8))) return false;
+        for(int Cycle=0;Cycle<3;++Cycle)
+        {
+            const auto* Contact=J.intelligence[0].Find(3);
+            if(Contact && Contact->current) break;
+            if(!Orders.Resolve(J)) return false;
+        }
+        if(!EncodeJourneySave(*Save,Bytes) || !Field->ImportSession(Bytes)) return false;
+        CameraYaw=90;CameraElevation=61;CameraPreset=2;
+        Focus=FVector(2010,1410,0);Distance=ViewDistance=3150;
+        const auto& Cavalry=Field->VisualUnits()[3];
+        if(Cavalry.HistoricalSpeaker==LuBu && Cavalry.bCavalry) return true;
+        UE_LOG(LogTemp,Error,TEXT("GUNYU_YANGREN: FAIL cavalry not visible after marching (turn=%d)"),J.turn);
+        return false;
+    }
+    for(int Cycle=0;Cycle<18 && J.stage==JourneyStage::Battle;++Cycle)
+    {
+        auto Next=PlanJourneyAutoBattle(J);
+        if(!Next.tactics.empty()) J.Execute(Next.tactics);
+        if(J.stage==JourneyStage::Battle && !Next.movement.Resolve(J)) return false;
+    }
+    if(!J.won || !J.SunJianAtRally() || !J.Continue() || !EncodeJourneySave(*Save,Bytes) || !Field->ImportSession(Bytes)) return false;
+    OpenEpisode();
+    NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+    return bEpisodeOpen && CurrentEpisodeLine().Speaker==SunJian;
+}
+
+bool ATacticalController::YangrenSmokeTest()
+{
+    auto Check=[](bool Valid,const TCHAR* Reason)
+    { if(!Valid) UE_LOG(LogTemp,Error,TEXT("GUNYU_YANGREN: FAIL %s"),Reason);return Valid; };
+    if(!Check(PrepareYangrenPreview(0) && PrepareYangrenPreview(1),TEXT("both Suanzao choices reach their own Yangren dialogue"))) return false;
+    if(!Check(PrepareYangrenPreview(2) && Field->Presentation().Journey.Map.Name==TEXT("陽人の山麓"),
+        TEXT("normal episode controls open the dedicated planning map"))) return false;
+    if(!Check(PrepareYangrenPreview(3) && Field->Presentation().SecondGoalLabel==TEXT("孫堅と合流"),
+        TEXT("actual deployment presents Sun Jian as a combat ally and marks the rally site"))) return false;
+    std::vector<std::uint8_t> Bytes;
+    if(!Check(Field->ExportSession(Bytes) && Field->ImportSession(Bytes) && Field->VisualUnits()[5].HistoricalSpeaker==frontline::SunJian,
+        TEXT("reloading preserves the allied unit and both objectives"))) return false;
+    Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Skip);
+    Field->Issue(ETacticalCommand::Retry);
+    if(!Check(Field->Presentation().Mission==frontline::YangrenMission && Field->Presentation().Journey.bPreparation,
+        TEXT("withdrawal restarts the same council"))) return false;
+    if(!Check(PrepareYangrenPreview(4) && Field->Presentation().bComplete,TEXT("actual victory opens the Sun Jian epilogue"))) return false;
+    CloseEpisode();
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_YANGREN: PASS (two councils, real deployment, reload, withdrawal retry, allied victory and ending)"));
+    return true;
+}

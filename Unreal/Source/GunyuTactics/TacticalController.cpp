@@ -415,6 +415,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=DutyAftermathSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCoalitionOnly")))
     { const bool Passed=CoalitionStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuYangrenOnly")))
+    { const bool Passed=YangrenSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningOnly")))
     { const bool Passed=PreparationReadSmokeTest() && PlanningMapSmokeTest() && PlanningDutySmokeTest() && PlanningGuideSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDefenseRetryOnly")))
@@ -686,6 +688,13 @@ void ATacticalController::PlayerTick(float Delta)
     int DefenseRetry=0;
     int DutyProgress=0,DutyAftermath=0,CoalitionPage=0;
     int BattlefieldLayout=0;
+    int YangrenView=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("YangrenView="),YangrenView))
+    {
+        const bool Valid=PrepareYangrenPreview(YangrenView);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_YANGREN_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("BattlefieldLayout="),BattlefieldLayout))
     {
         const bool Valid=PrepareBattlefieldLayoutCapture(BattlefieldLayout);

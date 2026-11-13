@@ -114,9 +114,10 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
-            if(!Range(j.mission,0,j.campaignFlow ? CoalitionMission:YellowTurbanMission-1) || !Enum(j.coalitionPlan,2) ||
-                (j.mission==CoalitionMission)!=(j.coalitionPlan!=CoalitionPlan::None) ||
-                (j.mission!=CoalitionMission && j.history[CoalitionMission].completed)) return false;
+            if(!Range(j.mission,0,j.campaignFlow ? YangrenMission:YellowTurbanMission-1) || !Enum(j.coalitionPlan,2) ||
+                (j.mission>=CoalitionMission)!=(j.coalitionPlan!=CoalitionPlan::None) ||
+                (j.mission<CoalitionMission && j.history[CoalitionMission].completed) ||
+                (j.mission<YangrenMission && j.history[YangrenMission].completed)) return false;
             if(j.mission>=YellowTurbanMission)
             {
                 const auto& previous=j.history[j.mission-1];
@@ -142,7 +143,7 @@ namespace frontline
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
                !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.Battlefield(),j.IsRescue(),j.stage==JourneyStage::Preparation) ||
                w.cities.size()!=2 || w.generals.size()<5 || w.generals.size()>6 || n>6 ||
-               ((j.stage==JourneyStage::Battle || j.stage==JourneyStage::Debrief) && n!=(j.HasConvoy()?6u:5u)) ||
+               ((j.stage==JourneyStage::Battle || j.stage==JourneyStage::Debrief) && n!=((j.HasConvoy() || j.HasSunJian())?6u:5u)) ||
                !w.hexMap || w.player!=0 || !Range(w.day,0,10000)) return false;
             for(const auto& c:w.cities) if(!Cell(c.tile) || !Range(c.owner,0,1) || !Range(c.troops,0,1000000) ||
                 !Range(c.food,0,10000000) || !Range(c.gold,0,10000000)) return false;
@@ -150,6 +151,9 @@ namespace frontline
                 !Enum(g.trait,15) || !Enum(g.tactic,8) || !Enum(g.specialty,3) ||
                 !Range(g.leadership,0,100) || !Range(g.intelligence,0,100) || !Range(g.politics,0,100) || !Range(g.charm,0,100)) return false;
             for(const auto& a:w.armies) if(!ArmyValid(a,static_cast<int>(w.generals.size()))) return false;
+            if(j.HasSunJian() && j.stage!=JourneyStage::Preparation &&
+                (n!=6 || w.armies[5].faction!=0 || w.armies[5].arm!=Arm::Spear || w.armies[5].general!=5 ||
+                    w.armies[3].faction!=1 || w.armies[3].arm!=Arm::Cavalry)) return false;
             for(const auto& t:w.tiles) if(!Enum(t.terrain,5) || !Range(t.owner,-1,1)) return false;
             for(const auto& b:w.bonds) if(!Range(b.a,0,5) || !Range(b.b,0,5) || !Range(b.value,0,100)) return false;
             for(const auto* bits:{&j.chain.concealed,&j.chain.moved,&j.chain.spent,&j.chain.disordered,

@@ -12,6 +12,7 @@ namespace frontline
 		int goal = -1, secondGoal = -1, policy = 0;
 		bool convoy = false;
 		bool campaign = false;
+        bool yangren = false;
 	};
 	struct JourneyEnemyPlan
 	{
@@ -28,4 +29,5 @@ namespace frontline
 	    const TacticChain& chain, const JourneyEnemyContext& context);
 	const char32_t* EnemyIntentName(JourneyEnemyIntent intent);
 	const char32_t* EnemyIntentCounter(JourneyEnemyIntent intent);
+    int JourneyAdvanceStep(const Campaign& view,int from,int target,bool occupy,int blocked=-1);
 }

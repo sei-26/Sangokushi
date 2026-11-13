@@ -86,6 +86,7 @@ void ATacticalField::BuildJourneyPresentation()
     P.bDebrief = J.stage == JourneyStage::Debrief;
     P.bComplete = J.stage == JourneyStage::Complete;
     P.Context = J.mission==YellowTurbanMission ? TEXT("184年・黄巾の乱。広宗郊外での義勇軍の作戦、会話、主人公の関与は創作です。"):
+        J.HasSunJian() ? TEXT("191年・陽人。孫堅の戦いを背景に、義勇軍の参加と局地戦を創作しています。"):
         J.mission==CoalitionMission ? TEXT("190年・反董卓連合。酸棗西での義勇軍の任務は創作です。"):
         TEXT("184年・黄巾の乱を背景とする序章。局地戦・会話・主人公の関与は創作です。");
     const auto& Camp = J.world.cities[0];
@@ -167,6 +168,8 @@ void ATacticalField::BuildJourneyPresentation()
     {
         if(J.mission==YellowTurbanMission) P.Heading=TEXT("第一章 完  ―  黄巾の乱");
         if(J.mission==CoalitionMission) P.Heading=TEXT("第二章  ―  酸棗の初戦の記録");
+        if(J.CanBeginYangren()) P.PrimaryLabel=TEXT("陽人の戦いへ ／ Enter");
+        if(J.HasSunJian()) { P.Heading=TEXT("第二章 完  ―  反董卓連合");P.PrimaryLabel=TEXT("序章を最初から"); }
         P.Dialogue=P.CampaignChange;
         P.Outcome=P.CampaignNext;
     }
@@ -182,6 +185,7 @@ void ATacticalField::BuildJourneyPresentation()
         if(P.bNeedsReply) P.ReplyPrompt=TEXT("次戦の方針を会話で決める。返答は次戦の方針・約束につながり、実行結果で関係が分かれる。選ばず進むこともできる。");
         P.PrimaryLabel=J.won ? (J.mission==2 ? TEXT("正式な軍師として、序章の終幕へ"):
             J.mission==YellowTurbanMission ? TEXT("黄巾の乱の結末へ ／ Enter"):
-            J.mission==CoalitionMission ? TEXT("初戦の記録へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
+            J.mission==CoalitionMission ? TEXT("初戦の記録へ ／ Enter"):
+            J.HasSunJian() ? TEXT("反董卓連合の結末へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
     }
 }

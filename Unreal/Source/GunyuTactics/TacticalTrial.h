@@ -268,6 +268,7 @@ private:
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CommanderGlaives;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CommanderSerpents;
     UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CartWheels;
+    UPROPERTY() TObjectPtr<UInstancedStaticMeshComponent> CavalryHorses;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> Standards;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> Effects;
     UPROPERTY() TObjectPtr<class UAudioComponent> CueAudio;
@@ -579,6 +580,8 @@ private:
     bool CanChooseCoalitionFromNovel() const;
     bool CoalitionStorySmokeTest();
     bool PrepareCoalitionStoryPreview(int Page);
+    bool PrepareYangrenPreview(int View);
+    bool YangrenSmokeTest();
     bool PrepareBattlefieldLayoutCapture(int Variant);
     void OpenJourneyEntry();
     bool CampaignPacingSmokeTest();

@@ -39,13 +39,24 @@ namespace frontline
         JourneyCampaignBeat b;
         if(!j.campaignFlow) return b;
         const bool finished=j.stage==JourneyStage::Debrief && j.won;
+        if(j.HasSunJian())
+        {
+            if(finished || j.stage==JourneyStage::Complete)
+                return {U"第二章 ／ 陽人の戦い",U"陽人で孫堅と合流し、董卓軍の南の戦線を破った。",
+                    U"孫堅は洛陽へ。義勇軍は南から押し開いた道を見届ける。",U"孫堅と共闘する軍師"};
+            if(j.stage==JourneyStage::Debrief)
+                return {U"第二章 ／ 陽人の戦い",U"陽人の辻と孫堅隊の合流を果たせなかった。",U"軍議へ戻り、平地で騎兵を受ける位置と南への援護を見直す。",U"孫堅と共闘する軍師"};
+            return {U"第二章 ／ 陽人の戦い",j.Definition().briefing,j.coalitionPlan==CoalitionPlan::Advance ?
+                U"曹操の斥候が北の抜け道を教えた。関羽を林の奥から出せる。":
+                U"張邈の案内人が南道を通した。孫堅は合流地点に近い位置から出る。",U"孫堅と共闘する軍師"};
+        }
         if(j.mission==CoalitionMission)
         {
             const bool protect=j.coalitionPlan==CoalitionPlan::Protect;
             const auto* plan=CoalitionPlanName(j.coalitionPlan);
             if(j.stage==JourneyStage::Complete || finished)
                 return {U"第二章 ／ 酸棗の初戦",protect ? U"両方の烽火が残り、張邈の使者と街道沿いの人々が通れた。":
-                    U"董卓軍の前哨が落ち、曹操の先行隊が北橋を通れるようになった。",U"帰陣の記録から、協力先への報告を読む。",plan};
+                    U"董卓軍の前哨が落ち、曹操の先行隊が北橋を通れるようになった。",U"次の局面：陽人へ向かい、孫堅と合流する。",plan};
             if(j.stage==JourneyStage::Debrief)
                 return {U"第二章 ／ 酸棗の初戦",protect ? U"街道を守り切れなかった。":U"前哨を取れなかった。",
                     U"出陣前の軍議に戻り、配置を練り直す。",plan};

@@ -55,5 +55,6 @@ namespace frontline
       if(version>=14) (*this)(v.coalitionPlan,v.history[CoalitionMission]);
       else if(reading) { v.coalitionPlan=CoalitionPlan::None;v.history[CoalitionMission]={}; }
       if(version>=15) IO(v.legacyBattlefield);
-      else if(reading) v.legacyBattlefield=v.stage!=JourneyStage::Encounter; }
+      else if(reading) v.legacyBattlefield=v.stage!=JourneyStage::Encounter;
+      if(version>=16) IO(v.history[YangrenMission]);else if(reading) v.history[YangrenMission]={}; }
 }

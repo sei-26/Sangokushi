@@ -24,7 +24,8 @@ void ATacticalController::OpenJourneyEntry()
     if(P.bPreparation)
     {
         OpenEpisode();
-        if(Field->Presentation().Mission!=frontline::YellowTurbanMission) OpenNovelPlan();
+        const int Mission=Field->Presentation().Mission;
+        if(Mission!=frontline::YellowTurbanMission && Mission!=frontline::YangrenMission) OpenNovelPlan();
     }
     else if(P.bDebrief) { CloseEpisode();EpisodeSeenKey=P.Episode.Key; }
     else OpenEpisode();

@@ -8,14 +8,14 @@ namespace frontline
         for (int id=0;id<6 && id<static_cast<int>(journey.world.armies.size());++id)
         {
             const Army* unit=nullptr;
-            if (id<3 || (id==StrategistJourney::ConvoyArmy && journey.HasConvoy())) unit=&journey.world.armies[id];
+            if (id<3 || (id==StrategistJourney::ConvoyArmy && (journey.HasConvoy() || journey.HasSunJian()))) unit=&journey.world.armies[id];
             else
             {
                 const auto* contact=journey.intelligence[0].Find(id);
                 if (contact && contact->current) unit=&contact->observed;
             }
             if (!unit) continue;
-            snapshot.units[id]={id,unit->tile,unit->troops,unit->morale,unit->cargoFood,journey.world.generals[unit->general].name};
+            snapshot.units[id]={id,unit->tile,unit->troops,unit->morale,unit->cargoFood,journey.world.generals[unit->general].name,unit->arm==Arm::Transport};
             if (id<3)
             { snapshot.paths[id]=ReadJourneyOrder(journey,clock,id);snapshot.moved[id]=journey.chain.moved[id]; }
         }
@@ -38,7 +38,7 @@ namespace frontline
             }
             if (old.id<0 || old.troops<=0) continue;
             if (now.troops<=0) add(JourneyNoticeKind::Defeated,now,U"部隊が壊滅。残る隊の役割を組み直そう。");
-            else if (id==StrategistJourney::ConvoyArmy)
+            else if (now.transport || (id==StrategistJourney::ConvoyArmy && (now.cargo>0 || old.cargo>0)))
             {
                 if (now.troops<old.troops || now.cargo<old.cargo) add(JourneyNoticeKind::ConvoyHit,now,U"護送車に被害。護衛と退路を確認しよう。");
             }

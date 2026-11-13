@@ -33,6 +33,14 @@ void ATacticalField::BuildPreparationMap()
                 FString::Printf(TEXT("両方を同時に%d指揮守る。固守は兵500・士気40以上で、隣接敵１隊まで耐えられる。"),J.RequiredHoldTurns()),
                 {TEXT("片方だけ守っても役目は果たせない。残る隊を先に決めよう。"),TEXT("救援に出るなら、元いた場所の守りも確かめよ。"),TEXT("呼ばれりゃ走るぜ。でも両方を空っぽにするなよ！")});
     }
+    else if(J.HasSunJian())
+    {
+        Add(J.Definition().goal,TEXT("陽人の辻"),TEXT("一隊を入れ、隣接する敵を退けて確保する。"),
+            {TEXT("孫堅が来るまで旗を残そう。"),TEXT("北の林から呂布を引きつける。"),TEXT("南の敵は俺が引き受けるぞ！")});
+        Add(YangrenRally,TEXT("孫堅の合流地点"),TEXT("孫堅隊は南から自動で進む。合流地点に味方の隊を置かず、進路を空けておく。"),{});
+        Add(SunJianStart(J.coalitionPlan==CoalitionPlan::Protect),TEXT("孫堅隊の出陣位置"),
+            J.coalitionPlan==CoalitionPlan::Protect ? TEXT("張邈の案内で峠の手前から出陣する。"):TEXT("孫堅隊は南の街道を進む。"),{});
+    }
     else if(J.mission==CoalitionMission)
         Add(J.Definition().goal,TEXT("董卓軍の前哨"),TEXT("北橋を渡り、隣接する敵を退けて一隊を入れる。"),
             {TEXT("先行隊へ合図を送れる場所だ。"),TEXT("前哨の守備を引き離そう。"),TEXT("俺を通す橋を決めてくれ！")});

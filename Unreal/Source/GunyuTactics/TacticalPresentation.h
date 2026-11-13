@@ -154,6 +154,7 @@ struct FVisualUnit
     FVector Position = FVector::ZeroVector;
     bool bEnemy = false, bConcealed = false, bGuarded=false;
     bool bDisordered = false, bPressured = false, bInspired = false;
+    bool bTransport = false, bCavalry = false;
     float Motion = 0;
 };
 struct FBeaconDefenseProgress

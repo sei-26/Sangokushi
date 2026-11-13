@@ -6,6 +6,9 @@ namespace frontline
 {
     inline constexpr int YellowTurbanMission=3;
     inline constexpr int CoalitionMission=4;
+    inline constexpr int YangrenMission=5;
+    inline constexpr int YangrenRally=11+9*Width;
+    inline constexpr int SunJianStart(bool guided) { return (guided ? 8:6)+10*Width; }
     enum class CoalitionPlan { None, Advance, Protect };
     inline bool CanOccupyObjective(const Army& unit)
     { return unit.troops>=150 && unit.morale>=25; }
@@ -79,6 +82,16 @@ namespace frontline
             JourneyObjective::CaptureCamp,11,12+8*Width,-1,0,
             {{8+9*Width,8+8*Width,9+10*Width,12+8*Width,12+11*Width}}};
         if(index==YellowTurbanMission) return guangzong;
+        if(index==YangrenMission)
+        {
+            static const JourneyMission yangren{U"陽人の戦い ／ 孫堅と合流せよ",
+                U"陽人の辻を確保し、南から進む孫堅隊と合流する",
+                U"森で呂布の騎兵を足止めし、陽人の辻へ一隊を入れる。南から来る孫堅隊の行く手も空けよう。",
+                JourneyObjective::CaptureCamp,12,11+8*Width,-1,0,
+                {{8+8*Width,7+7*Width,8+9*Width,12+7*Width,13+10*Width}}};
+            static const JourneyMission scouted=[] { auto m=yangren; m.positions[1]=8+6*Width;return m; }();
+            return plan==CoalitionPlan::Advance ? scouted:yangren;
+        }
         if(index==CoalitionMission)
         {
             static const JourneyMission advance{U"酸棗の先陣 ／ 董卓軍の前哨を奪え",

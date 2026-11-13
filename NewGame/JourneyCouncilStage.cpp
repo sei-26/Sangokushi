@@ -27,7 +27,7 @@ namespace frontline
         { e.beats.push_back({{speaker,text,direction},{liu,guan,zhang}}); };
         if(j.mission>=YellowTurbanMission && voice==-1 && accepted==CouncilDecision::None)
         {
-            e.subject=j.mission==CoalitionMission ? CoalitionPlanName(j.coalitionPlan):U"広宗の前陣へ、二つの道";
+            e.subject=j.HasSunJian() ? U"陽人で孫堅と合流":j.mission==CoalitionMission ? CoalitionPlanName(j.coalitionPlan):U"広宗の前陣へ、二つの道";
             for(const auto& line:BuildJourneyEpisode(j).lines) e.beats.push_back({line,{}});
             return e;
         }

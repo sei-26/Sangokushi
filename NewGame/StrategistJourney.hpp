@@ -55,6 +55,7 @@ namespace frontline
         int reserveFood=0; // Paid, unissued supply. Never reconstructed for a loaded battle.
 		int goal = Campaign::At(12, 10);
 		static constexpr int ConvoyArmy = 5;
+        static constexpr int AlliedArmy = 5; // Only Yangren uses this slot for a combat unit.
 		int heldTurns = 0, convoyStep = 0, convoyEscort = 0, recoveredCargo = 0;
 		std::array<bool, 3> guarding{};
         std::array<JourneyDefenseRead,2> defenseChecks{}; // Transient local results, excluded from save/archive and rewards.
@@ -74,7 +75,7 @@ namespace frontline
         bool AssignDuty(int officer,int tile,JourneyDuty);
         std::u32string AssignmentStatus(int officer) const;
 		bool withdrawn = false;
-		std::array<JourneyResult, CoalitionMission+1> history{};
+		std::array<JourneyResult, YangrenMission+1> history{};
         CoalitionPlan coalitionPlan=CoalitionPlan::None;
         bool legacyBattlefield=false;
 		ChainResult lastChain;
@@ -99,6 +100,8 @@ namespace frontline
 		bool Withdraw();
 		bool IsRescue() const { return mission == 0 && promise == JourneyPromise::EscortRefugees; }
 		bool HasConvoy() const { return IsRescue() || Definition().kind == JourneyObjective::Escort; }
+        bool HasSunJian() const { return mission==YangrenMission; }
+        bool SunJianAtRally() const;
         int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles+
             (campaignFlow && mission==1 && history[0].rescued ? 2:0); }
         int RequiredHoldTurns() const
@@ -123,6 +126,7 @@ namespace frontline
 		bool Continue();
         bool CanContinue() const;
         bool CanBeginYellowTurban() const;
+        bool CanBeginYangren() const;
         bool CanChooseCoalitionPlan() const;
         bool ChooseCoalitionPlan(CoalitionPlan);
         bool NeedsStoryReply() const;
@@ -146,6 +150,7 @@ namespace frontline
         bool CompleteCommandCycle(std::size_t previousReports);
 		void EnemyTurn();
 		void AdvanceObjective();
+        void AdvanceSunJian();
         void RecordDefenseChecks();
 		void SetupBattlefield();
 		void Evaluate();

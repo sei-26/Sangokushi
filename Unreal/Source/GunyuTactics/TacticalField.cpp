@@ -120,6 +120,9 @@ ATacticalField::ATacticalField()
     Limbs->SetupAttachment(Ground); Spearheads->SetupAttachment(Ground);
     CartWheels=Instances(this,TEXT("CartWheels"),TEXT("/Game/Art/Battle/SM_CartWheelV2.SM_CartWheelV2"),TEXT("/Game/Art/Materials/M_Bark.M_Bark"));
     CartWheels->SetupAttachment(Ground);
+    CavalryHorses=Instances(this,TEXT("CavalryHorses"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),
+        TEXT("/Game/Art/Materials/M_InfantryLeatherV2.M_InfantryLeatherV2"));
+    CavalryHorses->SetupAttachment(Ground);
     Standards = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ArmyStandards"));
     Standards->SetupAttachment(Ground); Standards->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Standards->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Art/Materials/M_ArmyStandardV2.M_ArmyStandardV2")));

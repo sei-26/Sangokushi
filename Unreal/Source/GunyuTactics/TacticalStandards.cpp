@@ -30,8 +30,8 @@ void ATacticalField::RenderStandards()
     for (const auto& Unit : State->Units)
     {
         if (Unit.Id < 0 || Unit.Troops <= 0) continue;
-        bArmyCloth=Unit.Id!=frontline::StrategistJourney::ConvoyArmy;
-        if (Unit.Id == frontline::StrategistJourney::ConvoyArmy)
+        bArmyCloth=!Unit.bTransport;
+        if (Unit.bTransport)
         {
             FVector Facing=FVector::ForwardVector;
             const auto* Beat=CurrentBeat();

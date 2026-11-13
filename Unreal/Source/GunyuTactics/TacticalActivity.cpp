@@ -24,7 +24,7 @@ namespace gunyuactivity
             if(U.Troops<=0) return TEXT("戦闘不能");if(U.bDisordered) return TEXT("混乱");
             if(U.bPressured) return TEXT("隙あり");if(U.bConcealed) return TEXT("潜伏中");
             if(U.bGuarded) return TEXT("固守");if(U.bInspired) return TEXT("鼓舞");
-            return U.Id==5 ? TEXT("護送待機"):TEXT("待機");
+            return U.bTransport ? TEXT("護送待機"):TEXT("待機");
         }
     }
     FUnitActivity Read(int Id,const TArray<FVisualUnit>& U,const FBattleBeat* B,float P)
@@ -53,7 +53,7 @@ namespace gunyuactivity
         else if(Target && B->Kind==EBattleCue::Lure) { R.Caption=P<.38f ? TEXT("追撃準備"):P<.86f ? TEXT("追撃中"):TEXT("追撃・整列");R.Partner=B->Actor; }
         else if(R.bImpact)
         { R.Caption=V.bDisordered ? TEXT("被弾・混乱"):P<.82f ? TEXT("被弾"):TEXT("立て直し");R.Color=FLinearColor(1,.39f,.19f); }
-        else if(V.Motion>.01f) R.Caption=Id==5 ? TEXT("護送進行"):TEXT("進軍中");
+        else if(V.Motion>.01f) R.Caption=V.bTransport ? TEXT("護送進行"):TEXT("進軍中");
         else if(Target && P<.48f) R.Caption=TEXT("攻撃対象");
         else if(B->Kind==EBattleCue::Enemy && M.bAttack) R.Caption=P<.48f ? TEXT("交戦・構え"):P<.82f ? TEXT("交戦中"):TEXT("立て直し");
         else R.Caption=Rest(V);

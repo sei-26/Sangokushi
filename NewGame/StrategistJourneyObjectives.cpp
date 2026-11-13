@@ -1,5 +1,6 @@
 ﻿#include "StrategistJourney.hpp"
 #include "JourneyBattlefield.hpp"
+#include <memory>
 
 namespace frontline
 {
@@ -36,6 +37,29 @@ namespace frontline
     }
     Terrain StrategistJourney::PlanningTerrain(int tile) const
     { return BattlefieldTerrain(Battlefield(),tile%Width,tile/Width,IsRescue()); }
+    bool StrategistJourney::SunJianAtRally() const
+    {
+        return HasSunJian() && TacticChain::Living(world,AlliedArmy) &&
+            world.armies[AlliedArmy].tile==YangrenRally;
+    }
+    void StrategistJourney::AdvanceSunJian()
+    {
+        if(!TacticChain::Living(world,AlliedArmy) || SunJianAtRally()) return;
+        auto& ally=world.armies[AlliedArmy];
+        // His own column advances on the southern road. An enemy in contact
+        // must be fought before marching, and allies can free a blocked path.
+        if(chain.disordered[AlliedArmy] || intelligence[0].EnemyNear(world,ally.tile,1)) return;
+        auto observed=std::make_unique<Campaign>(world);
+        for(auto& unit:observed->armies) if(unit.faction!=0) unit.troops=0;
+        for(const auto& contact:intelligence[0].contacts)
+            if(contact.current) observed->armies[contact.id]=contact.observed;
+        const int next=JourneyAdvanceStep(*observed,ally.tile,YangrenRally,true,goal);
+        if(next==ally.tile || !TacticChain::Free(world,next)) return;
+        ally.tile=ally.target=next;
+        ++world.revision;
+        RefreshIntelligence();
+        if(SunJianAtRally()) Report(U"孫堅「辻の南は押さえた！ 軍師、あとはお前たちの旗だ！」");
+    }
 	void StrategistJourney::SetupBattlefield()
 	{
 		for (auto& tile : world.tiles)
@@ -97,6 +121,7 @@ namespace frontline
 			return U"糧車 " + Number(convoyStep) + U" / 6区間・積荷 " +
 			       Number(world.armies[ConvoyArmy].cargoFood) + U" / 1,200";
 		}
+        if(HasSunJian()) return U"陽人の辻を確保 / 孫堅隊 "+std::u32string(SunJianAtRally() ? U"合流地点に到着":U"南から進軍中");
         if(Definition().kind==JourneyObjective::CaptureCamp) return U"指揮所へ一隊を入れ、隣接する敵を退けて占領。護送・残敵掃討は不要";
 		if (Definition().kind == JourneyObjective::HoldPositions)
 			return U"二拠点の維持 " + Number(heldTurns) + U" / "+Number(RequiredHoldTurns())+U"指揮・Gで固守：隣接敵１隊まで維持";
@@ -145,6 +170,11 @@ namespace frontline
 			return;
 		}
 		const auto kind = Definition().kind;
+        if(HasSunJian() && !TacticChain::Living(world,AlliedArmy))
+        {
+            Finish(false,U"孫堅隊が崩れ、合流できなかった。南へ援護を回す時機を見直そう。");
+            return;
+        }
 		if (HasConvoy())
 		{
 			const auto& cart = world.armies[ConvoyArmy];
@@ -163,10 +193,11 @@ namespace frontline
 		}
         else if(kind==JourneyObjective::CaptureCamp)
         {
-            if(PositionSecured(goal))
+            if(PositionSecured(goal) && (!HasSunJian() || SunJianAtRally()))
             {
                 world.tiles[goal].owner=world.player;++world.revision;
-                Finish(true,mission==CoalitionMission ? U"董卓軍の前哨を占領。曹操の先行隊に渡河の合図を送った。":
+                Finish(true,HasSunJian() ? U"陽人の辻で孫堅と合流。呂布の騎兵を引き離し、董卓軍の南の戦線を破った。":
+                    mission==CoalitionMission ? U"董卓軍の前哨を占領。曹操の先行隊に渡河の合図を送った。":
                     mission==YellowTurbanMission ? U"黄巾の前陣を占領。官軍が前へ出る道を開いた。":
                     U"河港の指揮所を占領。敵の連絡路が断たれ、義勇軍は官軍の共同作戦へ合流する。残敵を追う必要はない。");
                 return;

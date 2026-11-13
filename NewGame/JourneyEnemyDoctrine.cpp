@@ -39,6 +39,16 @@ namespace frontline
         const auto& unit=w.armies[p.army];
         const int nearest=Nearest(w,p.army);
         const int distance=nearest<0 ? 100000:w.MapDistance(unit.tile,w.armies[nearest].tile);
+        if(c.yangren)
+        {
+            if(p.army==3) return; // Lu Bu intercepts the nearest observed unit rather than holding the crossroads.
+            if(distance>1)
+            {
+                p.role=JourneyEnemyRole::Anchor;p.targetArmy=-1;p.target=c.goal;
+                p.intent=JourneyEnemyIntent::HoldCamp;p.occupyTarget=true;
+            }
+            return;
+        }
         if(c.objective==JourneyObjective::Breakout || c.objective==JourneyObjective::Escort)
         {
             p.role=p.army==3 ? JourneyEnemyRole::Vanguard:JourneyEnemyRole::Reserve;

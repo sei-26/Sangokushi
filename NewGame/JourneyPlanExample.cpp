@@ -27,6 +27,14 @@ namespace frontline
             p.manualTask=U"まず両拠点の配置を待つ。敵が隣接したら、関羽の戦法や他隊の単独戦法で守りを助ける。";
             p.caution=j.RequiredHoldTurns()==2 ? U"河港での連携が効き、両方を２指揮維持すれば包囲が完成する。敵２隊の隣接や救援で守りを空ける判断には注意。":U"両方を同時に３指揮維持する。固守でも隣接敵が２隊になると維持できない。救援に出れば元の拠点が空く。";
         }
+        else if(j.HasSunJian())
+        {
+            p.name=U"林で呂布を止め、南道を開ける";
+            p.purpose=U"関羽が林で騎兵を止め、劉備が辻を押さえる。張飛は南の孫堅を援護する。";
+            p.assignments={JourneyAssignment{},JourneyAssignment{JourneyDuty::Ambush,j.Definition().positions[1]},JourneyAssignment{}};
+            p.manualTask=U"一隊を陽人の辻に入れ、もう一隊で南の敵を退ける。孫堅が合流地点へ来れば勝利。";
+            p.caution=U"呂布が平地で騎兵突撃を使う。森林に引き込むか、混乱させて発動を止めよう。";
+        }
         else if(j.mission==CoalitionMission)
         {
             if(j.coalitionPlan==CoalitionPlan::Protect)

@@ -16,6 +16,7 @@ namespace frontline
     {
         int id=-1,tile=-1,troops=0,morale=0,cargo=0;
         std::u32string name;
+        bool transport=false;
     };
     struct JourneyWatchSnapshot
     {

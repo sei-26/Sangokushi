@@ -197,6 +197,62 @@ int main()
         assert(battle.Continue() && battle.stage==JourneyStage::Complete);
         assert(EncodeJourneySave(*old,before) && DecodeJourneySave(before,*old) && battle.coalitionPlan==plan);
         assert(BuildJourneyEpisode(battle).lines[1].text.find(protect ? U"張邈":U"曹操")!=std::u32string::npos);
+        if(protect)
+        {
+            previous.clear();
+            JourneyArchive version15{false,previous};version15.version=15;
+            version=15;checksum=0;version15(magic,version,checksum);version15(*old);
+            checksum=2166136261u;
+            for(std::size_t i=12;i<previous.size();++i) { checksum^=previous[i];checksum*=16777619u; }
+            for(int i=0;i<4;++i) previous[8+i]=static_cast<std::uint8_t>(checksum>>(i*8));
+            assert(DecodeJourneySave(previous,*old) && battle.CanBeginYangren());
+        }
+        const auto afterSuanzao=battle.world.cities[0];
+        assert(battle.CanBeginYangren() && battle.Continue() && battle.mission==YangrenMission);
+        assert(battle.Battlefield()==JourneyMap::Yangren && battle.world.cities[0].troops==afterSuanzao.troops &&
+            battle.world.cities[0].food==afterSuanzao.food && battle.world.cities[0].gold==afterSuanzao.gold);
+        assert(BuildJourneyEpisode(battle).lines[1].speaker==(protect ? ZhangMiao:CaoCao) && battle.ApplyPlanExample());
+        old->beforeBattle=battle;
+        assert(battle.Prepare(1,battle.enemyPolicy));
+        assert(!battle.HasConvoy() && battle.world.armies[3].arm==Arm::Cavalry &&
+            battle.world.generals[3].name==EpisodeSpeakerName(LuBu) &&
+            battle.world.generals[5].name==EpisodeSpeakerName(SunJian));
+        assert(battle.world.armies[5].tile==SunJianStart(protect) &&
+            battle.world.armies[1].tile==Campaign::At(protect ? 7:8,protect ? 7:6));
+        assert(EncodeJourneySave(*old,before) && DecodeJourneySave(before,*old));
+        {
+            auto probe=std::make_unique<StrategistJourney>(battle);
+            probe->world.armies[0].tile=probe->goal;
+            probe->world.armies[3].troops=probe->world.armies[4].troops=0;
+            assert(probe->PositionSecured(probe->goal) && !probe->SunJianAtRally() &&
+                probe->EndTurn() && probe->stage==JourneyStage::Battle);
+            probe->world.armies[5].tile=YangrenRally;
+            assert(probe->EndTurn() && probe->won);
+            assert(probe->survivors==probe->world.armies[0].troops+probe->world.armies[1].troops+probe->world.armies[2].troops);
+        }
+        {
+            auto cavalry=std::make_unique<StrategistJourney>(battle);
+            cavalry->world.armies[0].tile=Campaign::At(12,8);
+            const int contact=cavalry->world.armies[3].tile;
+            assert(cavalry->world.MapDistance(cavalry->world.armies[0].tile,contact)==1);
+            auto forest=std::make_unique<StrategistJourney>(*cavalry);
+            forest->world.tiles[contact].terrain=Terrain::Forest;
+            auto disrupted=std::make_unique<StrategistJourney>(*cavalry);
+            disrupted->chain.disordered[3]=true;
+            assert(cavalry->EndTurn() && !cavalry->world.tacticEvents.empty() &&
+                cavalry->world.tacticEvents.front().tactic==Tactic::MountedCharge);
+            assert(forest->EndTurn() && forest->world.tacticEvents.empty());
+            assert(disrupted->EndTurn() && disrupted->world.tacticEvents.empty());
+        }
+        for(int cycle=0;cycle<18 && battle.stage==JourneyStage::Battle;++cycle)
+        {
+            auto next=PlanJourneyAutoBattle(battle);
+            if(!next.tactics.empty()) battle.Execute(next.tactics);
+            if(battle.stage==JourneyStage::Battle) assert(next.movement.Resolve(battle));
+        }
+        std::cerr<<"yangren plan="<<int(plan)<<" won="<<battle.won<<" turn="<<battle.turn<<" allied="<<battle.world.armies[5].troops<<"\n";
+        assert(battle.won && battle.SunJianAtRally() && battle.Continue() && battle.stage==JourneyStage::Complete &&
+            EncodeJourneySave(*old,before) && DecodeJourneySave(before,*old) && !battle.CanContinue());
         battle.ResetCampaign();
         assert(battle.coalitionPlan==CoalitionPlan::None && !battle.history[CoalitionMission].completed && EncodeJourneySave(*old,before));
     }

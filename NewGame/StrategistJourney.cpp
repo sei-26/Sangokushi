@@ -148,11 +148,20 @@ namespace frontline
             auto& commander=world.generals[3];
             commander.trait=Trait::Valiant;
             commander.tactic=Tactic::Charge;
+            commander.leadership=65;
             if(mission==YellowTurbanMission)
             {
                 commander.name=EpisodeSpeakerName(ZhangLiang);
                 commander.trait=Trait::Resolute;
                 commander.tactic=Tactic::Rally;
+            }
+            if(HasSunJian())
+            {
+                commander.name=EpisodeSpeakerName(LuBu);
+                commander.trait=Trait::CavalryExpert;
+                commander.tactic=Tactic::MountedCharge;
+                commander.leadership=88;
+                world.generals[4].name=U"胡軫の別働隊";
             }
         }
 		for (int i = 0; i < 5; ++i)
@@ -169,6 +178,12 @@ namespace frontline
 			army.morale = i<3 ? PreparationMorale(choice,i):90;
 			army.stance = i >= 3 && policy == 1 ? battle::Stance::Guard : battle::Stance::Balanced;
 			army.scouting = i == 4 && policy == 2;
+            if(HasSunJian() && i==3)
+            {
+                army.arm=Arm::Cavalry;
+                army.stance=battle::Stance::Balanced;
+                army.troops=1500*CombatSettings(difficulty).enemyPercent/100;
+            }
 			world.armies.push_back(army);
 		}
 		if (escort)
@@ -193,6 +208,20 @@ namespace frontline
 			cart.cargoFood = cargo;
 			world.armies.push_back(cart);
 		}
+        if(HasSunJian())
+        {
+            General general;
+            general.name=EpisodeSpeakerName(SunJian);
+            general.leadership=88;
+            general.trait=Trait::Valiant;
+            if(world.generals.size()==AlliedArmy) world.generals.push_back(general);
+            else world.generals[AlliedArmy]=general;
+            Army ally;
+            ally.general=AlliedArmy;
+            ally.tile=ally.target=SunJianStart(coalitionPlan==CoalitionPlan::Protect);
+            ally.troops=1300;ally.food=3000;
+            world.armies.push_back(ally);
+        }
 		stage = JourneyStage::Battle;
 		chain.Reset(world);
 		if (choice == 0)
@@ -353,17 +382,25 @@ namespace frontline
         return campaignFlow && stage==JourneyStage::Complete && mission==YellowTurbanMission-1 &&
             history[mission].completed && history[mission].won;
     }
+    bool StrategistJourney::CanBeginYangren() const
+    {
+        return campaignFlow && stage==JourneyStage::Complete && mission==CoalitionMission &&
+            history[mission].completed && history[mission].won;
+    }
 	bool StrategistJourney::Continue()
 	{
 		if (!CanContinue())
 			return false;
         retryDefense.reset();
         const bool beginYellowTurban=CanBeginYellowTurban();
-		if (!beginYellowTurban && mission>=YellowTurbanMission-1)
+        const bool beginYangren=CanBeginYangren();
+		if (!beginYellowTurban && !beginYangren && mission>=YellowTurbanMission-1)
 		{
 			stage = JourneyStage::Complete;
             if(mission==CoalitionMission)
-                Report(U"酸棗で引き受けた任務を果たした。帰陣の記録で協力先への報告を読める。");
+                Report(U"酸棗で引き受けた任務を果たした。次は陽人へ向かい、孫堅軍に合流する。");
+            else if(mission==YangrenMission)
+                Report(U"第二章 完。陽人で孫堅と合流し、董卓軍の南の戦線を破った。");
             else if(mission==YellowTurbanMission)
                 Report(U"第一章 完。広宗での役目を果たし、黄巾の戦いを終えた。");
             else Report(campaignFlow ? U"序章 完。退路、河港、決戦の両翼――三つの采配を経て、義勇軍の正式な軍師となった。":U"突破・護送・防衛の３戦を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");
@@ -372,7 +409,7 @@ namespace frontline
 		{
 			++mission;turn=1;
             legacyBattlefield=false;
-            if(campaignFlow) world.day+=mission==1 ? 7:21; // Campaign montage; no unearned income or replenishment.
+            if(campaignFlow) world.day+=beginYangren ? 365:mission==1 ? 7:21; // Montage without income or replenishment.
             convoyRoute=JourneyConvoyRoute::Road;assignments={};retryRelief.reset();retryDefense.reset();
 			stage = JourneyStage::Preparation;
 			reinforced = false;
@@ -381,6 +418,11 @@ namespace frontline
             {
                 goal=Definition().goal;
                 Report(U"第一章「黄巾の乱」。劉備は鄒靖の軍に従い、義勇軍は広宗の前陣を攻める軍議を開いた。");
+            }
+            else if(beginYangren)
+            {
+                goal=Definition().goal;
+                Report(U"陽人の山麓へ。南から進む孫堅と合流し、呂布の騎兵を峠で食い止める。");
             }
             else Report(campaignFlow ? U"戦役が次の局面へ進む。前戦の生存兵・糧・人物の信頼を持って、新しい役目へ。":U"前の戦果を受けて、新たな退路の確保を任された。残った兵・兵糧・信頼で次の軍議へ。");
 		}

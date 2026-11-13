@@ -65,7 +65,11 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
               + SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)
                 [SNew(SVerticalBox)
                  + SVerticalBox::Slot().AutoHeight()[Label([this, Index] { return Field->VisualUnits().IsValidIndex(Index) ? Field->VisualUnits()[Index].Name.Replace(TEXT("の"), TEXT("")) : FString(); }, 13, Gold)]
-                 + SVerticalBox::Slot().AutoHeight()[Label([this, Index] { return Field->VisualUnits().IsValidIndex(Index) ? FString::Printf(TEXT("%s %d"), Index == 5 ? TEXT("護衛") : TEXT("兵"), Field->VisualUnits()[Index].Troops) : FString(); }, 11)] ] ] ]
+                 + SVerticalBox::Slot().AutoHeight()[Label([this, Index]
+                 {
+                     const auto& Units=Field->VisualUnits();
+                     return Units.IsValidIndex(Index) ? FString::Printf(TEXT("%s %d"),Units[Index].bTransport ? TEXT("護衛"):TEXT("兵"),Units[Index].Troops):FString();
+                 },11)] ] ] ]
           + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(3)
              [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this,Index] { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) ? FMath::Clamp(U[Index].Morale/100.f,0.f,1.f):0.f; }).FillColorAndOpacity_Lambda([this,Index] { const auto& U=Field->VisualUnits();return FSlateColor(U.IsValidIndex(Index) && U[Index].bEnemy ? FLinearColor(.9f,.35f,.18f) : FLinearColor(.31f,.71f,.62f)); })]]
           + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular",11))

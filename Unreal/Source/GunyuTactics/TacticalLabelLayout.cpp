@@ -105,7 +105,9 @@ FString ATacticalController::UnitMapStatus(int Index) const
     if(U.bInspired) return TEXT("鼓舞");
     const auto& O=Field->Presentation().Officers;
     if(Index<3 && O.IsValidIndex(Index)) return O[Index].Command;
-    return Index==5 ? TEXT("護送車") : FString();
+    if(U.bTransport) return TEXT("護送車");
+    if(U.bCavalry) return TEXT("騎兵");
+    return Index==5 ? TEXT("共闘・自動進軍"):FString();
 }
 
 void ATacticalController::SelectMapUnit(int Index)

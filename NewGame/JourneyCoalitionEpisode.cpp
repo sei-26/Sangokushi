@@ -4,6 +4,33 @@
 
 namespace frontline
 {
+    JourneyEpisode BuildYangrenEpisode(const StrategistJourney& j)
+    {
+        const auto beat=CampaignBeat(j);
+        JourneyEpisode e{beat.phase,U"一九一年・反董卓連合 ／ 陽人の山麓",beat.change,beat.next};
+        const bool advance=j.coalitionPlan==CoalitionPlan::Advance;
+        if(j.stage==JourneyStage::Preparation)
+        {
+            e.lines={
+                {-1,U"孫堅は梁東で敗れても、散った兵を集め直した。次に董卓軍とぶつかったのが陽人だった。",U"一九一年。孫堅の戦いを背景に、義勇軍が別働隊として加わる。"},
+                {advance ? CaoCao:ZhangMiao,advance ?
+                    U"北橋で道を開いてくれた礼だ。うちの斥候が、陽人の北に馬では追えぬ林道を見つけた。お前の伏兵なら使える。":
+                    U"酸棗で通した人たちが、陽人までの山道を知っていた。孫堅殿の兵はもう、峠の手前まで案内してもらったよ。",
+                    U"酸棗で交わした約束が、南の戦いにも届く。"},
+                {LuBu,U"旗を見て追うな。相手が馬の脚を怖がって林へ逃げたら、平地に残った方を先に潰せ。",U"董卓軍。呂布は馬の首を返し、平地に並んだ騎兵を見渡す。"},
+                {SunJian,U"俺は南から辻へ出る。足を止められたら、自分で敵を受ける。お前たちには、俺が曲がった先の道を頼みたい。",U"孫堅が南道の曲がり角へ駒を置いた。"},
+                {3,U"辻に一隊を入れる。呂布には森で向き直ってもらおう。孫堅殿の前が塞がったら、残した隊を南へ回す。",U"主人公は、二つの隊列が出会う場所を地図に記した。"}};
+        }
+        else if(j.won)
+            e.lines={
+                {SunJian,U"辻にお前の旗が見えた。よくあそこを空けたな。あの先で兵を立て直せたから、俺はもう一度前に出られた。",U"孫堅は、泥のついた地図を主人公に返す。"},
+                {3,U"俺たちの旗だけじゃ渡れなかった。南でお互いがどこにいるか分かっていたから、辻に立てたんです。",U"二人の隊が同じ道を通った跡が、地図に残る。"},
+                {-1,U"孫堅は陽人で董卓軍を破った。董卓が長安へ退いたのち、孫堅は洛陽へ入る。",U"反董卓連合・第二章の結末。"}};
+        else
+            e.lines={{SunJian,U"南道の兵を呼び戻した。次は俺が止まった場所から、地図を引き直そう。",U"孫堅が辻へ届かなかった隊列の跡を示す。"},
+                {3,U"先に出す隊と、南へ回せる隊を決め直す。まだここで終われない。",U"主人公は出陣前の軍議に戻る。"}};
+        return e;
+    }
     JourneyEpisode BuildCoalitionEpisode(const StrategistJourney& j)
     {
         JourneyEpisode episode;

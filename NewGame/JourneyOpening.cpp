@@ -28,7 +28,8 @@ namespace frontline
             Definition().kind==JourneyObjective::HoldPositions ? JourneyResolution::Held :
             world.armies[3].troops<=450 || world.armies[3].morale<=30 ? JourneyResolution::EnemyBroken : JourneyResolution::ExitSecured;
         else r.resolution=world.armies[0].troops+world.armies[1].troops+world.armies[2].troops<1800 ? JourneyResolution::ForceLost :
-            HasConvoy() && (world.armies[ConvoyArmy].troops<=0 || (!IsRescue() && recoveredCargo<Definition().requiredProgress)) ? JourneyResolution::ConvoyLost : JourneyResolution::Deadline;
+            HasConvoy() && (world.armies[ConvoyArmy].troops<=0 || (!IsRescue() && recoveredCargo<Definition().requiredProgress)) ? JourneyResolution::ConvoyLost :
+            HasSunJian() && !TacticChain::Living(world,AlliedArmy) ? JourneyResolution::ForceLost:JourneyResolution::Deadline;
     }
     std::u32string StrategistJourney::BattleReviewLesson() const
     {
@@ -50,7 +51,9 @@ namespace frontline
     {
         switch (battleReview.resolution)
         {
-        case JourneyResolution::Captured:return U"河港を奪取し、官軍の共同作戦へ";
+        case JourneyResolution::Captured:return HasSunJian() ? U"陽人の辻を確保し、孫堅と合流":
+            mission==CoalitionMission ? U"酸棗の前哨を占領":
+            mission==YellowTurbanMission ? U"広宗の前陣を占領":U"河港を奪取し、官軍の共同作戦へ";
         case JourneyResolution::EnemyBroken:return U"先鋒を崩して退路を確保";
         case JourneyResolution::ExitSecured:return U"出口を押さえて退路を確保";
         case JourneyResolution::Delivered:return U"護送の約束を達成";

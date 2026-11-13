@@ -11,9 +11,10 @@ namespace frontline
 		{
 			return Campaign::Valid(tile) && tile % Width < 16 && tile / Width < 14;
 		}
+    }
 		// Breadth-first search reaches a cell next to the target; rivers, friends
 		// and observed opponents block paths. No hidden occupancy is queried.
-		int NextStep(const Campaign& view, int from, int target,bool occupy=false)
+		int JourneyAdvanceStep(const Campaign& view, int from, int target,bool occupy,int blocked)
 		{
 			if (target < 0 || view.MapDistance(from, target) <= (occupy ? 0:1)) return from;
 			std::array<int, TileCount> first;
@@ -26,7 +27,7 @@ namespace frontline
 				const int current = open.front(); open.pop();
 				for (int tile : view.MapNeighbors(current))
 				{
-					if (!OnMap(tile) || first[tile] >= 0 || !TacticChain::Free(view, tile)) continue;
+					if (tile==blocked || !OnMap(tile) || first[tile] >= 0 || !TacticChain::Free(view, tile)) continue;
 					first[tile] = current == from ? tile : first[current];
 					if (view.MapDistance(tile, target) <= (occupy ? 0:1)) return first[tile];
 					open.push(tile);
@@ -34,7 +35,6 @@ namespace frontline
 			}
 			return from;
 		}
-	}
 	std::vector<JourneyEnemyPlan> PlanJourneyEnemies(const Campaign& observed,
 	    const TacticChain& chain, const JourneyEnemyContext& context)
 	{
@@ -71,14 +71,14 @@ namespace frontline
 			ApplyJourneyEnemyDoctrine(*view,context,plan);
 			if (unit.scouting && plan.intent == JourneyEnemyIntent::Engage)
 				plan.intent = JourneyEnemyIntent::Search;
-			if (unit.stance == battle::Stance::Guard && context.policy == 1 && id == 3 &&
+			if (!context.yangren && unit.stance == battle::Stance::Guard && context.policy == 1 && id == 3 &&
 			    context.objective != JourneyObjective::HoldPositions &&
                 !(plan.role==JourneyEnemyRole::Anchor && plan.occupyTarget && plan.from!=context.goal))
 				plan.intent = JourneyEnemyIntent::Guard;
 			if (id < static_cast<int>(chain.disordered.size()) && chain.disordered[id])
 				plan.intent = JourneyEnemyIntent::Recover;
 			if (plan.intent != JourneyEnemyIntent::Recover && plan.intent != JourneyEnemyIntent::Guard && plan.intent!=JourneyEnemyIntent::Reserve)
-				plan.next = NextStep(*view, unit.tile, plan.target,plan.occupyTarget);
+				plan.next = JourneyAdvanceStep(*view, unit.tile, plan.target,plan.occupyTarget);
 			view->armies[id].tile = view->armies[id].target = plan.next;
 			// This is a possible attack area after the estimated one-cell move,
 			// not guaranteed damage or the enemy's private command.

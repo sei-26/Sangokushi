@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
+#include "JourneyMission.hpp"
 #include <array>
 
 namespace TacticalMap
@@ -26,6 +27,10 @@ namespace TacticalMap
             return {EBackdropKind::MountainPass,TEXT("関門"),1100,2500,-220,-820,1800,230,
                 FVector(1800,850,0),5300,1800,640,440,
                 {{FVector(500,-950,1400),FVector(750,-2000,1850),FVector(3100,-850,1500),FVector(3700,-2000,1900),FVector(1800,-3400,1500)}}};
+        if(Mission==frontline::YangrenMission)
+            return {EBackdropKind::MountainPass,TEXT("陽人の山麓"),1200,2100,-330,-930,1650,140,
+                FVector(1760,1080,0),5500,2000,830,540,
+                {{FVector(330,-750,1120),FVector(970,-1500,1750),FVector(3210,-1100,940),FVector(4150,-1700,1520),FVector(2120,-3600,1890)}}};
         return {EBackdropKind::Village,TEXT("集落"),720,2110,-180,-900,1500,60,
             FVector(1400,900,0),5300,1400,1400,850,
             {{FVector(300,-1500,620),FVector(1050,-2600,970),FVector(3100,-1700,720),FVector(4200,-2900,1060),FVector(2200,-3600,1050)}}};

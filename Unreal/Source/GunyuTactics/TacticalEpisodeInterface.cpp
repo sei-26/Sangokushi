@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "JourneyEpisode.hpp"
+#include "JourneyMission.hpp"
 #include "TacticalWidgets.h"
 #include "TacticalNovelLayout.h"
 #include "Widgets/SCanvas.h"
@@ -72,7 +73,7 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
                 if(EpisodePage+1<EpisodeSnapshot.Lines.Num()) return TEXT("続きを読む / Enter");
                 if(CanChooseCoalitionFromNovel()) return TEXT("協力先を選ぶ / 1・2");
                 if(Field->Presentation().Journey.bComplete && !bNovelPersonal && Field->CanIssue(ETacticalCommand::Continue))
-                    return TEXT("黄巾の乱へ / Enter");
+                    return Field->Presentation().Mission==frontline::CoalitionMission ? TEXT("陽人の戦いへ / Enter"):TEXT("黄巾の乱へ / Enter");
                 if(CanOpenCoalitionFromEpilogue()) return TEXT("反董卓連合へ / Enter");
                 if(Field->Presentation().Journey.bPreparation && !bNovelPersonal) return TEXT("皆と策を決める / Enter");
                 return Field->Presentation().Journey.bComplete ? TEXT("章の記録へ戻る / Enter"):TEXT("采配へ戻る / Enter");

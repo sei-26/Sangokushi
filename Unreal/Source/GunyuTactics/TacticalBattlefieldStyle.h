@@ -13,6 +13,9 @@ namespace TacticalMap
     inline FBattlefieldStyle BattlefieldStyle(frontline::JourneyMap Map)
     {
         using frontline::JourneyMap;
+        if(Map==JourneyMap::Yangren)
+            return {FLinearColor(.25f,.22f,.13f),FLinearColor(.11f,.16f,.075f),
+                FLinearColor(.34f,.27f,.21f),FLinearColor(.55f,.32f,.13f),265.f,38000.f,1.05f,75.f};
         if (Map == JourneyMap::Port)
             return {FLinearColor(.21f,.205f,.115f),FLinearColor(.13f,.18f,.065f),
                 FLinearColor(.30f,.27f,.19f),FLinearColor(.33f,.255f,.14f),145.f,24000.f,.90f};

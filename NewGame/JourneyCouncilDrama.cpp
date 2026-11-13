@@ -4,6 +4,13 @@ namespace frontline
 {
     std::vector<JourneyDialogueLine> JourneyCouncilConversation(const StrategistJourney& j,int who)
     {
+        if(j.HasSunJian())
+        {
+            const char32_t* advice[]={U"孫堅殿と合流するまでは、辻を取っても前へ出ない。私が旗を残そう。",
+                U"呂布を林へ引けば、馬は平地ほど走れぬ。南へ向かわせぬよう、私がこちらから引き受ける。",
+                U"南で孫堅が止まったら俺を呼べ。あいつの前の敵をどければ、辻まで一気に来られるぞ。"};
+            return {{who,advice[who]},{3,U"辻と南道、両方を見て合図を出す。敵を追いすぎるな。"}};
+        }
         if(j.mission==CoalitionMission)
         {
             const auto episode=BuildJourneyEpisode(j);

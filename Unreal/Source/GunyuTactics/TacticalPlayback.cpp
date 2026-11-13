@@ -36,6 +36,10 @@ TArray<FVisualUnit> ATacticalField::ObserveUnits() const
         Unit.Id = Id; Unit.Troops = Seen->troops;
         Unit.Name = JourneyText(J.world.generals[Seen->general].name);
         if(Unit.Name==JourneyText(EpisodeSpeakerName(ZhangLiang))) Unit.HistoricalSpeaker=ZhangLiang;
+        if(J.HasSunJian() && Id==3) Unit.HistoricalSpeaker=LuBu;
+        if(J.HasSunJian() && Id==StrategistJourney::AlliedArmy) Unit.HistoricalSpeaker=SunJian;
+        Unit.bTransport=Seen->arm==Arm::Transport;
+        Unit.bCavalry=Seen->arm==Arm::Cavalry;
         Unit.Position = SurfaceLocation(Seen->tile);
         Unit.bEnemy = Seen->faction != 0;
         Unit.bConcealed = Id < 3 && J.chain.concealed[Id];

@@ -21,6 +21,28 @@ namespace
             Mesh->AddInstances(Transforms, false, false);
         }
     }
+    void Horse(TArray<FTransform>& Parts,FVector Base,const FRotator& Heading,float Stride,float Phase)
+    {
+        const float Bob=FMath::Sin(Phase)*Stride*2.f;
+        auto Part=[&](FVector Local,FVector Scale,float Pitch=0.f)
+        {
+            Local.Z+=Bob;
+            Parts.Emplace(Heading.Quaternion()*FRotator(Pitch,0,0).Quaternion(),Base+Heading.RotateVector(Local),Scale);
+        };
+        Part(FVector(-3,0,26),FVector(.48,.20,.22));
+        Part(FVector(14,0,34),FVector(.23,.14,.26),-29);
+        Part(FVector(22,0,44),FVector(.24,.12,.13),-15);
+        Part(FVector(-25,0,23),FVector(.24,.047,.048),26);
+        for(int Side:{-1,1})
+        {
+            Part(FVector(21,Side*3,50),FVector(.035,.034,.075),-13);
+            for(int End:{-1,1})
+            {
+                const float Kick=Side*End*Stride*FMath::Sin(Phase)*4.f;
+                Part(FVector(End*14+Kick,Side*6,13),FVector(.065,.059,.27),Kick*3.f);
+            }
+        }
+    }
 }
 void ATacticalField::RenderUnits()
 {
@@ -34,6 +56,7 @@ void ATacticalField::RenderUnits()
     TArray<float> CapeColors;
     TArray<float> AllyColors,EnemyColors;
     TArray<FTransform> WheelParts;
+    TArray<FTransform> HorseParts;
     const auto* Beat = CurrentBeat();
     for (const auto& Unit : State->Units)
     {
@@ -42,7 +65,7 @@ void ATacticalField::RenderUnits()
         const int FirstCloth=Cloth.Num();
         const auto Motion=gunyumotion::Read(Unit,State->Units,Beat,BeatProgress());
         const FRotator Heading=Motion.Facing.Rotation();
-        if (Unit.Id == frontline::StrategistJourney::ConvoyArmy)
+        if (Unit.bTransport)
         {
             PoleParts.Add(FTransform(Heading, Unit.Position + FVector(0, 0, 31), FVector(1.12, .76, .12)));
             for (int Side : {-1,1})
@@ -66,6 +89,11 @@ void ATacticalField::RenderUnits()
             Base.Z=SurfaceHeight(Base);
             if(Unit.Troops<=0) { Cloth.Add(FTransform(Heading,Base+FVector(0,0,5),FVector(.30,.16,.08)));continue; }
             const float Stature=Motion.Stature;
+            if(Unit.bCavalry)
+            {
+                Horse(HorseParts,Base,Heading,Unit.Motion,State->VisualTime*15.f+Soldier*1.8f);
+                Base.Z+=27.f;
+            }
             gunyuinfantry::Soldier(Body,Pose,Base,Heading.Quaternion(),Equipment.VisualScale,Stature,Equipment);
         }
         Cloth.Append(Body.Cloth);IronParts.Append(Body.Iron);SkinParts.Append(Body.Skin);PoleParts.Append(Body.Poles);
@@ -96,5 +124,6 @@ void ATacticalField::RenderUnits()
     Commit(Limbs,LimbParts); Commit(Spearheads,SpearParts);
     Commit(CommanderSwords,SwordParts);Commit(CommanderGlaives,GlaiveParts);Commit(CommanderSerpents,SerpentParts);
     Commit(CartWheels,WheelParts);
+    Commit(CavalryHorses,HorseParts);
     RenderStandards();
 }
