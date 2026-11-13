@@ -1,4 +1,5 @@
 ﻿#include "StrategistJourney.hpp"
+#include "JourneyEpisode.hpp"
 #include <memory>
 
 namespace frontline
@@ -144,6 +145,15 @@ namespace frontline
             const char32_t* reserves[]={U"黄巾の後詰",U"河港の反撃隊",U"黄巾の主攻隊",U"黄巾の南翼",U"董卓軍の別働隊"};
             world.generals[3].name=fronts[std::clamp(mission,0,CoalitionMission)];
             world.generals[4].name=reserves[std::clamp(mission,0,CoalitionMission)];
+            auto& commander=world.generals[3];
+            commander.trait=Trait::Valiant;
+            commander.tactic=Tactic::Charge;
+            if(mission==YellowTurbanMission)
+            {
+                commander.name=EpisodeSpeakerName(ZhangLiang);
+                commander.trait=Trait::Resolute;
+                commander.tactic=Tactic::Rally;
+            }
         }
 		for (int i = 0; i < 5; ++i)
 		{

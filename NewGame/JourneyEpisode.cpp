@@ -5,8 +5,9 @@ namespace frontline
 {
     const char32_t* EpisodeSpeakerName(int speaker)
     {
-        const char32_t* names[]={U"劉備",U"関羽",U"張飛",U"主人公",U"季安"};
-        return speaker>=0 && speaker<5 ? names[speaker]:U"語り";
+        const char32_t* names[HistoricalSpeakerEnd]={U"劉備",U"関羽",U"張飛",U"主人公",U"季安",
+            U"張角",U"張梁",U"皇甫嵩",U"曹操",U"張邈",U"袁紹",U"孫堅",U"董卓",U"呂布"};
+        return speaker>=0 && speaker<HistoricalSpeakerEnd ? names[speaker]:U"語り";
     }
     JourneyEpisode CampaignEpisode(const StrategistJourney&);
     JourneyEpisode BuildJourneyEpisode(const StrategistJourney& j)

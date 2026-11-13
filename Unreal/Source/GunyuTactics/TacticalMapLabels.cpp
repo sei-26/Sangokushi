@@ -6,6 +6,7 @@
 #include "TacticalActionFocus.h"
 #include "TacticalMapLabelLayout.h"
 #include "TacticalBattleResponse.h"
+#include "Widgets/Images/SImage.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBorder.h"
@@ -56,6 +57,11 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
             .BorderBackgroundColor_Lambda([this, Index] { return Field->VisualUnits().IsValidIndex(Index) && Field->VisualUnits()[Index].bEnemy ? FLinearColor(.14f, .04f, .025f, .96f) : FLinearColor(.025f, .065f, .065f, .96f); })
             [SNew(SHorizontalBox)
               + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).Visibility(Index < 3 ? EVisibility::HitTestInvisible : EVisibility::Collapsed)[PortraitWidget([Index] { return Index; }, 28, 32)]]
+              + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(28).HeightOverride(28)
+                .Visibility_Lambda([this,Index] { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) &&
+                    HistoricalPortraitBrush(U[Index].HistoricalSpeaker) ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
+                [SNew(SImage).Image_Lambda([this,Index] { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) ?
+                    HistoricalPortraitBrush(U[Index].HistoricalSpeaker):nullptr; })]]
               + SHorizontalBox::Slot().FillWidth(1).Padding(3, 0)
                 [SNew(SVerticalBox)
                  + SVerticalBox::Slot().AutoHeight()[Label([this, Index] { return Field->VisualUnits().IsValidIndex(Index) ? Field->VisualUnits()[Index].Name.Replace(TEXT("の"), TEXT("")) : FString(); }, 13, Gold)]

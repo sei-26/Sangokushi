@@ -550,6 +550,9 @@ private:
     bool bDetailedBattle=false;
     FLinearColor NovelPortraitTone(int Speaker) const;
     const struct FSlateBrush* NovelPortraitBrush(int Speaker) const;
+    const struct FSlateBrush* HistoricalPortraitBrush(int Speaker) const;
+    UPROPERTY() TObjectPtr<class UTexture2D> HistoricalPortraitTexture;
+    TArray<TSharedPtr<struct FSlateBrush>> HistoricalPortraitBrushes;
     UPROPERTY() TArray<TObjectPtr<class UTexture2D>> ReactionTextures;
     TArray<TSharedPtr<struct FSlateBrush>> ReactionBrushes;
     UPROPERTY() TArray<TObjectPtr<class UTexture2D>> ConversationTextures;

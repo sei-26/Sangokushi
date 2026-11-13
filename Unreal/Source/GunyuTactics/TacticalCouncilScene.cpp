@@ -1,4 +1,5 @@
 ﻿#include "TacticalTrial.h"
+#include "JourneyEpisode.hpp"
 bool ATacticalController::CouncilSceneVisible() const
 {
     return bEpisodeOpen && bNovelPlan && Field && Field->Presentation().Journey.bPreparation &&
@@ -6,7 +7,7 @@ bool ATacticalController::CouncilSceneVisible() const
 }
 bool ATacticalController::IsEnsembleEpisode() const
 {
-    if(bNovelPersonal || !bEpisodeOpen || NovelOfficer()==4) return false;
+    if(bNovelPersonal || !bEpisodeOpen || NovelOfficer()>=4 || CurrentEpisodeLine().Speaker>=frontline::ZhangJiao) return false;
     if(bCoalitionEpisode && CurrentEpisodeLine().Speaker==3) return false;
     bool Seen[3]={};for(const auto& L:EpisodeSnapshot.Lines) if(L.Speaker>=0 && L.Speaker<3) Seen[L.Speaker]=true;
     return Seen[0] && Seen[1] && Seen[2];

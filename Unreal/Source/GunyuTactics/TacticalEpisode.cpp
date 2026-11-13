@@ -1,4 +1,5 @@
 ﻿#include "TacticalTrial.h"
+#include "JourneyMission.hpp"
 FDialoguePresentation ATacticalController::CurrentEpisodeLine() const
 { return EpisodeSnapshot.Lines.IsValidIndex(EpisodePage) ? EpisodeSnapshot.Lines[EpisodePage]:FDialoguePresentation{}; }
 void ATacticalController::OpenEpisode(bool bCoalition)
@@ -20,7 +21,11 @@ void ATacticalController::OpenJourneyEntry()
 {
     const auto& P=Field->Presentation().Journey;
     if(!P.bCampaignFlow) { OpenEpisode();return; }
-    if(P.bPreparation) { OpenEpisode();OpenNovelPlan(); }
+    if(P.bPreparation)
+    {
+        OpenEpisode();
+        if(Field->Presentation().Mission!=frontline::YellowTurbanMission) OpenNovelPlan();
+    }
     else if(P.bDebrief) { CloseEpisode();EpisodeSeenKey=P.Episode.Key; }
     else OpenEpisode();
 }

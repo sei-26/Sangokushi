@@ -37,3 +37,9 @@ Create ONE original production-ready standing character sprite for a Japanese hi
 `liu-conversation-v1.png`、`guan-conversation-v1.png`、`zhang-conversation-v1.png` は、既存の `ArtSource/Cutins/` の各人物画を参照した組み込みimage_gen編集。顔・衣装・色・画風を引き継ぎ、手を下ろした落ち着いた会話姿を追加した。最終プロンプトは同じフォルダの `conversation-prompts.json`。CLI/APIフォールバックやPythonによる画像編集は使っていない。全て1024×1536、RGBAの透明画素を確認した。
 
 会話の表示は `/Game/Art/Novel/T_LiuConversationV1`、`T_GuanConversationV1`、`T_ZhangConversationV1` を使う。戦法演出は従来のカットインを使う。元の人物画も保持する。再取り込みは既存と同じ `prepare_novel_art.py` とManifestから行える。
+
+## 黄巾・反董卓連合の肖像
+
+`historical-officers-v1.png` は組み込みの画像生成で制作した、1254×1254の透過肖像シート。会話と広宗の張梁隊の札で `/Game/Art/Novel/T_HistoricalOfficersV1` を使う。縦横３等分で、上段は張角・張梁・皇甫嵩、中段は曹操・張邈・袁紹、下段は孫堅・董卓・呂布。再取り込みは `prepare_novel_art.py` とManifestから行える。
+
+生成時は、後漢末を舞台にした歴史ノベル用の胸像を３×３の透過シートに並べるよう指定した。黄巾の布、後漢の札甲と冠、孫堅の赤い頭巾、呂布の二本の羽飾りを手掛かりに、顔立ち・年齢・表情と衣装で九人を描き分けた。人物画は作品独自の解釈。

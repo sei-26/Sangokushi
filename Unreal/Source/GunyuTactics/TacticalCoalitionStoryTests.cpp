@@ -2,6 +2,7 @@
 #include "TacticalState.h"
 #include "JourneyAutoBattle.hpp"
 #include "JourneyBattlefield.hpp"
+#include "JourneyEpisode.hpp"
 #include "JourneySave.hpp"
 #include <memory>
 
@@ -69,17 +70,29 @@ bool ATacticalController::PrepareCoalitionStoryPreview(int Page)
     Journey.ResetCampaign();
     Journey.SelectDifficulty(JourneyDifficulty::Story);
     Journey.Meet();
+    const bool YellowPortrait=Page>=-12 && Page<=-10;
+    const bool YellowField=Page==-13;
     for(int Mission=0;Mission<=YellowTurbanMission;++Mission)
     {
         if(Mission==YellowTurbanMission)
         {
             if(Page==-3) break;
             if(!Journey.CanBeginYellowTurban() || !Journey.Continue()) return false;
-            if(Page==-2) break;
+            if(Page==-2 || YellowPortrait) break;
             Save->beforeBattle=Journey;
         }
         if(Journey.mission!=Mission || !Journey.Prepare(1,Journey.enemyPolicy)) return false;
-        if(Mission==YellowTurbanMission && Page==-4) break;
+        if(Mission==YellowTurbanMission && (Page==-4 || YellowField))
+        {
+            if(YellowField)
+            {
+                Journey.world.armies[0].tile=Campaign::At(11,9);
+                Journey.world.armies[3].morale=75;
+                Journey.RefreshIntelligence();
+                if(!Journey.EndTurn() || Journey.world.tacticEvents.empty()) return false;
+            }
+            break;
+        }
         for(int Cycle=0;Cycle<18 && Journey.stage==JourneyStage::Battle;++Cycle)
         {
             auto Next=PlanJourneyAutoBattle(Journey);
@@ -90,7 +103,7 @@ bool ATacticalController::PrepareCoalitionStoryPreview(int Page)
         if(Journey.NeedsStoryReply() && !Journey.ChooseStoryReply(JourneyPledge::Coordinate)) return false;
         if(!Journey.Continue()) return false;
     }
-    const bool CoalitionBattle=Page<=-6;
+    const bool CoalitionBattle=Page>=-9 && Page<=-6;
     const bool Protect=Page==-7 || Page==-9;
     if(CoalitionBattle)
     {
@@ -116,32 +129,50 @@ bool ATacticalController::PrepareCoalitionStoryPreview(int Page)
         if(Page>=-7) return Field->Presentation().bBattle &&
             Field->Presentation().GoalLabel==(Protect ? TEXT("北の烽火"):TEXT("董卓軍の前哨"));
         OpenEpisode();
-        if(!bEpisodeOpen || EpisodeSnapshot.Lines.Num()!=3) return false;
-        StepEpisode(1);
+        if(!bEpisodeOpen) return false;
+        const int Speaker=Protect ? ZhangMiao:CaoCao;
+        while(CurrentEpisodeLine().Speaker!=Speaker && EpisodePage+1<EpisodeSnapshot.Lines.Num()) StepEpisode(1);
         NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
-        return CurrentEpisodeLine().Text.Contains(Protect ? TEXT("張邈"):TEXT("曹操"));
+        return CurrentEpisodeLine().Speaker==Speaker && HistoricalPortraitBrush(Speaker);
     }
     if(Page==-3) return P.bComplete && P.CoalitionEpisode.Lines.IsEmpty() && P.PrimaryLabel.Contains(TEXT("黄巾の乱"));
     if(Page==-4) return Field->Presentation().bBattle && Field->Presentation().GoalLabel==TEXT("黄巾の前陣");
+    if(YellowField)
+    {
+        Field->SelectAt(Journey.world.armies[3].tile);
+        bEnemyDetailsOpen=true;
+        CameraYaw=90;CameraElevation=54;
+        Focus=ATacticalField::TileLocation(Campaign::At(11,8));Distance=ViewDistance=2700;
+        return Field->VisualUnits()[3].HistoricalSpeaker==ZhangLiang &&
+            Field->Presentation().EnemyCounter.Contains(TEXT("鼓舞"));
+    }
+    if(YellowPortrait)
+    {
+        OpenEpisode();
+        for(int I=0;I<Page+13;++I) StepEpisode(1);
+        NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+        return bEpisodeOpen && CurrentEpisodeLine().Speaker>=ZhangJiao && CurrentEpisodeLine().Speaker<=HuangfuSong;
+    }
     if(Page==-2)
     {
         if(!P.bPreparation || !P.CoalitionEpisode.Lines.IsEmpty()) return false;
-        OpenJourneyEntry();
+        OpenEpisode();OpenNovelPlan();
         CouncilElapsed=1000;CouncilStageTime=CouncilLineTime=1;
         return bNovelPlan && CouncilExchange.Subject.Contains(TEXT("広宗"));
     }
-    if(!P.bComplete || P.CoalitionEpisode.Lines.Num()!=12 || Field->Presentation().Title!=TEXT("黄巾の乱の記録")) return false;
+    if(!P.bComplete || P.CoalitionEpisode.Lines.Num()!=14 || Field->Presentation().Title!=TEXT("黄巾の乱の記録")) return false;
     if(Page==-1) return true;
     OpenEpisode(Page>=0);
     const int DisplayPage=FMath::Max(0,Page);
     if(!bEpisodeOpen || !EpisodeSnapshot.Lines.IsValidIndex(DisplayPage)) return false;
     while(EpisodePage<DisplayPage) StepEpisode(1);
     NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
-    return Page!=11 || CanChooseCoalitionFromNovel();
+    return EpisodePage+1!=EpisodeSnapshot.Lines.Num() || CanChooseCoalitionFromNovel();
 }
 
 bool ATacticalController::CoalitionStorySmokeTest()
 {
+    using namespace frontline;
     auto Check=[](bool Valid,const TCHAR* Why)
     { if(!Valid) UE_LOG(LogTemp,Error,TEXT("GUNYU_COALITION_UI: FAIL %s"),Why);return Valid; };
     CloseEpisode();
@@ -154,6 +185,16 @@ bool ATacticalController::CoalitionStorySmokeTest()
     while(EpisodePage+1<EpisodeSnapshot.Lines.Num()) StepEpisode(1);
     NovelElapsed=1000;
     HandleEpisodeKey(EKeys::Enter);
+    if(!Check(bEpisodeOpen && !bNovelPlan && Field->Presentation().Mission==YellowTurbanMission,TEXT("the historical opening plays before the new council"))) return false;
+    int SeenYellowTurban=0;
+    for(int Page=0;Page<EpisodeSnapshot.Lines.Num();++Page)
+    {
+        const int Speaker=CurrentEpisodeLine().Speaker;
+        if(Speaker>=ZhangJiao && Speaker<=HuangfuSong && HistoricalPortraitBrush(Speaker)) SeenYellowTurban|=1<<(Speaker-ZhangJiao);
+        NovelElapsed=1000;
+        HandleEpisodeKey(EKeys::Enter);
+    }
+    if(!Check(SeenYellowTurban==7,TEXT("Zhang Jiao, Zhang Liang and Huangfu Song each have their own speaking portrait"))) return false;
     if(!Check(bEpisodeOpen && bNovelPlan && Field->Presentation().Mission==frontline::YellowTurbanMission &&
         CouncilExchange.Subject.Contains(TEXT("広宗")),TEXT("the last prologue line leads to the Yellow Turban council"))) return false;
     DeployNovelPlan();
@@ -176,15 +217,19 @@ bool ATacticalController::CoalitionStorySmokeTest()
         TEXT("the final epilogue button opens the next chapter from page one"))) return false;
     UpdateEpisodeInput();
     if(!Check(bEpisodeOpen && CurrentEpisodeLine().Text.Contains(TEXT("何進")),TEXT("the chapter stays open across normal input updates"))) return false;
+    int SeenCoalition=0;
     for(int Page=0;Page<EpisodeSnapshot.Lines.Num()-1;++Page)
     {
         if(CurrentEpisodeLine().Speaker==3 && !Check(!IsEnsembleEpisode(),TEXT("the strategist appears when speaking"))) return false;
+        const int Speaker=CurrentEpisodeLine().Speaker;
+        if(Speaker>=CaoCao && Speaker<=LuBu && HistoricalPortraitBrush(Speaker) && !IsEnsembleEpisode()) SeenCoalition|=1<<(Speaker-CaoCao);
         NovelElapsed=1000;
         HandleEpisodeKey(EKeys::Enter);
     }
     NovelElapsed=1000;
     HandleEpisodeKey(EKeys::Enter);
-    if(!Check(CanChooseCoalitionFromNovel() && Field->ExportSession(After) && Before==After,TEXT("reading and Enter cannot choose a route"))) return false;
+    if(!Check(SeenCoalition==63 && CanChooseCoalitionFromNovel() && Field->ExportSession(After) && Before==After,
+        TEXT("six coalition-era portraits play before the explicit route choice"))) return false;
     for(int Route=0;Route<2;++Route)
     {
         const bool Protect=Route==1;

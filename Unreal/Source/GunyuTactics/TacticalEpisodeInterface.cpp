@@ -1,4 +1,5 @@
 ﻿#include "TacticalTrial.h"
+#include "JourneyEpisode.hpp"
 #include "TacticalWidgets.h"
 #include "TacticalNovelLayout.h"
 #include "Widgets/SCanvas.h"
@@ -15,13 +16,15 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
     auto Backdrop=SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush")).Visibility_Lambda(Visible)
         .OnMouseButtonDown_Lambda(Click)[NovelBackdropWidget([this] { return !Field->Presentation().Journey.bPreparation; })];
     Canvas->AddSlot().Position(FVector2D::ZeroVector).Size(FVector2D(1600,900))[Backdrop];InputPanels.Add(Backdrop);
+    auto HistoricalSpeaker=[this] { return NovelOfficer()>=frontline::ZhangJiao; };
     // Shared framing keeps full-body faces below the header in both Editor and cooked builds.
     for(int Slot=0;Slot<3;++Slot)
     {
         const bool FullBody=Slot!=1;
         const float W=FullBody ? gunyunovel::FullBodyWidth:650.f,H=FullBody ? gunyunovel::FullBodyHeight:975.f;
-        auto Portrait=SNew(SBox).Visibility_Lambda([this,Slot]
-            { const bool Match=Slot==0 || (Slot==1 ? NovelOfficer()!=4:NovelOfficer()==4);
+        auto Portrait=SNew(SBox).Visibility_Lambda([this,Slot,HistoricalSpeaker]
+            { const bool Match=Slot==0 ? CurrentEpisodeLine().Speaker<frontline::ZhangJiao:
+                  Slot==1 ? NovelOfficer()!=4 && !HistoricalSpeaker():NovelOfficer()==4;
               return bEpisodeOpen && !bNovelPlan && !IsEnsembleEpisode() && Match && CurrentEpisodeLine().Speaker>=0 ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
             [SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("NoBrush"))
              [NovelPortraitWidget([this,Slot] { return Slot==0 ? 3:NovelOfficer(); },W,H)]];
@@ -29,6 +32,10 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
         const FVector2D Position=Slot==0 ? FVector2D(-30,gunyunovel::FullBodyTop):Slot==1 ? FVector2D(850,60):FVector2D(640,gunyunovel::FullBodyTop);
         Canvas->AddSlot().Position(Position).Size(FVector2D(W,H))[Portrait];
     }
+    auto Guest=SNew(SBox).Visibility_Lambda([this,HistoricalSpeaker]
+        { return bEpisodeOpen && !bNovelPlan && HistoricalSpeaker() && CurrentEpisodeLine().Speaker>=0 ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
+        [NovelPortraitWidget([this] { return NovelOfficer(); },478.f,478.f)];
+    Canvas->AddSlot().Position(FVector2D(950,137)).Size(FVector2D(478,478))[Guest];
     BuildEnsemblePortraits(Canvas,false);
     auto Header=SNew(STacticalChrome).Padding(FMargin(22,12)).Opacity(.86f).Visibility_Lambda(DialogueVisible)
         [SNew(SVerticalBox)

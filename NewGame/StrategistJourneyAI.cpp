@@ -136,9 +136,19 @@ namespace frontline
     }
     bool StrategistJourney::CompleteCommandCycle(std::size_t previousReports)
     {
+        if(campaignFlow && mission==YellowTurbanMission && world.generals[3].tactic==Tactic::Rally &&
+           !chain.disordered[3] && world.armies[3].morale<=85 &&
+           intelligence[1].EnemyNear(world,world.armies[3].tile,1))
+            world.ActivateTactic(3,true);
         // Shared combat remains authoritative. Ambushers halve ordinary offense.
         for (int i = 0; i < 3; ++i) world.armies[i].scouting = chain.concealed[i];
         world.AdvanceBattleDay();
+        for(const auto& event:world.tacticEvents)
+        {
+            const auto* enemy=intelligence[0].Find(3);
+            if(event.general==3 && event.tactic==Tactic::Rally && enemy && enemy->current)
+                Report(U"張梁が「鼓舞」を発動。近くの黄巾兵の士気が上がった。");
+        }
         for (int i = 0; i < 3; ++i) world.armies[i].scouting = false;
         ++turn;
         RefreshIntelligence();

@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "JourneyEnemyDoctrine.hpp"
+#include "JourneyEpisode.hpp"
 
 void ATacticalField::ToggleThreatOverlay()
 {
@@ -32,6 +33,8 @@ void ATacticalField::BuildEnemyPresentation()
             Read.Counter = TEXT("固守中は誘導できない。牽制→崩し、または固有戦法で崩そう。");
         if(J.campaignFlow && Plan.intent==frontline::JourneyEnemyIntent::Guard && Plan.next!=Plan.from)
         { Read.Intent=TEXT("包囲を避けて再配置する見込み");Read.Counter=TEXT("移動できれば固守が緩む。混乱で足を止め、挟撃する手もある。"); }
+        if(Read.Name==JourneyText(frontline::EpisodeSpeakerName(frontline::ZhangLiang)))
+            Read.Counter+=TEXT("\n張梁は士気が落ちると、接敵中に一度だけ鼓舞。混乱で止められる。");
         Read.bSelected = Plan.army == State->Target;
         if (Read.bSelected)
         {

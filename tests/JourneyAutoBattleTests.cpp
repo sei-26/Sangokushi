@@ -111,6 +111,23 @@ int main()
     assert(old->journey.ApplyPlanExample());
     old->beforeBattle=old->journey;
     assert(old->journey.Prepare(1,old->journey.enemyPolicy) && old->journey.goal==old->journey.Definition().goal && !old->journey.HasConvoy());
+    assert(old->journey.world.generals[3].name==EpisodeSpeakerName(ZhangLiang) &&
+        old->journey.world.generals[3].trait==Trait::Resolute && old->journey.world.generals[3].tactic==Tactic::Rally);
+    {
+        auto pressure=std::make_unique<StrategistJourney>(old->journey);
+        auto& front=pressure->world.armies[3];
+        pressure->world.armies[0].tile=Campaign::At(11,9);
+        front.tile=Campaign::At(12,8);
+        front.morale=75;
+        pressure->RefreshIntelligence();
+        auto disrupted=std::make_unique<StrategistJourney>(*pressure);
+        disrupted->chain.disordered[3]=true;
+        assert(disrupted->EndTurn() && disrupted->world.tacticEvents.empty());
+        assert(pressure->EndTurn() &&
+            pressure->world.tacticEvents.size()==1 && pressure->world.tacticEvents[0].general==3);
+        assert(pressure->world.armies[3].morale>disrupted->world.armies[3].morale);
+        assert(pressure->EndTurn() && pressure->world.tacticEvents.empty());
+    }
     assert(BattlefieldTerrain(YellowTurbanMission,8,8)==Terrain::Forest);
     assert(EncodeJourneySave(*old,after) && DecodeJourneySave(after,*old));
     assert(old->journey.Withdraw() && !old->journey.CanContinue() && BuildCoalitionEpisode(old->journey).lines.empty());
@@ -130,14 +147,17 @@ int main()
     assert(yellowEnding.lines.front().text.find(U"皇甫嵩")!=std::u32string::npos);
     session->beforeBattle.reset();session->journey=*career;
     assert(EncodeJourneySave(*session,after) && DecodeJourneySave(after,*old));
-    assert(old->journey.history[YellowTurbanMission].won && BuildCoalitionEpisode(old->journey).lines.size()==12);
+    assert(old->journey.history[YellowTurbanMission].won && BuildCoalitionEpisode(old->journey).lines.size()==14);
     const auto nextChapter=BuildCoalitionEpisode(*career);
-    assert(nextChapter.title.find(U"第二章　反董卓連合")!=std::u32string::npos && nextChapter.lines.size()==12);
+    assert(nextChapter.title.find(U"第二章　反董卓連合")!=std::u32string::npos && nextChapter.lines.size()==14);
     assert(nextChapter.lines.front().text.find(U"何進")!=std::u32string::npos);
-    assert(nextChapter.lines[5].text.find(U"袁紹")!=std::u32string::npos && nextChapter.lines.back().speaker==3);
+    assert(nextChapter.lines[7].text.find(U"袁紹")!=std::u32string::npos && nextChapter.lines.back().speaker==3);
+    for(int speaker=CaoCao;speaker<=LuBu;++speaker)
+        assert(std::any_of(nextChapter.lines.begin(),nextChapter.lines.end(),
+            [speaker](const auto& line) { return line.speaker==speaker; }));
     auto earlierResult=std::make_unique<StrategistJourney>(*career);
     earlierResult->history[0].rescued=true;
-    assert(BuildCoalitionEpisode(*earlierResult).lines[4].text!=nextChapter.lines[4].text);
+    assert(BuildCoalitionEpisode(*earlierResult).lines[6].text!=nextChapter.lines[6].text);
     earlierResult->campaignFlow=false;
     assert(BuildCoalitionEpisode(*earlierResult).lines.empty());
     previous.clear();

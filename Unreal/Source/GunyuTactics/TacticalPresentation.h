@@ -148,6 +148,7 @@ enum class EBattleCue : uint8 { March, Strike, Lure, Ambush, Breakthrough, Guard
 struct FVisualUnit
 {
     int Id = -1, Troops = 0, Loss = 0;
+    int HistoricalSpeaker = -1;
     int Morale = 0;
     FString Name;
     FVector Position = FVector::ZeroVector;

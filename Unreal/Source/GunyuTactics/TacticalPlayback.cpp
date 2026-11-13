@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyEpisode.hpp"
 #include "JourneyCouncilStage.hpp"
 #include "Components/AudioComponent.h"
 
@@ -34,6 +35,7 @@ TArray<FVisualUnit> ATacticalField::ObserveUnits() const
         auto& Unit = Result[Id];
         Unit.Id = Id; Unit.Troops = Seen->troops;
         Unit.Name = JourneyText(J.world.generals[Seen->general].name);
+        if(Unit.Name==JourneyText(EpisodeSpeakerName(ZhangLiang))) Unit.HistoricalSpeaker=ZhangLiang;
         Unit.Position = SurfaceLocation(Seen->tile);
         Unit.bEnemy = Seen->faction != 0;
         Unit.bConcealed = Id < 3 && J.chain.concealed[Id];

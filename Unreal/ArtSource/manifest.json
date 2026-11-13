@@ -86,6 +86,13 @@
       "provenance": "Original image_gen artwork, 2026-10-27. Inspired by the user-authorized Dragon Strategist chapters 01-15; interpreted clothing/face are original. See Unreal/ArtSource/Novel/README.md."
     },
     {
+      "source": "Unreal/ArtSource/Novel/historical-officers-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_HistoricalOfficersV1",
+      "kind": "visual-novel",
+      "provenance": "Original transparent 3x3 atlas generated with built-in image_gen. See Unreal/ArtSource/Novel/README.md."
+    },
+    {
       "source": "Unreal/ArtSource/Novel/liu-conversation-v1.png",
       "destination": "/Game/Art/Novel",
       "name": "T_LiuConversationV1",

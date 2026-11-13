@@ -5,6 +5,12 @@ namespace frontline
 {
     class StrategistJourney;
     // 0 Liu, 1 Guan, 2 Zhang, 3 protagonist, 4 Ji An, -1 narration.
+    // Historical portraits use this order in the episode atlas.
+    enum JourneyHistoricalSpeaker
+    {
+        ZhangJiao=5, ZhangLiang, HuangfuSong, CaoCao, ZhangMiao, YuanShao, SunJian, DongZhuo, LuBu,
+        HistoricalSpeakerEnd
+    };
     struct JourneyEpisodeLine { int speaker=-1;std::u32string text,direction;int warmMask=0; };
     struct JourneyEpisode
     {
