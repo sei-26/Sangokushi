@@ -12,6 +12,7 @@
 
 namespace frontline
 {
+    enum class JourneyMap;
 	enum class JourneyStage
 	{
 		Encounter,
@@ -75,6 +76,7 @@ namespace frontline
 		bool withdrawn = false;
 		std::array<JourneyResult, CoalitionMission+1> history{};
         CoalitionPlan coalitionPlan=CoalitionPlan::None;
+        bool legacyBattlefield=false;
 		ChainResult lastChain;
 		std::vector<Chronicle> reports;
 		std::u32string message;
@@ -109,8 +111,10 @@ namespace frontline
 		bool Hold(int army);
 		const JourneyMission& Definition() const
 		{
-			return campaignFlow ? CampaignMissionDefinition(mission,CurrentPledge()==JourneyPledge::Preserve,coalitionPlan):MissionDefinition(mission);
+			return campaignFlow ? CampaignMissionDefinition(mission,CurrentPledge()==JourneyPledge::Preserve,coalitionPlan,legacyBattlefield):MissionDefinition(mission);
 		}
+        JourneyMap Battlefield() const;
+        Terrain PlanningTerrain(int tile) const;
 		bool PositionSecured(int tile) const;
 		std::u32string ObjectiveProgress() const;
 		ChainResult Preview(const std::vector<ChainOrder>& orders) const;

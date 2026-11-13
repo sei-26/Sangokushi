@@ -65,7 +65,7 @@ namespace frontline
 		      {{7 + 7 * Width, 7 + 5 * Width, 8 + 9 * Width, 11 + 9 * Width, 10 + 5 * Width}}}}};
 		return missions[std::clamp(index, 0, 2)];
 	}
-    inline const JourneyMission& CampaignMissionDefinition(int index,bool northApproach=false,CoalitionPlan plan=CoalitionPlan::None)
+    inline const JourneyMission& CampaignMissionDefinition(int index,bool northApproach=false,CoalitionPlan plan=CoalitionPlan::None,bool legacyMap=false)
     {
         static const JourneyMission port{U"第二策 / 河港の指揮所を奪え",
             U"川を渡り、敵の指揮所を安全に占領する",
@@ -88,10 +88,13 @@ namespace frontline
                 {{9+6*Width,8+6*Width,9+9*Width,12+6*Width,12+10*Width}}};
             static const JourneyMission protect{U"酸棗の街道 ／ 二つの烽火を守れ",
                 U"街道の二つの烽火を同時に２指揮守る",
-                U"街道の南北に守備を置き、二つの烽火を同時に２指揮維持する。渡河してくる敵の足を止めよう。",
+                U"街道の南北に守備を置き、二つの烽火を同時に２指揮維持する。東の林から来る敵の足を止めよう。",
                 JourneyObjective::HoldPositions,10,9+6*Width,9+10*Width,2,
                 {{8+6*Width,8+8*Width,8+10*Width,12+10*Width,12+6*Width}}};
-            return plan==CoalitionPlan::Protect ? protect:advance;
+            static const JourneyMission oldProtect=[] { auto m=protect;
+                m.briefing=U"街道の南北に守備を置き、二つの烽火を同時に２指揮維持する。渡河してくる敵の足を止めよう。";return m; }();
+            if(plan==CoalitionPlan::Protect) return legacyMap ? oldProtect:protect;
+            return advance;
         }
         return index==1 ? (northApproach ? north:port):MissionDefinition(index);
     }

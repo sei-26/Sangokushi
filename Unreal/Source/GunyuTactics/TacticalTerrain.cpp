@@ -25,9 +25,9 @@ namespace
 void ATacticalField::BuildTerrain()
 {
     const auto& J = State->Journey;
-    const auto Style = TacticalMap::BattlefieldStyle(J.mission);
+    const auto Style = TacticalMap::BattlefieldStyle(J.Battlefield());
     TArray<int32> Snapshot;
-    Snapshot.Append({J.mission, int(J.convoyRoute), J.goal, J.Definition().secondGoal, J.HasConvoy() ? 1 : 0});
+    Snapshot.Append({int(J.Battlefield()), int(J.convoyRoute), J.goal, J.Definition().secondGoal, J.HasConvoy() ? 1 : 0});
     for (int Y = 1; Y < frontline::StrategistJourney::Rows - 1; ++Y)
         for (int X = 1; X < frontline::StrategistJourney::Columns - 1; ++X)
         {
@@ -86,7 +86,7 @@ void ATacticalField::BuildTerrain()
             }
             if (Total>0) Base=Sum/Total;
         }
-        Base=TacticalMap::GroundTint(P,Base,Style.Road,RoadDistance(P));
+        Base=TacticalMap::GroundTint(P,Base,Style.Road,RoadDistance(P),Style.RoadHalfWidth);
         return Base * VisibilityShade(P);
     };
     for (int Y = 1; Y < frontline::StrategistJourney::Rows - 1; ++Y)

@@ -6,10 +6,13 @@ void ATacticalField::BuildPreparationMap()
 {
     using namespace frontline;
     const auto& J=State->Journey;auto& Map=State->HUD.Journey.Map;
-    Map={};Map.Name=JourneyText(BattlefieldDefinition(J.mission).name);
+    Map={};Map.Name=JourneyText(BattlefieldDefinition(J.Battlefield()).name);
     Map.Objective=(J.IsRescue() ? FString(TEXT("季安の車を出口へ送り届ける")):JourneyText(J.ObjectiveBrief()))+FString::Printf(TEXT(" ／ 期限%d指揮"),J.TurnBudget());
     for(int Y=1;Y<StrategistJourney::Rows-1;++Y) for(int X=1;X<StrategistJourney::Columns-1;++X)
-        Map.Cells.Add({Campaign::At(X,Y),uint8(BattlefieldTerrain(J.mission,X,Y,J.IsRescue()))});
+    {
+        const int Tile=Campaign::At(X,Y);
+        Map.Cells.Add({Tile,uint8(J.PlanningTerrain(Tile))});
+    }
     const auto Starts=J.PreparationPositions(State->PreparationChoice);
     for(int I=0;I<3;++I) Map.Starts.Add({Starts[I],I});
     if(J.HasConvoy())

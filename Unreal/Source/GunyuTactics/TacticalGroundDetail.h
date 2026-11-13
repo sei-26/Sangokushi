@@ -14,14 +14,14 @@ namespace TacticalMap
         return FMath::Lerp(FMath::Lerp(Sample(IX,IY),Sample(IX+1,IY),U),
             FMath::Lerp(Sample(IX,IY+1),Sample(IX+1,IY+1),U),V);
     }
-    inline FLinearColor GroundTint(FVector P,FLinearColor Base,FLinearColor RoadColor,float RoadDistance)
+    inline FLinearColor GroundTint(FVector P,FLinearColor Base,FLinearColor RoadColor,float RoadDistance,float RoadHalfWidth)
     {
         const float Patch=GroundNoise(P,370.f),Detail=GroundNoise(P,73.f);
         const float Vegetation=FMath::SmoothStep(.30f,.72f,Patch)*(1-FMath::SmoothStep(28.f,110.f,float(P.Z)));
         Base=FMath::Lerp(Base,Base*FLinearColor(.80f,1.28f,.78f),Vegetation*.65f);
         Base*=.84f+.22f*Patch+.12f*Detail;
-        const float Edge=58.f+(Patch-.5f)*16.f;
-        const float Road=1-FMath::SmoothStep(25.f,Edge,RoadDistance);
+        const float Edge=RoadHalfWidth+(Patch-.5f)*16.f;
+        const float Road=1-FMath::SmoothStep(RoadHalfWidth*.43f,Edge,RoadDistance);
         return FMath::Lerp(Base,RoadColor*(.86f+Detail*.20f),Road*.92f);
     }
     inline double SegmentDistance2D(FVector P,FVector A,FVector B)

@@ -21,8 +21,8 @@ void ATacticalField::BuildPreparationPresentation()
     }
     P.PlanObjective=(J.IsRescue() ? FString(TEXT("季安の避難車を出口まで護送")):JourneyText(J.ObjectiveBrief()))+
         FString::Printf(TEXT(" / 期限%d指揮"),J.TurnBudget());
-    const auto& Field=BattlefieldDefinition(J.mission);
-    P.PlanRoute=JourneyText(Field.name)+TEXT(" / ")+(J.mission==1 && J.Definition().kind==JourneyObjective::CaptureCamp ? FString(TEXT("二つの橋から指揮所へ急襲。護送と残敵掃討は不要")):JourneyText(Field.reading));
+    const auto& Field=BattlefieldDefinition(J.Battlefield());
+    P.PlanRoute=JourneyText(Field.name)+TEXT(" / ")+(J.Battlefield()==JourneyMap::Port && J.Definition().kind==JourneyObjective::CaptureCamp ? FString(TEXT("二つの橋から指揮所へ急襲。護送と残敵掃討は不要")):JourneyText(Field.reading));
     if(J.IsRescue())
     {
         const auto Route=J.IsRescue() ? J.convoyRoute:JourneyConvoyRoute::Road;const auto& Path=ConvoyPlan(Route);

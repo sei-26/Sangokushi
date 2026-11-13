@@ -29,6 +29,13 @@ namespace frontline
 		Finish(false, U"深追いを止め、任務を中止して撤収した。残った兵と携行糧を回収。約束は未達だが、失った兵を増やさず作戦を見直す。");
 		return true;
 	}
+    JourneyMap StrategistJourney::Battlefield() const
+    {
+        return SelectJourneyMap(mission,IsRescue(),convoyRoute,
+            campaignFlow && CurrentPledge()==JourneyPledge::Preserve,coalitionPlan,legacyBattlefield);
+    }
+    Terrain StrategistJourney::PlanningTerrain(int tile) const
+    { return BattlefieldTerrain(Battlefield(),tile%Width,tile/Width,IsRescue()); }
 	void StrategistJourney::SetupBattlefield()
 	{
 		for (auto& tile : world.tiles)
@@ -36,7 +43,8 @@ namespace frontline
 		for (int y = 1; y < Rows - 1; ++y)
 			for (int x = 1; x < Columns - 1; ++x)
 			{
-                world.tiles[Campaign::At(x, y)] = {BattlefieldTerrain(mission, x, y, IsRescue()), x <= 9 ? 0 : 1};
+                const int tile=Campaign::At(x,y);
+                world.tiles[tile] = {PlanningTerrain(tile), x <= 9 ? 0 : 1};
 			}
         world.cities[0].tile = mission == 2 ? Campaign::At(2, 6) : Campaign::At(2, 10);
 	}

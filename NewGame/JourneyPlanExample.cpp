@@ -35,7 +35,8 @@ namespace frontline
                 p.purpose=U"劉備と張飛は北と南の烽火へ。関羽は中央の森から手薄な側へ向かう。";
                 p.assignments={JourneyAssignment{JourneyDuty::Hold,j.Definition().goal},JourneyAssignment{},
                     JourneyAssignment{JourneyDuty::Hold,j.Definition().secondGoal}};
-                p.manualTask=U"関羽で渡河してきた敵を足止めし、二つの烽火を同時に２指揮維持する。";
+                p.manualTask=j.legacyBattlefield ? U"関羽で渡河してきた敵を足止めし、二つの烽火を同時に２指揮維持する。":
+                    U"関羽で東の林から来る敵を足止めし、二つの烽火を同時に２指揮維持する。";
                 p.caution=U"守備役が戦法を使うと、その指揮の固守を使えなくなる。";
             }
             else

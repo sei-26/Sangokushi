@@ -13,7 +13,10 @@ namespace frontline
     bool StrategistJourney::SelectConvoyRoute(JourneyConvoyRoute route)
     {
         if (stage!=JourneyStage::Preparation || !IsRescue() || (route!=JourneyConvoyRoute::Road && route!=JourneyConvoyRoute::SouthernWood)) return false;
-        convoyRoute=route;message=ConvoyPlan(route).description;return true;
+        convoyRoute=route;
+        for(int i=0;i<3;++i)
+            if(!AssignmentProblem(i,assignments[i].tile,assignments[i].duty).empty()) assignments[i]={};
+        message=ConvoyPlan(route).description;return true;
     }
     const std::vector<int>& StrategistJourney::ConvoyPath() const
     { return ConvoyPlan(IsRescue() ? convoyRoute : JourneyConvoyRoute::Road).tiles; }

@@ -7,7 +7,7 @@ void ATacticalField::UpdateLandscapeTopology()
 {
     const auto& J=State->Journey;
     TArray<int32> Snapshot;
-    Snapshot.Append({J.mission,int(J.convoyRoute),J.HasConvoy() ? 1:0});
+    Snapshot.Append({int(J.Battlefield()),int(J.convoyRoute),J.HasConvoy() ? 1:0});
     for (int Y=1;Y<frontline::StrategistJourney::Rows-1;++Y)
         for (int X=1;X<frontline::StrategistJourney::Columns-1;++X)
             Snapshot.Add(static_cast<int32>(J.world.tiles[frontline::Campaign::At(X,Y)].terrain));
@@ -41,7 +41,7 @@ float ATacticalField::SurfaceHeight(FVector P) const
     const auto Cell = hexgrid::Pick(P.X / 200., P.Y / 200.);
     // Connected crest lines share one broad slope instead of separate mounds.
     // The small public-terrain topology cache is rebuilt only when terrain changes.
-    const auto Style=TacticalMap::BattlefieldStyle(J.mission);
+    const auto Style=TacticalMap::BattlefieldStyle(J.Battlefield());
     // Higher canyon ridges also need broader slopes, so the normal overview
     // can still see and select the playable hex centers behind their crest.
     const float RidgeHeight=Style.RidgeHeight;
@@ -71,7 +71,7 @@ float ATacticalField::SurfaceHeight(FVector P) const
     Height=FMath::Lerp(-9.f,Height,static_cast<float>(FMath::SmoothStep(0.,200.,BankDistance)));
     // Flatten only the real public route, including the chosen woodland detour.
     Height *= FMath::SmoothStep(30.f,85.f,RoadDistance(P));
-    if(J.mission==1 && J.world.tiles[frontline::Campaign::At(11,1)].terrain==frontline::Terrain::River && Cell.second<1 && P.Y>=-1700 && P.Y<=289)
+    if(J.Battlefield()==frontline::JourneyMap::Port && J.world.tiles[frontline::Campaign::At(11,1)].terrain==frontline::Terrain::River && Cell.second<1 && P.Y>=-1700 && P.Y<=289)
     {
         const float Bank=FMath::Abs(float(P.X-TacticalMap::PortRiverX(P.Y)));
         Height=FMath::Lerp(-12.f,Height,FMath::SmoothStep(70.f,185.f,Bank));

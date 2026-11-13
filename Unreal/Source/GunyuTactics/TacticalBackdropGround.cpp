@@ -14,7 +14,7 @@ float ATacticalField::SceneryFloor(FVector P) const { return BackdropGroundHeigh
 void ATacticalField::BuildBackdropGround()
 {
     TacticalMap::FIndexedScenery Land;TMap<FIntPoint,int32> Shared;
-    const auto Style=TacticalMap::BattlefieldStyle(State->Journey.mission);
+    const auto Style=TacticalMap::BattlefieldStyle(State->Journey.Battlefield());
     constexpr double Radius=115.470054;
     auto Inside=[](int X,int Y)
     { return X>=-2 && Y>=-2 && X<frontline::StrategistJourney::Columns+3 && Y<frontline::StrategistJourney::Rows+3; };
@@ -24,7 +24,7 @@ void ATacticalField::BuildBackdropGround()
         if(const auto* Found=Shared.Find(Key)) return *Found;
         P.Z=BackdropGroundHeight(P);
         const FVector N(BackdropGroundHeight(P-FVector(3,0,0))-BackdropGroundHeight(P+FVector(3,0,0)),BackdropGroundHeight(P-FVector(0,3,0))-BackdropGroundHeight(P+FVector(0,3,0)),6);
-        const FLinearColor C=TacticalMap::GroundTint(P,Style.Ground,Style.Road,RoadDistance(P))*.4f;
+        const FLinearColor C=TacticalMap::GroundTint(P,Style.Ground,Style.Road,RoadDistance(P),Style.RoadHalfWidth)*.4f;
         const int32 I=Land.Vertex(P,N.GetSafeNormal(),C);Shared.Add(Key,I);return I;
     };
     for(int Y=-35;Y<36;++Y) for(int X=-32;X<53;++X)

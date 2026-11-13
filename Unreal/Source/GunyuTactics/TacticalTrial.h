@@ -576,6 +576,7 @@ private:
     bool CanChooseCoalitionFromNovel() const;
     bool CoalitionStorySmokeTest();
     bool PrepareCoalitionStoryPreview(int Page);
+    bool PrepareBattlefieldLayoutCapture(int Variant);
     void OpenJourneyEntry();
     bool CampaignPacingSmokeTest();
     void CloseEpisode();

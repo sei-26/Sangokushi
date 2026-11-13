@@ -47,7 +47,7 @@ namespace frontline
         const bool protect=j.coalitionPlan==CoalitionPlan::Protect;
         JourneyEpisode episode;
         episode.title=beat.phase;
-        episode.place=U"一九〇年・反董卓連合 ／ 酸棗西の渡し";
+        episode.place=protect && !j.legacyBattlefield ? U"一九〇年・反董卓連合 ／ 酸棗の集落街道":U"一九〇年・反董卓連合 ／ 酸棗西の渡し";
         episode.setting=beat.change;
         episode.question=beat.next;
         if(j.stage==JourneyStage::Preparation)
@@ -57,7 +57,8 @@ namespace frontline
                     U"曹操の使者に返事を届けたよ。私たちが北橋の前哨を取り、先行隊へ合図を出す。",U"劉備が、引き受けた方の書状を地図に留める。"},
                 {1,protect ? U"南へ敵を寄せられても、北の隊は持ち場を離れるな。翼徳、手を貸すなら火を空けずにできる形で頼む。":
                     U"北橋に全員を詰めるな。南橋に別の隊を出せば、前哨を守る兵にこちらの行き先を絞らせずに済む。",U"関羽は北と南に駒を置く。"},
-                {2,protect ? U"持ち場は離れねえよ。けど敵が川を渡ってきたら、こっちで受け止めていいんだな？":
+                {2,protect ? (j.legacyBattlefield ? U"持ち場は離れねえよ。けど敵が川を渡ってきたら、こっちで受け止めていいんだな？":
+                    U"持ち場は離れねえよ。けど敵が林から出てきたら、こっちで受け止めていいんだな？"):
                     U"橋の先に立ったら、追うより先に合図だな！ 向こうの連中が聞き逃さねえ声で呼んでやる。",U"張飛は自分の駒に手をかけ、軍師を見る。"},
                 {3,protect ? U"二つとも火が見えるまで待て。誰を残し、誰を援護へ回すか、出る前に俺が決める。":
                     U"北橋へ誰を渡すか、先に決める。陣に入る隊と、敵を引き受ける隊で合図を合わせよう。",U"主人公が地図を三人の間へ寄せる。"}};

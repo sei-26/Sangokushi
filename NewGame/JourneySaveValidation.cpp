@@ -94,7 +94,7 @@ namespace frontline
             if(!s.recorded && (s.reply!=JourneyPledge::None || s.pledge!=JourneyPledge::None)) return false;
             return true;
         }
-        bool Assignments(const std::array<JourneyAssignment,3>& assignments,int mission,bool rescue,bool preparation=false)
+        bool Assignments(const std::array<JourneyAssignment,3>& assignments,int mission,JourneyMap map,bool rescue,bool preparation=false)
         {
             for(int i=0;i<3;++i)
             {
@@ -103,7 +103,7 @@ namespace frontline
                 else if(!Cell(a.tile) || (a.duty==JourneyDuty::Ambush && i!=1)) return false;
                 if(a.duty!=JourneyDuty::None)
                 {
-                    const auto terrain=BattlefieldTerrain(mission,a.tile%Width,a.tile/Width,rescue);
+                    const auto terrain=BattlefieldTerrain(map,a.tile%Width,a.tile/Width,rescue);
                     if(terrain==Terrain::Sea || terrain==Terrain::River || (a.duty==JourneyDuty::Ambush && terrain!=Terrain::Forest) ||
                        a.tile==Campaign::At(14,3) || a.tile==Campaign::At(2,mission==2 ? 6:10) || (preparation && a.completed)) return false;
                 }
@@ -140,7 +140,7 @@ namespace frontline
                 (!j.campaignFlow || j.preparation!=1 || j.stage!=JourneyStage::Battle))) return false;
             if(!Enum(j.stage,4) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
-               !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.IsRescue(),j.stage==JourneyStage::Preparation) ||
+               !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.Battlefield(),j.IsRescue(),j.stage==JourneyStage::Preparation) ||
                w.cities.size()!=2 || w.generals.size()<5 || w.generals.size()>6 || n>6 ||
                ((j.stage==JourneyStage::Battle || j.stage==JourneyStage::Debrief) && n!=(j.HasConvoy()?6u:5u)) ||
                !w.hexMap || w.player!=0 || !Range(w.day,0,10000)) return false;
@@ -164,8 +164,12 @@ namespace frontline
             for(int m=0;m<int(j.history.size());++m)
             {
                 const auto& h=j.history[m];
-                // Mission 0 history lacks a failed escort's promise; both authored woodland variants are valid there.
-                if(!Enum(h.difficulty,1) || !Assignments(h.assignments,m,m==0) || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
+                const bool north=m==1 && h.campaignFlow && j.history[0].story.reply==JourneyPledge::Preserve;
+                const auto map=SelectJourneyMap(m,m==0,h.route,north,j.coalitionPlan,false);
+                const auto legacy=SelectJourneyMap(m,false,h.route,false,j.coalitionPlan,true);
+                // Old histories and failed escorts may predate the individual route layouts.
+                const bool validAssignments=Assignments(h.assignments,m,map,m==0) || Assignments(h.assignments,m,legacy,m==0);
+                if(!Enum(h.difficulty,1) || !validAssignments || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
                    (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
             }
             return true;
@@ -177,7 +181,8 @@ namespace frontline
            !Range(s.selected,0,2) || !Range(s.target,-1,4) || !Range(s.dialogue,0,3) ||
            !Range(s.preparation,0,1) || !Range(s.interlocutor,0,2) || !ChainOrders(s.orders) || !ChainOrders(s.signal.sequence)) return false;
         if((s.journey.stage==JourneyStage::Battle || s.journey.stage==JourneyStage::Debrief) &&
-            (!s.beforeBattle || s.beforeBattle->mission!=s.journey.mission || s.beforeBattle->coalitionPlan!=s.journey.coalitionPlan)) return false;
+            (!s.beforeBattle || s.beforeBattle->mission!=s.journey.mission || s.beforeBattle->coalitionPlan!=s.journey.coalitionPlan ||
+                s.beforeBattle->legacyBattlefield!=s.journey.legacyBattlefield)) return false;
         const auto& r=s.realtime;
         if(!std::isfinite(r.elapsed) || r.elapsed<0 || r.elapsed>JourneyRealtime::Period ||
             !std::isfinite(r.activeSeconds) || r.activeSeconds<0 || r.activeSeconds>1000000 ||

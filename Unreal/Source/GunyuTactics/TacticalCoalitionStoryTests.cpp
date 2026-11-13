@@ -1,7 +1,63 @@
 #include "TacticalTrial.h"
+#include "TacticalState.h"
 #include "JourneyAutoBattle.hpp"
+#include "JourneyBattlefield.hpp"
 #include "JourneySave.hpp"
 #include <memory>
+
+bool ATacticalController::PrepareBattlefieldLayoutCapture(int Variant)
+{
+    using namespace frontline;
+    if(Variant<0 || Variant>int(JourneyMap::CoalitionRoad)) return false;
+    const auto Map=static_cast<JourneyMap>(Variant);
+    CloseEpisode();
+    Field->Issue(ETacticalCommand::Skip);
+    auto Save=std::make_unique<JourneySaveData>();
+    auto& J=Save->journey;
+    J.ResetCampaign();J.SelectDifficulty(JourneyDifficulty::Story);J.Meet();
+    switch(Map)
+    {
+    case JourneyMap::RefugeeRoad:
+    case JourneyMap::RefugeeWood:
+        if(!J.SelectPromise(JourneyPromise::EscortRefugees) ||
+            (Map==JourneyMap::RefugeeWood && !J.SelectConvoyRoute(JourneyConvoyRoute::SouthernWood))) return false;
+        break;
+    case JourneyMap::Port:
+    case JourneyMap::PortNorth:
+        J.mission=1;
+        if(Map==JourneyMap::PortNorth)
+        {
+            J.history[0].completed=J.history[0].won=J.history[0].story.recorded=true;
+            J.history[0].story.reply=JourneyPledge::Preserve;
+        }
+        break;
+    case JourneyMap::Valley:
+        J.mission=2;
+        break;
+    case JourneyMap::Guangzong:
+        J.mission=2;J.stage=JourneyStage::Complete;
+        J.history[2].completed=J.history[2].won=true;
+        if(!J.Continue()) return false;
+        break;
+    case JourneyMap::CoalitionFord:
+    case JourneyMap::CoalitionRoad:
+        J.mission=YellowTurbanMission;J.stage=JourneyStage::Complete;J.won=true;
+        J.history[YellowTurbanMission].completed=J.history[YellowTurbanMission].won=true;
+        if(!J.ChooseCoalitionPlan(Map==JourneyMap::CoalitionRoad ? CoalitionPlan::Protect:CoalitionPlan::Advance)) return false;
+        break;
+    case JourneyMap::Retreat:
+        break;
+    }
+    if(J.Battlefield()!=Map || !J.ApplyPlanExample()) return false;
+    Save->beforeBattle=J;
+    if(!J.Prepare(0,1)) return false;
+    std::vector<std::uint8_t> Bytes;
+    if(!EncodeJourneySave(*Save,Bytes) || !Field->ImportSession(Bytes)) return false;
+    CameraYaw=90;CameraElevation=69.f;CameraPreset=2;
+    Focus=FVector(1760,1400,0);Distance=ViewDistance=4500.f;
+    LabelLayoutFrame=MAX_uint64;
+    return Field->Presentation().bBattle && Field->Presentation().Title.Contains(JourneyText(BattlefieldDefinition(Map).name));
+}
 
 bool ATacticalController::PrepareCoalitionStoryPreview(int Page)
 {

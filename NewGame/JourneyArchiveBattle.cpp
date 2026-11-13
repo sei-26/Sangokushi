@@ -53,5 +53,7 @@ namespace frontline
       if(version>=12) IO(v.retryDefense);else if(reading) v.retryDefense.reset();
       if(version>=13) IO(v.history[YellowTurbanMission]);else if(reading) v.history[YellowTurbanMission]={};
       if(version>=14) (*this)(v.coalitionPlan,v.history[CoalitionMission]);
-      else if(reading) { v.coalitionPlan=CoalitionPlan::None;v.history[CoalitionMission]={}; } }
+      else if(reading) { v.coalitionPlan=CoalitionPlan::None;v.history[CoalitionMission]={}; }
+      if(version>=15) IO(v.legacyBattlefield);
+      else if(reading) v.legacyBattlefield=v.stage!=JourneyStage::Encounter; }
 }

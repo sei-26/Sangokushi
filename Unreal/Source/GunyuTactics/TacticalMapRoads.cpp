@@ -2,11 +2,36 @@
 #include "TacticalState.h"
 #include "TacticalMapMesh.h"
 #include "TacticalGroundDetail.h"
+#include "JourneyBattlefield.hpp"
 
 void ATacticalField::UpdateRoadTopology()
 {
     const auto& J=State->Journey;
     auto& Road=State->LandscapeRoad;Road.Reset();
+    using namespace frontline;
+    const auto Map=J.Battlefield();
+    auto Add=[&](std::initializer_list<std::pair<int,int>> Cells)
+    { for(const auto& [X,Y]:Cells) Road.Add(TileLocation(Campaign::At(X,Y))); };
+    if(Map==JourneyMap::CoalitionRoad)
+    {
+        Add({{3,11},{6,11},{8,11},{9,10},{9,8},{9,6},{10,5},{13,4}});
+        return;
+    }
+    if(Map==JourneyMap::CoalitionFord)
+    {
+        Add({{4,9},{7,9},{9,8},{10,7},{11,6},{12,6},{14,5}});
+        return;
+    }
+    if(Map==JourneyMap::Guangzong)
+    {
+        Add({{3,10},{6,10},{9,10},{11,9},{12,8},{14,7}});
+        return;
+    }
+    if(Map==JourneyMap::PortNorth)
+    {
+        Add({{4,6},{7,7},{9,8},{11,8},{12,8},{13,10},{12,11}});
+        return;
+    }
     if(J.mission>1) return;
     // Only public terrain/route data. Never infer a road from a hidden army.
     for(int Tile : {frontline::Campaign::At(2,10),frontline::Campaign::At(3,10),

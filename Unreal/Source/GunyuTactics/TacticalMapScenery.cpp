@@ -3,9 +3,10 @@
 #include "TacticalMapMesh.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
+#include "JourneyBattlefield.hpp"
 
-// Static, instanced scenery. Buildings occupy existing city cells or land
-// outside the playable grid. The road and all walkable formation centers stay open.
+// Static, instanced scenery. Farm buildings sit at the edges of playable cells
+// so roads and formation centers stay open.
 void ATacticalField::BuildMapScenery()
 {
     using namespace frontline;
@@ -27,23 +28,46 @@ void ATacticalField::BuildMapScenery()
         }
         Wood(P+R.RotateVector(FVector(0,-44,22)*Size),FVector(19,5,44)*Size,R);
     };
-    // A small village and cultivated fields beyond the southern board boundary.
-    for (int I=0;I<(J.mission==0 ? 7 : J.mission==1 ? 3 : 0);++I)
-        House(FVector(470+(I%4)*163,2335+(I/4)*174,0),.68f+(I%3)*.08f,(I%2)*12-6);
-    for (int Field=0;Field<(J.mission==0 ? 2 : J.mission==1 ? 1 : 0);++Field)
+    auto Field=[&](FVector Base,int Rows,int Crops,float RowLength,float FurrowWidth)
     {
-        const FVector Base(1240+Field*220,2390,0);
-        for (int Row=0;Row<13;++Row)
+        for (int Row=0;Row<Rows;++Row)
         {
-            FVector A=Base+FVector(0,Row*13,0),B=A+FVector(178,0,0);
+            FVector A=Base+FVector(0,Row*13,0),B=A+FVector(RowLength,0,0);
             A.Z=SurfaceHeight(A)+1; B.Z=SurfaceHeight(B)+1;
-            Banks.Line(A,B,8,FLinearColor(.105f,.075f,.035f));
-            for (int Crop=0;Crop<10;++Crop)
+            Banks.Line(A,B,FurrowWidth,FLinearColor(.105f,.075f,.035f));
+            for (int Crop=0;Crop<Crops;++Crop)
             {
-                FVector P=FMath::Lerp(A,B,Crop/9.f); P.Z=SurfaceHeight(P)+12;
+                FVector P=FMath::Lerp(A,B,Crop/float(Crops-1)); P.Z=SurfaceHeight(P)+12;
                 Grass->AddInstance(FTransform(FRotator(0,35,0),P,FVector(.055,.08,.26)));
             }
         }
+    };
+    const auto Map=J.Battlefield();
+    if(Map==JourneyMap::CoalitionRoad || Map==JourneyMap::RefugeeRoad)
+    {
+        // Field borders and houses beside the road, clear of its formation centers.
+        const TArray<FIntPoint> Farms=Map==JourneyMap::CoalitionRoad ?
+            TArray<FIntPoint>{{6,10},{7,10},{10,8},{11,8},{10,7}}:TArray<FIntPoint>{{5,10},{6,10},{11,10},{12,10}};
+        for(const FIntPoint& Farm:Farms)
+        {
+            const FVector P=TileLocation(Campaign::At(Farm.X,Farm.Y));
+            Field(P+FVector(-79,-74,0),7,9,158,11.f);
+        }
+        const TArray<FIntPoint> Homesteads=Map==JourneyMap::CoalitionRoad ?
+            TArray<FIntPoint>{{4,7},{4,8},{5,8},{10,6},{11,6}}:TArray<FIntPoint>{{4,9},{5,9}};
+        for(int I=0;I<Homesteads.Num();++I)
+        {
+            const FIntPoint Cell=Homesteads[I];
+            House(TileLocation(Campaign::At(Cell.X,Cell.Y))+FVector(-46,33,0),.58f+(I%3)*.08f,(I%2)*18-9);
+        }
+    }
+    // The playable board ends before these houses.
+    const int HousesCount=Map==JourneyMap::RefugeeWood ? 2:Map==JourneyMap::CoalitionRoad ? 5:J.mission==0 ? 7:J.mission==1 ? 3:0;
+    for (int I=0;I<HousesCount;++I)
+        House(FVector(470+(I%4)*163,2335+(I/4)*174,0),.68f+(I%3)*.08f,(I%2)*12-6);
+    for (int Index=0;Index<(J.mission==0 ? 2 : J.mission==1 ? 1 : 0);++Index)
+    {
+        Field(FVector(1240+Index*220,2390,0),13,10,178,8.f);
     }
     for (int Y=1;Y<StrategistJourney::Rows-1;++Y) for (int X=1;X<StrategistJourney::Columns-1;++X)
     {

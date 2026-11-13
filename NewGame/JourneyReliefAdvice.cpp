@@ -18,7 +18,7 @@ namespace frontline
         bool Ground(const StrategistJourney& j,int tile)
         {
             if(!StrategistJourney::OnMap(tile) || tile==Campaign::At(2,j.mission==2 ? 6:10) || tile==Campaign::At(14,3)) return false;
-            const auto terrain=BattlefieldTerrain(j.mission,tile%Width,tile/Width,j.IsRescue());
+            const auto terrain=j.PlanningTerrain(tile);
             return terrain!=Terrain::River && terrain!=Terrain::Sea;
         }
         int WaitingPlace(const StrategistJourney& j,int incoming,int source,int other)

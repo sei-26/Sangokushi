@@ -16,6 +16,7 @@ namespace frontline
         if(!CanChooseCoalitionPlan() || (plan!=CoalitionPlan::Advance && plan!=CoalitionPlan::Protect)) return false;
         coalitionPlan=plan;
         mission=CoalitionMission;
+        legacyBattlefield=false;
         stage=JourneyStage::Preparation;
         turn=1;
         enemyPolicy=1;

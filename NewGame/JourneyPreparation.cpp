@@ -20,7 +20,7 @@ namespace frontline
         if(!campaignFlow || choice!=0 || assignments[1].duty!=JourneyDuty::Ambush) return result;
         const int destination=assignments[1].tile;
         if(!OnMap(destination) || destination==result[0] || destination==result[2] ||
-           BattlefieldTerrain(mission,destination%Width,destination/Width,IsRescue())!=Terrain::Forest) return result;
+           PlanningTerrain(destination)!=Terrain::Forest) return result;
         // Two public-terrain steps, never enemy positions/policy or the previous battlefield.
         std::array<int,Width*Height> distance;distance.fill(-1);
         std::queue<int> pending;pending.push(authored[1]);distance[authored[1]]=0;
@@ -33,7 +33,7 @@ namespace frontline
             {
                 if(xy.first<1 || xy.first>14 || xy.second<1 || xy.second>12) continue;
                 const int next=Campaign::At(xy.first,xy.second);
-                const auto terrain=BattlefieldTerrain(mission,xy.first,xy.second,IsRescue());
+                const auto terrain=PlanningTerrain(next);
                 if(distance[next]>=0 || terrain==Terrain::River || terrain==Terrain::Sea ||
                    next==Campaign::At(14,3) || next==Campaign::At(2,mission==2 ? 6:10)) continue;
                 distance[next]=distance[from]+1;pending.push(next);

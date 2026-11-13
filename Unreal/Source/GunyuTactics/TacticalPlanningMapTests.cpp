@@ -72,14 +72,20 @@ bool ATacticalController::PlanningMapSmokeTest()
     if(Field->Presentation().Journey.Map.bSouthern) HandleEpisodeKey(EKeys::R);
     std::vector<std::uint8_t> Bytes;auto Before=std::make_unique<JourneySaveData>(),After=std::make_unique<JourneySaveData>();
     Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*Before);
+    const auto RoadMap=Field->Presentation().Journey.Map;
     const int RoadGold=Field->Presentation().Journey.Plans[0].Gold;
     HandleEpisodeKey(EKeys::R);Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*After);
-    if(!Check(Field->Presentation().Journey.Map.bSouthern && Field->Presentation().Journey.Map.ConvoyRoute.Contains(Campaign::At(9,12)),TEXT("route control changes the actual woodland path"))) return false;
+    const auto& WoodMap=Field->Presentation().Journey.Map;
+    if(!Check(WoodMap.bSouthern && WoodMap.ConvoyRoute.Contains(Campaign::At(9,12)),TEXT("route control changes the actual woodland path"))) return false;
+    int DifferentCells=0;
+    for(int I=0;I<WoodMap.Cells.Num();++I)
+        if(WoodMap.Cells[I].Terrain!=RoadMap.Cells[I].Terrain) ++DifferentCells;
+    if(!Check(WoodMap.Name!=RoadMap.Name && DifferentCells>=15,TEXT("route control replaces the map and its terrain"))) return false;
     if(!Check(Field->Presentation().Journey.Plans[0].Gold==RoadGold+120 && Before->journey.world.cities[0].gold==After->journey.world.cities[0].gold,TEXT("guide bill updates without spending before deployment"))) return false;
     const auto Camp=After->journey.world.cities[0];const auto Cost=After->journey.PreparationCosts(1);
     HandleEpisodeKey(EKeys::Two);HandleEpisodeKey(EKeys::D);Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*After);
     if(!Check(!bEpisodeOpen && !bNovelMap && After->journey.stage==JourneyStage::Battle && After->journey.convoyRoute==JourneyConvoyRoute::SouthernWood && After->journey.preparation==1,
         TEXT("explicit deployment carries the chosen map route and preparation"))) return false;
     if(!Check(After->journey.world.cities[0].gold==Camp.gold-Cost.gold && After->journey.world.cities[0].food==Camp.food-Cost.TotalFood(),TEXT("actual deployment pays the reviewed cost exactly"))) return false;
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_PLANNING_MAP: PASS (three upcoming maps, private-policy isolation, friendly slots, 4536 hex picks, immutable reading, input guards, route bill and real deployment)"));return true;
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_PLANNING_MAP: PASS (three upcoming maps, private-policy isolation, friendly slots, 4536 hex picks, immutable reading, input guards, distinct escort terrain, route bill and real deployment)"));return true;
 }

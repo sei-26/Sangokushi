@@ -10,7 +10,7 @@ namespace frontline
         if(duty==JourneyDuty::None) return {};
         if(duty!=JourneyDuty::Hold && duty!=JourneyDuty::Ambush) return U"指定できない役目。";
         if(!OnMap(tile)) return U"地図のマスを選ぼう。";
-        const auto terrain=BattlefieldTerrain(mission,tile%Width,tile/Width,IsRescue());
+        const auto terrain=PlanningTerrain(tile);
         if(terrain==Terrain::River || terrain==Terrain::Sea) return U"川には進入できない。橋か陸地を選ぼう。";
         if(tile==Campaign::At(2,mission==2 ? 6:10) || tile==Campaign::At(14,3)) return U"城の敷地には配置できない。";
         if(duty==JourneyDuty::Ambush && (world.generals[officer].tactic!=Tactic::Ambush || terrain!=Terrain::Forest)) return U"伏兵配置は、関羽と森林の組み合わせで指定する。";

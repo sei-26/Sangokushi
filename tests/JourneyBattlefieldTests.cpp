@@ -1,6 +1,7 @@
 ﻿#include "../NewGame/JourneyBattlefield.hpp"
 #include "../NewGame/JourneyRealtime.hpp"
 #include "../NewGame/JourneySave.hpp"
+#include "../NewGame/JourneyArchive.hpp"
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -27,6 +28,81 @@ static bool Connected(const Campaign& world,int from,int target)
 }
 int main()
 {
+    // Every authored campaign branch must choose its own terrain before and after deployment.
+    const JourneyMap layouts[]={JourneyMap::Retreat,JourneyMap::RefugeeRoad,JourneyMap::RefugeeWood,
+        JourneyMap::Port,JourneyMap::PortNorth,JourneyMap::Valley,JourneyMap::Guangzong,JourneyMap::CoalitionFord,JourneyMap::CoalitionRoad};
+    for(const auto layout:layouts)
+    {
+        auto save=std::make_unique<JourneySaveData>();
+        auto& j=save->journey;
+        j.ResetCampaign();j.Meet();
+        if(layout==JourneyMap::RefugeeRoad || layout==JourneyMap::RefugeeWood)
+        {
+            assert(j.SelectPromise(JourneyPromise::EscortRefugees));
+            if(layout==JourneyMap::RefugeeWood) assert(j.SelectConvoyRoute(JourneyConvoyRoute::SouthernWood));
+        }
+        if(layout==JourneyMap::Port || layout==JourneyMap::PortNorth)
+        {
+            j.mission=1;
+            if(layout==JourneyMap::PortNorth) { j.history[0].story.recorded=true;j.history[0].story.reply=JourneyPledge::Preserve; }
+        }
+        if(layout==JourneyMap::Valley) j.mission=2;
+        if(layout==JourneyMap::Guangzong)
+        {
+            j.mission=2;j.stage=JourneyStage::Complete;j.history[2].completed=j.history[2].won=true;
+            assert(j.Continue());
+        }
+        if(layout==JourneyMap::CoalitionFord || layout==JourneyMap::CoalitionRoad)
+        {
+            j.mission=YellowTurbanMission;j.stage=JourneyStage::Complete;j.won=true;
+            j.history[YellowTurbanMission].completed=j.history[YellowTurbanMission].won=true;
+            assert(j.ChooseCoalitionPlan(layout==JourneyMap::CoalitionRoad ? CoalitionPlan::Protect:CoalitionPlan::Advance));
+        }
+        assert(j.Battlefield()==layout && j.ApplyPlanExample());
+        for(const auto row:BattlefieldDefinition(layout).rows) assert(row.size()==14);
+        save->beforeBattle=j;
+        assert(j.Prepare(0,1) && j.Battlefield()==layout);
+        for(int y=1;y<=12;++y) for(int x=1;x<=14;++x)
+        {
+            const int tile=Campaign::At(x,y);
+            assert(j.world.tiles[tile].terrain==j.PlanningTerrain(tile));
+        }
+        for(const auto& army:j.world.armies)
+        {
+            assert(j.world.tiles[army.tile].terrain!=Terrain::River && j.world.tiles[army.tile].terrain!=Terrain::Sea);
+            assert(Connected(j.world,army.tile,j.goal));
+        }
+        if(j.HasConvoy())
+            for(const int tile:j.ConvoyPath()) assert(j.world.tiles[tile].terrain!=Terrain::River && j.world.tiles[tile].terrain!=Terrain::Sea);
+        for(const auto other:layouts)
+        {
+            if(other==layout) continue;
+            int different=0;
+            for(int y=1;y<=12;++y) for(int x=1;x<=14;++x) different+=BattlefieldTerrain(layout,x,y)!=BattlefieldTerrain(other,x,y);
+            assert(different>=15);
+        }
+    }
+    {
+        // Version 14 kept both coalition routes on the ford. Preserve the saved board and its preparation on retry.
+        auto save=std::make_unique<JourneySaveData>();
+        auto& j=save->journey;j.ResetCampaign();j.Meet();j.mission=YellowTurbanMission;j.stage=JourneyStage::Complete;j.won=true;
+        j.history[YellowTurbanMission].completed=j.history[YellowTurbanMission].won=true;
+        assert(j.ChooseCoalitionPlan(CoalitionPlan::Protect));
+        j.legacyBattlefield=true;save->beforeBattle=j;
+        assert(j.Prepare(1,1) && j.Battlefield()==JourneyMap::CoalitionFord);
+        const int bridge=Campaign::At(11,6);
+        assert(j.world.tiles[bridge].terrain==Terrain::Bridge);
+        std::vector<std::uint8_t> bytes;
+        JourneyArchive writer{false,bytes};writer.version=14;
+        unsigned magic=0x53594e47,version=14,checksum=0;
+        writer(magic,version,checksum);writer(*save);
+        checksum=2166136261u;for(std::size_t i=12;i<bytes.size();++i) { checksum^=bytes[i];checksum*=16777619u; }
+        for(int i=0;i<4;++i) bytes[8+i]=static_cast<std::uint8_t>(checksum>>(i*8));
+        assert(DecodeJourneySave(bytes,*save) && j.Battlefield()==JourneyMap::CoalitionFord);
+        assert(j.Withdraw() && j.RetryAtCouncil(*save->beforeBattle) && j.Prepare(1,1));
+        assert(j.world.tiles[bridge].terrain==Terrain::Bridge);
+        assert(EncodeJourneySave(*save,bytes) && DecodeJourneySave(bytes,*save) && j.Battlefield()==JourneyMap::CoalitionFord);
+    }
     for(int mission=0;mission<3;++mission)
     {
         for(auto row:BattlefieldDefinition(mission).rows) assert(row.size()==14);
@@ -118,5 +194,5 @@ int main()
         }
         assert(crossed);
     }
-    std::cout<<"Three authored battlefields: distinct terrain, valid deployments, two genuine crossings, convoy continuity and real order routing passed\n";
+    std::cout<<"Nine campaign layouts: distinct terrain, valid deployments, save compatibility, crossings, convoy continuity and real order routing passed\n";
 }

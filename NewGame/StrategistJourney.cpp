@@ -65,6 +65,7 @@ namespace frontline
 		won = reinforced = false;
 		withdrawn = false; promise = JourneyPromise::OpenRoad; history = {};
         coalitionPlan=CoalitionPlan::None;
+        legacyBattlefield=false;
         convoyRoute=JourneyConvoyRoute::Road;battleReview={};retryRelief.reset();retryDefense.reset();
 		goal = Campaign::At(12, 10);
 		lastChain = {};
@@ -360,6 +361,7 @@ namespace frontline
 		else
 		{
 			++mission;turn=1;
+            legacyBattlefield=false;
             if(campaignFlow) world.day+=mission==1 ? 7:21; // Campaign montage; no unearned income or replenishment.
             convoyRoute=JourneyConvoyRoute::Road;assignments={};retryRelief.reset();retryDefense.reset();
 			stage = JourneyStage::Preparation;
