@@ -578,9 +578,12 @@ private:
     void OpenEpisode(bool bCoalition=false);
     bool CanOpenCoalitionFromEpilogue() const;
     bool CanChooseCoalitionFromNovel() const;
+    bool CanChooseLuoyangFromNovel() const;
     bool CoalitionStorySmokeTest();
     bool PrepareCoalitionStoryPreview(int Page);
     bool PrepareYangrenPreview(int View);
+    bool LuoyangSmokeTest();
+    bool PrepareLuoyangPreview(int View);
     bool YangrenSmokeTest();
     bool PrepareBattlefieldLayoutCapture(int Variant);
     void OpenJourneyEntry();

@@ -33,7 +33,7 @@ namespace frontline
     JourneyMap StrategistJourney::Battlefield() const
     {
         return SelectJourneyMap(mission,IsRescue(),convoyRoute,
-            campaignFlow && CurrentPledge()==JourneyPledge::Preserve,coalitionPlan,legacyBattlefield);
+            campaignFlow && CurrentPledge()==JourneyPledge::Preserve,coalitionPlan,legacyBattlefield,luoyangPlan);
     }
     Terrain StrategistJourney::PlanningTerrain(int tile) const
     { return BattlefieldTerrain(Battlefield(),tile%Width,tile/Width,IsRescue()); }
@@ -209,6 +209,7 @@ namespace frontline
             return U"陽人の辻を確保 / 孫堅隊 "+std::u32string(SunJianAtRally() ? U"合流地点に到着":
                 blocked ? U"南道で交戦中。隣接する敵を退けると進軍を再開":U"南から進軍中");
         }
+        if(mission==LuoyangMission) return Definition().objective;
         if(Definition().kind==JourneyObjective::CaptureCamp) return U"指揮所へ一隊を入れ、隣接する敵を退けて占領。護送・残敵掃討は不要";
 		if (Definition().kind == JourneyObjective::HoldPositions)
 			return U"二拠点の維持 " + Number(heldTurns) + U" / "+Number(RequiredHoldTurns())+U"指揮・Gで固守：隣接敵１隊まで維持";
@@ -284,6 +285,8 @@ namespace frontline
             {
                 world.tiles[goal].owner=world.player;++world.revision;
                 Finish(true,HasSunJian() ? U"陽人の辻を確保し、南から来た孫堅と合流した。":
+                    mission==LuoyangMission ? (luoyangPlan==LuoyangPlan::WesternDepot ?
+                        U"荷駄陣を確保。兵糧1,000を持ち帰り、義勇軍の蓄えに加えた。":U"南門前を確保し、孫堅本隊へ入城の合図を送った。"):
                     mission==CoalitionMission ? U"董卓軍の前哨を占領。曹操の先行隊に渡河の合図を送った。":
                     mission==YellowTurbanMission ? U"黄巾の前陣を占領。官軍が前へ出る道を開いた。":
                     U"河港の指揮所を占領。敵の連絡路が断たれ、義勇軍は官軍の共同作戦へ合流する。残敵を追う必要はない。");

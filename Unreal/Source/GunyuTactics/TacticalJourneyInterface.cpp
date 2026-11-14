@@ -124,6 +124,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
                 else if (Field->Presentation().Journey.bPreparation) { OpenEpisode();OpenNovelPlan(); }
                 else if (Field->CanIssue(ETacticalCommand::Continue)) Field->Issue(ETacticalCommand::Continue);
                 else if (Field->CanIssue(ETacticalCommand::Retry)) Field->Issue(ETacticalCommand::Retry);
+                else if (Field->CanIssue(ETacticalCommand::LuoyangGate)) OpenEpisode();
                 else if (Field->Presentation().Journey.bComplete) Field->Issue(ETacticalCommand::Restart);
             }, [this]
             {

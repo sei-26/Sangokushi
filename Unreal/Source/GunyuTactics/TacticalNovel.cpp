@@ -14,6 +14,11 @@ bool ATacticalController::CanChooseCoalitionFromNovel() const
     return bEpisodeOpen && bCoalitionEpisode && !bNovelHistory && !bNovelPlan &&
         EpisodePage+1==EpisodeSnapshot.Lines.Num() && NovelTextComplete() && Field->CanIssue(ETacticalCommand::CoalitionAdvance);
 }
+bool ATacticalController::CanChooseLuoyangFromNovel() const
+{
+    return bEpisodeOpen && !bNovelPersonal && !bNovelHistory && !bNovelPlan &&
+        EpisodePage+1==EpisodeSnapshot.Lines.Num() && NovelTextComplete() && Field->CanIssue(ETacticalCommand::LuoyangGate);
+}
 void ATacticalController::AdvanceNovel(float Delta)
 {
     AdvanceCouncilScene(Delta);
@@ -23,7 +28,7 @@ void ATacticalController::AdvanceNovel(float Delta)
 void ATacticalController::ReadNextNovel()
 {
     if(!bEpisodeOpen || bNovelHistory || bNovelPlan) return;
-    if(CanChooseCoalitionFromNovel()) return;
+    if(CanChooseCoalitionFromNovel() || CanChooseLuoyangFromNovel()) return;
     if(!NovelTextComplete()) NovelElapsed=1000;
     else if(EpisodePage+1==EpisodeSnapshot.Lines.Num() && !bNovelPersonal &&
         Field->Presentation().Journey.bComplete && Field->CanIssue(ETacticalCommand::Continue))
@@ -57,6 +62,12 @@ void ATacticalController::ChooseNovelReply(bool bFirst)
     {
         Field->Issue(bFirst ? ETacticalCommand::CoalitionAdvance:ETacticalCommand::CoalitionProtect);
         if(Field->Presentation().Journey.bPreparation) OpenJourneyEntry();
+        return;
+    }
+    if(CanChooseLuoyangFromNovel())
+    {
+        const auto Command=bFirst ? ETacticalCommand::LuoyangGate:ETacticalCommand::LuoyangDepot;
+        if(Field->CanIssue(Command)) { Field->Issue(Command);OpenJourneyEntry(); }
         return;
     }
     const auto Command=bFirst ? ETacticalCommand::StoryReplyPreserve:ETacticalCommand::StoryReplyCoordinate;

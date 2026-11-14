@@ -31,6 +31,10 @@ namespace TacticalMap
             return {EBackdropKind::MountainPass,TEXT("陽人の山麓"),1200,2100,-330,-930,1650,140,
                 FVector(1760,1080,0),5500,2000,830,540,
                 {{FVector(330,-750,1120),FVector(970,-1500,1750),FVector(3210,-1100,940),FVector(4150,-1700,1520),FVector(2120,-3600,1890)}}};
+        if(Mission==frontline::LuoyangMission)
+            return {EBackdropKind::Village,TEXT("洛陽城外"),1050,3220,-230,-1230,2300,208,
+                FVector(2020,950,0),5410,2140,1400,810,
+                {{FVector(300,-1550,625),FVector(870,-2460,920),FVector(3730,-1690,820),FVector(4530,-2310,1100),FVector(2350,-3300,1120)}}};
         return {EBackdropKind::Village,TEXT("集落"),720,2110,-180,-900,1500,60,
             FVector(1400,900,0),5300,1400,1400,850,
             {{FVector(300,-1500,620),FVector(1050,-2600,970),FVector(3100,-1700,720),FVector(4200,-2900,1060),FVector(2200,-3600,1050)}}};

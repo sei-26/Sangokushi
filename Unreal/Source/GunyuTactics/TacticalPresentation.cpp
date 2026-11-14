@@ -36,7 +36,8 @@ void ATacticalField::BuildPresentation()
     HUD.Selected = State->Selected;
     HUD.GoalTile = J.goal;
     HUD.SecondGoalTile = J.Definition().secondGoal;
-    HUD.GoalLabel = J.HasSunJian() ? TEXT("陽人の辻"):J.mission==CoalitionMission && J.coalitionPlan==CoalitionPlan::Advance ? TEXT("董卓軍の前哨"):
+    HUD.GoalLabel = J.mission==LuoyangMission ? (J.luoyangPlan==LuoyangPlan::WesternDepot ? TEXT("西の荷駄陣"):TEXT("洛陽の南門前")):
+        J.HasSunJian() ? TEXT("陽人の辻"):J.mission==CoalitionMission && J.coalitionPlan==CoalitionPlan::Advance ? TEXT("董卓軍の前哨"):
         J.mission == YellowTurbanMission ? TEXT("黄巾の前陣"):J.mission == 0 ? TEXT("脱出地点") :
         J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("河港の指揮所"):J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("北の烽火");
     HUD.SecondGoalLabel=J.HasSunJian() ? TEXT("孫堅と合流"):J.Definition().kind==JourneyObjective::HoldPositions ? TEXT("南の烽火"):HUD.GoalLabel;
@@ -68,7 +69,7 @@ void ATacticalField::BuildPresentation()
             : J.stage == JourneyStage::Complete ? TEXT("突破・護送・防衛の３戦を完了") : JourneyText(J.ObjectiveBrief());
         if (HUD.bComplete && J.campaignFlow)
         {
-            HUD.Title = J.HasSunJian() ? TEXT("反董卓連合の記録"):J.mission==CoalitionMission ? TEXT("酸棗の初戦の記録"):
+            HUD.Title = J.mission==LuoyangMission ? TEXT("反董卓連合の記録"):J.HasSunJian() ? TEXT("陽人の戦いの記録"):J.mission==CoalitionMission ? TEXT("酸棗の初戦の記録"):
                 J.mission==YellowTurbanMission ? TEXT("黄巾の乱の記録"):TEXT("序章の記録");
             HUD.Objective = HUD.Journey.CampaignNext;
         }

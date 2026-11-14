@@ -32,6 +32,12 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
         if(!J.ChooseCoalitionPlan(Command==ETacticalCommand::CoalitionAdvance ? CoalitionPlan::Advance:CoalitionPlan::Protect)) return;
         State->Orders.clear();State->Selected=0;State->Target=3;State->Input=ETacticalInput::Select;
         break;
+    case ETacticalCommand::LuoyangGate:
+    case ETacticalCommand::LuoyangDepot:
+        if(!J.ChooseLuoyangPlan(Command==ETacticalCommand::LuoyangGate ? LuoyangPlan::SouthGate:LuoyangPlan::WesternDepot)) return;
+        State->BeforeBattle.reset();
+        State->Orders.clear();State->Selected=0;State->Target=3;State->Input=ETacticalInput::Select;
+        break;
     case ETacticalCommand::Reinforce: J.Reinforce(); break;
     case ETacticalCommand::Deploy:
     {
@@ -67,7 +73,8 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     }
     State->Report = JourneyText(J.message);
     Refresh();
-    if(Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate) CheckpointJourney(true);
+    if(Command==ETacticalCommand::StoryReplyPreserve || Command==ETacticalCommand::StoryReplyCoordinate ||
+        Command==ETacticalCommand::LuoyangGate || Command==ETacticalCommand::LuoyangDepot) CheckpointJourney(true);
 }
 
 void ATacticalField::BuildJourneyPresentation()
@@ -86,6 +93,7 @@ void ATacticalField::BuildJourneyPresentation()
     P.bDebrief = J.stage == JourneyStage::Debrief;
     P.bComplete = J.stage == JourneyStage::Complete;
     P.Context = J.mission==YellowTurbanMission ? TEXT("184年・黄巾の乱。広宗郊外での義勇軍の作戦、会話、主人公の関与は創作です。"):
+        J.mission==LuoyangMission ? TEXT("191年・孫堅の洛陽入りを背景に、義勇軍の二つの任務と会話を創作しています。"):
         J.HasSunJian() ? TEXT("191年・陽人。孫堅の戦いを背景に、義勇軍の参加と局地戦を創作しています。"):
         J.mission==CoalitionMission ? TEXT("190年・反董卓連合。酸棗西での義勇軍の任務は創作です。"):
         TEXT("184年・黄巾の乱を背景とする序章。局地戦・会話・主人公の関与は創作です。");
@@ -169,7 +177,16 @@ void ATacticalField::BuildJourneyPresentation()
         if(J.mission==YellowTurbanMission) P.Heading=TEXT("第一章 完  ―  黄巾の乱");
         if(J.mission==CoalitionMission) P.Heading=TEXT("第二章  ―  酸棗の初戦の記録");
         if(J.CanBeginYangren()) P.PrimaryLabel=TEXT("陽人の戦いへ ／ Enter");
-        if(J.HasSunJian()) { P.Heading=TEXT("第二章 完  ―  反董卓連合");P.PrimaryLabel=TEXT("序章を最初から"); }
+        if(J.CanChooseLuoyangPlan(LuoyangPlan::SouthGate))
+        {
+            P.Heading=TEXT("第二章  ―  焼けた洛陽へ");
+            P.PrimaryLabel=TEXT("孫堅と次の役目を決める");
+            P.LuoyangChoices[0]=TEXT("1　南門を開く\n正面から門前を取り、孫堅本隊を通す");
+            P.LuoyangChoices[1]=J.CanChooseLuoyangPlan(LuoyangPlan::WesternDepot) ?
+                FString::Printf(TEXT("2　西の荷駄陣を突く\n敵の近くから出陣・期限短め ／ 勝利で兵糧＋%d"),WesternDepotFood):
+                FString::Printf(TEXT("西の荷駄陣　孫堅の信頼 %d / %d\n陽人で南道を開くか、呂布を抑えると選べる"),J.SunJianTrust(),SunJianFlankTrust);
+        }
+        if(J.mission==LuoyangMission) P.Heading=TEXT("第二章 完  ―  反董卓連合");
         P.Dialogue=P.CampaignChange;
         P.Outcome=P.CampaignNext;
     }
@@ -186,6 +203,7 @@ void ATacticalField::BuildJourneyPresentation()
         P.PrimaryLabel=J.won ? (J.mission==2 ? TEXT("正式な軍師として、序章の終幕へ"):
             J.mission==YellowTurbanMission ? TEXT("黄巾の乱の結末へ ／ Enter"):
             J.mission==CoalitionMission ? TEXT("初戦の記録へ ／ Enter"):
-            J.HasSunJian() ? TEXT("反董卓連合の結末へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
+            J.HasSunJian() ? TEXT("孫堅と次の役目を決める ／ Enter"):
+            J.mission==LuoyangMission ? TEXT("反董卓連合の結末へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
     }
 }

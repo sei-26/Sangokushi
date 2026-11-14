@@ -260,11 +260,11 @@ int main()
             assert(j.EndTurn() && j.battleReview.yangren.blockers==2 && a[5].tile==start);
             a[4].troops=50;
             j.RefreshIntelligence();
-            const auto writeV16=[&](JourneySaveData& source)
+            const auto writeLegacy=[&](JourneySaveData& source,unsigned version)
             {
                 std::vector<std::uint8_t> bytes;
-                JourneyArchive archive{false,bytes};archive.version=16;
-                unsigned version=16,checksum=0;
+                JourneyArchive archive{false,bytes};archive.version=version;
+                unsigned checksum=0;
                 archive(magic,version,checksum);archive(source);
                 checksum=2166136261u;
                 for(std::size_t i=12;i<bytes.size();++i) { checksum^=bytes[i];checksum*=16777619u; }
@@ -272,7 +272,7 @@ int main()
                 return bytes;
             };
             auto legacyActive=std::make_unique<JourneySaveData>();
-            assert(DecodeJourneySave(writeV16(*stalled),*legacyActive));
+            assert(DecodeJourneySave(writeLegacy(*stalled,16),*legacyActive));
             assert(legacyActive->journey.battleReview.yangren.tracked && !legacyActive->journey.battleReview.yangren.wasBlocked);
             auto queued=std::make_unique<StrategistJourney>(j);
             JourneyRealtime orders;
@@ -310,8 +310,14 @@ int main()
             assert(BuildJourneyEpisode(j).lines.front().text.find(U"張飛")!=std::u32string::npos);
             assert(EncodeJourneySave(*stalled,bytes) && DecodeJourneySave(bytes,*stalled) &&
                 j.history[YangrenMission].review.yangren==result);
-            assert(DecodeJourneySave(writeV16(*stalled),*stalled) && j.won && !j.history[YangrenMission].review.yangren.tracked);
+            assert(j.Continue());
+            auto sameVersion=std::make_unique<JourneySaveData>();
+            assert(DecodeJourneySave(writeLegacy(*stalled,17),*sameVersion) &&
+                sameVersion->journey.CanChooseLuoyangPlan(LuoyangPlan::WesternDepot));
+            assert(DecodeJourneySave(writeLegacy(*stalled,16),*stalled) && j.won && !j.history[YangrenMission].review.yangren.tracked);
             assert(BuildJourneyEpisode(j).lines.front().text.find(U"張飛")==std::u32string::npos);
+            assert(j.CanChooseLuoyangPlan(LuoyangPlan::SouthGate) &&
+                !j.CanChooseLuoyangPlan(LuoyangPlan::WesternDepot));
         }
         {
             auto lure=std::make_unique<StrategistJourney>(battle);
@@ -360,6 +366,61 @@ int main()
         std::cerr<<"yangren plan="<<int(plan)<<" won="<<battle.won<<" turn="<<battle.turn<<" allied="<<battle.world.armies[5].troops<<"\n";
         assert(battle.won && battle.SunJianAtRally() && battle.Continue() && battle.stage==JourneyStage::Complete &&
             EncodeJourneySave(*old,before) && DecodeJourneySave(before,*old) && !battle.CanContinue());
+        for(const auto route:{LuoyangPlan::SouthGate,LuoyangPlan::WesternDepot})
+        {
+            auto next=std::make_unique<JourneySaveData>(*old);
+            auto& j=next->journey;
+            // The completed road-relief fixture above earns +5. Use that evidence
+            // for the branch contract independently of what the auto battle did.
+            auto& review=j.history[YangrenMission].review.yangren;
+            review={};
+            review.tracked=true;
+            if(route==LuoyangPlan::WesternDepot) { review.wasBlocked=true;review.roadOfficer=2; }
+            j.battleReview.yangren=review;
+            const bool west=route==LuoyangPlan::WesternDepot;
+            if(!west) assert(!j.ChooseLuoyangPlan(LuoyangPlan::WesternDepot));
+            const auto camp=j.world.cities[0];
+            const auto relationships=j.officerTrust;
+            const auto council=BuildJourneyEpisode(j);
+            assert(council.lines[council.lines.size()-2].speaker==SunJian);
+            assert((council.lines[council.lines.size()-2].text.find(U"荷駄")!=std::u32string::npos)==west);
+            assert(j.ChooseLuoyangPlan(route) && !j.ChooseLuoyangPlan(route));
+            assert(j.stage==JourneyStage::Preparation && j.mission==LuoyangMission &&
+                j.Battlefield()==(west ? JourneyMap::LuoyangDepot:JourneyMap::LuoyangGate));
+            assert(j.world.cities[0].food==camp.food && j.world.cities[0].gold==camp.gold &&
+                j.world.cities[0].troops==camp.troops && j.officerTrust==relationships);
+            assert(j.SelectDifficulty(protect ? JourneyDifficulty::Standard:JourneyDifficulty::Story));
+            assert(j.ApplyPlanExample());
+            next->beforeBattle=j;
+            assert(j.Prepare(1,j.enemyPolicy));
+            std::vector<std::uint8_t> bytes;
+            assert(EncodeJourneySave(*next,bytes) && DecodeJourneySave(bytes,*next));
+            auto retry=std::make_unique<StrategistJourney>(j);
+            assert(retry->Withdraw() && retry->RetryAtCouncil(*next->beforeBattle) && retry->luoyangPlan==route &&
+                retry->world.cities[0].food==camp.food && retry->SunJianTrust()==j.SunJianTrust());
+            for(int i=0;i<18 && j.stage==JourneyStage::Battle;++i)
+            {
+                auto orders=PlanJourneyAutoBattle(j);
+                if(!orders.tactics.empty()) j.Execute(orders.tactics);
+                if(j.stage==JourneyStage::Battle) assert(orders.movement.Resolve(j));
+            }
+            std::cerr<<"luoyang plan="<<int(route)<<" won="<<j.won<<" turn="<<j.turn<<" survivors="<<j.survivors<<"\n";
+            assert(j.won && BuildJourneyEpisode(j).lines.front().text.find(west ? U"荷駄":U"南門")!=std::u32string::npos);
+            // Isolate the payout from ordinary food consumption with an immediate
+            // public Evaluate, triggered by marching the last step onto the goal.
+            auto payout=std::make_unique<StrategistJourney>(*next->beforeBattle);
+            assert(payout->Prepare(1,payout->enemyPolicy));
+            auto& w=payout->world;
+            w.armies[3].troops=w.armies[4].troops=0;
+            const int marchFrom=Campaign::At(west ? 9:10,west ? 7:5);
+            w.armies[0].tile=w.armies[0].target=marchFrom;
+            payout->RefreshIntelligence();
+            int expectedFood=w.cities[0].food+payout->reserveFood+(west ? WesternDepotFood:0);
+            for(int army=0;army<3;++army) expectedFood+=w.armies[army].food;
+            assert(payout->Move(0,payout->goal) && payout->won && w.cities[0].food==expectedFood);
+            assert(j.Continue() && EncodeJourneySave(*next,bytes) && DecodeJourneySave(bytes,*next) &&
+                j.luoyangPlan==route && j.history[LuoyangMission].won && !j.CanContinue());
+        }
         battle.ResetCampaign();
         assert(battle.coalitionPlan==CoalitionPlan::None && !battle.history[CoalitionMission].completed && EncodeJourneySave(*old,before));
     }

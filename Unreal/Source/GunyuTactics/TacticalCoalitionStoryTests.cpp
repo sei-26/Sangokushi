@@ -367,3 +367,82 @@ bool ATacticalController::YangrenSmokeTest()
     UE_LOG(LogTemp,Display,TEXT("GUNYU_YANGREN: PASS (two councils, deployment, reload, retry, allied victory, trust and credited dialogue)"));
     return true;
 }
+
+bool ATacticalController::PrepareLuoyangPreview(int View)
+{
+    using namespace frontline;
+    if(View<0 || View>5 || !PrepareYangrenPreview(5)) return false; // Zhang Fei actually opens the road for Sun Jian.
+    if(!Field->CanIssue(ETacticalCommand::Continue)) return false;
+    Field->Issue(ETacticalCommand::Continue);OpenEpisode();
+    std::vector<std::uint8_t> Bytes;
+    if(View==1 || View==2)
+    {
+        auto Save=std::make_unique<JourneySaveData>();
+        if(!Field->ExportSession(Bytes) || !DecodeJourneySave(Bytes,*Save)) return false;
+        // Simulate a completed pre-v17 save, which has no recorded contribution.
+        Save->journey.battleReview.yangren={};
+        Save->journey.history[YangrenMission].review.yangren={};
+        if(!EncodeJourneySave(*Save,Bytes) || !Field->ImportSession(Bytes)) return false;
+        OpenEpisode();
+    }
+    while(EpisodePage+1<EpisodeSnapshot.Lines.Num()) StepEpisode(1);
+    NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+    if(!CanChooseLuoyangFromNovel() ||
+        Field->CanIssue(ETacticalCommand::LuoyangDepot)!=(View!=1 && View!=2)) return false;
+    if(View==0 || View==1)
+    {
+        if(View==1) { ChooseNovelReply(false);if(!CanChooseLuoyangFromNovel()) return false; }
+        return true;
+    }
+    const bool West=View>=3;
+    HandleEpisodeKey(West ? EKeys::Two:EKeys::One);
+    if(!bEpisodeOpen || Field->Presentation().Mission!=LuoyangMission) return false;
+    while(EpisodePage+1<EpisodeSnapshot.Lines.Num()) StepEpisode(1);
+    NovelElapsed=1000;
+    HandleEpisodeKey(EKeys::Enter);
+    if(!bNovelPlan || CouncilExchange.Subject!=(West ? TEXT("西の荷駄陣を突く"):TEXT("南門を開く")) ||
+        Field->Presentation().Journey.Map.Name!=(West ? TEXT("洛陽西郊・荷駄陣"):TEXT("洛陽南郊・南門前"))) return false;
+    if(View==3) { TogglePlanningMap();return bNovelMap; }
+    DeployNovelPlan();
+    if(!Field->Presentation().bBattle || Field->Presentation().GoalLabel!=(West ? TEXT("西の荷駄陣"):TEXT("洛陽の南門前"))) return false;
+    if(View==2 || View==4)
+    {
+        CameraYaw=90;CameraElevation=61;CameraPreset=2;
+        Focus=FVector(2120,1250,0);Distance=ViewDistance=3330;
+        return true;
+    }
+    auto Save=std::make_unique<JourneySaveData>();
+    if(!Field->ExportSession(Bytes) || !DecodeJourneySave(Bytes,*Save)) return false;
+    auto& J=Save->journey;
+    for(int Cycle=0;Cycle<18 && J.stage==JourneyStage::Battle;++Cycle)
+    {
+        auto Next=PlanJourneyAutoBattle(J);
+        if(!Next.tactics.empty()) J.Execute(Next.tactics);
+        if(J.stage==JourneyStage::Battle && !Next.movement.Resolve(J)) return false;
+    }
+    return J.won && EncodeJourneySave(*Save,Bytes) && Field->ImportSession(Bytes) &&
+        Field->Presentation().Journey.StoryFacts.Contains(TEXT("荷駄陣から回収：兵糧 +1000"));
+}
+
+bool ATacticalController::LuoyangSmokeTest()
+{
+    auto Check=[](bool Valid,const TCHAR* Reason)
+    { if(!Valid) UE_LOG(LogTemp,Error,TEXT("GUNYU_LUOYANG: FAIL %s"),Reason);return Valid; };
+    if(!Check(PrepareLuoyangPreview(0) && PrepareLuoyangPreview(1),TEXT("Yangren relief unlocks an optional role; older saves can still choose the gate"))) return false;
+    if(!Check(PrepareLuoyangPreview(2) && PrepareLuoyangPreview(3),TEXT("both role buttons lead to their own briefing and map"))) return false;
+    if(!Check(PrepareLuoyangPreview(4),TEXT("western route deploys normally"))) return false;
+    std::vector<std::uint8_t> Bytes;
+    if(!Check(Field->ExportSession(Bytes) && Field->ImportSession(Bytes) &&
+        Field->Presentation().GoalLabel==TEXT("西の荷駄陣"),TEXT("battle reload keeps the chosen objective"))) return false;
+    Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Skip);
+    Field->Issue(ETacticalCommand::Retry);
+    if(!Check(Field->Presentation().Journey.bPreparation && Field->Presentation().Journey.Map.Name==TEXT("洛陽西郊・荷駄陣"),
+        TEXT("retry keeps the western route"))) return false;
+    if(!Check(PrepareLuoyangPreview(5) && Field->CanIssue(ETacticalCommand::Continue),TEXT("western depot victory settles the reward"))) return false;
+    Field->Issue(ETacticalCommand::Continue);OpenEpisode();
+    if(!Check(bEpisodeOpen && CurrentEpisodeLine().Text.Contains(TEXT("荷駄")) && !CanChooseLuoyangFromNovel(),
+        TEXT("victory opens the correct chapter ending"))) return false;
+    CloseEpisode();
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_LUOYANG: PASS (gated choice, both deployments, reload, retry, reward and ending)"));
+    return true;
+}

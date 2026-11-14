@@ -27,7 +27,8 @@ namespace frontline
         { e.beats.push_back({{speaker,text,direction},{liu,guan,zhang}}); };
         if(j.mission>=YellowTurbanMission && voice==-1 && accepted==CouncilDecision::None)
         {
-            e.subject=j.HasSunJian() ? U"陽人で孫堅と合流":j.mission==CoalitionMission ? CoalitionPlanName(j.coalitionPlan):U"広宗の前陣へ、二つの道";
+            e.subject=j.mission==LuoyangMission ? LuoyangPlanName(j.luoyangPlan):
+                j.HasSunJian() ? U"陽人で孫堅と合流":j.mission==CoalitionMission ? CoalitionPlanName(j.coalitionPlan):U"広宗の前陣へ、二つの道";
             for(const auto& line:BuildJourneyEpisode(j).lines) e.beats.push_back({line,{}});
             return e;
         }
@@ -123,7 +124,8 @@ namespace frontline
             }
             else
             {
-                Say(0,j.mission==CoalitionMission ? U"引き受けた役目を地図に置こう。誰を前に出し、誰を合図まで残すか、君の策を聞きたい。":
+                Say(0,j.mission==LuoyangMission ? U"焼けた都を見たかい。今日の戦では、帰ってくる人の道にも旗を立てたい。誰に最後まで残ってもらう？":
+                    j.mission==CoalitionMission ? U"引き受けた役目を地図に置こう。誰を前に出し、誰を合図まで残すか、君の策を聞きたい。":
                     j.mission==YellowTurbanMission ? U"前陣が落ちれば官軍が進める。こちらは旗を替えるところまで。残った敵を追えば、帰る兵の列が乱れるよ。":
                     j.mission==1 ? U"この港を取れば、集まった者たちを本隊へつなげられる。私たちだけの武名に終わらせたくない。":U"両翼を守れば、本隊が決戦を仕掛けられる。遠くの兵も、君の合図を待っている。",U"劉備は、地図の外へ続く道をなぞった。");
                 Say(3,U"なら、この場の三人だけで終わらない策にする。俺たちの勝ち方を、向こうまで届かせよう。",U"主人公が頷く。張飛も、今度は地図の外を見ている。",U"ああ、共に進もう",U"配置へ落とし込もう",U"聞こえるくらい派手にな！");

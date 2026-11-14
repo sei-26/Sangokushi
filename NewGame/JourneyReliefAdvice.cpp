@@ -45,6 +45,7 @@ namespace frontline
     bool StrategistJourney::RetryAtCouncil(const StrategistJourney& beforeBattle)
     {
         if(stage!=JourneyStage::Debrief || won || beforeBattle.stage!=JourneyStage::Preparation || beforeBattle.mission!=mission) return false;
+        if(beforeBattle.luoyangPlan!=luoyangPlan) return false;
         std::optional<JourneyReliefRecord> lesson;
         if(campaignFlow && beforeBattle.campaignFlow) if(const auto* r=CheckedRelief(battleReview)) lesson=*r;
         const auto defense=ReadDefenseRetryLesson(*this,beforeBattle);

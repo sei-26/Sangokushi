@@ -60,6 +60,8 @@ namespace frontline
       if(version>=15) IO(v.legacyBattlefield);
       else if(reading) v.legacyBattlefield=v.stage!=JourneyStage::Encounter;
       if(version>=16) IO(v.history[YangrenMission]);else if(reading) v.history[YangrenMission]={};
+      if(version>=18) (*this)(v.luoyangPlan,v.history[LuoyangMission]);
+      else if(reading) { v.luoyangPlan=LuoyangPlan::None;v.history[LuoyangMission]={}; }
       if(reading && version<17 && v.HasSunJian() && v.stage==JourneyStage::Battle)
           v.battleReview.yangren.tracked=true; }
 }

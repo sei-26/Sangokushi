@@ -71,9 +71,11 @@ void ATacticalField::BuildMissionPresentation()
     }
     else if(J.Definition().kind==JourneyObjective::CaptureCamp)
     {
-        H.MissionAdvice=J.mission==CoalitionMission ? TEXT("前哨を押さえよう"):
+        const bool Luoyang=J.mission==LuoyangMission;
+        H.MissionAdvice=Luoyang ? H.GoalLabel+TEXT("を押さえよう"):J.mission==CoalitionMission ? TEXT("前哨を押さえよう"):
             J.mission==YellowTurbanMission ? TEXT("前陣を押さえよう"):TEXT("指揮所を押さえよう");
-        H.MissionStep=FString(J.mission==CoalitionMission ? TEXT("前哨占領"):J.mission==YellowTurbanMission ? TEXT("前陣占領"):TEXT("河港占領"))+
+        H.MissionStep=(Luoyang ? H.GoalLabel:FString(J.mission==CoalitionMission ? TEXT("前哨占領"):
+            J.mission==YellowTurbanMission ? TEXT("前陣占領"):TEXT("河港占領")))+
             (EnemiesNear(J.goal)>0 ? TEXT(" ｜ 付近の敵を離し、占領する隊を通そう。"):
                 TEXT(" ｜ 一隊を入れよう。見えていない周囲は確認を。"));
         H.MissionDetail+=TEXT("\n目標へ / U：")+H.GoalLabel+TEXT("を見る。周囲を確保して一隊を入れる。");

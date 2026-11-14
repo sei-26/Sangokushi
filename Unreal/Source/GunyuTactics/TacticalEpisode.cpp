@@ -25,7 +25,7 @@ void ATacticalController::OpenJourneyEntry()
     {
         OpenEpisode();
         const int Mission=Field->Presentation().Mission;
-        if(Mission!=frontline::YellowTurbanMission && Mission!=frontline::YangrenMission) OpenNovelPlan();
+        if(Mission!=frontline::YellowTurbanMission && Mission!=frontline::YangrenMission && Mission!=frontline::LuoyangMission) OpenNovelPlan();
     }
     else if(P.bDebrief) { CloseEpisode();EpisodeSeenKey=P.Episode.Key; }
     else OpenEpisode();
@@ -79,6 +79,8 @@ bool ATacticalController::UpdateEpisodeInput()
     if(Toggle) { if(bEpisodeOpen && bNovelPlan) bNovelPlan=false;else if(bEpisodeOpen) CloseEpisode();else OpenEpisode(); }
     if(!bEpisodeOpen && !bSaveMenuOpen && Field->Presentation().Journey.bPreparation && WasInputKeyJustPressed(EKeys::Enter))
     { OpenEpisode();OpenNovelPlan();return true; }
+    if(!bEpisodeOpen && !bSaveMenuOpen && Field->CanIssue(ETacticalCommand::LuoyangGate) && WasInputKeyJustPressed(EKeys::Enter))
+    { OpenEpisode();return true; }
     if(!bEpisodeOpen) return WasOpen || Toggle;
     for(const FKey& Key:{EKeys::Escape,EKeys::L,EKeys::Left,EKeys::Enter,EKeys::SpaceBar,EKeys::Right,EKeys::One,EKeys::Two,EKeys::D,EKeys::A,EKeys::M,EKeys::R})
         if(WasInputKeyJustPressed(Key)) { HandleEpisodeKey(Key);break; }

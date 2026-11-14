@@ -13,6 +13,12 @@ namespace TacticalMap
     inline FBattlefieldStyle BattlefieldStyle(frontline::JourneyMap Map)
     {
         using frontline::JourneyMap;
+        if(Map==JourneyMap::LuoyangGate)
+            return {FLinearColor(.24f,.205f,.16f),FLinearColor(.115f,.14f,.077f),
+                FLinearColor(.34f,.28f,.25f),FLinearColor(.46f,.36f,.26f),95.f,29000.f,.74f,96.f};
+        if(Map==JourneyMap::LuoyangDepot)
+            return {FLinearColor(.185f,.205f,.135f),FLinearColor(.09f,.15f,.065f),
+                FLinearColor(.30f,.28f,.21f),FLinearColor(.54f,.34f,.17f),195.f,31000.f,1.06f,66.f};
         if(Map==JourneyMap::Yangren)
             return {FLinearColor(.25f,.22f,.13f),FLinearColor(.11f,.16f,.075f),
                 FLinearColor(.34f,.27f,.21f),FLinearColor(.55f,.32f,.13f),265.f,38000.f,1.05f,75.f};

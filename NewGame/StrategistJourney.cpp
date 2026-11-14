@@ -66,6 +66,7 @@ namespace frontline
 		won = reinforced = false;
 		withdrawn = false; promise = JourneyPromise::OpenRoad; history = {};
         coalitionPlan=CoalitionPlan::None;
+        luoyangPlan=LuoyangPlan::None;
         legacyBattlefield=false;
         convoyRoute=JourneyConvoyRoute::Road;battleReview={};retryRelief.reset();retryDefense.reset();
 		goal = Campaign::At(12, 10);
@@ -150,6 +151,11 @@ namespace frontline
             commander.trait=Trait::Valiant;
             commander.tactic=Tactic::Charge;
             commander.leadership=65;
+            if(mission==LuoyangMission)
+            {
+                commander.name=luoyangPlan==LuoyangPlan::WesternDepot ? U"董卓軍の荷駄守備":U"董卓軍の南門後衛";
+                world.generals[4].name=U"董卓軍の退却隊";
+            }
             if(mission==YellowTurbanMission)
             {
                 commander.name=EpisodeSpeakerName(ZhangLiang);
@@ -364,6 +370,8 @@ namespace frontline
 			cart.food = cart.cargoFood = 0;
 		}
         world.cities[0].food+=reserveFood;reserveFood=0; // Unissued reserve remains ours, including withdrawal.
+        if(success && mission==LuoyangMission && luoyangPlan==LuoyangPlan::WesternDepot)
+            world.cities[0].food+=WesternDepotFood;
 		casualties = deployed + convoyEscort - survivors;
         FinalizeRelief();
         CompleteBattleReview(success);
@@ -403,7 +411,9 @@ namespace frontline
             if(mission==CoalitionMission)
                 Report(U"酸棗で引き受けた任務を果たした。次は陽人へ向かい、孫堅軍に合流する。");
             else if(mission==YangrenMission)
-                Report(U"第二章 完。陽人で孫堅と合流し、董卓軍の南の戦線を破った。");
+                Report(U"陽人で孫堅と合流した。次は焼けた洛陽で引き受ける役目を決める。");
+            else if(mission==LuoyangMission)
+                Report(U"第二章 完。孫堅は焼け跡の残る洛陽へ入った。");
             else if(mission==YellowTurbanMission)
                 Report(U"第一章 完。広宗での役目を果たし、黄巾の戦いを終えた。");
             else Report(campaignFlow ? U"序章 完。退路、河港、決戦の両翼――三つの采配を経て、義勇軍の正式な軍師となった。":U"突破・護送・防衛の３戦を完了。仕官の選択と、その先の歴史戦役は今後つなぐ。");

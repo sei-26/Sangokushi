@@ -7,9 +7,17 @@ namespace frontline
     inline constexpr int YellowTurbanMission=3;
     inline constexpr int CoalitionMission=4;
     inline constexpr int YangrenMission=5;
+    inline constexpr int LuoyangMission=6;
     inline constexpr int YangrenRally=11+9*Width;
     inline constexpr int SunJianStart(bool guided) { return (guided ? 8:6)+10*Width; }
     enum class CoalitionPlan { None, Advance, Protect };
+    enum class LuoyangPlan { None, SouthGate, WesternDepot };
+    inline constexpr int SunJianFlankTrust=4;
+    inline constexpr int WesternDepotFood=1000;
+    inline const char32_t* LuoyangPlanName(LuoyangPlan plan)
+    {
+        return plan==LuoyangPlan::WesternDepot ? U"西の荷駄陣を突く":U"南門を開く";
+    }
     inline bool CanOccupyObjective(const Army& unit)
     { return unit.troops>=150 && unit.morale>=25; }
     inline const char32_t* CoalitionPlanName(CoalitionPlan plan)
@@ -34,6 +42,20 @@ namespace frontline
 		int limit, goal, secondGoal, requiredProgress;
 		std::array<int, 5> positions;
 	};
+    inline const JourneyMission& LuoyangMissionDefinition(LuoyangPlan plan)
+    {
+        static const JourneyMission gate{U"洛陽南郊 ／ 孫堅本隊を通せ",
+            U"南門前に一隊を入れ、付近の敵を退けて本隊を通す",
+            U"城壁沿いの広い道から進む。正面の守備を引き離し、南門前に一隊を入れよう。",
+            JourneyObjective::CaptureCamp,10,11+5*Width,-1,0,
+            {{8+8*Width,7+7*Width,9+9*Width,11+5*Width,13+8*Width}}};
+        static const JourneyMission depot{U"洛陽西郊 ／ 撤収前に荷駄陣を奪え",
+            U"西の荷駄陣を占領し、兵糧1,000を持ち帰る",
+            U"近道から敵のすぐ近くへ出る。北と南から敵を引き離し、撤収前に荷駄陣を取る。",
+            JourneyObjective::CaptureCamp,8,10+7*Width,-1,0,
+            {{8+7*Width,8+6*Width,8+8*Width,10+7*Width,11+9*Width}}};
+        return plan==LuoyangPlan::WesternDepot ? depot:gate;
+    }
 	// Scenario data is deliberately independent of rendering and engine APIs.
 	inline const JourneyMission& MissionDefinition(int index)
 	{

@@ -75,8 +75,9 @@ namespace frontline
         bool AssignDuty(int officer,int tile,JourneyDuty);
         std::u32string AssignmentStatus(int officer) const;
 		bool withdrawn = false;
-		std::array<JourneyResult, YangrenMission+1> history{};
+		std::array<JourneyResult, LuoyangMission+1> history{};
         CoalitionPlan coalitionPlan=CoalitionPlan::None;
+        LuoyangPlan luoyangPlan=LuoyangPlan::None;
         bool legacyBattlefield=false;
 		ChainResult lastChain;
 		std::vector<Chronicle> reports;
@@ -114,6 +115,7 @@ namespace frontline
 		bool Hold(int army);
 		const JourneyMission& Definition() const
 		{
+            if(mission==LuoyangMission) return LuoyangMissionDefinition(luoyangPlan);
 			return campaignFlow ? CampaignMissionDefinition(mission,CurrentPledge()==JourneyPledge::Preserve,coalitionPlan,legacyBattlefield):MissionDefinition(mission);
 		}
         JourneyMap Battlefield() const;
@@ -129,6 +131,9 @@ namespace frontline
         bool CanBeginYangren() const;
         bool CanChooseCoalitionPlan() const;
         bool ChooseCoalitionPlan(CoalitionPlan);
+        int SunJianTrust() const;
+        bool CanChooseLuoyangPlan(LuoyangPlan) const;
+        bool ChooseLuoyangPlan(LuoyangPlan);
         bool NeedsStoryReply() const;
         bool ChooseStoryReply(JourneyPledge);
         JourneyPledge CurrentPledge() const;

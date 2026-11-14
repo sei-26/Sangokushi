@@ -51,6 +51,16 @@ void ATacticalField::BuildPreparationMap()
         Add(Campaign::At(10,10),TEXT("南の平地"),TEXT("前陣へ回り込む道。南から来る反撃隊に注意。"),
             {TEXT("正面へ全員を出さず、ここを通る隊を残そう。"),TEXT("南へ敵が向いたなら、正面にも道が開く。"),TEXT("合図が来たら、ここから行くぜ。")});
     }
+    else if(J.mission==LuoyangMission)
+    {
+        const bool West=J.luoyangPlan==LuoyangPlan::WesternDepot;
+        Add(J.Definition().goal,West ? TEXT("西の荷駄陣"):TEXT("洛陽の南門前"),
+            West ? TEXT("隣接敵を退けて一隊を入れる。勝利すると兵糧1,000を野営地に加える。"):
+                TEXT("隣接敵を退けて一隊を入れる。孫堅本隊は義勇軍の合図を待つ。"),
+            {TEXT("最後に入る隊を残しておこう。"),TEXT("敵を左右どちらかへ引き離せ。"),TEXT("陣を取ったら、深追いはやめるぜ。")});
+        if(West)
+            Add(J.Definition().positions[1],TEXT("孫堅の斥候が通した林"),TEXT("関羽の出陣地点。荷駄陣の近くへ出られるので、隣接する前に伏兵を仕込もう。"),{});
+    }
     else if(J.Definition().kind==JourneyObjective::CaptureCamp)
         Add(J.Definition().goal,TEXT("河港の指揮所"),TEXT("一隊を入れ、隣接する敵を退けて安全に占領すると決着。全滅させたり護送車を待ったりする必要はない。"),
             {TEXT("ここを取れば、本隊が動ける。追撃する隊と占領する隊を決めよう。"),TEXT("斬った数で終わる戦いではない。最後にここへ入るのは誰だ。"),TEXT("橋は俺が抜く！ その後、旗を立てる奴も呼んどけよ！")});

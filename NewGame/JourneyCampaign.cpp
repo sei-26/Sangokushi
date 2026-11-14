@@ -29,6 +29,37 @@ namespace frontline
         Report(std::u32string(CoalitionPlanName(plan))+U"。酸棗で出陣の軍議を開いた。");
         return true;
     }
+    int StrategistJourney::SunJianTrust() const
+    {
+        const auto& result=history[YangrenMission];
+        return result.review.yangren.TrustGain(result.completed && result.won);
+    }
+    bool StrategistJourney::CanChooseLuoyangPlan(LuoyangPlan plan) const
+    {
+        return campaignFlow && stage==JourneyStage::Complete && HasSunJian() && won &&
+            history[YangrenMission].completed && history[YangrenMission].won &&
+            (plan==LuoyangPlan::SouthGate || (plan==LuoyangPlan::WesternDepot && SunJianTrust()>=SunJianFlankTrust));
+    }
+    bool StrategistJourney::ChooseLuoyangPlan(LuoyangPlan plan)
+    {
+        if(!CanChooseLuoyangPlan(plan)) return false;
+        luoyangPlan=plan;
+        mission=LuoyangMission;
+        stage=JourneyStage::Preparation;
+        turn=1;
+        enemyPolicy=1;
+        goal=Definition().goal;
+        assignments={};
+        convoyRoute=JourneyConvoyRoute::Road;
+        battleReview={};
+        legacyBattlefield=false;
+        reinforced=false;
+        retryRelief.reset();
+        retryDefense.reset();
+        world.day+=7; // Transition without a free resource tick.
+        Report(std::u32string(LuoyangPlanName(plan))+U"。孫堅と別れ、受け持つ道へ向かった。");
+        return true;
+    }
     std::u32string StrategistJourney::ObjectiveBrief() const
     {
         if(campaignFlow && mission==2) return RequiredHoldTurns()==2 ? U"両翼の烽火を２指揮維持し、本隊の包囲を完成させる":U"両翼の烽火を３指揮維持し、本隊の包囲を完成させる";
@@ -39,11 +70,25 @@ namespace frontline
         JourneyCampaignBeat b;
         if(!j.campaignFlow) return b;
         const bool finished=j.stage==JourneyStage::Debrief && j.won;
+        if(j.mission==LuoyangMission)
+        {
+            const bool west=j.luoyangPlan==LuoyangPlan::WesternDepot;
+            const auto* role=LuoyangPlanName(j.luoyangPlan);
+            if(finished || j.stage==JourneyStage::Complete)
+                return {U"第二章 ／ 洛陽へ",west ? U"西の荷駄陣を押さえ、兵糧1,000を持ち帰った。":U"南門前を確保し、孫堅が都へ向かう道をつないだ。",
+                    U"孫堅は焼けた都に入り、荒らされた陵墓の修復にあたる。",role};
+            if(j.stage==JourneyStage::Debrief)
+                return {U"第二章 ／ 洛陽へ",west ? U"荷駄陣は押さえられなかった。":U"南門前を確保できなかった。",
+                    U"軍議へ戻り、敵を引き受ける隊と最後に旗を立てる隊を決め直す。",role};
+            return {U"第二章 ／ 洛陽へ",j.Definition().briefing,west ?
+                U"孫堅の斥候が林道を案内する。敵に近い位置から始め、短い期限で荷駄陣を押さえる。":
+                U"義勇軍が先に南門前を確保する。孫堅本隊は道が開いたあとに入る。",role};
+        }
         if(j.HasSunJian())
         {
             if(finished || j.stage==JourneyStage::Complete)
                 return {U"第二章 ／ 陽人の戦い",U"陽人で孫堅と合流し、董卓軍の南の戦線を破った。",
-                    U"孫堅は洛陽へ。義勇軍は南から押し開いた道を見届ける。",U"孫堅と共闘する軍師"};
+                    U"焼けた洛陽を前に、孫堅と次の役目を決める。",U"孫堅と共闘する軍師"};
             if(j.stage==JourneyStage::Debrief)
                 return {U"第二章 ／ 陽人の戦い",U"陽人の辻と孫堅隊の合流を果たせなかった。",U"軍議へ戻り、平地で騎兵を受ける位置と南への援護を見直す。",U"孫堅と共闘する軍師"};
             return {U"第二章 ／ 陽人の戦い",j.Definition().briefing,j.coalitionPlan==CoalitionPlan::Advance ?

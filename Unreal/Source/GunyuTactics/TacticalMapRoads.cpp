@@ -12,6 +12,16 @@ void ATacticalField::UpdateRoadTopology()
     const auto Map=J.Battlefield();
     auto Add=[&](std::initializer_list<std::pair<int,int>> Cells)
     { for(const auto& [X,Y]:Cells) Road.Add(TileLocation(Campaign::At(X,Y))); };
+    if(Map==JourneyMap::LuoyangGate)
+    {
+        Add({{3,10},{6,9},{8,8},{10,7},{11,5},{11,3}});
+        return;
+    }
+    if(Map==JourneyMap::LuoyangDepot)
+    {
+        Add({{3,10},{5,8},{8,7},{10,7},{12,7},{14,6}});
+        return;
+    }
     if(Map==JourneyMap::Yangren)
     {
         Add({{3,10},{6,10},{8,10},{10,10},{11,9},{11,8},{12,7},{14,6}});

@@ -72,12 +72,13 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
                 if(!NovelTextComplete()) return TEXT("全文を表示 / Enter");
                 if(EpisodePage+1<EpisodeSnapshot.Lines.Num()) return TEXT("続きを読む / Enter");
                 if(CanChooseCoalitionFromNovel()) return TEXT("協力先を選ぶ / 1・2");
+                if(CanChooseLuoyangFromNovel()) return TEXT("引き受ける任務を選ぶ");
                 if(Field->Presentation().Journey.bComplete && !bNovelPersonal && Field->CanIssue(ETacticalCommand::Continue))
                     return Field->Presentation().Mission==frontline::CoalitionMission ? TEXT("陽人の戦いへ / Enter"):TEXT("黄巾の乱へ / Enter");
                 if(CanOpenCoalitionFromEpilogue()) return TEXT("反董卓連合へ / Enter");
                 if(Field->Presentation().Journey.bPreparation && !bNovelPersonal) return TEXT("皆と策を決める / Enter");
                 return Field->Presentation().Journey.bComplete ? TEXT("章の記録へ戻る / Enter"):TEXT("采配へ戻る / Enter");
-            },[this] { ReadNextNovel(); },[this] { return !CanChooseCoalitionFromNovel(); })]]];
+            },[this] { ReadNextNovel(); },[this] { return !CanChooseCoalitionFromNovel() && !CanChooseLuoyangFromNovel(); })]]];
     Canvas->AddSlot().Position(FVector2D(64,850)).Size(FVector2D(1472,34))[Controls];InputPanels.Add(Controls);
     auto Choices=SNew(SVerticalBox).Visibility_Lambda([this]
         { return bEpisodeOpen && !bNovelHistory && !bNovelPlan && NovelTextComplete() && EpisodePage+1==EpisodeSnapshot.Lines.Num() && Field->Presentation().Journey.bNeedsReply ? EVisibility::Visible:EVisibility::Collapsed; })
@@ -86,11 +87,15 @@ void ATacticalController::BuildEpisodeInterface(TSharedRef<SCanvas> Canvas)
         + SVerticalBox::Slot().AutoHeight()[Button([] { return TEXT("2　俺が合図を出して、皆をつなぐ\n二隊以上の戦法をつなぎ、任務を果たす"); },[this] { ChooseNovelReply(false); })];
     Canvas->AddSlot().Position(FVector2D(460,370)).Size(FVector2D(680,180))[Choices];InputPanels.Add(Choices);
     auto CoalitionChoices=SNew(SHorizontalBox).Visibility_Lambda([this]
-        { return CanChooseCoalitionFromNovel() ? EVisibility::Visible:EVisibility::Collapsed; });
+        { return CanChooseCoalitionFromNovel() || CanChooseLuoyangFromNovel() ? EVisibility::Visible:EVisibility::Collapsed; });
     for(int Index=0;Index<2;++Index)
         CoalitionChoices->AddSlot().FillWidth(1).Padding(Index==0 ? FMargin(0,0,10,0):FMargin(10,0,0,0))
-            [Button([this,Index] { return Field->Presentation().Journey.CoalitionChoices[Index]; },
-                [this,Index] { ChooseNovelReply(Index==0); })];
+            [Button([this,Index]
+                {
+                    const auto& J=Field->Presentation().Journey;
+                    return CanChooseLuoyangFromNovel() ? J.LuoyangChoices[Index]:J.CoalitionChoices[Index];
+                },[this,Index] { ChooseNovelReply(Index==0); },
+                [this,Index] { return Index==0 || !CanChooseLuoyangFromNovel() || Field->CanIssue(ETacticalCommand::LuoyangDepot); })];
     Canvas->AddSlot().Position(FVector2D(64,492)).Size(FVector2D(1472,98))[CoalitionChoices];InputPanels.Add(CoalitionChoices);
     BuildNovelHistory(Canvas);
     BuildNovelPlan(Canvas);

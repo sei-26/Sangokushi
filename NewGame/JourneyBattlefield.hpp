@@ -8,9 +8,11 @@
 
 namespace frontline
 {
-    enum class JourneyMap { Retreat, Port, Valley, Guangzong, CoalitionFord, RefugeeRoad, RefugeeWood, PortNorth, CoalitionRoad, Yangren };
-    inline JourneyMap SelectJourneyMap(int mission,bool rescue,JourneyConvoyRoute route,bool north,CoalitionPlan coalition,bool legacy)
+    enum class JourneyMap { Retreat, Port, Valley, Guangzong, CoalitionFord, RefugeeRoad, RefugeeWood, PortNorth, CoalitionRoad, Yangren, LuoyangGate, LuoyangDepot };
+    inline JourneyMap SelectJourneyMap(int mission,bool rescue,JourneyConvoyRoute route,bool north,CoalitionPlan coalition,bool legacy,
+        LuoyangPlan luoyang=LuoyangPlan::None)
     {
+        if(mission==LuoyangMission) return luoyang==LuoyangPlan::WesternDepot ? JourneyMap::LuoyangDepot:JourneyMap::LuoyangGate;
         if(mission==YangrenMission) return JourneyMap::Yangren;
         if(!legacy)
         {
@@ -31,7 +33,7 @@ namespace frontline
     };
     inline const JourneyBattlefield& BattlefieldDefinition(JourneyMap map)
     {
-        static const std::array<JourneyBattlefield, 10> fields{{
+        static const std::array<JourneyBattlefield, 12> fields{{
             {U"林間の退路", U"森で誘い、街道を開く",
              {{"..MMM...MMMMM.",
                "..MMM..MMMMMMM",
@@ -161,7 +163,33 @@ namespace frontline
                "...FF.........",
                "..............",
                ".....MMMM...FF",
-               "....MMMMM...FF"}}}
+               "....MMMMM...FF"}}},
+            {U"洛陽南郊・南門前", U"城壁の外を進み、正面の守備を引き離す",
+             {{"MMMMMMMMMMMMMM",
+               "MMMMMMMMMMMMMM",
+               "MMMMMMMMMMMM..",
+               "..MM.MMMMM....",
+               "..............",
+               "....FFFF......",
+               "....FFF.......",
+               "..............",
+               "..........FFF.",
+               "...........FF.",
+               "..FFF.........",
+               "..FFF........."}}},
+            {U"洛陽西郊・荷駄陣", U"林道から敵の近くへ出て、二方向から荷駄陣を挟む",
+             {{".....MMMMMM...",
+               "....MMMMMM....",
+               "....MMM....F..",
+               ".....FF....FF.",
+               "....FFFF......",
+               ".....FFF......",
+               "..............",
+               ".........FFF..",
+               "....FFF.......",
+               "....FFF....MM.",
+               ".......MMMMM..",
+               "........MMM..."}}}
         }};
         return fields[static_cast<int>(map)];
     }

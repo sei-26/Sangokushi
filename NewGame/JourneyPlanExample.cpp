@@ -65,6 +65,15 @@ namespace frontline
             p.manualTask=U"張飛を南へ進め、反撃隊を退ける。劉備か関羽で守備隊を前陣から引き離し、一隊を入れる。";
             p.caution=U"敵が前陣に隣接したままでは占領できない。先に引き離すか押し返そう。";
         }
+        else if(j.mission==LuoyangMission)
+        {
+            const bool west=j.luoyangPlan==LuoyangPlan::WesternDepot;
+            p.name=west ? U"林から荷駄陣の片翼を崩す":U"城壁沿いに南門を開く";
+            p.purpose=west ? U"関羽は北の林から攻め、劉備か張飛を荷駄陣に通す。":U"関羽を林に残し、劉備と張飛は正面と南から門前へ。";
+            p.assignments[1]={JourneyDuty::Ambush,j.Definition().positions[1]};
+            p.manualTask=west ? U"敵を挟んで陣から離し、撤収前に一隊を入れる。":U"南門を守る後衛を引き離し、門前に一隊を入れて本隊に合図する。";
+            p.caution=U"隣に敵が残っている間は旗を立てられない。追撃役と占領役を分ける。";
+        }
         else if(j.Definition().kind==JourneyObjective::CaptureCamp)
         {
             p.name=U"南橋から突破し、河港を奪う";

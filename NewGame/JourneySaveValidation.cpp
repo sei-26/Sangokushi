@@ -124,10 +124,13 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
-            if(!Range(j.mission,0,j.campaignFlow ? YangrenMission:YellowTurbanMission-1) || !Enum(j.coalitionPlan,2) ||
+            if(!Range(j.mission,0,j.campaignFlow ? LuoyangMission:YellowTurbanMission-1) || !Enum(j.coalitionPlan,2) || !Enum(j.luoyangPlan,2) ||
+                (j.mission==LuoyangMission)!=(j.luoyangPlan!=LuoyangPlan::None) ||
+                (j.luoyangPlan==LuoyangPlan::WesternDepot && j.SunJianTrust()<SunJianFlankTrust) ||
                 (j.mission>=CoalitionMission)!=(j.coalitionPlan!=CoalitionPlan::None) ||
                 (j.mission<CoalitionMission && j.history[CoalitionMission].completed) ||
-                (j.mission<YangrenMission && j.history[YangrenMission].completed)) return false;
+                (j.mission<YangrenMission && j.history[YangrenMission].completed) ||
+                (j.mission<LuoyangMission && j.history[LuoyangMission].completed)) return false;
             if(j.mission>=YellowTurbanMission)
             {
                 const auto& previous=j.history[j.mission-1];
@@ -181,8 +184,8 @@ namespace frontline
             {
                 const auto& h=j.history[m];
                 const bool north=m==1 && h.campaignFlow && j.history[0].story.reply==JourneyPledge::Preserve;
-                const auto map=SelectJourneyMap(m,m==0,h.route,north,j.coalitionPlan,false);
-                const auto legacy=SelectJourneyMap(m,false,h.route,false,j.coalitionPlan,true);
+                const auto map=SelectJourneyMap(m,m==0,h.route,north,j.coalitionPlan,false,j.luoyangPlan);
+                const auto legacy=SelectJourneyMap(m,false,h.route,false,j.coalitionPlan,true,j.luoyangPlan);
                 // Old histories and failed escorts may predate the individual route layouts.
                 const bool validAssignments=Assignments(h.assignments,m,map,m==0) || Assignments(h.assignments,m,legacy,m==0);
                 if(!Enum(h.difficulty,1) || !validAssignments || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
@@ -201,6 +204,7 @@ namespace frontline
            !Range(s.preparation,0,1) || !Range(s.interlocutor,0,2) || !ChainOrders(s.orders) || !ChainOrders(s.signal.sequence)) return false;
         if((s.journey.stage==JourneyStage::Battle || s.journey.stage==JourneyStage::Debrief) &&
             (!s.beforeBattle || s.beforeBattle->mission!=s.journey.mission || s.beforeBattle->coalitionPlan!=s.journey.coalitionPlan ||
+                s.beforeBattle->luoyangPlan!=s.journey.luoyangPlan ||
                 s.beforeBattle->legacyBattlefield!=s.journey.legacyBattlefield)) return false;
         const auto& r=s.realtime;
         if(!std::isfinite(r.elapsed) || r.elapsed<0 || r.elapsed>JourneyRealtime::Period ||

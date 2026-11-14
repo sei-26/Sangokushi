@@ -53,24 +53,26 @@ void ATacticalField::BuildFortifications()
         }
         Flag(Center+FVector(23,48,0),City.owner==0 ? FLinearColor(.025f,.27f,.30f) : FLinearColor(.40f,.04f,.025f),.95f);
     }
-    auto Gate=[&](int Tile)
+    auto Gate=[&](int Tile,float Yaw=0.f)
     {
         if (Tile<0) return;
         const FVector P=SurfaceLocation(Tile);
+        const FRotator Facing(0,Yaw,0);
+        const auto At=[&](FVector Offset) { return P+Facing.RotateVector(Offset); };
         // A 176-wide, 246-high opening clears the formation and its standard.
         // Stone feet and carved-looking braces give the landmark a silhouette
         // without filling the destination with a solid proxy building.
         for (int Side : {-1,1})
         {
-            Stonework->AddInstance(FTransform(FRotator::ZeroRotator,P+FVector(0,Side*96,13),FVector(.38,.34,.26)));
-            Wood(P+FVector(0,Side*96,140),FVector(16,16,228));
-            Wood(P+FVector(0,Side*110,230),FVector(12,42,8),FRotator(0,0,Side*30));
-            Wood(P+FVector(0,Side*96,258),FVector(27,25,13));
+            Stonework->AddInstance(FTransform(Facing,At(FVector(0,Side*96,13)),FVector(.38,.34,.26)));
+            Wood(At(FVector(0,Side*96,140)),FVector(16,16,228),Facing);
+            Wood(At(FVector(0,Side*110,230)),FVector(12,42,8),FRotator(0,Yaw,Side*30));
+            Wood(At(FVector(0,Side*96,258)),FVector(27,25,13),Facing);
         }
-        Wood(P+FVector(0,0,254),FVector(22,226,16));
-        Wood(P+FVector(0,0,268),FVector(17,244,9));
-        Roofs->AddInstance(FTransform(FRotator::ZeroRotator,P+FVector(0,0,275),FVector(.92,2.58,.48)));
-        Flag(P+FVector(10,127,0),FLinearColor(.48f,.24f,.035f),.95f);
+        Wood(At(FVector(0,0,254)),FVector(22,226,16),Facing);
+        Wood(At(FVector(0,0,268)),FVector(17,244,9),Facing);
+        Roofs->AddInstance(FTransform(Facing,At(FVector(0,0,275)),FVector(.92,2.58,.48)));
+        Flag(At(FVector(10,127,0)),FLinearColor(.48f,.24f,.035f),.95f);
     };
     if (J.Definition().kind==frontline::JourneyObjective::HoldPositions)
     {
@@ -95,11 +97,21 @@ void ATacticalField::BuildFortifications()
         if(J.Definition().kind==frontline::JourneyObjective::CaptureCamp)
         {
             const FVector P=SurfaceLocation(J.goal);
-            TacticalMap::CommandPost(P,[this](FVector Q) { return SurfaceHeight(Q); },Wood,Cloth);
+            if(J.luoyangPlan==frontline::LuoyangPlan::SouthGate)
+            {
+                Gate(J.goal,90.f);
+                for(int Side:{-1,1}) for(int I=0;I<4;++I)
+                {
+                    FVector Wall=P+FVector(Side*(200+I*105),-35,0);
+                    Wall.Z=SurfaceHeight(Wall)+38;
+                    Stonework->AddInstance(FTransform(FRotator(0,90,0),Wall,FVector(.44,.99,.73)));
+                }
+            }
+            else TacticalMap::CommandPost(P,[this](FVector Q) { return SurfaceHeight(Q); },Wood,Cloth);
             Flag(P+FVector(94,54,0),FLinearColor(.28f,.14f,.06f),1.12f);
         }
         else Gate(J.goal);
-        if (J.mission==1)
+        if (J.mission==1 || J.luoyangPlan==frontline::LuoyangPlan::WesternDepot)
             for (int I=0;I<4;++I)
             {
                 const FVector P=SurfaceLocation(J.goal)+FVector(-62+(I%2)*28,70+(I/2)*22,0);

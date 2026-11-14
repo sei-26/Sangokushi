@@ -8,6 +8,8 @@ void ATacticalField::BuildStoryPresentation()
     const auto& J=State->Journey;auto& P=State->HUD.Journey;
     if(!P.bPreparation && !P.bDebrief && !P.bComplete) return;
     P.PersonalTrust=FString::Printf(TEXT("主人公への信頼  劉備 %d / 関羽 %d / 張飛 %d"),J.officerTrust[0],J.officerTrust[1],J.officerTrust[2]);
+    if(J.mission==LuoyangMission)
+        P.PersonalTrust+=FString::Printf(TEXT("　｜　孫堅の信頼 %d"),J.SunJianTrust());
     if(P.bPreparation)
     {
         const int Base=!J.campaignFlow && State->PreparationChoice==1 ? 100:90;
@@ -50,6 +52,8 @@ void ATacticalField::BuildStoryPresentation()
                 P.CampaignChange+=TEXT("\n")+JourneyText(EpisodeSpeakerName(Y.cavalryOfficer))+Deed;
             }
         }
+        if(J.mission==LuoyangMission && J.won && J.luoyangPlan==LuoyangPlan::WesternDepot)
+            P.StoryFacts+=FString::Printf(TEXT("\n荷駄陣から回収：兵糧 +%d"),WesternDepotFood);
         if(R.preparationTracked)
         {
             P.StoryFacts+=TEXT("\n采配の振り返り：");
