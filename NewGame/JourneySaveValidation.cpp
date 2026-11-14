@@ -58,6 +58,16 @@ namespace frontline
             }
             return true;
         }
+        bool YangrenReview(const JourneyYangrenReview& y,int mission,bool inBattle)
+        {
+            if(!y.tracked) return y==JourneyYangrenReview{};
+            return mission==YangrenMission && Range(y.blockers,0,3) &&
+                Range(y.pendingOfficer,-1,2) && Range(y.roadOfficer,-1,2) && Range(y.cavalryOfficer,-1,2) &&
+                Enum(y.counter,3) && ((y.counter==YangrenCounter::None)==(y.cavalryOfficer<0)) &&
+                (y.wasBlocked || (!y.blockers && y.roadOfficer<0)) &&
+                (y.pendingOfficer<0 || (y.blockers && y.roadOfficer<0)) &&
+                (inBattle || (!y.blockers && y.pendingOfficer<0));
+        }
         bool Review(const JourneyBattleReview& r)
         {
             if(!ReliefReview(r)) return false;
@@ -139,6 +149,8 @@ namespace frontline
             }
             if((j.reserveFood!=0 && j.reserveFood!=1800) || (j.reserveFood &&
                 (!j.campaignFlow || j.preparation!=1 || j.stage!=JourneyStage::Battle))) return false;
+            if(!YangrenReview(j.battleReview.yangren,j.mission,j.stage==JourneyStage::Battle) ||
+                (j.battleReview.yangren.tracked && j.stage==JourneyStage::Preparation)) return false;
             if(!Enum(j.stage,4) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
                !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.Battlefield(),j.IsRescue(),j.stage==JourneyStage::Preparation) ||
@@ -174,8 +186,11 @@ namespace frontline
                 // Old histories and failed escorts may predate the individual route layouts.
                 const bool validAssignments=Assignments(h.assignments,m,map,m==0) || Assignments(h.assignments,m,legacy,m==0);
                 if(!Enum(h.difficulty,1) || !validAssignments || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
+                   !YangrenReview(h.review.yangren,m,false) || (h.review.yangren.tracked && !h.completed) ||
                    (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
             }
+            if(j.HasSunJian() && (j.stage==JourneyStage::Debrief || j.stage==JourneyStage::Complete) &&
+                !(j.history[YangrenMission].review.yangren==j.battleReview.yangren)) return false;
             return true;
         }
     }

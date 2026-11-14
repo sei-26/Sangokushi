@@ -75,7 +75,7 @@ namespace frontline
             if (order.kind==JourneyDirective::Attack && !reservedAttacks[army])
             {
                 const auto* target=journey.intelligence[0].Find(order.target);
-                if (target && target->current && world.CanStrike(army,target->observed.tile)) journey.chain.Strike(journey.world,journey.intelligence[0],army,order.target,journey.message,journey.campaignFlow);
+                if (target && target->current && world.CanStrike(army,target->observed.tile)) journey.StrikeInBattle(army,order.target);
             }
         }
         return journey.stage!=JourneyStage::Battle || journey.CompleteCommandCycle(previousReports);

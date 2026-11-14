@@ -22,13 +22,39 @@ namespace frontline
                 {3,U"辻に一隊を入れる。呂布には森で向き直ってもらおう。孫堅殿の前が塞がったら、残した隊を南へ回す。",U"主人公は、二つの隊列が出会う場所を地図に記した。"}};
         }
         else if(j.won)
-            e.lines={
-                {SunJian,U"辻にお前の旗が見えた。よくあそこを空けたな。あの先で兵を立て直せたから、俺はもう一度前に出られた。",U"孫堅は、泥のついた地図を主人公に返す。"},
-                {3,U"俺たちの旗だけじゃ渡れなかった。南でお互いがどこにいるか分かっていたから、辻に立てたんです。",U"二人の隊が同じ道を通った跡が、地図に残る。"},
-                {-1,U"孫堅は陽人で董卓軍を破った。董卓が長安へ退いたのち、孫堅は洛陽へ入る。",U"反董卓連合・第二章の結末。"}};
+        {
+            const auto& r=j.history[YangrenMission].review.yangren;
+            const auto road=r.roadOfficer>=0 ?
+                std::u32string(EpisodeSpeakerName(r.roadOfficer))+U"の旗が突っ込んできたときは笑ったよ。あの一手で道が開いた。俺の兵まで、お前の合図を待っていたらしい。":
+                r.wasBlocked ? U"南じゃ足が止まった。お前の旗が辻に残っていたから、俺も兵をまとめ直して、そこへ向かえた。":
+                U"辻に着いたら、もうお前の旗が見えた。あそこで会おうと言って、本当に会えた。戦場じゃ、それがいちばん難しい。";
+            e.lines.push_back({SunJian,road,U"孫堅が、泥のついた地図を主人公に返す。"});
+            if(r.counter!=YangrenCounter::None)
+            {
+                const auto* deed=r.counter==YangrenCounter::ForestLure ? U"が呂布を林に引きずり込んだろう。馬の脚が止まる場所まで、見ていたのか。":
+                    r.counter==YangrenCounter::Disrupted ? U"が平地で呂布の列を乱した。あの男とまともにぶつかる前に、列を崩しておく手があったか。":
+                    U"が呂布の騎兵を退けたと聞いた。味方でよかったと、兵まで言っていたぞ。";
+                e.lines.push_back({SunJian,std::u32string(EpisodeSpeakerName(r.cavalryOfficer))+deed,U"孫堅は北の戦場を指でたどった。"});
+            }
+            e.lines.push_back({3,r.roadOfficer>=0 || r.counter!=YangrenCounter::None ?
+                U"次も呼んでください。今度は戦が始まる前に、あなたと地図を見たい。":
+                U"同じ場所にたどり着けたことが、今日の勝ちです。俺も、この辻を覚えておきます。",
+                U"主人公は泥の上に、二つの軍旗が出会った場所を指でなぞる。"});
+            e.lines.push_back({-1,U"孫堅は陽人で董卓軍を破った。董卓が長安へ退いたのち、孫堅は洛陽へ入る。",U"反董卓連合・第二章の結末。"});
+        }
         else
-            e.lines={{SunJian,U"南道の兵を呼び戻した。次は俺が止まった場所から、地図を引き直そう。",U"孫堅が辻へ届かなかった隊列の跡を示す。"},
-                {3,U"先に出す隊と、南へ回せる隊を決め直す。まだここで終われない。",U"主人公は出陣前の軍議に戻る。"}};
+        {
+            const auto& r=j.history[YangrenMission].review.yangren;
+            if(!TacticChain::Living(j.world,StrategistJourney::AlliedArmy))
+                e.lines.push_back({-1,U"南道から、孫堅隊の旗が消えた。伝令は、泥だらけの鞍だけを持って帰ってきた。",U"陽人からの撤収。"});
+            else
+                e.lines.push_back({SunJian,j.SunJianAtRally() ?
+                    U"お前たちのそばまで行けた。次は、そこで兵を踏みとどまらせる手も決めておこう。":
+                    r.wasBlocked ? U"俺の兵は南道で止まった。馬が向きを変えたあの曲がり角だ。次の軍議で、あそこから始めよう。":
+                    U"合図が来るまで、俺は南にいた。次はどこで声が届くか、地図の上で決めておこう。",
+                    U"孫堅は泥を払い、膝の上に地図を広げる。"});
+            e.lines.push_back({3,U"先に出す隊と、南へ回せる隊を決め直す。まだここで終われない。",U"主人公は出陣前の軍議に戻る。"});
+        }
         return e;
     }
     JourneyEpisode BuildCoalitionEpisode(const StrategistJourney& j)

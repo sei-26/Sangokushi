@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "JourneyAftermathRole.hpp"
+#include "JourneyEpisode.hpp"
 using namespace frontline;
 void ATacticalField::BuildStoryPresentation()
 {
@@ -34,6 +35,21 @@ void ATacticalField::BuildStoryPresentation()
             if(Story.reply!=JourneyPledge::None) P.PledgeText=TEXT("次の戦いで交わした約束：")+JourneyText(PledgeName(Story.reply));
         }
         const auto& R=J.history[J.mission].review;
+        if(R.yangren.tracked)
+        {
+            const auto& Y=R.yangren;
+            const int Gain=Y.TrustGain(J.won);
+            if(Gain>0)
+                P.PersonalTrust+=FString::Printf(TEXT("　｜　孫堅の信頼 +%d"),Gain);
+            if(Y.roadOfficer>=0)
+                P.CampaignChange+=TEXT("\n")+JourneyText(EpisodeSpeakerName(Y.roadOfficer))+TEXT("が南道を開き、孫堅隊が進軍を再開した。");
+            if(Y.cavalryOfficer>=0)
+            {
+                const auto* Deed=Y.counter==YangrenCounter::ForestLure ? TEXT("が呂布を森林へ誘導した。"):
+                    Y.counter==YangrenCounter::Disrupted ? TEXT("が平地で呂布隊を混乱させた。"):TEXT("が呂布の騎兵隊を撃破した。");
+                P.CampaignChange+=TEXT("\n")+JourneyText(EpisodeSpeakerName(Y.cavalryOfficer))+Deed;
+            }
+        }
         if(R.preparationTracked)
         {
             P.StoryFacts+=TEXT("\n采配の振り返り：");

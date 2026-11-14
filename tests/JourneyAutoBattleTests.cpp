@@ -244,6 +244,113 @@ int main()
             assert(forest->EndTurn() && forest->world.tacticEvents.empty());
             assert(disrupted->EndTurn() && disrupted->world.tacticEvents.empty());
         }
+        if(protect)
+        {
+            // Exercise a real halt, then clear the same enemy with the two
+            // ordinary-attack entry points. The march, not the kill, confirms it.
+            auto stalled=std::make_unique<JourneySaveData>(*old);
+            auto& j=stalled->journey;
+            auto& a=j.world.armies;
+            a[0].tile=a[0].target=j.goal;
+            a[2].tile=a[2].target=Campaign::At(9,9);
+            a[3].troops=0;
+            a[4].tile=a[4].target=Campaign::At(9,10);
+            const int start=a[5].tile;
+            assert(j.world.MapDistance(a[4].tile,start)==1 && j.world.CanStrike(2,a[4].tile));
+            assert(j.EndTurn() && j.battleReview.yangren.blockers==2 && a[5].tile==start);
+            a[4].troops=50;
+            j.RefreshIntelligence();
+            const auto writeV16=[&](JourneySaveData& source)
+            {
+                std::vector<std::uint8_t> bytes;
+                JourneyArchive archive{false,bytes};archive.version=16;
+                unsigned version=16,checksum=0;
+                archive(magic,version,checksum);archive(source);
+                checksum=2166136261u;
+                for(std::size_t i=12;i<bytes.size();++i) { checksum^=bytes[i];checksum*=16777619u; }
+                for(int i=0;i<4;++i) bytes[8+i]=static_cast<std::uint8_t>(checksum>>(i*8));
+                return bytes;
+            };
+            auto legacyActive=std::make_unique<JourneySaveData>();
+            assert(DecodeJourneySave(writeV16(*stalled),*legacyActive));
+            assert(legacyActive->journey.battleReview.yangren.tracked && !legacyActive->journey.battleReview.yangren.wasBlocked);
+            auto queued=std::make_unique<StrategistJourney>(j);
+            JourneyRealtime orders;
+            assert(orders.Queue(*queued,2,JourneyDirective::Attack,4) && orders.Resolve(*queued));
+            assert(queued->battleReview.yangren.roadOfficer==2 && queued->world.armies[5].tile!=start);
+            auto pulled=std::make_unique<StrategistJourney>(j);
+            auto& pulledUnits=pulled->world.armies;
+            pulledUnits[0].tile=pulledUnits[0].target=Campaign::At(10,10);
+            pulledUnits[4].stance=battle::Stance::Balanced;
+            pulled->RefreshIntelligence();
+            const std::vector<ChainOrder> lureRoad{{0,4,ChainTactic::Lure,Campaign::At(11,10)}};
+            assert(pulled->Preview(lureRoad).completed==1 && pulled->battleReview.yangren.pendingOfficer==-1);
+            assert(pulled->Execute(lureRoad).completed==1 && pulled->battleReview.yangren.pendingOfficer==0 &&
+                pulled->battleReview.yangren.roadOfficer==-1 && pulledUnits[4].troops>0);
+            assert(pulled->EndTurn() && pulled->battleReview.yangren.roadOfficer==0 && pulledUnits[5].tile!=start);
+            auto drift=std::make_unique<StrategistJourney>(j);
+            drift->world.armies[4].troops=0;
+            assert(drift->EndTurn() && drift->world.armies[5].tile!=start);
+            assert(drift->battleReview.yangren.roadOfficer==-1);
+
+            assert(j.Strike(2,4) && a[4].troops==0 && j.battleReview.yangren.pendingOfficer==2 &&
+                j.battleReview.yangren.roadOfficer==-1 && a[5].tile==start);
+            auto failed=std::make_unique<StrategistJourney>(j);
+            assert(failed->Withdraw() && failed->battleReview.yangren.TrustGain(failed->won)==0 &&
+                failed->battleReview.yangren.roadOfficer==-1 &&
+                failed->RetryAtCouncil(*stalled->beforeBattle) && !failed->battleReview.yangren.tracked &&
+                failed->Prepare(1,failed->enemyPolicy) && failed->battleReview.yangren.tracked &&
+                !failed->battleReview.yangren.wasBlocked);
+            std::vector<std::uint8_t> bytes;
+            assert(EncodeJourneySave(*stalled,bytes) && DecodeJourneySave(bytes,*stalled));
+            assert(j.battleReview.yangren.pendingOfficer==2);
+            for(int i=0;i<8 && j.stage==JourneyStage::Battle;++i) assert(j.EndTurn());
+            const auto result=j.history[YangrenMission].review.yangren;
+            assert(j.won && result.roadOfficer==2 && result.TrustGain(j.won)==5);
+            assert(BuildJourneyEpisode(j).lines.front().text.find(U"張飛")!=std::u32string::npos);
+            assert(EncodeJourneySave(*stalled,bytes) && DecodeJourneySave(bytes,*stalled) &&
+                j.history[YangrenMission].review.yangren==result);
+            assert(DecodeJourneySave(writeV16(*stalled),*stalled) && j.won && !j.history[YangrenMission].review.yangren.tracked);
+            assert(BuildJourneyEpisode(j).lines.front().text.find(U"張飛")==std::u32string::npos);
+        }
+        {
+            auto lure=std::make_unique<StrategistJourney>(battle);
+            auto& w=lure->world;
+            w.armies[0].tile=w.armies[0].target=Campaign::At(12,8);
+            const int plain=w.armies[3].tile, forest=w.armies[0].tile;
+            w.tiles[forest].terrain=Terrain::Forest;
+            int retreat=-1;
+            for(int tile:w.MapNeighbors(forest))
+                if(w.MapDistance(plain,tile)>1 && TacticChain::Free(w,tile)) { retreat=tile;break; }
+            assert(retreat>=0 && w.tiles[plain].terrain==Terrain::Plain);
+            auto disrupted=std::make_unique<StrategistJourney>(*lure);
+            std::swap(disrupted->world.armies[0].tile,disrupted->world.armies[1].tile);
+            disrupted->RefreshIntelligence();
+            assert(disrupted->Execute({{1,3,ChainTactic::AzureDragon,-1}}).completed==1);
+            assert(disrupted->battleReview.yangren.counter==YangrenCounter::Disrupted &&
+                disrupted->battleReview.yangren.cavalryOfficer==1 && disrupted->chain.disordered[3]);
+            lure->RefreshIntelligence();
+            const std::vector<ChainOrder> tactics{{0,3,ChainTactic::Lure,retreat}};
+            assert(lure->Preview(tactics).completed==1 && lure->battleReview.yangren.counter==YangrenCounter::None);
+            assert(lure->Execute(tactics).completed==1 && w.armies[3].tile==forest);
+            assert(lure->battleReview.yangren.counter==YangrenCounter::ForestLure &&
+                lure->battleReview.yangren.cavalryOfficer==0 && lure->EndTurn() && w.tacticEvents.empty());
+            for(int cycle=0;cycle<18 && lure->stage==JourneyStage::Battle;++cycle)
+            {
+                auto next=PlanJourneyAutoBattle(*lure);
+                if(!next.tactics.empty()) lure->Execute(next.tactics);
+                if(lure->stage==JourneyStage::Battle) assert(next.movement.Resolve(*lure));
+            }
+            assert(lure->won);
+            const auto& review=lure->history[YangrenMission].review.yangren;
+            assert(review.counter==YangrenCounter::ForestLure && review.cavalryOfficer==0 &&
+                review.TrustGain(lure->won)==(review.roadOfficer>=0 ? 7:4));
+            const auto epilogue=BuildJourneyEpisode(*lure);
+            assert(std::any_of(epilogue.lines.begin(),epilogue.lines.end(),[](const auto& line)
+            {
+                return line.speaker==SunJian && line.text.find(U"劉備が呂布を林に")!=std::u32string::npos;
+            }));
+        }
         for(int cycle=0;cycle<18 && battle.stage==JourneyStage::Battle;++cycle)
         {
             auto next=PlanJourneyAutoBattle(battle);

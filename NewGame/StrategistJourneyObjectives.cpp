@@ -42,13 +42,87 @@ namespace frontline
         return HasSunJian() && TacticChain::Living(world,AlliedArmy) &&
             world.armies[AlliedArmy].tile==YangrenRally;
     }
+    StrategistJourney::YangrenEnemies StrategistJourney::ReadYangrenEnemies() const
+    {
+        if(!battleReview.yangren.tracked) return {};
+        return {{{world.armies[3].tile,world.armies[3].troops,chain.disordered[3]},
+                 {world.armies[4].tile,world.armies[4].troops,chain.disordered[4]}}};
+    }
+    int StrategistJourney::SunJianBlockers(const YangrenEnemies& enemies) const
+    {
+        if(!TacticChain::Living(world,AlliedArmy) || SunJianAtRally()) return 0;
+        int mask=0;
+        for(int i=0;i<2;++i)
+            if(enemies[i].troops>0 && world.MapDistance(enemies[i].tile,world.armies[AlliedArmy].tile)<=1)
+                mask|=1<<i;
+        return mask;
+    }
+    void StrategistJourney::RecordYangrenAction(int officer,int enemy,const YangrenEnemies& before,
+        const YangrenEnemies& after,bool lure)
+    {
+        if(enemy<3 || enemy>4) return;
+        auto& review=battleReview.yangren;
+        const int remaining=SunJianBlockers(after);
+        if(remaining) review.pendingOfficer=-1;
+        else if(review.roadOfficer<0 && (review.blockers & SunJianBlockers(before) & (1<<(enemy-3))))
+            review.pendingOfficer=officer;
+
+        if(enemy!=3 || review.counter!=YangrenCounter::None || before[0].troops<=0) return;
+        auto counter=YangrenCounter::None;
+        if(after[0].troops<=0)
+            counter=YangrenCounter::Defeated;
+        else if(world.tiles[before[0].tile].terrain==Terrain::Plain)
+        {
+            if(lure && world.tiles[after[0].tile].terrain==Terrain::Forest)
+                counter=YangrenCounter::ForestLure;
+            else if(!before[0].disordered && after[0].disordered)
+                counter=YangrenCounter::Disrupted;
+        }
+        if(counter!=YangrenCounter::None)
+        {
+            review.counter=counter;
+            review.cavalryOfficer=officer;
+        }
+    }
+    void StrategistJourney::RecordYangrenChain(YangrenEnemies before,const ChainResult& result)
+    {
+        for(const auto& event:result.events)
+        {
+            if(!event.success || event.enemy<3 || event.enemy>4) continue;
+            auto after=before;
+            for(const auto& unit:event.changes)
+                if(unit.army>=3 && unit.army<=4)
+                    after[unit.army-3]={unit.tile,unit.troops,unit.disordered};
+            RecordYangrenAction(event.army,event.enemy,before,after,event.tactic==ChainTactic::Lure);
+            before=after;
+        }
+    }
+    bool StrategistJourney::StrikeInBattle(int army,int enemy)
+    {
+        const auto before=ReadYangrenEnemies();
+        if(!chain.Strike(world,intelligence[0],army,enemy,message,campaignFlow)) return false;
+        if(battleReview.yangren.tracked) RecordYangrenAction(army,enemy,before,ReadYangrenEnemies(),false);
+        return true;
+    }
     void StrategistJourney::AdvanceSunJian()
     {
         if(!TacticChain::Living(world,AlliedArmy) || SunJianAtRally()) return;
         auto& ally=world.armies[AlliedArmy];
         // His own column advances on the southern road. An enemy in contact
         // must be fought before marching, and allies can free a blocked path.
-        if(chain.disordered[AlliedArmy] || intelligence[0].EnemyNear(world,ally.tile,1)) return;
+        auto& review=battleReview.yangren;
+        if(intelligence[0].EnemyNear(world,ally.tile,1))
+        {
+            if(review.tracked && review.roadOfficer<0)
+            {
+                // A living adjacent enemy is always in the allied column's sight.
+                review.blockers=SunJianBlockers(ReadYangrenEnemies());
+                review.wasBlocked=true;
+                review.pendingOfficer=-1;
+            }
+            return;
+        }
+        if(chain.disordered[AlliedArmy]) return;
         auto observed=std::make_unique<Campaign>(world);
         for(auto& unit:observed->armies) if(unit.faction!=0) unit.troops=0;
         for(const auto& contact:intelligence[0].contacts)
@@ -57,6 +131,13 @@ namespace frontline
         if(next==ally.tile || !TacticChain::Free(world,next)) return;
         ally.tile=ally.target=next;
         ++world.revision;
+        if(review.pendingOfficer>=0)
+        {
+            review.roadOfficer=review.pendingOfficer;
+            review.pendingOfficer=-1;
+            Report(U"孫堅「"+world.generals[review.roadOfficer].name+U"が道を空けた！ 全隊、俺に続け！」");
+        }
+        review.blockers=0;
         RefreshIntelligence();
         if(SunJianAtRally()) Report(U"孫堅「辻の南は押さえた！ 軍師、あとはお前たちの旗だ！」");
     }
@@ -121,7 +202,13 @@ namespace frontline
 			return U"糧車 " + Number(convoyStep) + U" / 6区間・積荷 " +
 			       Number(world.armies[ConvoyArmy].cargoFood) + U" / 1,200";
 		}
-        if(HasSunJian()) return U"陽人の辻を確保 / 孫堅隊 "+std::u32string(SunJianAtRally() ? U"合流地点に到着":U"南から進軍中");
+        if(HasSunJian())
+        {
+            const bool blocked=TacticChain::Living(world,AlliedArmy) &&
+                intelligence[0].EnemyNear(world,world.armies[AlliedArmy].tile,1);
+            return U"陽人の辻を確保 / 孫堅隊 "+std::u32string(SunJianAtRally() ? U"合流地点に到着":
+                blocked ? U"南道で交戦中。隣接する敵を退けると進軍を再開":U"南から進軍中");
+        }
         if(Definition().kind==JourneyObjective::CaptureCamp) return U"指揮所へ一隊を入れ、隣接する敵を退けて占領。護送・残敵掃討は不要";
 		if (Definition().kind == JourneyObjective::HoldPositions)
 			return U"二拠点の維持 " + Number(heldTurns) + U" / "+Number(RequiredHoldTurns())+U"指揮・Gで固守：隣接敵１隊まで維持";
@@ -196,7 +283,7 @@ namespace frontline
             if(PositionSecured(goal) && (!HasSunJian() || SunJianAtRally()))
             {
                 world.tiles[goal].owner=world.player;++world.revision;
-                Finish(true,HasSunJian() ? U"陽人の辻で孫堅と合流。呂布の騎兵を引き離し、董卓軍の南の戦線を破った。":
+                Finish(true,HasSunJian() ? U"陽人の辻を確保し、南から来た孫堅と合流した。":
                     mission==CoalitionMission ? U"董卓軍の前哨を占領。曹操の先行隊に渡河の合図を送った。":
                     mission==YellowTurbanMission ? U"黄巾の前陣を占領。官軍が前へ出る道を開いた。":
                     U"河港の指揮所を占領。敵の連絡路が断たれ、義勇軍は官軍の共同作戦へ合流する。残敵を追う必要はない。");

@@ -132,6 +132,7 @@ namespace frontline
 		lastChain = {};
 		heldTurns = convoyStep = recoveredCargo = 0;
         battleReview={};battleReview.preparationTracked=campaignFlow;battleReview.reliefTracked=campaignFlow;retryRelief.reset();retryDefense.reset();
+        battleReview.yangren.tracked=HasSunJian();
         for(auto& a:assignments) a.completed=false;
 		guarding = {};
 		defenseChecks = {};
@@ -302,7 +303,7 @@ namespace frontline
 	{
 		if (stage != JourneyStage::Battle)
 			return false;
-		const bool result = chain.Strike(world, intelligence[0], army, enemy, message, campaignFlow);
+		const bool result = StrikeInBattle(army, enemy);
 		if (result)
 		{
 			RefreshIntelligence();
@@ -319,7 +320,9 @@ namespace frontline
 		if (stage != JourneyStage::Battle)
 			return {};
         std::array<int,3> before{};for(int i=0;i<3;++i) before[i]=world.armies[i].tile;
+        const auto yangrenBefore=ReadYangrenEnemies();
 		lastChain = chain.Execute(world, intelligence[0], orders, campaignFlow);
+        if(battleReview.yangren.tracked) RecordYangrenChain(yangrenBefore,lastChain);
         for(int i=0;i<3;++i) if(world.armies[i].tile!=before[i]) RecordReliefMove(i,before[i],world.armies[i].tile);
         RecordCooperation(lastChain);
         if(battleReview.preparationTracked)

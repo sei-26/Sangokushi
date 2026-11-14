@@ -29,7 +29,10 @@ namespace frontline
       if(version>=3) IO(v.coordinatedOfficers);else if(reading) v.coordinatedOfficers=0;
       if(version>=8) (*this)(v.preparationTracked,v.openingAmbushes,v.resupplyTurn,v.resupplyMorale,v.postSupplySteps);
       if(version>=9) (*this)(v.reliefTracked,v.relief);else if(reading) { v.reliefTracked=false;v.relief.clear(); }
-      if(version>=11) (*this)(v.confirmedDefenders,v.spentGuardFailures);else if(reading) { v.confirmedDefenders=v.spentGuardFailures=0; } }
+      if(version>=11) (*this)(v.confirmedDefenders,v.spentGuardFailures);else if(reading) { v.confirmedDefenders=v.spentGuardFailures=0; }
+      auto& y=v.yangren;
+      if(version>=17) (*this)(y.tracked,y.wasBlocked,y.blockers,y.pendingOfficer,y.roadOfficer,y.cavalryOfficer,y.counter);
+      else if(reading) y={}; }
     void JourneyArchive::IO(JourneyAssignment& v)
     { (*this)(v.duty,v.tile,v.completed); }
     void JourneyArchive::IO(JourneyResult& v)
@@ -56,5 +59,7 @@ namespace frontline
       else if(reading) { v.coalitionPlan=CoalitionPlan::None;v.history[CoalitionMission]={}; }
       if(version>=15) IO(v.legacyBattlefield);
       else if(reading) v.legacyBattlefield=v.stage!=JourneyStage::Encounter;
-      if(version>=16) IO(v.history[YangrenMission]);else if(reading) v.history[YangrenMission]={}; }
+      if(version>=16) IO(v.history[YangrenMission]);else if(reading) v.history[YangrenMission]={};
+      if(reading && version<17 && v.HasSunJian() && v.stage==JourneyStage::Battle)
+          v.battleReview.yangren.tracked=true; }
 }

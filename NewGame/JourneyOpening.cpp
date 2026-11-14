@@ -23,6 +23,8 @@ namespace frontline
     void StrategistJourney::CompleteBattleReview(bool success)
     {
         auto& r=battleReview;r.endedAt=turn;
+        r.yangren.pendingOfficer=-1;
+        r.yangren.blockers=0;
         if (withdrawn) r.resolution=JourneyResolution::Withdrawn;
         else if (success) r.resolution=Definition().kind==JourneyObjective::CaptureCamp ? JourneyResolution::Captured:HasConvoy() ? JourneyResolution::Delivered :
             Definition().kind==JourneyObjective::HoldPositions ? JourneyResolution::Held :
@@ -33,6 +35,18 @@ namespace frontline
     }
     std::u32string StrategistJourney::BattleReviewLesson() const
     {
+        if(HasSunJian())
+        {
+            if(!won && !TacticChain::Living(world,AlliedArmy))
+                return U"孫堅隊が崩れた。辻を取る隊とは別に、南道の交戦へ援護を回そう。";
+            if(!won && SunJianAtRally())
+                return U"孫堅は合流地点まで来た。次は陽人の辻に旗を立てる隊を先に決めよう。";
+            if(!won && battleReview.yangren.wasBlocked)
+                return U"孫堅隊は隣接する敵がいると進めない。誘導や突破で引き離しても、道は開けられる。";
+            if(!won)
+                return U"辻を取る隊と南道を助ける隊を分け、孫堅が進む時間をつくろう。";
+            return {};
+        }
         if(battleReview.resolution==JourneyResolution::Captured) return U"敵の撃破から指揮所の占領へつなげた。戦役の目的が済んだ所で追撃を止め、生存兵を次の決戦へ回す。";
         if (battleReview.resolution==JourneyResolution::ConvoyLost)
             return U"車の護衛か積荷を失った。追撃する隊に加え、出口や車の近くを守る隊を残してみよう。";

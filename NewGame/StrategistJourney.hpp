@@ -151,6 +151,13 @@ namespace frontline
 		void EnemyTurn();
 		void AdvanceObjective();
         void AdvanceSunJian();
+        struct YangrenEnemy { int tile=-1, troops=0; bool disordered=false; };
+        using YangrenEnemies=std::array<YangrenEnemy,2>;
+        YangrenEnemies ReadYangrenEnemies() const;
+        int SunJianBlockers(const YangrenEnemies&) const;
+        void RecordYangrenAction(int officer,int enemy,const YangrenEnemies& before,const YangrenEnemies& after,bool lure);
+        void RecordYangrenChain(YangrenEnemies before,const ChainResult&);
+        bool StrikeInBattle(int army,int enemy);
         void RecordDefenseChecks();
 		void SetupBattlefield();
 		void Evaluate();

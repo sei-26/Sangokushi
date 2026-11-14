@@ -263,7 +263,7 @@ bool ATacticalController::CoalitionStorySmokeTest()
 bool ATacticalController::PrepareYangrenPreview(int View)
 {
     using namespace frontline;
-    if(View<0 || View>4 || !PrepareCoalitionStoryPreview(View==1 ? -9:-8)) return false;
+    if(View<0 || View>6 || !PrepareCoalitionStoryPreview(View==1 || View>=5 ? -9:-8)) return false;
     CloseEpisode();
     if(!Field->CanIssue(ETacticalCommand::Continue)) return false;
     Field->Issue(ETacticalCommand::Continue);
@@ -308,6 +308,30 @@ bool ATacticalController::PrepareYangrenPreview(int View)
         UE_LOG(LogTemp,Error,TEXT("GUNYU_YANGREN: FAIL cavalry not visible after marching (turn=%d)"),J.turn);
         return false;
     }
+    if(View>=5)
+    {
+        // Reproduce an actual halt and relief with a nearby Zhang Fei unit.
+        auto& Units=J.world.armies;
+        Units[0].tile=Units[0].target=J.goal;
+        Units[2].tile=Units[2].target=Campaign::At(9,9);
+        Units[3].troops=0;
+        Units[4].tile=Units[4].target=Campaign::At(9,10);
+        if(!J.EndTurn() || !J.battleReview.yangren.wasBlocked) return false;
+        Units[4].troops=50;
+        J.RefreshIntelligence();
+        JourneyRealtime Orders;
+        if(!Orders.Queue(J,2,JourneyDirective::Attack,4) || !Orders.Resolve(J)) return false;
+        for(int Cycle=0;Cycle<8 && J.stage==JourneyStage::Battle;++Cycle)
+            if(!J.EndTurn()) return false;
+        if(!J.won || !EncodeJourneySave(*Save,Bytes) || !Field->ImportSession(Bytes)) return false;
+        const auto& Story=Field->Presentation().Journey;
+        if(!Story.bDebrief || !Story.PersonalTrust.Contains(TEXT("孫堅の信頼 +5")) ||
+            !Story.CampaignChange.Contains(TEXT("張飛が南道を開き"))) return false;
+        if(View==5) return true;
+        OpenEpisode();
+        NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+        return bEpisodeOpen && CurrentEpisodeLine().Speaker==SunJian && CurrentEpisodeLine().Text.Contains(TEXT("張飛"));
+    }
     for(int Cycle=0;Cycle<18 && J.stage==JourneyStage::Battle;++Cycle)
     {
         auto Next=PlanJourneyAutoBattle(J);
@@ -337,7 +361,9 @@ bool ATacticalController::YangrenSmokeTest()
     if(!Check(Field->Presentation().Mission==frontline::YangrenMission && Field->Presentation().Journey.bPreparation,
         TEXT("withdrawal restarts the same council"))) return false;
     if(!Check(PrepareYangrenPreview(4) && Field->Presentation().bComplete,TEXT("actual victory opens the Sun Jian epilogue"))) return false;
+    if(!Check(PrepareYangrenPreview(5) && PrepareYangrenPreview(6),
+        TEXT("actual relief names Zhang Fei in the saved report and Sun Jian's dialogue"))) return false;
     CloseEpisode();
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_YANGREN: PASS (two councils, real deployment, reload, withdrawal retry, allied victory and ending)"));
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_YANGREN: PASS (two councils, deployment, reload, retry, allied victory, trust and credited dialogue)"));
     return true;
 }

@@ -138,6 +138,7 @@ namespace frontline
     {
         if(HasSunJian())
         {
+            RefreshIntelligence(); // Queued attacks may have cleared Sun Jian's path this cycle.
             AdvanceSunJian();
             const auto& cavalry=world.armies[3];
             if(!chain.disordered[3] && world.tiles[cavalry.tile].terrain==Terrain::Plain &&
