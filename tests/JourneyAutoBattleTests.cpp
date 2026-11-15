@@ -4,6 +4,7 @@
 #include "JourneyEpisode.hpp"
 #include "JourneyCampaign.hpp"
 #include "JourneyBattlefield.hpp"
+#include "JourneyBattleChoices.hpp"
 #include "JourneyPlanExample.hpp"
 #include <cassert>
 #include <memory>
@@ -398,6 +399,62 @@ int main()
             auto retry=std::make_unique<StrategistJourney>(j);
             assert(retry->Withdraw() && retry->RetryAtCouncil(*next->beforeBattle) && retry->luoyangPlan==route &&
                 retry->world.cities[0].food==camp.food && retry->SunJianTrust()==j.SunJianTrust());
+            if(west)
+            {
+                const int roadblock=DepotColumnStart+1;
+                auto oldBattle=std::make_unique<JourneySaveData>(*next);
+                auto& oldJourney=oldBattle->journey;
+                const auto& previousDefinition=LuoyangMissionDefinition(LuoyangPlan::WesternDepot);
+                oldJourney.goal=previousDefinition.goal;
+                oldJourney.world.armies[4].arm=Arm::Spear;
+                for(int id=3;id<=4;++id)
+                    oldJourney.world.armies[id].tile=oldJourney.world.armies[id].target=previousDefinition.positions[id];
+                oldJourney.RefreshIntelligence();
+                std::vector<std::uint8_t> oldBytes;
+                JourneyArchive archive{false,oldBytes};archive.version=18;
+                unsigned oldVersion=18,oldChecksum=0;
+                archive(magic,oldVersion,oldChecksum);archive(*oldBattle);
+                oldChecksum=2166136261u;
+                for(std::size_t i=12;i<oldBytes.size();++i) { oldChecksum^=oldBytes[i];oldChecksum*=16777619u; }
+                for(int i=0;i<4;++i) oldBytes[8+i]=static_cast<std::uint8_t>(oldChecksum>>(i*8));
+                assert(DecodeJourneySave(oldBytes,*oldBattle) && !oldJourney.HasDepotInterception() &&
+                    oldJourney.goal==previousDefinition.goal && oldJourney.world.armies[4].arm==Arm::Spear);
+                assert(oldJourney.Withdraw() && oldJourney.RetryAtCouncil(*oldBattle->beforeBattle) &&
+                    oldJourney.Prepare(1,oldJourney.enemyPolicy) && oldJourney.HasDepotInterception());
+
+                auto tactics=std::make_unique<StrategistJourney>(j);
+                auto& units=tactics->world.armies;
+                units[0].tile=units[0].target=DepotColumnStart-1;
+                units[1].tile=units[1].target=Campaign::At(9,6);
+                units[2].tile=units[2].target=Campaign::At(12,7);
+                tactics->RefreshIntelligence();
+                assert(tactics->Preview({{0,4,ChainTactic::Lure,DepotColumnStart-2}}).completed==0);
+                const auto choices=ReadJourneyBattleChoices(*tactics,3);
+                assert(!choices.empty() && choices.front().opensDepotColumn && !tactics->chain.disordered[3]);
+                assert(tactics->Execute(choices.front().orders).completed==1 && tactics->stage==JourneyStage::Battle);
+                assert(tactics->Move(2,roadblock) && tactics->won);
+
+                auto blocked=std::make_unique<StrategistJourney>(j);
+                blocked->world.armies[2].tile=blocked->world.armies[2].target=roadblock;
+                assert(blocked->EndTurn() && blocked->EndTurn() && blocked->stage==JourneyStage::Battle &&
+                    blocked->world.armies[4].tile==DepotColumnStart);
+                auto lost=std::make_unique<StrategistJourney>(j);
+                lost->world.armies[0].tile=lost->world.armies[0].target=DepotColumnStart-1;
+                lost->world.armies[4].troops=10;
+                lost->RefreshIntelligence();
+                assert(lost->Strike(0,4) && lost->stage==JourneyStage::Debrief && !lost->won);
+
+                auto retreat=std::make_unique<StrategistJourney>(j);
+                auto& escaping=retreat->world.armies;
+                for(int officer=0;officer<3;++officer) escaping[officer].tile=escaping[officer].target=Campaign::At(3,officer+3);
+                retreat->RefreshIntelligence();
+                for(int cycle=1;cycle<=8;++cycle)
+                {
+                    assert(retreat->EndTurn());
+                    assert(escaping[4].tile==DepotColumnStart+cycle/2);
+                }
+                assert(retreat->stage==JourneyStage::Debrief && !retreat->won);
+            }
             for(int i=0;i<18 && j.stage==JourneyStage::Battle;++i)
             {
                 auto orders=PlanJourneyAutoBattle(j);
@@ -411,13 +468,14 @@ int main()
             auto payout=std::make_unique<StrategistJourney>(*next->beforeBattle);
             assert(payout->Prepare(1,payout->enemyPolicy));
             auto& w=payout->world;
-            w.armies[3].troops=w.armies[4].troops=0;
-            const int marchFrom=Campaign::At(west ? 9:10,west ? 7:5);
+            w.armies[3].troops=0;
+            if(!west) w.armies[4].troops=0;
+            const int marchFrom=Campaign::At(west ? 12:10,west ? 7:5);
             w.armies[0].tile=w.armies[0].target=marchFrom;
             payout->RefreshIntelligence();
             int expectedFood=w.cities[0].food+payout->reserveFood+(west ? WesternDepotFood:0);
             for(int army=0;army<3;++army) expectedFood+=w.armies[army].food;
-            assert(payout->Move(0,payout->goal) && payout->won && w.cities[0].food==expectedFood);
+            assert(payout->Move(0,west ? DepotColumnStart+1:payout->goal) && payout->won && w.cities[0].food==expectedFood);
             assert(j.Continue() && EncodeJourneySave(*next,bytes) && DecodeJourneySave(bytes,*next) &&
                 j.luoyangPlan==route && j.history[LuoyangMission].won && !j.CanContinue());
         }

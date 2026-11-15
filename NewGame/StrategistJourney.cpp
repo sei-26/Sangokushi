@@ -67,6 +67,7 @@ namespace frontline
 		withdrawn = false; promise = JourneyPromise::OpenRoad; history = {};
         coalitionPlan=CoalitionPlan::None;
         luoyangPlan=LuoyangPlan::None;
+        depotInterception=false;
         legacyBattlefield=false;
         convoyRoute=JourneyConvoyRoute::Road;battleReview={};retryRelief.reset();retryDefense.reset();
 		goal = Campaign::At(12, 10);
@@ -119,6 +120,7 @@ namespace frontline
 			return false;
 		}
 		convoyEscort = cost.escort;
+        depotInterception=HasDepotInterception();
 		SetupBattlefield();
 		camp.food -= food + cargo;
 		camp.gold -= gold;
@@ -154,7 +156,7 @@ namespace frontline
             if(mission==LuoyangMission)
             {
                 commander.name=luoyangPlan==LuoyangPlan::WesternDepot ? U"董卓軍の荷駄守備":U"董卓軍の南門後衛";
-                world.generals[4].name=U"董卓軍の退却隊";
+                world.generals[4].name=depotInterception ? U"董卓軍の荷駄隊":U"董卓軍の退却隊";
             }
             if(mission==YellowTurbanMission)
             {
@@ -190,6 +192,12 @@ namespace frontline
                 army.arm=Arm::Cavalry;
                 army.stance=battle::Stance::Balanced;
                 army.troops=1500*CombatSettings(difficulty).enemyPercent/100;
+            }
+            if(depotInterception && i==4)
+            {
+                army.arm=Arm::Transport;
+                army.stance=battle::Stance::Balanced;
+                army.troops=850;
             }
 			world.armies.push_back(army);
 		}

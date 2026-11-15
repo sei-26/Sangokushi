@@ -13,6 +13,8 @@ void ATacticalField::BuildBattleChoices()
     { H.BattleChoiceReason=TEXT("予約した策がある。詳しい采配で実行・見直しができる。");return; }
     if(BuildSupportActionChoices()) return;
     const auto* Seen=J.intelligence[0].Find(State->Target);
+    if(J.depotInterception && State->Target==4)
+    { H.BattleChoicePrompt=TEXT("荷駄隊を捕らえる");H.BattleChoiceReason=TEXT("攻める相手は護衛。車は東から止めよう。");return; }
     if(!Seen || !Seen->current || Seen->observed.troops<=0)
     { H.BattleChoiceReason=H.MissionAdvice+TEXT("\n「目標へ」で場所を確認。");return; }
     H.BattleChoiceTarget=JourneyText(J.world.generals[Seen->observed.general].name);
@@ -30,6 +32,7 @@ void ATacticalField::BuildBattleChoices()
         Choice.Outcome=Plan.damage>=Seen->observed.troops ? TEXT("この敵を撃破できる見込み"):FString::Printf(TEXT("敵兵%dを減らす見込み"),Plan.damage);
         if(Plan.disordered && !J.chain.disordered[Plan.target]) Choice.Outcome+=TEXT("・混乱");
         else if(Plan.pressured && !J.chain.pressured[Plan.target]) Choice.Outcome+=TEXT("・隙を作る");
+        if(Plan.opensDepotColumn) Choice.Outcome=TEXT("護衛を崩す見込み");
         if(Plan.friendlyLoss>0) Choice.Outcome+=FString::Printf(TEXT(" / 味方損耗%d"),Plan.friendlyLoss);
         for(const auto& Order:Plan.orders)
         {
@@ -37,6 +40,8 @@ void ATacticalField::BuildBattleChoices()
             const auto Officer=JourneyText(J.world.generals[J.world.armies[Order.army].general].name);
             if(!Choice.Cost.IsEmpty()) Choice.Cost+=TEXT("・");Choice.Cost+=Officer;
             Choice.Detail+=Officer+TEXT("「")+JourneyText(TacticChain::Name(Order.tactic))+TEXT("」");
+            if(TacticChain::Definition(Order.tactic).unique)
+            { Choice.Cost+=TEXT("（固有）");Choice.Detail+=TEXT("（一戦一度）"); }
             if(Order.tactic==ChainTactic::Lure) Choice.Detail+=FString::Printf(TEXT("（%d,%dへ後退）"),Order.destination%Width,Order.destination/Width);
         }
         Choice.Cost+=FString::Printf(TEXT(" / 士気計%d"),Plan.moraleCost);
@@ -52,6 +57,8 @@ void ATacticalField::BuildBattleChoices()
             TEXT("今の位置から届く策はない。部隊を寄せるか、皆に任せて進めよう。");
         if(J.Definition().kind==JourneyObjective::HoldPositions && Unspent && Ready)
             H.BattleChoiceReason=TEXT("烽火の守備役は残す。別の隊で援護するか、守備を固めよう。");
+        if(J.depotInterception && Unspent && Ready)
+            H.BattleChoiceReason=TEXT("護衛に一隊を寄せ、別の隊で車の先を塞ごう。");
     }
 }
 bool ATacticalField::UseBattleChoice(int Index,int ExpectedVersion)

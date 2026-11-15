@@ -7,10 +7,10 @@ namespace frontline
         if(j.mission==LuoyangMission)
         {
             const bool west=j.luoyangPlan==LuoyangPlan::WesternDepot;
-            const char32_t* advice[]={west ? U"倉に入ったら、敵の旗より荷の数を先に確かめよう。兵糧を運び出してこその勝ちだよ。":
+            const char32_t* advice[]={west ? U"先に車の前へ回ろう。荷が無事なら、都から逃げてきた人にも食べさせてやれる。":
                 U"門前の旗を目印に孫堅殿が入る。追撃より、最後にそこへ残る隊を頼みたい。",
                 U"狭い道に全員を出すな。林で敵を受ける隊と、目標へ入る隊を分けるのだ。",
-                west ? U"荷駄陣の後ろに別の隊がいる。俺が引き受けるから、米を取りに行く奴は止まるなよ！":
+                west ? U"車の前なら俺が止める。兄者、護衛が突っ込んでくる方は頼むぜ！":
                     U"城壁の横を回る。正面の敵が俺の方を向いたら、誰かが門へ走ってくれよ！"};
             return {{who,advice[who]},{3,U"敵が動いた方を見て合図を出す。最後に旗を立てる隊も残す。"}};
         }

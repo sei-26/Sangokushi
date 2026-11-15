@@ -45,6 +45,7 @@ namespace frontline
 			switch (order.tactic)
 			{
 			case ChainTactic::Lure:
+				if (victim.arm == Arm::Transport) return fail(U"荷駄隊は追撃しない。護衛を誘導しよう。");
 				if (victim.stance == battle::Stance::Guard) return fail(U"敵は固守して誘いを追わない。牽制から崩すか、別の相手から組み直そう。");
 				if (moved[order.army]) return fail(U"誘導役は移動済み。後退する余力がない。");
 				if (!Free(world, order.destination) || world.MapDistance(actor.tile, order.destination) != 1 || world.MapDistance(victim.tile, order.destination) <= 1) return fail(U"敵から離れる隣接マスへ後退先を指定しよう。");
@@ -69,7 +70,7 @@ namespace frontline
 				}
 				break;
 			case ChainTactic::Breakthrough:
-				if (disordered[order.enemy] || victim.morale <= 60)
+				if (victim.arm != Arm::Transport && (disordered[order.enemy] || victim.morale <= 60))
 				{
 					event.setupPercent = 125;
 					const int push = PushTile(world, order.army, order.enemy);

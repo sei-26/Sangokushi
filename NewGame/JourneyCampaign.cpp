@@ -75,13 +75,16 @@ namespace frontline
             const bool west=j.luoyangPlan==LuoyangPlan::WesternDepot;
             const auto* role=LuoyangPlanName(j.luoyangPlan);
             if(finished || j.stage==JourneyStage::Complete)
-                return {U"第二章 ／ 洛陽へ",west ? U"西の荷駄陣を押さえ、兵糧1,000を持ち帰った。":U"南門前を確保し、孫堅が都へ向かう道をつないだ。",
+                return {U"第二章 ／ 洛陽へ",j.depotInterception ? U"退く荷駄隊を捕らえ、兵糧1,000を持ち帰った。":
+                    west ? U"西の荷駄陣を押さえ、兵糧1,000を持ち帰った。":U"南門前を確保し、孫堅が都へ向かう道をつないだ。",
                     U"孫堅は焼けた都に入り、荒らされた陵墓の修復にあたる。",role};
             if(j.stage==JourneyStage::Debrief)
-                return {U"第二章 ／ 洛陽へ",west ? U"荷駄陣は押さえられなかった。":U"南門前を確保できなかった。",
-                    U"軍議へ戻り、敵を引き受ける隊と最後に旗を立てる隊を決め直す。",role};
+                return {U"第二章 ／ 洛陽へ",j.depotInterception ? U"荷駄隊から兵糧を回収できなかった。":
+                    west ? U"荷駄陣は押さえられなかった。":U"南門前を確保できなかった。",
+                    j.depotInterception ? U"軍議へ戻り、先回りする隊と護衛を崩す隊を決め直す。":
+                        U"軍議へ戻り、敵を引き受ける隊と最後に旗を立てる隊を決め直す。",role};
             return {U"第二章 ／ 洛陽へ",j.Definition().briefing,west ?
-                U"孫堅の斥候が林道を案内する。敵に近い位置から始め、短い期限で荷駄陣を押さえる。":
+                U"孫堅の斥候が林道を案内する。車の１マス東を塞ぎ、護衛の隊列を崩す。":
                 U"義勇軍が先に南門前を確保する。孫堅本隊は道が開いたあとに入る。",role};
         }
         if(j.HasSunJian())

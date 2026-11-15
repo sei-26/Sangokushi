@@ -13,6 +13,7 @@ namespace frontline
 		bool convoy = false;
 		bool campaign = false;
         bool yangren = false;
+        bool depotInterception = false;
 	};
 	struct JourneyEnemyPlan
 	{

@@ -15,6 +15,7 @@ namespace frontline
                 key.push_back(id>=0 && id<int(flags->size()) && (*flags)[id] ? 1:0);
         };
         for(int a=0;a<3 && a<int(j.world.armies.size());++a) Add(a,j.world.armies[a]);
+        key.push_back(j.depotInterception);
         // Stale contacts and private enemy positions never invalidate a visible choice.
         for(const auto& c:j.intelligence[0].contacts) if(c.current) Add(c.id,c.observed);
         for(int y=0;y<StrategistJourney::Rows;++y) for(int x=0;x<StrategistJourney::Columns;++x)
@@ -29,6 +30,11 @@ namespace frontline
             if(preview.completed!=int(orders.size()) || preview.events.size()!=orders.size()) return out;
             out.target=target;out.orders=orders;
             std::array<int,3> survivors{};
+            const auto* column=j.depotInterception ? j.intelligence[0].Find(4):nullptr;
+            const int roadblock=column && column->current ? column->observed.tile+1:-1;
+            int targetTile=j.intelligence[0].Find(target)->observed.tile;
+            int targetTroops=j.intelligence[0].Find(target)->observed.troops;
+            const int initialTargetTile=targetTile,initialTargetTroops=targetTroops;
             for(int a=0;a<3;++a) survivors[a]=j.world.armies[a].troops;
             for(const auto& order:orders) out.moraleCost+=TacticChain::Definition(order.tactic).moraleCost;
             for(const auto& event:preview.events)
@@ -36,10 +42,15 @@ namespace frontline
                 if(event.enemy==target) out.damage+=event.damage;
                 for(const auto& change:event.changes)
                 {
-                    if(change.army==target) { out.disordered=change.disordered;out.pressured=change.pressured; }
+                    if(change.army==target)
+                    {
+                        out.disordered=change.disordered;out.pressured=change.pressured;
+                        targetTile=change.tile;targetTroops=change.troops;
+                    }
                     if(change.army>=0 && change.army<3)
                     {
                         const int from=j.world.armies[change.army].tile;
+                        if(from==roadblock && change.tile!=from) return {};
                         if(j.Definition().kind==JourneyObjective::HoldPositions && (from==j.goal || from==j.Definition().secondGoal) && change.tile!=from) return {};
                         if(j.HasConvoy() && change.tile!=from)
                         {
@@ -51,13 +62,16 @@ namespace frontline
                 }
             }
             for(int a=0;a<3;++a) out.friendlyLoss+=std::max(0,j.world.armies[a].troops-survivors[a]);
+            if(roadblock>=0 && target==3 && j.DepotGuardProtects(column->observed.tile,initialTargetTile,initialTargetTroops,j.chain.disordered[3]))
+                out.opensDepotColumn=!j.DepotGuardProtects(column->observed.tile,targetTile,targetTroops,out.disordered);
             return out;
         }
         int Value(const StrategistJourney& j,const JourneyBattleChoice& choice)
         {
             if(choice.orders.empty()) return std::numeric_limits<int>::min();
             const bool disordered=j.chain.disordered[choice.target],pressured=j.chain.pressured[choice.target];
-            return choice.damage+(choice.disordered && !disordered ? 180:0)+(choice.pressured && !pressured ? 80:0)-choice.friendlyLoss;
+            return choice.damage+(choice.disordered && !disordered ? 180:0)+(choice.pressured && !pressured ? 80:0)-
+                choice.friendlyLoss+(choice.opensDepotColumn ? 250:0);
         }
         JourneyBattleChoice Extend(const StrategistJourney& j,int target,const std::vector<ChainOrder>& prefix)
         {
@@ -70,7 +84,7 @@ namespace frontline
                 for(auto tactic:TacticChain::Loadout(j.world,a))
                 {
                     const auto& info=TacticChain::Definition(tactic);
-                    if(info.unique || !info.targetsEnemy || tactic==ChainTactic::Lure) continue;
+                    if((info.unique && !j.depotInterception) || !info.targetsEnemy || tactic==ChainTactic::Lure) continue;
                     auto orders=prefix;orders.push_back({a,target,tactic,-1});
                     auto choice=Evaluate(j,target,orders);const int value=Value(j,choice);
                     if(value>score || (value==score && !choice.orders.empty() && choice.moraleCost<best.moraleCost))
@@ -83,6 +97,7 @@ namespace frontline
     std::vector<JourneyBattleChoice> ReadJourneyBattleChoices(const StrategistJourney& j,int target)
     {
         const auto* seen=j.intelligence[0].Find(target);
+        if(j.depotInterception && target==4) return {};
         if(j.stage!=JourneyStage::Battle || !seen || !seen->current || seen->observed.troops<=0 ||
            !j.world.Hostile(0,seen->observed.faction) || target<0 || target>=int(j.chain.disordered.size())) return {};
         auto solo=Extend(j,target,{});
@@ -111,7 +126,8 @@ namespace frontline
             }
             if(candidate.orders.size()>1 && Value(j,candidate)>Value(j,team)) team=std::move(candidate);
         }
-        if(team.orders.size()>1 && (team.damage>solo.damage || (team.disordered && !solo.disordered) || (team.pressured && !solo.pressured))) result.push_back(std::move(team));
+        if(team.orders.size()>1 && (team.damage>solo.damage || (team.disordered && !solo.disordered) ||
+            (team.pressured && !solo.pressured) || (team.opensDepotColumn && !solo.opensDepotColumn))) result.push_back(std::move(team));
         return result;
     }
 }

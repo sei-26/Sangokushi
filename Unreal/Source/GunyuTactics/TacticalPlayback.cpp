@@ -65,6 +65,23 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
     if(Kind==EBattleCue::Rally) Beat.Title=TEXT("主人公の采配  ―  全軍へ補給 / 士気＋20");
     Beat.Reason = State->Report;
     Beat.Duration = Kind == EBattleCue::Enemy ? 3.4f : Kind == EBattleCue::March ? 1.8f : 2.4f;
+    const auto& A=Beat.MissionBefore;
+    const auto& Z=Beat.MissionAfter;
+    if(Kind==EBattleCue::Enemy && A.bBattle && Z.bBattle &&
+        A.Convoy==Z.Convoy && A.Held==Z.Held && A.CompletedDuties==Z.CompletedDuties &&
+        A.ConfirmedReliefs==Z.ConfirmedReliefs && State->Journey.world.tacticEvents.empty())
+    {
+        bool hasImpact=false;
+        for(int Id=0;Id<Beat.Before.Num();++Id)
+        {
+            const auto& BeforeUnit=Beat.Before[Id];
+            const auto& AfterUnit=Beat.After[Id];
+            if(BeforeUnit.Id!=AfterUnit.Id || BeforeUnit.Troops!=AfterUnit.Troops ||
+                (BeforeUnit.Troops>0 && (BeforeUnit.bConcealed!=AfterUnit.bConcealed || BeforeUnit.bDisordered!=AfterUnit.bDisordered)))
+            { hasImpact=true;break; }
+        }
+        if(!hasImpact) Beat.Duration=1.f;
+    }
     State->Beats = {MoveTemp(Beat)};
     BeginPlayback();
 }

@@ -15,7 +15,29 @@ void ATacticalField::BuildMissionPresentation()
             if(Seen.current && Seen.observed.troops>0 && J.world.Hostile(0,Seen.observed.faction) && J.world.MapDistance(Seen.observed.tile,Tile)<=1) ++Count;
         return Count;
     };
-    if(J.HasSunJian())
+    if(J.depotInterception)
+    {
+        const auto* Column=J.intelligence[0].Find(4);
+        const auto* Guard=J.intelligence[0].Find(3);
+        const bool Visible=Column && Column->current;
+        const int RouteTile=Visible ? Column->observed.tile+1:-1;
+        int Blocker=-1;
+        for(int Officer=0;Visible && Officer<3;++Officer)
+            if(TacticChain::Living(J.world,Officer) && J.world.armies[Officer].tile==RouteTile) Blocker=Officer;
+        const bool Ready=Blocker>=0 && CanOccupyObjective(J.world.armies[Blocker]) && !J.chain.disordered[Blocker];
+        H.MissionFocusTile=Visible && Ready && Guard && Guard->current ? Guard->observed.tile:Visible ? RouteTile:J.goal;
+        H.MissionAdvice=Ready ? TEXT("いまだ、護衛を崩そう"):Blocker>=0 ? TEXT("封鎖役を立て直そう"):TEXT("車の１マス東を塞ごう");
+        const auto* GuardStatus=Guard && Guard->current && Visible ?
+            (J.DepotGuardProtects(Column->observed.tile,Guard->observed.tile,Guard->observed.troops,J.chain.disordered[3]) ?
+                TEXT("護衛が近い"):TEXT("護衛が離れたか混乱中")):TEXT("護衛の位置を確認");
+        const FString Timing=Ready ? JourneyText(J.world.generals[J.world.armies[Blocker].general].name)+TEXT("が道を塞いだ"):
+            Blocker>=0 ? FString(TEXT("封鎖役の兵・士気を確認")):FString::Printf(TEXT("次の移動まで%d指揮"),J.DepotMovesIn());
+        H.MissionStep=Visible ? FString::Printf(TEXT("出口まで%dマス ｜ %s ｜ %s"),
+            J.world.MapDistance(Column->observed.tile,J.goal),*Timing,GuardStatus):
+            TEXT("荷駄隊は視界外 ｜ 目標へ / U で東の撤収口を確認");
+        H.MissionDetail=TEXT("荷駄隊は２指揮ごとに東へ進む。１マス東に兵150・士気25以上で混乱していない隊を置く。護衛を混乱させるか３マス以上引き離せば捕獲。荷駄隊を潰すと失敗。");
+    }
+    else if(J.HasSunJian())
     {
         const auto& Ally=J.world.armies[StrategistJourney::AlliedArmy];
         const bool Joined=J.SunJianAtRally();

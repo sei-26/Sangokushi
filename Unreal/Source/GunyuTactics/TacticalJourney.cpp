@@ -183,8 +183,8 @@ void ATacticalField::BuildJourneyPresentation()
             P.PrimaryLabel=TEXT("孫堅と次の役目を決める");
             P.LuoyangChoices[0]=TEXT("1　南門を開く\n正面から門前を取り、孫堅本隊を通す");
             P.LuoyangChoices[1]=J.CanChooseLuoyangPlan(LuoyangPlan::WesternDepot) ?
-                FString::Printf(TEXT("2　西の荷駄陣を突く\n敵の近くから出陣・期限短め ／ 勝利で兵糧＋%d"),WesternDepotFood):
-                FString::Printf(TEXT("西の荷駄陣　孫堅の信頼 %d / %d\n陽人で南道を開くか、呂布を抑えると選べる"),J.SunJianTrust(),SunJianFlankTrust);
+                FString::Printf(TEXT("2　西の荷駄隊を捕らえる\n逃げ道に先回りし、護衛を崩す ／ 捕獲で兵糧＋%d"),WesternDepotFood):
+                FString::Printf(TEXT("西の荷駄隊　孫堅の信頼 %d / %d\n陽人で南道を開くか、呂布を抑えると選べる"),J.SunJianTrust(),SunJianFlankTrust);
         }
         if(J.mission==LuoyangMission) P.Heading=TEXT("第二章 完  ―  反董卓連合");
         P.Dialogue=P.CampaignChange;

@@ -39,6 +39,20 @@ namespace frontline
         const auto& unit=w.armies[p.army];
         const int nearest=Nearest(w,p.army);
         const int distance=nearest<0 ? 100000:w.MapDistance(unit.tile,w.armies[nearest].tile);
+        if(c.depotInterception && w.armies.size()>4)
+        {
+            p.role=JourneyEnemyRole::Anchor;
+            if(w.armies[4].troops<=0) { Target(w,p,nearest,nearest<0 ? JourneyEnemyIntent::Wait:JourneyEnemyIntent::Engage);return; }
+            const int flank=w.armies[4].tile-Width; // Screen the column without blocking its road.
+            if(distance<=1 && w.MapDistance(unit.tile,w.armies[4].tile)<=2)
+                Target(w,p,nearest,JourneyEnemyIntent::Engage);
+            else
+            {
+                p.targetArmy=-1;p.target=flank;p.occupyTarget=true;
+                p.intent=JourneyEnemyIntent::HoldCamp;
+            }
+            return;
+        }
         if(c.yangren)
         {
             if(p.army==3) return; // Lu Bu intercepts the nearest observed unit rather than holding the crossroads.
@@ -97,6 +111,7 @@ namespace frontline
     std::u32string EnemyDoctrineHint(const JourneyEnemyPlan& p,const JourneyEnemyContext& c)
     {
         if(!c.campaign || p.intent==JourneyEnemyIntent::Recover) return {};
+        if(c.depotInterception) return U"荷駄隊から２マス以内で護衛。\n混乱させるか、３マス以上引き離そう。";
         if(p.intent==JourneyEnemyIntent::Reserve)
             return p.role==JourneyEnemyRole::Counterattack ? U"反撃隊は渡河を待つ見込み。\n渡る隊と支える隊を分けよう。":U"後詰はまだ待機する見込み。\n先鋒の後の一手も残そう。";
         if(p.role==JourneyEnemyRole::Anchor)

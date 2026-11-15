@@ -71,7 +71,7 @@ namespace frontline
 			ApplyJourneyEnemyDoctrine(*view,context,plan);
 			if (unit.scouting && plan.intent == JourneyEnemyIntent::Engage)
 				plan.intent = JourneyEnemyIntent::Search;
-			if (!context.yangren && unit.stance == battle::Stance::Guard && context.policy == 1 && id == 3 &&
+			if (!context.yangren && !context.depotInterception && unit.stance == battle::Stance::Guard && context.policy == 1 && id == 3 &&
 			    context.objective != JourneyObjective::HoldPositions &&
                 !(plan.role==JourneyEnemyRole::Anchor && plan.occupyTarget && plan.from!=context.goal))
 				plan.intent = JourneyEnemyIntent::Guard;

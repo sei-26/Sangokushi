@@ -53,7 +53,7 @@ void ATacticalField::BuildStoryPresentation()
             }
         }
         if(J.mission==LuoyangMission && J.won && J.luoyangPlan==LuoyangPlan::WesternDepot)
-            P.StoryFacts+=FString::Printf(TEXT("\n荷駄陣から回収：兵糧 +%d"),WesternDepotFood);
+            P.StoryFacts+=FString::Printf(TEXT("\n%sから回収：兵糧 +%d"),J.depotInterception ? TEXT("荷駄隊"):TEXT("荷駄陣"),WesternDepotFood);
         if(R.preparationTracked)
         {
             P.StoryFacts+=TEXT("\n采配の振り返り：");

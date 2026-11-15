@@ -14,6 +14,9 @@ namespace frontline
     enum class LuoyangPlan { None, SouthGate, WesternDepot };
     inline constexpr int SunJianFlankTrust=4;
     inline constexpr int WesternDepotFood=1000;
+    inline constexpr int DepotColumnStart=10+7*Width;
+    inline constexpr int DepotEscape=14+7*Width;
+    inline bool IsDepotRoadTile(int tile) { return tile>=DepotColumnStart && tile<=DepotEscape; }
     inline const char32_t* LuoyangPlanName(LuoyangPlan plan)
     {
         return plan==LuoyangPlan::WesternDepot ? U"西の荷駄陣を突く":U"南門を開く";
@@ -42,7 +45,7 @@ namespace frontline
 		int limit, goal, secondGoal, requiredProgress;
 		std::array<int, 5> positions;
 	};
-    inline const JourneyMission& LuoyangMissionDefinition(LuoyangPlan plan)
+    inline const JourneyMission& LuoyangMissionDefinition(LuoyangPlan plan,bool intercept=false)
     {
         static const JourneyMission gate{U"洛陽南郊 ／ 孫堅本隊を通せ",
             U"南門前に一隊を入れ、付近の敵を退けて本隊を通す",
@@ -54,6 +57,12 @@ namespace frontline
             U"近道から敵のすぐ近くへ出る。北と南から敵を引き離し、撤収前に荷駄陣を取る。",
             JourneyObjective::CaptureCamp,8,10+7*Width,-1,0,
             {{8+7*Width,8+6*Width,8+8*Width,10+7*Width,11+9*Width}}};
+        static const JourneyMission pursuit{U"洛陽西郊 ／ 撤収する荷駄隊を捕らえよ",
+            U"荷駄隊の一つ東を塞ぎ、護衛を引き離すか混乱させる",
+            U"荷駄隊は東の撤収口へ向かう。林から一隊を先回りさせ、もう一隊で護衛の列を崩そう。",
+            JourneyObjective::CaptureCamp,8,DepotEscape,-1,0,
+            {{8+7*Width,8+6*Width,9+8*Width,10+6*Width,DepotColumnStart}}};
+        if(intercept) return pursuit;
         return plan==LuoyangPlan::WesternDepot ? depot:gate;
     }
 	// Scenario data is deliberately independent of rendering and engine APIs.

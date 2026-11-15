@@ -371,7 +371,7 @@ bool ATacticalController::YangrenSmokeTest()
 bool ATacticalController::PrepareLuoyangPreview(int View)
 {
     using namespace frontline;
-    if(View<0 || View>5 || !PrepareYangrenPreview(5)) return false; // Zhang Fei actually opens the road for Sun Jian.
+    if(View<0 || View>6 || !PrepareYangrenPreview(5)) return false; // Zhang Fei actually opens the road for Sun Jian.
     if(!Field->CanIssue(ETacticalCommand::Continue)) return false;
     Field->Issue(ETacticalCommand::Continue);OpenEpisode();
     std::vector<std::uint8_t> Bytes;
@@ -404,7 +404,7 @@ bool ATacticalController::PrepareLuoyangPreview(int View)
         Field->Presentation().Journey.Map.Name!=(West ? TEXT("洛陽西郊・荷駄陣"):TEXT("洛陽南郊・南門前"))) return false;
     if(View==3) { TogglePlanningMap();return bNovelMap; }
     DeployNovelPlan();
-    if(!Field->Presentation().bBattle || Field->Presentation().GoalLabel!=(West ? TEXT("西の荷駄陣"):TEXT("洛陽の南門前"))) return false;
+    if(!Field->Presentation().bBattle || Field->Presentation().GoalLabel!=(West ? TEXT("東の撤収口"):TEXT("洛陽の南門前"))) return false;
     if(View==2 || View==4)
     {
         CameraYaw=90;CameraElevation=61;CameraPreset=2;
@@ -414,6 +414,24 @@ bool ATacticalController::PrepareLuoyangPreview(int View)
     auto Save=std::make_unique<JourneySaveData>();
     if(!Field->ExportSession(Bytes) || !DecodeJourneySave(Bytes,*Save)) return false;
     auto& J=Save->journey;
+    if(View==6)
+    {
+        // Stage the approach, then make both decisions through the normal field controls.
+        auto& Units=J.world.armies;
+        Units[1].tile=Units[1].target=Campaign::At(9,6);
+        Units[2].tile=Units[2].target=Campaign::At(12,7);
+        Save->realtimeMode=false;J.RefreshIntelligence();
+        if(!EncodeJourneySave(*Save,Bytes) || !Field->ImportSession(Bytes)) return false;
+        Field->SelectOfficer(2);Field->Issue(ETacticalCommand::Move);Field->ClickTile(DepotColumnStart+1);
+        Field->Issue(ETacticalCommand::Skip);
+        Field->SelectAt(Units[3].tile);
+        CameraYaw=90;CameraElevation=61;CameraPreset=2;
+        Focus=FVector(2200,1250,0);Distance=ViewDistance=3330;
+        const auto& H=Field->Presentation();
+        return H.bBattle && H.SecondGoalTile==DepotColumnStart+1 && H.MissionFocusTile==Units[3].tile &&
+            H.MissionStep.Contains(TEXT("張飛が道を塞いだ")) &&
+            !H.BattleChoices.IsEmpty() && H.BattleChoices[0].Outcome.Contains(TEXT("護衛を崩す"));
+    }
     for(int Cycle=0;Cycle<18 && J.stage==JourneyStage::Battle;++Cycle)
     {
         auto Next=PlanJourneyAutoBattle(J);
@@ -421,7 +439,7 @@ bool ATacticalController::PrepareLuoyangPreview(int View)
         if(J.stage==JourneyStage::Battle && !Next.movement.Resolve(J)) return false;
     }
     return J.won && EncodeJourneySave(*Save,Bytes) && Field->ImportSession(Bytes) &&
-        Field->Presentation().Journey.StoryFacts.Contains(TEXT("荷駄陣から回収：兵糧 +1000"));
+        Field->Presentation().Journey.StoryFacts.Contains(TEXT("荷駄隊から回収：兵糧 +1000"));
 }
 
 bool ATacticalController::LuoyangSmokeTest()
@@ -433,11 +451,16 @@ bool ATacticalController::LuoyangSmokeTest()
     if(!Check(PrepareLuoyangPreview(4),TEXT("western route deploys normally"))) return false;
     std::vector<std::uint8_t> Bytes;
     if(!Check(Field->ExportSession(Bytes) && Field->ImportSession(Bytes) &&
-        Field->Presentation().GoalLabel==TEXT("西の荷駄陣"),TEXT("battle reload keeps the chosen objective"))) return false;
+        Field->Presentation().GoalLabel==TEXT("東の撤収口"),TEXT("battle reload keeps the chosen objective"))) return false;
     Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Skip);
     Field->Issue(ETacticalCommand::Retry);
     if(!Check(Field->Presentation().Journey.bPreparation && Field->Presentation().Journey.Map.Name==TEXT("洛陽西郊・荷駄陣"),
         TEXT("retry keeps the western route"))) return false;
+    if(!Check(PrepareLuoyangPreview(6),TEXT("roadblock movement presents the exposed-guard decision"))) return false;
+    if(!Check(Field->UseBattleChoice(0,Field->Presentation().BattleChoiceVersion),TEXT("the quick order resolves the guard tactic"))) return false;
+    Field->Issue(ETacticalCommand::Skip);
+    if(!Check(Field->Presentation().Journey.bDebrief && Field->Presentation().bWon,
+        TEXT("placing a roadblock and then breaking the guard captures the column immediately"))) return false;
     if(!Check(PrepareLuoyangPreview(5) && Field->CanIssue(ETacticalCommand::Continue),TEXT("western depot victory settles the reward"))) return false;
     Field->Issue(ETacticalCommand::Continue);OpenEpisode();
     if(!Check(bEpisodeOpen && CurrentEpisodeLine().Text.Contains(TEXT("荷駄")) && !CanChooseLuoyangFromNovel(),

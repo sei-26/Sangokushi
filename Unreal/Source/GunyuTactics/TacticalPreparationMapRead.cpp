@@ -51,6 +51,12 @@ void ATacticalField::BuildPreparationMap()
         Add(Campaign::At(10,10),TEXT("南の平地"),TEXT("前陣へ回り込む道。南から来る反撃隊に注意。"),
             {TEXT("正面へ全員を出さず、ここを通る隊を残そう。"),TEXT("南へ敵が向いたなら、正面にも道が開く。"),TEXT("合図が来たら、ここから行くぜ。")});
     }
+    else if(J.HasDepotInterception())
+    {
+        Add(DepotColumnStart,TEXT("荷駄隊の出発地点"),TEXT("敵は２指揮に１マス、まっすぐ東へ進む。先回りして道を塞ごう。"),{});
+        Add(DepotEscape,TEXT("東の撤収口"),TEXT("荷駄隊がここに着く前に、車の１マス東を塞ぎ、護衛を混乱させるか３マス以上引き離す。"),{});
+        for(int Tile=DepotColumnStart;Tile<=DepotEscape;++Tile) Map.ConvoyRoute.Add(Tile);
+    }
     else if(J.mission==LuoyangMission)
     {
         const bool West=J.luoyangPlan==LuoyangPlan::WesternDepot;

@@ -5,6 +5,9 @@ bool ATacticalField::PlaybackSmokeTest()
 {
     const int SavedMission = FirstMission, SavedPolicy = EnemyPolicy;
     const float SavedVolume = EffectsVolume, SavedSpeed = PlaybackSpeed;
+    const bool SavedCouncil=bStartWithCouncil,SavedLegacy=bLegacyJourney,SavedRealtime=bRealtimeCommand;
+    const bool SavedDifficulty=bStartOnStandardDifficulty,SavedPlayback=State->bNoPlayback;
+    bStartWithCouncil=false;bLegacyJourney=true;bRealtimeCommand=false;bStartOnStandardDifficulty=true;State->bNoPlayback=false;
     FirstMission = 0; EnemyPolicy = 0; EffectsVolume = 0; PlaybackSpeed = 1;
     auto Check = [](bool Condition, const TCHAR* Name)
     {
@@ -27,6 +30,16 @@ bool ATacticalField::PlaybackSmokeTest()
     if (!Check(State->Journey.world.armies[3].troops == ResolvedTroops, TEXT("animation never reapplies damage"))) return false;
     Issue(ETacticalCommand::Skip);
     if (!Check(!IsPlaying() && State->Units[3].Troops == ResolvedTroops && State->Journey.turn == ResolvedTurn, TEXT("skip changes presentation only"))) return false;
+    Issue(ETacticalCommand::Restart);
+    State->Journey.world.armies[4].troops=0;
+    // The legacy first battle wins as soon as its vanguard dies. Use a
+    // distant live force for the quiet-cycle timing check.
+    State->Journey.world.armies[3].troops=1200;
+    State->Journey.world.armies[3].tile=State->Journey.world.armies[3].target=frontline::Campaign::At(13,2);
+    State->Journey.RefreshIntelligence();Refresh();
+    Issue(ETacticalCommand::EndTurn);
+    if(!Check(IsPlaying() && CurrentBeat()->Duration==1.f,TEXT("a quiet advance plays in one second"))) return false;
+    Issue(ETacticalCommand::Skip);
     Issue(ETacticalCommand::Restart); Issue(ETacticalCommand::Sample); Issue(ETacticalCommand::Execute);
     AdvancePresentation(100.f);
     if (!Check(!IsPlaying() && State->Journey.world.armies[3].troops == ResolvedTroops, TEXT("natural completion equals skip"))) return false;
@@ -49,6 +62,8 @@ bool ATacticalField::PlaybackSmokeTest()
             }
     Issue(ETacticalCommand::Skip);
     FirstMission = SavedMission; EnemyPolicy = SavedPolicy; EffectsVolume = SavedVolume; PlaybackSpeed = SavedSpeed;
+    bStartWithCouncil=SavedCouncil;bLegacyJourney=SavedLegacy;bRealtimeCommand=SavedRealtime;
+    bStartOnStandardDifficulty=SavedDifficulty;State->bNoPlayback=SavedPlayback;
     Issue(ETacticalCommand::Restart);
     UE_LOG(LogTemp, Display, TEXT("GUNYU_PLAYBACK: PASS (step damage, interpolation, input lock, skip equivalence, stopped chain, observed enemies)"));
     return true;

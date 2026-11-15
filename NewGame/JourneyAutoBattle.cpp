@@ -9,7 +9,13 @@ namespace frontline
         JourneyAutoPlan plan;
         if(j.stage!=JourneyStage::Battle) return plan;
         const auto& w=j.world;
-        const bool capture=j.Definition().kind==JourneyObjective::CaptureCamp;
+        const bool capture=j.Definition().kind==JourneyObjective::CaptureCamp && !j.depotInterception;
+        int intercept=-1;
+        if(j.depotInterception)
+        {
+            const auto* seen=j.intelligence[0].Find(4);
+            intercept=seen && seen->current ? seen->observed.tile+1:DepotColumnStart-1;
+        }
         std::array<int,3> duties{-1,-1,-1};
         auto Assign=[&](int tile)
         {
@@ -26,6 +32,7 @@ namespace frontline
         if(j.Definition().kind==JourneyObjective::HoldPositions)
         { Assign(j.goal);Assign(j.Definition().secondGoal); }
         else if(capture) Assign(j.goal);
+        else if(j.depotInterception) Assign(intercept);
         std::array<bool,3> defending{};
         for(int a=0;a<3;++a)
         {
@@ -34,7 +41,8 @@ namespace frontline
             int target=-1,dist=100000;
             for(const auto& c:j.intelligence[0].contacts)
             {
-                if(!c.current || c.observed.troops<=0 || !w.Hostile(w.player,c.observed.faction)) continue;
+                if(!c.current || c.observed.troops<=0 || !w.Hostile(w.player,c.observed.faction) ||
+                   (j.depotInterception && c.id==4)) continue;
                 int value=w.MapDistance(at,c.observed.tile);
                 if(j.HasConvoy())
                 {
@@ -66,7 +74,7 @@ namespace frontline
             }
             else
             {
-                int goal=j.goal;
+                int goal=j.depotInterception ? intercept:j.goal;
                 if(j.HasConvoy())
                 {
                     const auto& path=j.ConvoyPath();
@@ -105,7 +113,8 @@ namespace frontline
                         if(needs) targets.push_back(-1);
                     }
                     else for(const auto& c:j.intelligence[0].contacts)
-                        if(c.current && c.observed.troops>0 && w.Hostile(w.player,c.observed.faction)) targets.push_back(c.id);
+                        if(c.current && c.observed.troops>0 && w.Hostile(w.player,c.observed.faction) &&
+                           (!j.depotInterception || c.id==3)) targets.push_back(c.id);
                     for(int target:targets)
                     {
                         auto orders=plan.tactics;orders.push_back({a,target,tactic,-1});
@@ -113,6 +122,9 @@ namespace frontline
                         if(prediction.completed!=int(orders.size()) || prediction.events.empty()) continue;
                         const auto& e=prediction.events.back();
                         int score=e.damage+(!enemy ? 85:20);
+                        if(j.depotInterception && target==3 && !j.chain.disordered[3])
+                            for(const auto& change:e.changes)
+                                if(change.army==3 && change.disordered) score+=240;
                         if(target>=0 && j.HasConvoy())
                         {
                             const auto* c=j.intelligence[0].Find(target);

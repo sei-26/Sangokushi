@@ -42,6 +42,39 @@ namespace frontline
         return HasSunJian() && TacticChain::Living(world,AlliedArmy) &&
             world.armies[AlliedArmy].tile==YangrenRally;
     }
+    bool StrategistJourney::DepotGuardProtects(int columnTile,int guardTile,int guardTroops,bool disordered) const
+    {
+        return guardTroops>0 && !disordered && world.MapDistance(columnTile,guardTile)<=2;
+    }
+    bool StrategistJourney::CanCaptureDepotColumn() const
+    {
+        const auto& column=world.armies[4];
+        const auto& guard=world.armies[3];
+        if(column.troops<=0 || column.tile==goal ||
+            DepotGuardProtects(column.tile,guard.tile,guard.troops,chain.disordered[3])) return false;
+        for(int officer=0;officer<3;++officer)
+        {
+            const auto& unit=world.armies[officer];
+            if(CanOccupyObjective(unit) && !chain.disordered[officer] && unit.tile==column.tile+1)
+                return true;
+        }
+        return false;
+    }
+    void StrategistJourney::AdvanceDepotColumn()
+    {
+        if(DepotMovesIn()!=1 || !TacticChain::Living(world,4)) return;
+        auto& column=world.armies[4];
+        const int next=column.tile+1; // The published east road runs straight to the exit.
+        if(column.tile==goal) return;
+        if(!TacticChain::Free(world,next))
+        {
+            if(intelligence[0].visible[column.tile]) Report(U"荷駄隊が行く手を阻まれて止まった。護衛を崩せば捕らえられる。");
+            return;
+        }
+        column.tile=column.target=next;
+        ++world.revision;
+        if(intelligence[0].visible[next]) Report(U"董卓軍の荷駄隊が東へ進んだ。撤収口までに捕らえよう。");
+    }
     StrategistJourney::YangrenEnemies StrategistJourney::ReadYangrenEnemies() const
     {
         if(!battleReview.yangren.tracked) return {};
@@ -209,6 +242,8 @@ namespace frontline
             return U"陽人の辻を確保 / 孫堅隊 "+std::u32string(SunJianAtRally() ? U"合流地点に到着":
                 blocked ? U"南道で交戦中。隣接する敵を退けると進軍を再開":U"南から進軍中");
         }
+        if(depotInterception && stage==JourneyStage::Battle)
+            return U"荷駄隊を捕らえよ ／ "+Number(DepotMovesIn())+U"指揮後に次の移動";
         if(mission==LuoyangMission) return Definition().objective;
         if(Definition().kind==JourneyObjective::CaptureCamp) return U"指揮所へ一隊を入れ、隣接する敵を退けて占領。護送・残敵掃討は不要";
 		if (Definition().kind == JourneyObjective::HoldPositions)
@@ -279,6 +314,20 @@ namespace frontline
 				return;
 			}
 		}
+        else if(depotInterception)
+        {
+            if(CanCaptureDepotColumn())
+            {
+                Finish(true,U"護衛の列が割れた。荷駄隊を捕らえ、兵糧1,000を持ち帰った。");
+                return;
+            }
+            if(!TacticChain::Living(world,4) || world.armies[4].tile==goal)
+            {
+                Finish(false,TacticChain::Living(world,4) ? U"荷駄隊が撤収口へ逃れた。東へ先回りする隊を残そう。":
+                    U"交戦で荷駄隊が潰れ、兵糧を回収できなかった。次は車を攻撃せず、護衛を崩そう。");
+                return;
+            }
+        }
         else if(kind==JourneyObjective::CaptureCamp)
         {
             if(PositionSecured(goal) && (!HasSunJian() || SunJianAtRally()))

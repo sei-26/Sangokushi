@@ -35,6 +35,8 @@ namespace frontline
     }
     std::u32string StrategistJourney::BattleReviewLesson() const
     {
+        if(depotInterception)
+            return won ? U"":U"荷駄隊は東へ進む。先回りする隊と、護衛を混乱させる隊を分けよう。";
         if(mission==LuoyangMission)
             return won ? U"":U"敵を引きつける隊と、最後に目標へ入る隊を分けよう。";
         if(HasSunJian())
@@ -68,6 +70,7 @@ namespace frontline
         switch (battleReview.resolution)
         {
         case JourneyResolution::Captured:return HasSunJian() ? U"陽人の辻を確保し、孫堅と合流":
+            depotInterception ? U"西の荷駄隊を捕らえた":
             mission==LuoyangMission ? (luoyangPlan==LuoyangPlan::WesternDepot ? U"西の荷駄陣を占領":U"洛陽の南門前を確保"):
             mission==CoalitionMission ? U"酸棗の前哨を占領":
             mission==YellowTurbanMission ? U"広宗の前陣を占領":U"河港を奪取し、官軍の共同作戦へ";

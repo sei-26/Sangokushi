@@ -9,7 +9,7 @@ namespace frontline
         JourneyEnemyContext Context(const StrategistJourney& journey)
         {
             return {journey.Definition().kind, journey.goal, journey.Definition().secondGoal,
-                    journey.enemyPolicy, journey.HasConvoy(),journey.campaignFlow,journey.HasSunJian()};
+                    journey.enemyPolicy, journey.HasConvoy(),journey.campaignFlow,journey.HasSunJian(),journey.depotInterception};
         }
         std::unique_ptr<Campaign> EnemyView(const Campaign& world, const BattleIntelligence& known)
         {
@@ -136,6 +136,12 @@ namespace frontline
     }
     bool StrategistJourney::CompleteCommandCycle(std::size_t previousReports)
     {
+        if(depotInterception)
+        {
+            Evaluate(); // A queued attack or approach can expose the column before it moves.
+            if(stage!=JourneyStage::Battle) return true;
+            AdvanceDepotColumn();
+        }
         if(HasSunJian())
         {
             RefreshIntelligence(); // Queued attacks may have cleared Sun Jian's path this cycle.

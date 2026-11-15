@@ -78,6 +78,7 @@ namespace frontline
 		std::array<JourneyResult, LuoyangMission+1> history{};
         CoalitionPlan coalitionPlan=CoalitionPlan::None;
         LuoyangPlan luoyangPlan=LuoyangPlan::None;
+        bool depotInterception=false;
         bool legacyBattlefield=false;
 		ChainResult lastChain;
 		std::vector<Chronicle> reports;
@@ -103,6 +104,10 @@ namespace frontline
 		bool HasConvoy() const { return IsRescue() || Definition().kind == JourneyObjective::Escort; }
         bool HasSunJian() const { return mission==YangrenMission; }
         bool SunJianAtRally() const;
+        bool HasDepotInterception() const
+        { return luoyangPlan==LuoyangPlan::WesternDepot && (stage==JourneyStage::Preparation || depotInterception); }
+        int DepotMovesIn() const { return 2-(turn-1)%2; }
+        bool DepotGuardProtects(int columnTile,int guardTile,int guardTroops,bool disordered) const;
         int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles+
             (campaignFlow && mission==1 && history[0].rescued ? 2:0); }
         int RequiredHoldTurns() const
@@ -115,7 +120,7 @@ namespace frontline
 		bool Hold(int army);
 		const JourneyMission& Definition() const
 		{
-            if(mission==LuoyangMission) return LuoyangMissionDefinition(luoyangPlan);
+            if(mission==LuoyangMission) return LuoyangMissionDefinition(luoyangPlan,HasDepotInterception());
 			return campaignFlow ? CampaignMissionDefinition(mission,CurrentPledge()==JourneyPledge::Preserve,coalitionPlan,legacyBattlefield):MissionDefinition(mission);
 		}
         JourneyMap Battlefield() const;
@@ -156,6 +161,8 @@ namespace frontline
 		void EnemyTurn();
 		void AdvanceObjective();
         void AdvanceSunJian();
+        bool CanCaptureDepotColumn() const;
+        void AdvanceDepotColumn();
         struct YangrenEnemy { int tile=-1, troops=0; bool disordered=false; };
         using YangrenEnemies=std::array<YangrenEnemy,2>;
         YangrenEnemies ReadYangrenEnemies() const;

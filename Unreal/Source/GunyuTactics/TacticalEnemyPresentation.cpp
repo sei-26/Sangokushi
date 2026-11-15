@@ -26,7 +26,7 @@ void ATacticalField::BuildEnemyPresentation()
         Read.Name = JourneyText(J.world.generals[Seen->observed.general].name);
         Read.Intent = JourneyText(frontline::EnemyIntentName(Plan.intent));
         Read.Counter = JourneyText(frontline::EnemyIntentCounter(Plan.intent));
-        const frontline::JourneyEnemyContext Context{J.Definition().kind,J.goal,J.Definition().secondGoal,J.enemyPolicy,J.HasConvoy(),J.campaignFlow,J.HasSunJian()};
+        const frontline::JourneyEnemyContext Context{J.Definition().kind,J.goal,J.Definition().secondGoal,J.enemyPolicy,J.HasConvoy(),J.campaignFlow,J.HasSunJian(),J.depotInterception};
         const FString DoctrineHint=JourneyText(frontline::EnemyDoctrineHint(Plan,Context));
         if(!DoctrineHint.IsEmpty()) Read.Counter=DoctrineHint;
         if (Seen->observed.stance == battle::Stance::Guard && Plan.intent != frontline::JourneyEnemyIntent::Recover)

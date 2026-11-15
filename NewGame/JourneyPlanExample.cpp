@@ -73,6 +73,13 @@ namespace frontline
             p.assignments[1]={JourneyDuty::Ambush,j.Definition().positions[1]};
             p.manualTask=west ? U"敵を挟んで陣から離し、撤収前に一隊を入れる。":U"南門を守る後衛を引き離し、門前に一隊を入れて本隊に合図する。";
             p.caution=U"隣に敵が残っている間は旗を立てられない。追撃役と占領役を分ける。";
+            if(j.HasDepotInterception())
+            {
+                p.name=U"張飛が先回り、関羽が護衛を崩す";
+                p.purpose=U"関羽は北の林から護衛を引き受け、張飛は南から荷駄隊へ回り込む。";
+                p.manualTask=U"荷駄隊の１マス東に一隊を入れて道を塞ぐ。護衛を混乱させるか３マス以上引き離すと捕獲できる。";
+                p.caution=U"荷駄隊が東へ逃れたり、戦闘で潰れたりすると兵糧を回収できない。";
+            }
         }
         else if(j.Definition().kind==JourneyObjective::CaptureCamp)
         {

@@ -127,6 +127,7 @@ namespace frontline
             if(!Range(j.mission,0,j.campaignFlow ? LuoyangMission:YellowTurbanMission-1) || !Enum(j.coalitionPlan,2) || !Enum(j.luoyangPlan,2) ||
                 (j.mission==LuoyangMission)!=(j.luoyangPlan!=LuoyangPlan::None) ||
                 (j.luoyangPlan==LuoyangPlan::WesternDepot && j.SunJianTrust()<SunJianFlankTrust) ||
+                (j.depotInterception && j.luoyangPlan!=LuoyangPlan::WesternDepot) ||
                 (j.mission>=CoalitionMission)!=(j.coalitionPlan!=CoalitionPlan::None) ||
                 (j.mission<CoalitionMission && j.history[CoalitionMission].completed) ||
                 (j.mission<YangrenMission && j.history[YangrenMission].completed) ||
@@ -166,6 +167,9 @@ namespace frontline
                 !Enum(g.trait,15) || !Enum(g.tactic,8) || !Enum(g.specialty,3) ||
                 !Range(g.leadership,0,100) || !Range(g.intelligence,0,100) || !Range(g.politics,0,100) || !Range(g.charm,0,100)) return false;
             for(const auto& a:w.armies) if(!ArmyValid(a,static_cast<int>(w.generals.size()))) return false;
+            if(j.depotInterception && j.stage!=JourneyStage::Preparation &&
+                (n!=5 || w.armies[4].faction!=1 || w.armies[4].arm!=Arm::Transport || w.armies[4].general!=4 ||
+                 !IsDepotRoadTile(w.armies[4].tile) || j.goal!=DepotEscape)) return false;
             if(j.HasSunJian() && j.stage!=JourneyStage::Preparation &&
                 (n!=6 || w.armies[5].faction!=0 || w.armies[5].arm!=Arm::Spear || w.armies[5].general!=5 ||
                     w.armies[3].faction!=1 || w.armies[3].arm!=Arm::Cavalry)) return false;

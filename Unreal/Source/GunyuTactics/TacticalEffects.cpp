@@ -210,6 +210,7 @@ void ATacticalField::PlayCueSound(bool bImpact)
     const auto* Beat = CurrentBeat();
     if (!Beat || EffectsVolume <= 0 || State->bNoPlayback || (!bImpact && Beat->Kind==EBattleCue::Stop)) return;
     if (bImpact && (Beat->Kind == EBattleCue::March || Beat->Kind == EBattleCue::Guard || Beat->Kind == EBattleCue::Conceal || Beat->Kind == EBattleCue::Withdraw)) return;
+    if (bImpact && Beat->Kind==EBattleCue::Enemy && Beat->Duration<=1.f) return;
     const TCHAR* Path = bImpact ? TEXT("/Game/Audio/S_Impact.S_Impact") : Beat->Kind == EBattleCue::March || Beat->Kind == EBattleCue::Lure || Beat->Kind == EBattleCue::Enemy ? TEXT("/Game/Audio/S_March.S_March") : TEXT("/Game/Audio/S_Command.S_Command");
     const auto Response=bImpact ? gunyuresponse::Read(Beat,State->Units,BeatProgress()):gunyuresponse::FRead{};
     const TCHAR* ResponsePath=gunyuresponse::SoundPath(Response.Sound);

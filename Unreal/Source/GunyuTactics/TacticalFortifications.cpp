@@ -107,11 +107,12 @@ void ATacticalField::BuildFortifications()
                     Stonework->AddInstance(FTransform(FRotator(0,90,0),Wall,FVector(.44,.99,.73)));
                 }
             }
+            else if(J.depotInterception) Gate(J.goal);
             else TacticalMap::CommandPost(P,[this](FVector Q) { return SurfaceHeight(Q); },Wood,Cloth);
             Flag(P+FVector(94,54,0),FLinearColor(.28f,.14f,.06f),1.12f);
         }
         else Gate(J.goal);
-        if (J.mission==1 || J.luoyangPlan==frontline::LuoyangPlan::WesternDepot)
+        if (J.mission==1 || (J.luoyangPlan==frontline::LuoyangPlan::WesternDepot && !J.depotInterception))
             for (int I=0;I<4;++I)
             {
                 const FVector P=SurfaceLocation(J.goal)+FVector(-62+(I%2)*28,70+(I/2)*22,0);

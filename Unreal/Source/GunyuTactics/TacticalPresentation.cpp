@@ -36,16 +36,22 @@ void ATacticalField::BuildPresentation()
     HUD.Selected = State->Selected;
     HUD.GoalTile = J.goal;
     HUD.SecondGoalTile = J.Definition().secondGoal;
-    HUD.GoalLabel = J.mission==LuoyangMission ? (J.luoyangPlan==LuoyangPlan::WesternDepot ? TEXT("西の荷駄陣"):TEXT("洛陽の南門前")):
+    HUD.GoalLabel = J.depotInterception ? TEXT("東の撤収口"):
+        J.mission==LuoyangMission ? (J.luoyangPlan==LuoyangPlan::WesternDepot ? TEXT("西の荷駄陣"):TEXT("洛陽の南門前")):
         J.HasSunJian() ? TEXT("陽人の辻"):J.mission==CoalitionMission && J.coalitionPlan==CoalitionPlan::Advance ? TEXT("董卓軍の前哨"):
         J.mission == YellowTurbanMission ? TEXT("黄巾の前陣"):J.mission == 0 ? TEXT("脱出地点") :
         J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("河港の指揮所"):J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("北の烽火");
     HUD.SecondGoalLabel=J.HasSunJian() ? TEXT("孫堅と合流"):J.Definition().kind==JourneyObjective::HoldPositions ? TEXT("南の烽火"):HUD.GoalLabel;
     if(J.HasSunJian()) HUD.SecondGoalTile=YangrenRally;
+    if(J.depotInterception && HUD.bBattle)
+        if(const auto* Column=J.intelligence[0].Find(4);Column && Column->current)
+        { HUD.SecondGoalTile=Column->observed.tile+1;HUD.SecondGoalLabel=TEXT("封鎖地点"); }
     HUD.bHasResupplyPlan=J.campaignFlow && J.preparation==1;
     HUD.ResupplyLabel=J.CanResupply() ? TEXT("全軍へ補給  ／ 残り１回"):TEXT("予備糧なし ／ 補給できない");
     HUD.Difficulty=JourneyText(DifficultyName(J.difficulty));
     HUD.Title = FString::Printf(TEXT("%s  /  %s    更新 %d / %d"), *JourneyText(BattlefieldDefinition(J.Battlefield()).name), *JourneyText(J.MissionName()),FMath::Max(0,J.turn-1), J.TurnBudget());
+    if(J.depotInterception)
+        HUD.Title=FString::Printf(TEXT("洛陽西郊 ／ 荷駄隊を捕らえよ    更新 %d / %d"),FMath::Max(0,J.turn-1),J.TurnBudget());
     HUD.Objective = JourneyText(J.ObjectiveProgress());
     if(J.stage==JourneyStage::Battle && J.CurrentPledge()!=JourneyPledge::None)
     {
