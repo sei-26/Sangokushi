@@ -17,6 +17,23 @@ void ATacticalController::SelectNovelPlan(int Index)
 void ATacticalController::DeployNovelPlan()
 {
     if(!bEpisodeOpen || !bNovelPlan || !Field->CanIssue(ETacticalCommand::Deploy)) return;
+    int Officer=CouncilTopic;
+    const auto& Map=Field->Presentation().Journey.Map;
+    if(bNovelMap && !bPlanningDuties)
+    {
+        const int AtMarker=Map.CouncilRoles.IndexOfByPredicate(
+            [this](const FPlanningRole& Briefing) { return Briefing.Tile==PlanningTile; });
+        if(AtMarker>=0) Officer=AtMarker;
+    }
+    else if(bNovelMap && !bPlanningExample && bPlanningLocationChosen)
+    {
+        if(Map.Duties.IsValidIndex(PlanningOfficer) && Map.Duties[PlanningOfficer].Tile==PlanningTile)
+            Officer=PlanningOfficer;
+    }
     Field->Issue(ETacticalCommand::Deploy);
-    if(Field->Presentation().bBattle) CloseEpisode();
+    if(Field->Presentation().bBattle)
+    {
+        CloseEpisode();
+        if(Officer>=0) Field->PreferOpeningOfficer(Officer);
+    }
 }

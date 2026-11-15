@@ -65,6 +65,8 @@ struct FJourneyState
     FRetryDefenseAid RetryDefenseAid; // Observed solo support awaiting this cycle's real defense check.
     int RoadClearArmy=-1,RoadClearStep=-1,RoadClearTile=-1; // Transient observed contribution, never saved.
     int CheckpointStage=-1,CheckpointMission=-1;
+    int OpeningOfficer=-1;
+    unsigned OpeningRevision=0;
     int DialogueIndex = 0, PreparationChoice = 0, Interlocutor = 0;
     std::unique_ptr<frontline::StrategistJourney> BeforeBattle;
 };

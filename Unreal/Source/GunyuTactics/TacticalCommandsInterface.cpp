@@ -54,7 +54,17 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
        + SVerticalBox::Slot().AutoHeight()[Command(ETacticalCommand::Resupply,[this] { return Field->Presentation().ResupplyLabel; })]
        + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("主力へ糧1,800を分配・士気＋20。行動権は戻らない"); },11,Gold)]];
     auto Simple=SNew(SVerticalBox);
-    Simple->AddSlot().AutoHeight()[SNew(SHorizontalBox)
+    Simple->AddSlot().AutoHeight().Padding(0,0,0,6)[OpeningOrderCard()];
+    Simple->AddSlot().AutoHeight().Padding(0,0,0,4)
+      [SNew(SBox).Visibility_Lambda([this] { return ShowOpeningOrder() ? EVisibility::Visible:EVisibility::Collapsed; })
+       [Label([this]
+        {
+            const auto& H=Field->Presentation();
+            return H.Officers.IsValidIndex(H.Selected) ? TEXT("選択中　")+H.Officers[H.Selected].Name:FString();
+        },13,Gold)]];
+    Simple->AddSlot().AutoHeight()
+      [SNew(SBox).Visibility_Lambda([this] { return ShowOpeningOrder() ? EVisibility::Collapsed:EVisibility::Visible; })
+      [SNew(SHorizontalBox)
       + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([this] { return Field->Presentation().Selected; },62,74)]
       + SHorizontalBox::Slot().FillWidth(1).Padding(14,8)[SNew(SVerticalBox)
         + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& H=Field->Presentation();return H.Officers.IsValidIndex(H.Selected) ? H.Officers[H.Selected].Name:FString(); },25,Gold)]
@@ -71,7 +81,7 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
             if(H.Officers.IsValidIndex(H.Selected) && !H.Officers[H.Selected].DutyBadge.IsEmpty())
                 return TEXT("軍議　")+H.Officers[H.Selected].DutyBadge;
             return H.MissionAdvice;
-        },14)]]]];
+        },14)]]]]];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,4)[SNew(SBox).HeightOverride(30)
       .Visibility_Lambda([this]
       {
@@ -103,7 +113,9 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
       + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::Hold,[] { return TEXT("ここを守れ！"); })]]];
     auto Content=SNew(SVerticalBox);
     Content->AddSlot().AutoHeight().Padding(0,0,0,8)[Button([this] { return bDetailedBattle ? TEXT("かんたんな采配へ戻る"):TEXT("詳しい采配を開く"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })];
-    Content->AddSlot().FillHeight(1)[SNew(SBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Collapsed:EVisibility::Visible; })[Simple]];
+    Content->AddSlot().FillHeight(1)
+        [SNew(SScrollBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Collapsed:EVisibility::Visible; })
+         + SScrollBox::Slot()[Simple]];
     Content->AddSlot().FillHeight(1)[SNew(SBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Visible:EVisibility::Collapsed; })[Orders]];
     auto Panel=SNew(STacticalChrome).Padding(12)
         .Visibility_Lambda([this] { return Field->Presentation().Journey.bVisible || (bTacticCinema && Field->ReadTacticCinema().bVisible) ? EVisibility::Collapsed:EVisibility::Visible; })[Content];

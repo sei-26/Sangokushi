@@ -110,6 +110,8 @@ public:
     bool CanIssue(ETacticalCommand Command) const;
     FString TacticReservationBlockReason() const;
     void SelectOfficer(int Index);
+    void PreferOpeningOfficer(int Officer);
+    void DismissOpeningOrder();
     void SelectTactic(int Id);
     void EditOrder(int Index, int Direction);
     void ClickTile(int Tile);
@@ -330,6 +332,7 @@ private:
     void IssueMarchPlan(ETacticalCommand Command);
     void BuildPresentation();
     void BuildMissionPresentation();
+    void BuildOpeningOrder();
     void BuildDefensePresentation();
     void BuildBattleChoices();
     bool BuildSupportActionChoices();
@@ -416,6 +419,10 @@ private:
     void CycleCameraView();
     void FocusSelectedOfficer();
     void FocusMissionObjective();
+    bool ShowOpeningOrder() const;
+    void OpenFirstCommand();
+    TSharedRef<class SWidget> OpeningOrderCard();
+    bool OpeningOrderSmokeTest();
     int SelectedDutyTile() const;
     void FocusSelectedDuty();
     void FocusDutyObstacle();

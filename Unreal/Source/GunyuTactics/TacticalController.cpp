@@ -427,6 +427,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=Field->RealtimeSmokeTest() && Field->PlaybackSmokeTest() && CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionFocusOnly")))
     { const bool Passed=MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuOpeningOrderOnly")))
+    { const bool Passed=OpeningOrderSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyProgressOnly")))
     { const bool Passed=DutyProgressSmokeTest() && MissionFocusSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyResponseOnly")))
@@ -552,6 +554,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=Field->ReliefReadinessSmokeTest();
         if(bPassed) bPassed=Field->ReliefApproachSmokeTest();
         if(bPassed) bPassed=MissionFocusSmokeTest();
+        if(bPassed) bPassed=OpeningOrderSmokeTest();
         if(bPassed) bPassed=DutyProgressSmokeTest();
         if(bPassed) bPassed=DutyResponseSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
@@ -605,6 +608,16 @@ void ATacticalController::PlayerTick(float Delta)
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilLedger"))) bCouncilLedger=true;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdvice"))) bNovelAdvice=true;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilMap"))) OpenCouncilMap();
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuOpeningOrder")))
+        {
+            OpenNovelPlan();
+            if(CouncilVoice>=0) OpenCouncilVoice(CouncilVoice);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningSouth"))) Field->Issue(ETacticalCommand::RouteSouthernWood);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanExample"))) Field->Issue(ETacticalCommand::PlanExample);
+            Field->bRealtimeCommand=true;
+            DeployNovelPlan();
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuFirstCommand"))) OpenFirstCommand();
+        }
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningMap")))
         {
             OpenNovelPlan();TogglePlanningMap();

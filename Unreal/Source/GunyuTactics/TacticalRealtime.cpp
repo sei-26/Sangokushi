@@ -87,6 +87,7 @@ void ATacticalField::IssueRealtime(ETacticalCommand Command)
     case ETacticalCommand::RealtimePause:
         if (State->bRealtimeStepping) { State->bRealtimeStepping=false;RT.paused=true; }
         else RT.paused=!RT.paused;
+        if(!RT.paused) State->OpeningOfficer=-1;
         break;
     case ETacticalCommand::RealtimeSpeed:
         RT.speed=RT.speed<.75 ? 1. : RT.speed<1.5 ? 2. : RT.speed<2.5 ? 3. : .5;break;

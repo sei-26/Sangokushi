@@ -137,6 +137,7 @@ void ATacticalField::BuildPresentation()
     BuildTacticsPresentation();
     BuildEnemyPresentation();
     BuildMissionPresentation();
+    BuildOpeningOrder();
     BuildDutyProgress();
     BuildBattleChoices();
     BuildSupportChoices();

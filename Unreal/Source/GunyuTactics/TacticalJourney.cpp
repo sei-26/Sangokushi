@@ -55,6 +55,8 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
             for(int Id=0;Id<3;++Id) if(J.assignments[Id].duty==JourneyDuty::None) { ManualOfficer=Id;++FreeCount; }
         State->Orders.clear();
         State->Selected=Supporter>=0 ? Supporter:FreeCount==1 ? ManualOfficer:0;
+        State->OpeningOfficer=Supporter>=0 || FreeCount==1 ? State->Selected:J.mission==2 ? 0:2;
+        State->OpeningRevision=J.world.revision;
         State->Target=3;
         State->Input = ETacticalInput::Select; State->bConfirmEndTurn = false;
         break;
