@@ -494,6 +494,7 @@ private:
     bool CouncilSceneVisible() const;
     bool IsEnsembleEpisode() const;
     void OpenCouncilVoice(int Voice,int Decision=0);
+    void OpenCouncilMap();
     void ChooseCouncilDecision(int Decision);
     void AdvanceCouncilScene(float Delta);
     void NextCouncilLine();
@@ -505,7 +506,7 @@ private:
     bool CouncilSceneSmokeTest();
     bool bCouncilLedger=false;
     int CouncilTopic=-1,CouncilPage=0,CouncilCachePlan=-1;
-    bool bCouncilCacheRescue=false;
+    bool bCouncilCacheRescue=false,bCouncilCacheSouth=false;
     float CouncilElapsed=0,CouncilStageTime=0,CouncilLineTime=0;
     float CouncilPresence[3]={0,0,0};
     FCouncilStageExchange CouncilExchange;

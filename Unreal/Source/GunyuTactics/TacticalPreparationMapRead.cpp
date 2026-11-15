@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "JourneyBattlefield.hpp"
+#include "JourneyCouncilStage.hpp"
 
 void ATacticalField::BuildPreparationMap()
 {
@@ -8,6 +9,10 @@ void ATacticalField::BuildPreparationMap()
     const auto& J=State->Journey;auto& Map=State->HUD.Journey.Map;
     Map={};Map.Name=JourneyText(BattlefieldDefinition(J.Battlefield()).name);
     Map.Objective=(J.IsRescue() ? FString(TEXT("季安の車を出口へ送り届ける")):JourneyText(J.ObjectiveBrief()))+FString::Printf(TEXT(" ／ 期限%d指揮"),J.TurnBudget());
+    const auto Brief=BuildCouncilBattleBrief(J);
+    if(Brief.title)
+        for(const auto& Assignment:Brief.roles)
+            Map.CouncilRoles.Add({Assignment.tile,JourneyText(Assignment.title),JourneyText(Assignment.advice)});
     for(int Y=1;Y<StrategistJourney::Rows-1;++Y) for(int X=1;X<StrategistJourney::Columns-1;++X)
     {
         const int Tile=Campaign::At(X,Y);

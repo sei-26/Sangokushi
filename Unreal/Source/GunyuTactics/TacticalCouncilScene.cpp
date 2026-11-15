@@ -20,6 +20,16 @@ void ATacticalController::OpenCouncilVoice(int Voice,int Decision)
     CouncilExchange=Exchange;CouncilTopic=Voice;CouncilPage=0;CouncilElapsed=CouncilLineTime=0;
     const auto& P=Field->Presentation().Journey;
     CouncilCachePlan=P.Plans.IsValidIndex(1) && P.Plans[1].bSelected ? 1:0;bCouncilCacheRescue=P.bRescue;
+    bCouncilCacheSouth=P.Map.bSouthern;
+}
+void ATacticalController::OpenCouncilMap()
+{
+    if(!CouncilSceneVisible()) return;
+    const auto& Roles=Field->Presentation().Journey.Map.CouncilRoles;
+    if(Roles.IsEmpty()) { OpenPlanningExample();return; }
+    TogglePlanningMap();
+    bPlanningDuties=false;
+    SelectPlanningTile(Roles.IsValidIndex(CouncilTopic) ? Roles[CouncilTopic].Tile:Roles[0].Tile);
 }
 FDialoguePresentation ATacticalController::CurrentCouncilLine() const
 { return CouncilExchange.Lines.IsValidIndex(CouncilPage) ? CouncilExchange.Lines[CouncilPage].Dialogue:FDialoguePresentation{}; }
@@ -34,7 +44,7 @@ void ATacticalController::AdvanceCouncilScene(float Delta)
     if(!CouncilSceneVisible() || bSaveMenuOpen) return;
     const auto& P=Field->Presentation().Journey;
     const int Plan=P.Plans.IsValidIndex(1) && P.Plans[1].bSelected ? 1:0;
-    if(Plan!=CouncilCachePlan || P.bRescue!=bCouncilCacheRescue) OpenCouncilVoice(CouncilTopic);
+    if(Plan!=CouncilCachePlan || P.bRescue!=bCouncilCacheRescue || P.Map.bSouthern!=bCouncilCacheSouth) OpenCouncilVoice(CouncilTopic);
     const float Step=FMath::Clamp(Delta,0.f,.25f);
     CouncilElapsed=FMath::Min(1000.f,CouncilElapsed+Step);CouncilStageTime=FMath::Min(1.f,CouncilStageTime+Step);CouncilLineTime+=Step;
     for(int I=0;I<3;++I) CouncilPresence[I]=FMath::FInterpTo(CouncilPresence[I],CurrentCouncilLine().Speaker==I ? 1.f:0.f,Step,9.f);
@@ -67,23 +77,40 @@ FString ATacticalController::CouncilChoiceLabel(int Index) const
     if(CouncilTopic==0)
     {
         if(P.bChoosePromise) return Index==0 ? TEXT("まず、民の退路を開こう\n先鋒を崩すか、出口を確保する"):TEXT("車が着くまで、俺たちで守る\n護衛600・その兵糧900を追加");
-        return Index==0 ? TEXT("そのための配置を、一緒に決めよう"):TEXT("二人の案も、聞かせてくれ");
+        if(Index==1) return TEXT("二人の案も、聞かせてくれ");
+        return P.Map.CouncilRoles.IsEmpty() ? TEXT("そのための配置を、一緒に決めよう"):TEXT("作戦図でこの地点を見る");
     }
-    if(CouncilTopic<0) return Index==0 ? TEXT("今の配置案を、地図で見せてくれ\n見るだけでは担当を変更しない"):TEXT("準備の案も、聞かせてくれ\n関羽の先手案から聞く");
+    if(CouncilTopic<0)
+    {
+        if(!P.Map.CouncilRoles.IsEmpty() && P.ExampleReason.IsEmpty())
+            return Index==0 ? TEXT("作戦図で三人の役目を見る"):TEXT("関羽に、先手の策を聞く");
+        return Index==0 ? TEXT("今の配置案を、地図で見せてくれ"):TEXT("関羽に、先手の策を聞く");
+    }
     if(Index==1) return TEXT("他の意見も聞こう");
     const int Plan=CouncilTopic==1 ? 0:1;
     if(!P.Plans.IsValidIndex(Plan)) return {};
-    return (Plan==0 ? FString(TEXT("関羽、先手を頼む")):FString(TEXT("全軍、俺の合図で立て直そう")))+
+    const FString Action=Plan==0 ? TEXT("先遣伏兵 ／ 配置で関羽を先に林へ"):TEXT("予備糧 ／ 戦闘中に一度、全軍を立て直す");
+    return Action+
         FString::Printf(TEXT("\n出陣時：兵糧 %d・軍資金 %d"),P.Plans[Plan].Food,P.Plans[Plan].Gold);
 }
 void ATacticalController::CouncilChoice(int Index)
 {
     if(!CouncilSceneVisible() || Index<0 || Index>1) return;
-    if(CouncilTopic<0) { if(Index==0) OpenPlanningExample();else OpenCouncilVoice(1);return; }
+    if(CouncilTopic<0)
+    {
+        const auto& P=Field->Presentation().Journey;
+        if(Index==1) OpenCouncilVoice(1);
+        else if(P.ExampleReason.IsEmpty()) OpenCouncilMap();
+        else OpenPlanningExample();
+        return;
+    }
     if(CouncilTopic==0)
     {
-        if(Field->Presentation().Journey.bChoosePromise) ChooseCouncilDecision(Index==0 ? 1:2);
-        else if(Index==0) TogglePlanningMap();else OpenCouncilVoice(-1);
+        const auto& P=Field->Presentation().Journey;
+        if(P.bChoosePromise) ChooseCouncilDecision(Index==0 ? 1:2);
+        else if(Index==1) OpenCouncilVoice(-1);
+        else if(P.Map.CouncilRoles.IsEmpty()) TogglePlanningMap();
+        else OpenCouncilMap();
     }
     else if(Index==0) ChooseCouncilDecision(CouncilTopic==1 ? 3:4);
     else OpenCouncilVoice(-1);

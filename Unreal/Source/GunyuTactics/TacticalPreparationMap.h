@@ -4,6 +4,7 @@
 struct FPlanningCell { int Tile=-1;uint8 Terrain=0; };
 struct FPlanningDuty { int Tile=-1,Officer=-1,Kind=0;FString Status; };
 struct FPlanningStart { int Tile=-1,Officer=-1; };
+struct FPlanningRole { int Tile=-1;FString Title,Advice; };
 struct FPlanningSite
 {
     int Tile=-1;
@@ -18,6 +19,7 @@ struct FPreparationMap
     TArray<FPlanningStart> Starts;
     TArray<FPlanningDuty> Duties;
     TArray<FPlanningSite> Sites;
+    TArray<FPlanningRole> CouncilRoles;
     TArray<int> ConvoyRoute,Blocked;
     bool bChooseRoute=false,bSouthern=false;
 };

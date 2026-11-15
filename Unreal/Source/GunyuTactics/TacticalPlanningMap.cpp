@@ -22,7 +22,11 @@ namespace
     }
 }
 void SPlanningMap::Construct(const FArguments& Args)
-{ Map=Args._Map;SelectedTile=Args._SelectedTile;SelectedOfficer=Args._SelectedOfficer;PreviewRoute=Args._PreviewRoute;Proposal=Args._Proposal;OnTile=Args._OnTile;SetCanTick(false); }
+{
+    Map=Args._Map;SelectedTile=Args._SelectedTile;SelectedOfficer=Args._SelectedOfficer;
+    PreviewRoute=Args._PreviewRoute;Proposal=Args._Proposal;ShowCouncilRoles=Args._ShowCouncilRoles;
+    OnTile=Args._OnTile;SetCanTick(false);
+}
 FVector2D SPlanningMap::TilePosition(int Tile,FVector2D Size)
 {
     const auto P=hexgrid::Center(Tile%frontline::Width,Tile/frontline::Width);
@@ -141,6 +145,15 @@ int32 SPlanningMap::OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRec
         Box(P,FVector2f(16,16),FLinearColor(.24f,.17f,.06f),4);
         Text(FString::FromInt(I+1),P-FVector2f(4,9),Gold);
     }
+    if(ShowCouncilRoles.Get(false))
+        for(int I=0;I<Data->CouncilRoles.Num();++I)
+        {
+            const FVector2f P=Point(Data->CouncilRoles[I].Tile)+FVector2f(-.23f,-.19f)*Scale;
+            const FLinearColor BriefingInk(.86f,.98f,.94f);
+            Box(P,FVector2f(24,24),BriefingInk,5);
+            Box(P,FVector2f(21,21),FLinearColor(.025f,.15f,.17f),6);
+            Text(Names[I],P-FVector2f(8,10),BriefingInk,7,16);
+        }
     const FLinearColor Purple(.80f,.57f,1.f);
     const auto Suggestions=Proposal.Get(TArray<FPlanningDuty>());
     for(const auto& Suggested:Suggestions)

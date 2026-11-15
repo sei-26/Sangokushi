@@ -604,6 +604,7 @@ void ATacticalController::PlayerTick(float Delta)
         }
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilLedger"))) bCouncilLedger=true;
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanAdvice"))) bNovelAdvice=true;
+        if(FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilMap"))) OpenCouncilMap();
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningMap")))
         {
             OpenNovelPlan();TogglePlanningMap();

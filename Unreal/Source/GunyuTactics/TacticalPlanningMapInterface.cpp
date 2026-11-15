@@ -27,8 +27,15 @@ TSharedRef<SWidget> ATacticalController::BuildPlanningMap()
            .SelectedOfficer_Lambda([this] { return bPlanningDuties ? PlanningOfficer:-1; })
            .PreviewRoute_Lambda([this] { return PlanningPreviewRoute(); })
            .Proposal_Lambda([this] { return bPlanningExample ? Field->Presentation().Journey.ExampleDuties:TArray<FPlanningDuty>(); })
+           .ShowCouncilRoles_Lambda([this] { return !bPlanningDuties; })
            .OnTile_Lambda([this](int32 Tile) { SelectPlanningTile(Tile); })]
-        + SVerticalBox::Slot().AutoHeight()[Label([this] { return bPlanningExample ? TEXT("紫：未採用の案　朱：現在の担当　金：目標・護送路"):TEXT("金：目標・護送路　水色：選択隊の出陣位置・仮経路　朱：確定した担当"); },13,Gold)];
+        + SVerticalBox::Slot().AutoHeight()[Label([this]
+          {
+              if(bPlanningExample) return TEXT("紫：未採用の案　朱：現在の担当　金：目標・護送路");
+              if(!bPlanningDuties && !Field->Presentation().Journey.Map.CouncilRoles.IsEmpty())
+                  return TEXT("枠付き：武将の提案　水色：出陣位置　金：目標・護送路　朱：確定した担当");
+              return TEXT("金：目標・護送路　水色：選択隊の出陣位置・仮経路　朱：確定した担当");
+          },13,Gold)];
     MapColumn->AddSlot().AutoHeight().Padding(0,5)
         [SNew(SBox).Visibility_Lambda([this] { return bPlanningDuties ? EVisibility::Visible:EVisibility::Collapsed; })
          [Label([this] { return PlanningExecution(); },14,Gold)]];
@@ -53,6 +60,32 @@ TSharedRef<SWidget> ATacticalController::BuildPlanningMap()
     MapColumn->AddSlot().AutoHeight().Padding(0,7,0,0)
         [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.Map.bChooseRoute ? EVisibility::Visible:EVisibility::Collapsed; })[Route]];
     auto Detail=SNew(SVerticalBox);
+    auto Roles=SNew(SVerticalBox)
+       + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("この戦での役目"); },18,Gold)];
+    const TCHAR* Names[]={TEXT("劉備"),TEXT("関羽"),TEXT("張飛")};
+    for(int I=0;I<3;++I)
+        Roles->AddSlot().AutoHeight().Padding(0,3)
+          [Button([this,I,Name=FString(Names[I])]
+             {
+                 const auto& List=Field->Presentation().Journey.Map.CouncilRoles;
+                 if(!List.IsValidIndex(I)) return FString();
+                 return (PlanningTile==List[I].Tile ? TEXT("● "):TEXT("○ "))+Name+TEXT(" ／ ")+List[I].Title;
+             },[this,I]
+             {
+                 const auto& List=Field->Presentation().Journey.Map.CouncilRoles;
+                 if(List.IsValidIndex(I)) SelectPlanningTile(List[I].Tile);
+             },[] { return true; },true)];
+    Roles->AddSlot().AutoHeight().Padding(0,7,0,2)
+        [Label([this]
+          {
+              const auto& List=Field->Presentation().Journey.Map.CouncilRoles;
+              const auto* Role=List.FindByPredicate([this](const FPlanningRole& R) { return R.Tile==PlanningTile; });
+              return Role ? TEXT("「")+Role->Advice+TEXT("」"):FString();
+          },16,Gold)];
+    Detail->AddSlot().AutoHeight().Padding(0,0,0,12)
+      [SNew(SBox).Visibility_Lambda([this]
+         { return Field->Presentation().Journey.Map.CouncilRoles.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+       [Roles]];
     Detail->AddSlot().AutoHeight()[Label([] { return TEXT("注目する場所"); },18,Gold)];
     // The number of authored sites is small. Slots update when the mission changes.
     for(int Index=0;Index<5;++Index)
@@ -63,16 +96,22 @@ TSharedRef<SWidget> ATacticalController::BuildPlanningMap()
               [this,Index] { const auto& Sites=Field->Presentation().Journey.Map.Sites;if(Sites.IsValidIndex(Index)) SelectPlanningTile(Sites[Index].Tile); },[] { return true; },true)]];
     Detail->AddSlot().AutoHeight().Padding(0,12,0,4)[Label([this] { return PlanningTitle(); },23,Gold)];
     Detail->AddSlot().AutoHeight()[Label([this] { return PlanningDescription(); },16)];
-    Detail->AddSlot().AutoHeight().Padding(0,12,0,3)[Label([] { return TEXT("ここでの動きを考える"); },16,Gold)];
-    const TCHAR* Names[]={TEXT("劉備"),TEXT("関羽"),TEXT("張飛")};
+    auto SiteAdvice=SNew(SVerticalBox).Visibility_Lambda([this]
+      {
+          const auto& List=Field->Presentation().Journey.Map.CouncilRoles;
+          return List.ContainsByPredicate([this](const FPlanningRole& Briefing) { return Briefing.Tile==PlanningTile; })
+              ? EVisibility::Collapsed:EVisibility::Visible;
+      });
+    SiteAdvice->AddSlot().AutoHeight().Padding(0,12,0,3)[Label([] { return TEXT("ここでの動きを考える"); },16,Gold)];
     for(int Officer=0;Officer<3;++Officer)
-        Detail->AddSlot().AutoHeight().Padding(0,6)
+        SiteAdvice->AddSlot().AutoHeight().Padding(0,6)
           [SNew(SHorizontalBox)
            + SHorizontalBox::Slot().AutoWidth()[PortraitWidget([Officer] { return Officer; },27,32)]
            + SHorizontalBox::Slot().FillWidth(1).Padding(8,0)
              [SNew(SVerticalBox)
               + SVerticalBox::Slot().AutoHeight()[Label([Name=FString(Names[Officer])] { return Name; },14,Gold)]
               + SVerticalBox::Slot().AutoHeight()[Label([this,Officer] { return PlanningHint(Officer); },15)]]];
+    Detail->AddSlot().AutoHeight()[SiteAdvice];
     auto Side=SNew(SVerticalBox)
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)
           [SNew(SHorizontalBox)

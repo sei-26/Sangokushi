@@ -27,8 +27,16 @@ void ATacticalController::SelectPlanningTile(int Tile)
 void ATacticalController::TogglePlanningRoute()
 {
     if(!bNovelMap || !bEpisodeOpen || !Field->Presentation().Journey.Map.bChooseRoute) return;
-    const auto Command=Field->Presentation().Journey.Map.bSouthern ? ETacticalCommand::RouteRoad:ETacticalCommand::RouteSouthernWood;
-    if(Field->CanIssue(Command)) Field->Issue(Command);
+    const auto& Map=Field->Presentation().Journey.Map;
+    const int RoleIndex=bPlanningDuties ? INDEX_NONE:Map.CouncilRoles.IndexOfByPredicate(
+        [this](const FPlanningRole& R) { return R.Tile==PlanningTile; });
+    const auto Command=Map.bSouthern ? ETacticalCommand::RouteRoad:ETacticalCommand::RouteSouthernWood;
+    if(Field->CanIssue(Command))
+    {
+        Field->Issue(Command);
+        const auto& Roles=Field->Presentation().Journey.Map.CouncilRoles;
+        if(Roles.IsValidIndex(RoleIndex)) SelectPlanningTile(Roles[RoleIndex].Tile);
+    }
     if(PlanningWidget) PlanningWidget->Invalidate(EInvalidateWidgetReason::Paint);
 }
 FString ATacticalController::PlanningTitle() const

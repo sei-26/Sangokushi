@@ -14,7 +14,8 @@ bool ATacticalController::CouncilSceneSmokeTest()
     if(!Check(EncodeJourneySave(*Save,Bytes) && Field->ImportSession(Bytes),TEXT("real unpaid campaign council"))) return false;
     Field->ExportSession(Before);OpenJourneyEntry();
     if(!Check(ReactionTextures.Num()==3 && ReactionTextures[0] && ReactionTextures[1] && ReactionTextures[2],TEXT("three transparent identity-preserving reaction portraits are loaded"))) return false;
-    if(!Check(CouncilSceneVisible() && CouncilTopic==-1 && IsEnsembleEpisode(),TEXT("ordinary council opens with three officers instead of the ledger"))) return false;
+    if(!Check(CouncilSceneVisible() && CouncilTopic==-1 && IsEnsembleEpisode() && CouncilExchange.Lines.Num()==1,
+        TEXT("ordinary council puts the operation in its first line beside the three officers"))) return false;
     for(int I=0;I<3;++I)
     {
         if(!Check(ReactionBrushes[I]->ImageSize==FVector2D(1024,1536),TEXT("expression swaps preserve the verified source aspect even before texture streaming finishes"))) return false;
@@ -25,6 +26,12 @@ bool ATacticalController::CouncilSceneSmokeTest()
         if(!Check(CouncilPage==0 && VisibleCouncilText()==CurrentCouncilLine().Text,TEXT("previous line returns with its full text and no adopted choice"))) return false;
         for(int L=0;L<12;++L) { CouncilElapsed=1000;NextCouncilLine(); }
         if(!Check(CouncilSceneVisible() && Field->ExportSession(After) && Before==After,TEXT("listening/animation/repeating does not adopt, spend, deploy or award trust"))) return false;
+        const auto& Briefing=Field->Presentation().Journey.Map.CouncilRoles[I];
+        HandleEpisodeKey(EKeys::M);
+        if(!Check(bNovelMap && !bPlanningDuties && PlanningTile==Briefing.Tile && Field->ExportSession(After) && Before==After,
+            TEXT("M opens the speaking officer's battlefield marker without setting a duty"))) return false;
+        HandleEpisodeKey(EKeys::Escape);
+        if(!Check(CouncilSceneVisible() && CouncilTopic==I,TEXT("map closes to the same officer"))) return false;
     }
     OpenCouncilVoice(2);CouncilChoice(0);
     if(!Check(Field->Presentation().Journey.Plans[1].bSelected && CurrentCouncilLine().Speaker==3 && !CouncilReaction(2).IsEmpty(),TEXT("player's answer selects the actual reserve preparation and prompts group reactions"))) return false;
@@ -35,6 +42,14 @@ bool ATacticalController::CouncilSceneSmokeTest()
     HandleEpisodeKey(EKeys::Escape);if(!Check(CouncilSceneVisible(),TEXT("escape returns from details to the same council"))) return false;
     OpenCouncilVoice(0);CouncilChoice(1);
     if(!Check(Field->Presentation().Journey.bRescue && CurrentCouncilLine().Speaker==3,TEXT("the spoken rescue choice changes the real objective"))) return false;
+    OpenCouncilVoice(2);
+    HandleEpisodeKey(EKeys::M);
+    const int RoadTile=PlanningTile;
+    HandleEpisodeKey(EKeys::R);
+    if(!Check(Field->Presentation().Journey.Map.bSouthern && PlanningTile!=RoadTile &&
+        PlanningTile==Field->Presentation().Journey.Map.CouncilRoles[2].Tile,TEXT("changing the route moves the selected Zhang Fei marker"))) return false;
+    HandleEpisodeKey(EKeys::Escape);AdvanceCouncilScene(.25f);
+    if(!Check(CurrentCouncilLine().Text.Contains(TEXT("曲がり角")),TEXT("returning to Zhang Fei refreshes the line for the selected route"))) return false;
     const int Food=Camp.food,Gold=Camp.gold;
     Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*Save);const auto Cost=Save->journey.PreparationCosts(1);
     HandleEpisodeKey(EKeys::Enter);HandleEpisodeKey(EKeys::Enter);
@@ -43,5 +58,5 @@ bool ATacticalController::CouncilSceneSmokeTest()
     if(!Check(!bEpisodeOpen && Save->journey.HasConvoy() && Save->journey.preparation==1 && Save->journey.reserveFood==1800 && Save->journey.world.cities[0].food==Food-Cost.TotalFood() && Save->journey.world.cities[0].gold==Gold-Cost.gold,TEXT("explicit deployment pays the selected reserve/escort exactly once"))) return false;
     const auto Paid=Bytes;ChooseCouncilDecision(3);DeployNovelPlan();Field->ExportSession(After);
     if(!Check(Paid==After,TEXT("stale council actions cannot change the deployed battle"))) return false;
-    Field->bLegacyJourney=PreviousLegacy;CloseEpisode();UE_LOG(LogTemp,Display,TEXT("GUNYU_COUNCIL_SCENE: PASS (three-person stage, distinct proposals, immutable listening, player answer and reactions, real preparation/objective, details ownership and one-time paid deployment)"));return true;
+    Field->bLegacyJourney=PreviousLegacy;CloseEpisode();UE_LOG(LogTemp,Display,TEXT("GUNYU_COUNCIL_SCENE: PASS (battle-specific advice, map focus, route updates, immutable reading, choices and one-time paid deployment)"));return true;
 }

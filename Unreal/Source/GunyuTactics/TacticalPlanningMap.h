@@ -12,6 +12,7 @@ public:
         SLATE_ATTRIBUTE(int32,SelectedOfficer)
         SLATE_ATTRIBUTE(TArray<int>,PreviewRoute)
         SLATE_ATTRIBUTE(TArray<FPlanningDuty>,Proposal)
+        SLATE_ATTRIBUTE(bool,ShowCouncilRoles)
         SLATE_EVENT(FOnPlanningTile,OnTile)
     SLATE_END_ARGS()
     void Construct(const FArguments& Args);
@@ -25,5 +26,6 @@ private:
     TAttribute<int32> SelectedTile,SelectedOfficer;
     TAttribute<TArray<int>> PreviewRoute;
     TAttribute<TArray<FPlanningDuty>> Proposal;
+    TAttribute<bool> ShowCouncilRoles;
     FOnPlanningTile OnTile;
 };

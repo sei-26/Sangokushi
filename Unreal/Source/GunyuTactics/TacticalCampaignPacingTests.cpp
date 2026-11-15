@@ -12,7 +12,11 @@ bool ATacticalController::CampaignPacingSmokeTest()
     if(!Check(EncodeJourneySave(*Save,Bytes) && Field->ImportSession(Bytes),TEXT("new campaign council imports"))) return false;
     Field->ExportSession(Before);OpenJourneyEntry();Field->ExportSession(After);
     if(!Check(bNovelPlan && bEpisodeOpen && Before==After && Field->Presentation().Journey.CampaignPhase.Contains(TEXT("河港")),TEXT("council goes directly to a plot-aware operation review without spending"))) return false;
-    TogglePlanningMap();bPlanningExample=true;ApplyPlanningExample();HandleEpisodeKey(EKeys::D);
+    OpenCouncilVoice(2);
+    if(!Check(CurrentCouncilLine().Text.Contains(TEXT("南橋")),TEXT("Zhang Fei explains how to draw the counterattack away from the capture party"))) return false;
+    HandleEpisodeKey(EKeys::M);
+    if(!Check(PlanningTile==Campaign::At(11,11) && PlanningTitle()==TEXT("南橋"),TEXT("river-port advice selects the actual bridge"))) return false;
+    OpenPlanningExample();ApplyPlanningExample();HandleEpisodeKey(EKeys::D);
     Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*Save);
     if(!Check(Save->journey.world.armies.size()==5 && !Save->journey.HasConvoy() && Field->Presentation().GoalLabel==TEXT("河港の指揮所"),TEXT("real deployment is an assault with no cart or cargo"))) return false;
     const auto& Battle=Field->Presentation();
@@ -29,6 +33,11 @@ bool ATacticalController::CampaignPacingSmokeTest()
     if(!Check(!bEpisodeOpen && Field->CanIssue(ETacticalCommand::Continue) && Field->Presentation().Journey.Dialogue.Contains(TEXT("共同作戦")),TEXT("debrief shows story consequences without mandatory repeated dialogue"))) return false;
     Field->Issue(ETacticalCommand::Continue);Field->ExportSession(Bytes);DecodeJourneySave(Bytes,*Save);
     if(!Check(Save->journey.mission==2 && Field->Presentation().Journey.CampaignPhase.Contains(TEXT("数週間")),TEXT("one victory advances to the final operation"))) return false;
+    OpenJourneyEntry();OpenCouncilVoice(2);
+    if(!Check(CurrentCouncilLine().Text.Contains(TEXT("退いても追わねえ")),TEXT("defense advice calls for holding ground instead of leaving its beacon"))) return false;
+    HandleEpisodeKey(EKeys::M);
+    if(!Check(PlanningTile==Save->journey.Definition().secondGoal && PlanningTitle()==TEXT("南の烽火"),TEXT("defense advice selects the southern beacon"))) return false;
+    CloseEpisode();
     // An old battle keeps its convoy, but retry restores unpaid supplies then upgrades the next attempt.
     auto Old=std::make_unique<JourneySaveData>();Old->journey.Reset();Old->journey.Meet();Old->journey.mission=1;Old->beforeBattle=Old->journey;Old->journey.Prepare(0,1);
     const int Food=Old->beforeBattle->world.cities[0].food;

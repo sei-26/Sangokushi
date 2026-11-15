@@ -22,6 +22,7 @@ namespace frontline
     {
         CouncilExchange e;
         if(j.stage!=JourneyStage::Preparation || voice < -1 || voice>2 || preparation<0 || preparation>1) return e;
+        const auto brief=BuildCouncilBattleBrief(j);
         auto Say=[&](int speaker,const char32_t* text,const char32_t* direction,
                      const char32_t* liu=U"",const char32_t* guan=U"",const char32_t* zhang=U"")
         { e.beats.push_back({{speaker,text,direction},{liu,guan,zhang}}); };
@@ -57,6 +58,22 @@ namespace frontline
             }
             const int chosen=accepted==CouncilDecision::Ambush ? 0:accepted==CouncilDecision::Reserves ? 1:-1;
             if(chosen<0 || preparation!=chosen) return e;
+            if(brief.title && j.mission>0)
+            {
+                e.subject=brief.title;
+                if(chosen==0)
+                {
+                    Say(3,U"関羽、先に林へ。張飛は合図が来るまで待ってくれ。",U"主人公が、関羽の駒を林へ寄せた。",U"",U"承知した",U"今度は待つぜ！");
+                    Say(2,U"合図が来りゃ飛び出す。兄者、俺が出る分の道は空けとけよ！",U"",U"",U"承知の上だ");
+                }
+                else
+                {
+                    Say(3,U"糧を残そう。戦線が乱れた時は、俺が配る合図を出す。",U"主人公が、前線の後ろに糧の印を置いた。",U"兵にも伝えよう",U"",U"もう一発の分だな！");
+                    Say(2,U"よし。俺が苦しくても、まだ他の奴が行けるなら、全軍に回す時はお前が決めてくれ。",U"",U"",U"任せておけ");
+                }
+                if(!costly) e.beats.back().dialogue.warmMask=5;
+                return e;
+            }
             if(chosen==0)
             {
                 e.subject=U"関羽の先手を、皆の一撃につなぐ。";
@@ -83,6 +100,45 @@ namespace frontline
             const auto proposal=PlanExample(j);
             if(proposal.remembersDefenseRetry) return DefenseRetryCouncil(j,proposal);
             if(proposal.remembersCooperation) return ContributionCouncil(j,proposal);
+        }
+        if(brief.title)
+        {
+            if(voice==-1)
+            {
+                e.subject=brief.title;
+                if(costly)
+                    Say(1,U"前の勝利で、戻らぬ者もいた。今日は、その名も一緒に連れて行く。",U"関羽が地図の端を押さえる。張飛も、今度は遮らない。");
+                Say(0,brief.opening,U"劉備が地図を広げ、三人の駒を主人公へ寄せた。",U"",U"持ち場を決めよう",U"先に俺の話も聞けよ！");
+                if(!costly) e.beats.back().dialogue.warmMask=5;
+                return e;
+            }
+            const auto& role=brief.roles[voice];
+            e.subject=role.title;
+            if(voice==0)
+            {
+                Say(0,role.advice,U"劉備が地図に指を置いた。",U"",U"先に敵を引き離そう",U"道は俺が空ける！");
+                if(j.mission==0)
+                    Say(0,U"道を開けば民は逃げられる。車まで送り届けるなら護衛も出そう。季安にどこまで約束するかは、君に任せるよ。",U"劉備は、季安の車の駒から手を離した。");
+                else
+                    Say(3,U"分かった。そこへ向かう隊を先に決めておこう。",U"主人公は、脇に置いてあった駒を手元へ引き寄せた。",U"頼むよ");
+            }
+            else if(voice==1)
+            {
+                Say(1,role.advice,U"関羽が、林へ駒を寄せた。",U"地図で確かめよう",U"",U"呼ばれりゃ行くぜ！");
+                Say(2,U"よし。先に林に入るなら、その間に俺が動く場所も決めとこうぜ。",U"張飛が自分の駒をつまんだ。",U"二人とも頼むよ",U"私の合図を待て");
+            }
+            else
+            {
+                Say(2,role.advice,U"張飛が地図をのぞき込んだ。",U"翼徳、頼んだよ",U"その役なら任せよう");
+                Say(1,j.mission==2 ? U"覚えておけ、翼徳。援軍が来た時も、引き継ぐまでお前が火を守るのだ。":
+                    U"お前が前を空けたら、次の隊が続く。振り返る相手を間違えるなよ。",U"関羽が、隣に味方の駒を置いた。",U"",U"",U"ああ、分かってるって！");
+            }
+            if(!costly)
+            {
+                static constexpr int masks[3][2]={{1,5},{5,7},{7,6}};
+                for(int i=0;i<2;++i) e.beats[i].dialogue.warmMask=masks[voice][i];
+            }
+            return e;
         }
         if(voice==-1)
         {

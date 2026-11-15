@@ -14,9 +14,9 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
     Canvas->AddSlot().Position(FVector2D::ZeroVector).Size(FVector2D(1600,900))[Shade];InputPanels.Add(Shade);
     auto Contents=SNew(SVerticalBox);
     Contents->AddSlot().AutoHeight()[SNew(SHorizontalBox)
-        + SHorizontalBox::Slot().FillWidth(1)[Label([] { return TEXT("さあ、軍議を始めよう"); },34,Gold)]
+        + SHorizontalBox::Slot().FillWidth(1)[Label([this] { return bNovelMap ? TEXT("作戦図"):TEXT("出陣の準備"); },34,Gold)]
         + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelAdvice ? TEXT("案を比較 / A"):TEXT("皆の声を聞く / A"); },[this] { bNovelMap=false;bNovelAdvice=!bNovelAdvice; })]
-        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelMap ? TEXT("作戦の比較 / M"):TEXT("配置を考える / M"); },[this] { TogglePlanningMap(); })]
+        + SHorizontalBox::Slot().AutoWidth().Padding(0,0,12,0)[Button([this] { return bNovelMap ? (bCouncilLedger ? TEXT("準備の比較 / M"):TEXT("地図を閉じる / M")):TEXT("配置を考える / M"); },[this] { TogglePlanningMap(); })]
         + SHorizontalBox::Slot().AutoWidth()[Button([this] { return Field->Presentation().Journey.bCampaignFlow ? TEXT("軍議の場へ戻る"):TEXT("物語へ戻る"); },[this] { if(Field->Presentation().Journey.bCampaignFlow) bCouncilLedger=bNovelMap=bNovelAdvice=false;else bNovelPlan=false; })]];
     Contents->AddSlot().AutoHeight().Padding(0,4,0,8)
       [SNew(SHorizontalBox)
@@ -85,7 +85,12 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
         + SOverlay::Slot()[BuildPlanningMap()]];
     Contents->AddSlot().AutoHeight().Padding(0,14,0,8)[Label([this] { return Field->Presentation().Journey.PlanReadiness; },16,Gold)];
     Contents->AddSlot().AutoHeight()[SNew(SHorizontalBox)
-        + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([this] { return bNovelMap ? (Field->Presentation().Journey.Map.bChooseRoute ? TEXT("1・2：準備案　M：比較　R：経路　Esc：作戦書"):TEXT("1・2：準備案　M：比較　Esc：作戦書")):TEXT("1・2：準備案　A：助言　M：地図　Esc：会話へ"); },14)]
+        + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([this]
+          {
+              if(!bNovelMap) return TEXT("1・2：準備案　A：助言　M：作戦図　Esc：軍議へ");
+              return Field->Presentation().Journey.Map.bChooseRoute ? TEXT("1・2：準備案　R：経路変更　Esc：地図を閉じる"):
+                  TEXT("1・2：準備案　Esc：地図を閉じる");
+          },14)]
         + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(360).HeightOverride(48)
           [Button([this] { return Field->CanIssue(ETacticalCommand::Deploy) ? TEXT("この作戦で出陣する / D"):TEXT("出陣できない：資源を確認"); },[this] { DeployNovelPlan(); },[this] { return Field->CanIssue(ETacticalCommand::Deploy); })]]];
     auto Panel=SNew(STacticalChrome).Padding(28).Opacity(.93f).Accent(gunyustyle::Brass).Visibility_Lambda(Visible)[Contents];
