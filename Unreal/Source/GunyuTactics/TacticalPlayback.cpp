@@ -154,8 +154,16 @@ void ATacticalField::BeginPlayback()
 void ATacticalField::FinishPlayback(bool bShowMissionResponse)
 {
     if (CueAudio) CueAudio->Stop();
-    if(bShowMissionResponse) PublishMissionResponse();
-    else { State->MissionResponse={};State->MissionResponseRemaining=0; }
+    if(bShowMissionResponse)
+    {
+        PublishMissionResponse();
+        PublishMissionSignals();
+    }
+    else
+    {
+        State->MissionResponse={};State->MissionResponseRemaining=0;
+        State->SettledMissionSignals={};State->MissionSignalRemaining={};
+    }
     if(!State->Beats.IsEmpty() && State->Beats.Last().Kind==EBattleCue::Enemy) State->RetryDefenseAid={};
     if(State->bSupplyPlayback && bRealtimeCommand) State->Realtime.paused=true;
     State->bSupplyPlayback=false;
@@ -170,6 +178,8 @@ void ATacticalField::FinishPlayback(bool bShowMissionResponse)
 void ATacticalField::AdvancePresentation(float Delta)
 {
     State->MissionResponseRemaining=FMath::Max(0.f,State->MissionResponseRemaining-FMath::Max(0.f,Delta));
+    for(float& Remaining:State->MissionSignalRemaining)
+        Remaining=FMath::Max(0.f,Remaining-FMath::Max(0.f,Delta));
     float Elapsed=FMath::Max(0.f,Delta)*FMath::Clamp(static_cast<float>(State->Realtime.speed),.5f,3.f);
     if (bRealtimeCommand && !State->bSupplyPlayback)
         Elapsed=State->Realtime.paused && !State->bRealtimeStepping ? 0.f : Elapsed;

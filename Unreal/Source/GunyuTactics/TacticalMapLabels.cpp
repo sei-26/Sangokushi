@@ -6,6 +6,7 @@
 #include "TacticalActionFocus.h"
 #include "TacticalMapLabelLayout.h"
 #include "TacticalBattleResponse.h"
+#include "TacticalMissionSignals.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
@@ -34,8 +35,19 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
         Canvas->AddSlot().Position_Lambda([this,Index] { return GoalLabelPosition(Index); })
         .Size_Lambda([this,Index] { return GoalLabelSize(Index); })
         [SNew(SBorder).Visibility(EVisibility::HitTestInvisible).Clipping(EWidgetClipping::ClipToBounds).Padding(FMargin(8, 4))
-         .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(
-            Index==4 ? FLinearColor(.025f,.15f,.13f,.96f):FLinearColor(.07f,.055f,.02f,.94f))
+         .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor_Lambda([this,Index]
+          {
+              if(Index<2)
+              {
+                  const auto Mark=Field->ReadMissionSignals().Wings[Index];
+                  if(Mark.Weight>.03f)
+                  {
+                      const auto Tint=gunyumission::SignalColor(Mark.Kind)*.18f;
+                      return FLinearColor(Tint.R,Tint.G,Tint.B,.97f);
+                  }
+              }
+              return Index==4 ? FLinearColor(.025f,.15f,.13f,.96f):FLinearColor(.07f,.055f,.02f,.94f);
+          })
          [SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[Label([this,Index]
           {
@@ -46,8 +58,31 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
           },13,Index==4 ? FLinearColor(.72f,.98f,.90f):Gold)]
           + SVerticalBox::Slot().AutoHeight()[SNew(SVerticalBox)
              .Visibility_Lambda([this,Index] { return Field->Presentation().Defenses.IsValidIndex(Index) ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
-             + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Current:FString(); },11)]
-             + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& D=Field->Presentation().Defenses;return D.IsValidIndex(Index) ? D[Index].Last:FString(); },11,Gold)]]
+             + SVerticalBox::Slot().AutoHeight()[Label([this,Index]
+              {
+                  if(Index<2)
+                  {
+                      const auto Mark=Field->ReadMissionSignals().Wings[Index];
+                      const auto& Units=Field->VisualUnits();
+                      if(Mark.Weight>.03f)
+                      {
+                          if(Mark.Kind==gunyumission::ESignal::WingLost) return FString(TEXT("守備が途切れた"));
+                          if(Units.IsValidIndex(Mark.Actor)) return TEXT("守備成立 ／ ")+Units[Mark.Actor].Name+TEXT("隊");
+                      }
+                  }
+                  const auto& D=Field->Presentation().Defenses;
+                  return D.IsValidIndex(Index) ? D[Index].Current:FString();
+              },11)]
+             + SVerticalBox::Slot().AutoHeight()[Label([this,Index]
+              {
+                  if(Index<2)
+                  {
+                      const auto Mark=Field->ReadMissionSignals().Wings[Index];
+                      if(Mark.Weight>.03f) return FString();
+                  }
+                  const auto& D=Field->Presentation().Defenses;
+                  return D.IsValidIndex(Index) ? D[Index].Last:FString();
+              },11,Gold)]]
           + SVerticalBox::Slot().AutoHeight()[SNew(SBox)
              .Visibility_Lambda([this,Index] { return GoalDutyStatus(Index).IsEmpty() ? EVisibility::Collapsed:EVisibility::HitTestInvisible; })
              [Label([this,Index] { return GoalDutyStatus(Index); },11,FLinearColor(.68f,.86f,.79f))]]]];
@@ -76,7 +111,16 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
              [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this,Index] { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) ? FMath::Clamp(U[Index].Morale/100.f,0.f,1.f):0.f; }).FillColorAndOpacity_Lambda([this,Index] { const auto& U=Field->VisualUnits();return FSlateColor(U.IsValidIndex(Index) && U[Index].bEnemy ? FLinearColor(.9f,.35f,.18f) : FLinearColor(.31f,.71f,.62f)); })]]
           + SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular",11))
              .Text_Lambda([this,Index] { return FText::FromString(UnitChainNumber(Index)+UnitMapStatus(Index)); })
-             .ColorAndOpacity_Lambda([this,Index] { if(const auto* Read=gunyutargetui::Find(Field->Presentation(),Index)) return FSlateColor(gunyutargetui::Color(*Read));return FSlateColor(Field->IsPlaying() ? Field->ReadUnitActivity(Index).Color:FLinearColor(.75f,.91f,.75f)); })]
+             .ColorAndOpacity_Lambda([this,Index]
+             {
+                 if(Index==5)
+                 {
+                     const auto Cart=Field->ReadMissionSignals().Cart;
+                     if(Cart.Weight>.03f) return FSlateColor(gunyumission::SignalColor(Cart.Kind));
+                 }
+                 if(const auto* Read=gunyutargetui::Find(Field->Presentation(),Index)) return FSlateColor(gunyutargetui::Color(*Read));
+                 return FSlateColor(Field->IsPlaying() ? Field->ReadUnitActivity(Index).Color:FLinearColor(.75f,.91f,.75f));
+             })]
           + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(2)
              .Visibility_Lambda([this,Index] { return Field->IsPlaying() && Field->ReadUnitActivity(Index).bActive ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
              [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this,Index] { return Field->ReadUnitActivity(Index).Progress; })

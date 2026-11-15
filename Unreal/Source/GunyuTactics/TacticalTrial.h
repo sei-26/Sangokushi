@@ -17,6 +17,7 @@ struct FJourneyState;
 struct FChainReview;
 namespace frontline { class StrategistJourney; struct JourneyWatchSnapshot; }
 namespace gunyuresponse { struct FRead; }
+namespace gunyumission { struct FSignals; }
 namespace TacticalMap { struct FSurface; }
 namespace gunyufocus { struct FRead; }
 struct FJourneyDeleter
@@ -197,6 +198,7 @@ public:
     void AdvancePresentation(float Delta);
     bool IsPlaying() const;
     gunyuresponse::FRead ReadMissionResponse() const;
+    gunyumission::FSignals ReadMissionSignals() const;
     bool MissionMomentsSmokeTest();
     bool MissionCreditSmokeTest();
     bool DefenseSmokeTest();
@@ -280,6 +282,7 @@ private:
     void DispatchQueuedChain();
     void BeginPlayback();
     void FinishPlayback(bool bShowMissionResponse=true);
+    void PublishMissionSignals();
     FMissionProgress CaptureMissionProgress() const;
     void AttachMissionCredit(FBattleBeat&);
     void PublishMissionResponse();

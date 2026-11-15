@@ -160,6 +160,7 @@ void ATacticalField::PostEditChangeProperty(FPropertyChangedEvent& PropertyChang
 void ATacticalField::StartTrial()
 {
     State->MissionResponse={};State->MissionResponseRemaining=0;
+    State->SettledMissionSignals={};State->MissionSignalRemaining={};
     State->RetryDefenseAid={};
     State->RoadClearArmy=State->RoadClearStep=State->RoadClearTile=-1;
     State->Realtime.Reset();State->bRealtimeInBattle=false;State->bRealtimeStepping=false;

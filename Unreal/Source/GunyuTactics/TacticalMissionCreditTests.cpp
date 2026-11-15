@@ -20,13 +20,17 @@ bool ATacticalField::MissionCreditSmokeTest()
     if(!Check(EncodeJourneySave(*Save,Initial) && ImportSession(Initial),TEXT("valid occupied-road fixture"))) return false;
     auto Move=[&](int Id,int Tile) { SelectOfficer(Id);Issue(ETacticalCommand::Move);CommandAt(Tile);Issue(ETacticalCommand::Skip); };
     Issue(ETacticalCommand::EndTurn);AdvancePresentation(10);
-    if(!Check(State->Journey.convoyStep==0 && ReadMissionResponse().Line.IsEmpty(),TEXT("a blocked cart never praises an unperformed role"))) return false;
+    if(!Check(State->Journey.convoyStep==0 && ReadMissionResponse().Line.IsEmpty() &&
+        ReadMissionSignals().Cart.Kind==gunyumission::ESignal::None,TEXT("a blocked cart shows no advancement"))) return false;
     Move(2,Out);
     if(!Check(State->RoadClearArmy==2 && ReadMissionResponse().Line.IsEmpty(),TEXT("actual movement remembers Zhang without a premature reward"))) return false;
     Issue(ETacticalCommand::EndTurn);
     if(!Check(IsPlaying() && CurrentBeat()->RoadClearedBy==2 && ReadMissionResponse().Line.IsEmpty(),TEXT("real cart advance carries Zhang's evidence but waits for playback"))) return false;
     AdvancePresentation(10);ExportSession(Before);ReadMissionResponse();AdvancePresentation(1);ExportSession(After);
-    if(!Check(ReadMissionResponse().Actor==2 && ReadMissionResponse().Reply.Contains(TEXT("翼徳")) && Before==After,TEXT("specific thanks neither farm trust nor alter costs or progress"))) return false;
+    const auto Road=ReadMissionSignals().Cart;
+    if(!Check(ReadMissionResponse().Actor==2 && ReadMissionResponse().Reply.Contains(TEXT("翼徳")) && Before==After &&
+        Road.Kind==gunyumission::ESignal::RoadOpened && Road.Actor==2 && Road.Count==1,
+        TEXT("the actual road clearer is credited in dialogue and in the local signal without changing battle state"))) return false;
     Issue(ETacticalCommand::EndTurn);AdvancePresentation(10);
     if(!Check(ReadMissionResponse().Line.IsEmpty() && State->RoadClearArmy==-1,TEXT("a consumed clearance does not repeat on the next segment"))) return false;
     ImportSession(Initial);Move(2,Out);

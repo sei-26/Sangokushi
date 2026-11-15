@@ -5,6 +5,7 @@
 #include "TacticalActionFocus.h"
 #include "TacticalBattleResponse.h"
 #include "TacticalMapLabelLayout.h"
+#include "TacticalMissionSignals.h"
 
 void ATacticalController::LayoutMapLabels()
 {
@@ -92,6 +93,15 @@ FString ATacticalController::UnitMapStatus(int Index) const
 {
     const auto& Units=Field->VisualUnits();if(!Units.IsValidIndex(Index) || Units[Index].Id<0) return FString();
     const auto& U=Units[Index];
+    if(U.bTransport && !U.bEnemy)
+    {
+        const auto Cart=Field->ReadMissionSignals().Cart;
+        if(Cart.Weight>.03f)
+        {
+            if(Cart.Count==0) return TEXT("護送車が前進中");
+            return FString::Printf(TEXT("%s %d/%d"),Cart.Kind==gunyumission::ESignal::RoadOpened ? TEXT("車道再開"):TEXT("護送が前進"),Cart.Count,Cart.Total);
+        }
+    }
     if(Field->IsPlaying()) return Field->ReadUnitActivity(Index).Caption;
     if(U.Troops<=0) return TEXT("戦闘不能");
     if(Field->Presentation().Position.Relief.bVisible && Field->Presentation().Position.Relief.Incoming==Index) return TEXT("後任を比較中");

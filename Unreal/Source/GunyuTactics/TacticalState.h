@@ -8,6 +8,7 @@
 #include "JourneySupport.hpp"
 #include "JourneySupportActions.hpp"
 #include "TacticalMissionResponse.h"
+#include "TacticalMissionSignals.h"
 #include <memory>
 
 struct FRetryDefenseAid
@@ -62,6 +63,8 @@ struct FJourneyState
     bool bNoPlayback = false, bImpactPlayed = false;
     gunyuresponse::FRead MissionResponse;
     float MissionResponseRemaining=0;
+    gunyumission::FSignals SettledMissionSignals;
+    std::array<float,3> MissionSignalRemaining{};
     FRetryDefenseAid RetryDefenseAid; // Observed solo support awaiting this cycle's real defense check.
     int RoadClearArmy=-1,RoadClearStep=-1,RoadClearTile=-1; // Transient observed contribution, never saved.
     int CheckpointStage=-1,CheckpointMission=-1;

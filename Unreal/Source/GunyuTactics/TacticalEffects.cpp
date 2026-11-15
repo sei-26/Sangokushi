@@ -58,6 +58,56 @@ void ATacticalField::RenderEffects()
     };
     const auto* Beat = CurrentBeat();
     const float Progress = BeatProgress();
+    const auto Mission=ReadMissionSignals();
+    const auto& Cart=Mission.Cart;
+    if(Cart.Weight>.01f)
+    {
+        FLinearColor Color=gunyumission::SignalColor(Cart.Kind);
+        const FVector Direction=(Cart.Position-Cart.Origin).GetSafeNormal2D();
+        const FVector Across(-Direction.Y,Direction.X,0);
+        auto Mark=[&](FVector From,FVector To,float Width,float Opacity)
+        {
+            const FVector Side=FVector::CrossProduct((To-From).GetSafeNormal2D(),FVector::UpVector)*Width;
+            FVector A=From-Side,B=From+Side,C=To+Side,D=To-Side;
+            for(FVector* P:{&A,&B,&C,&D}) P->Z=SurfaceHeight(*P)+15;
+            auto Ink=Color;Ink.A=Opacity*Cart.Weight;
+            Quad(A,B,C,D,Ink);
+        };
+        for(float Offset:{-46.f,46.f})
+        {
+            const FVector From=Cart.Origin+Across*Offset,To=Cart.Position+Across*Offset;
+            const FVector Tip=FMath::Lerp(From,To,.74);
+            const float ArrowSize=FMath::Min(26.,FVector::Dist2D(From,To)*.27);
+            Mark(From,To,8,.19f);
+            Mark(From,To,3,.82f);
+            Mark(Tip-Direction*ArrowSize+Across*ArrowSize*.54f,Tip,3,.88f);
+            Mark(Tip-Direction*ArrowSize-Across*ArrowSize*.54f,Tip,3,.88f);
+        }
+        Color.A=.78f*Cart.Weight;
+        Ring(Cart.Position+FVector(0,0,16),91,4,Color,true);
+    }
+    for(const auto& Wing:Mission.Wings)
+    {
+        if(Wing.Weight<=.01f) continue;
+        const FVector Center=SurfaceLocation(Wing.Tile)+FVector(0,0,16);
+        auto Color=gunyumission::SignalColor(Wing.Kind);
+        Color.A=.92f*Wing.Weight;
+        Ring(Center,108,6,Color,true);
+        auto Halo=Color;
+        Halo.A*=.14f+.32f*(1-Wing.Phase);
+        Ring(Center,113+Wing.Phase*39,8,Halo,true);
+        for(int Side=0;Side<6;++Side)
+        {
+            const double Angle=FMath::DegreesToRadians(30.+60.*Side);
+            const FVector Along(FMath::Cos(Angle),FMath::Sin(Angle),0);
+            const FVector Across(-Along.Y,Along.X,0);
+            const FVector Foot=Center+Along*108;
+            const FVector Base(Foot.X,Foot.Y,SurfaceHeight(Foot)+16);
+            const FVector Top=Base+FVector(0,0,22+45*(1-Wing.Phase));
+            auto Ray=Color;Ray.A*=.60f;
+            Quad(Base-Across*6,Base+Across*6,Top+Across*2,Top-Across*2,Ray);
+        }
+    }
     const bool bWeaponSwing=gunyuweapon::IsAttack(State->Units,Beat,Progress);
     const auto& H = State->HUD;
     if (!Beat && H.bBattle && H.bThreatOverlay)

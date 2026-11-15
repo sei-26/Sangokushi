@@ -1,4 +1,5 @@
 ﻿#include "TacticalMissionResponse.h"
+#include "TacticalMissionSignals.h"
 namespace gunyumission
 {
     gunyuresponse::FRead Read(const FBattleBeat* B,gunyuresponse::FRead RetryDefense)
@@ -14,7 +15,7 @@ namespace gunyumission
             return B->Before.IsValidIndex(Id) && B->After.IsValidIndex(Id) && B->Before[Id].Id==Id && B->After[Id].Id==Id &&
                 !B->Before[Id].bEnemy && !B->After[Id].bEnemy && B->Before[Id].Troops>0 && B->After[Id].Troops>0;
         };
-        int Event=-1,Preferred=0;
+        int Event=-1,Preferred=0,Partner=-1;
         if(A.Convoy>=0 && Z.Convoy>A.Convoy && Z.Total>0 && A.Total==Z.Total && Living(5) &&
            !B->Before[5].Position.Equals(B->After[5].Position))
         {
@@ -26,6 +27,19 @@ namespace gunyumission
             Preferred=1;
             if(A.Held==0 && Z.Held>0) Event=2;
             else if(A.Held>0 && Z.Held==0) Event=3;
+            if(Event==2 && Z.DefenseChecks.Num()==2)
+            {
+                const auto Signals=ReadSignals(B,B->After,1.f);
+                for(int Wing=0;Wing<2;++Wing)
+                    if(Signals.Wings[Wing].Kind==ESignal::WingHeld)
+                    {
+                        Preferred=Signals.Wings[Wing].Actor;
+                        const auto& Other=Z.DefenseChecks[1-Wing];
+                        if(Other.bSecured && Other.Turn==A.CommandTurn && Other.Guard>=0 && Other.Guard<3)
+                            Partner=Other.Guard;
+                        break;
+                    }
+            }
         }
         if(Event<0) return R;
         for(int Id:{Preferred,0,1,2}) if(Living(Id)) { R.Actor=Id;break; }
@@ -40,7 +54,7 @@ namespace gunyumission
         if(Event<=1) R.Caption=FString::Printf(TEXT("%s %d/%d / %s"),Z.bRescue ? TEXT("季安の護送"):TEXT("糧車の護送"),Z.Convoy,Z.Total,Event==0 ? TEXT("車が動き始めた"):TEXT("道半ばまで来た"));
         else R.Caption=Event==2 ? FString::Printf(TEXT("烽火 %d/%d / 両翼を維持"),Z.Held,Z.Required):TEXT("烽火の守りが途切れた");
         R.Sound=Event==3 ? gunyuresponse::ESound::None:gunyuresponse::ESound::Support;
-        for(int Id:{2,0,1}) if(Id!=R.Actor && Living(Id)) { R.ReplyActor=Id;break; }
+        for(int Id:{Partner,2,0,1}) if(Id!=R.Actor && Living(Id)) { R.ReplyActor=Id;break; }
         if(R.ReplyActor>=0)
         {
             const TCHAR* Replies[4][3]={

@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "Camera/CameraActor.h"
 #include "TacticalMissionResponse.h"
+#include "TacticalMissionSignals.h"
 #include "TacticalContributionQA.h"
 #include "TacticalSupportQA.h"
 #include "Camera/CameraComponent.h"
@@ -359,15 +360,27 @@ void ATacticalController::PlayerTick(float Delta)
             {
                 Field->SelectOfficer(0);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(7,6));Field->Issue(ETacticalCommand::Skip);Field->Issue(ETacticalCommand::Hold);Field->Issue(ETacticalCommand::Skip);
             }
-            Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
-            if(Guard && FParse::Param(FCommandLine::Get(),TEXT("GunyuMomentLost")))
+            Field->Issue(ETacticalCommand::EndTurn);
+            if(FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionSignalLive")))
             {
-                Field->SelectOfficer(0);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(7,7));Field->Issue(ETacticalCommand::Skip);
-                Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
+                if(const auto* Beat=Field->CurrentBeat()) Field->AdvancePresentation(Beat->Duration*.57f);
+                const auto Signal=Field->ReadMissionSignals().Cart;
+                if(!Field->IsPlaying() || Signal.Weight<=.03f || Signal.Count!=0)
+                { UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_SIGNAL_CAPTURE: FAIL (cart is not moving on the displayed board)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+                UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_SIGNAL_CAPTURE: PASS (actual partial cart movement)"));
             }
-            const auto Response=Field->ReadMissionResponse();
-            if(Response.Line.IsEmpty()) { UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_MOMENT_CAPTURE: FAIL (actual progress produced no response)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
-            UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_MOMENT_CAPTURE: PASS (%s / actor %d / %s)"),*Response.Caption,Response.Actor,*Response.Line);
+            else
+            {
+                Field->AdvancePresentation(10);
+                if(Guard && FParse::Param(FCommandLine::Get(),TEXT("GunyuMomentLost")))
+                {
+                    Field->SelectOfficer(0);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(7,7));Field->Issue(ETacticalCommand::Skip);
+                    Field->Issue(ETacticalCommand::EndTurn);Field->AdvancePresentation(10);
+                }
+                const auto Response=Field->ReadMissionResponse();
+                if(Response.Line.IsEmpty()) { UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_MOMENT_CAPTURE: FAIL (actual progress produced no response)"));FPlatformMisc::RequestExitWithStatus(false,1);return; }
+                UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_MOMENT_CAPTURE: PASS (%s / actor %d / %s)"),*Response.Caption,Response.Actor,*Response.Line);
+            }
         }
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionCredit")))
         {
