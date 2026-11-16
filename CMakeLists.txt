@@ -42,6 +42,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyCouncilStage.cpp
     NewGame/JourneyCouncilBrief.cpp
     NewGame/JourneyPortAssault.cpp
+    NewGame/JourneyGuangzong.cpp
     NewGame/JourneyCouncilDrama.cpp
     NewGame/JourneyEpisode.cpp
     NewGame/JourneyEpisodeCouncil.cpp

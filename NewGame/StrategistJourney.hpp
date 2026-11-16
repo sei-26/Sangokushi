@@ -104,6 +104,8 @@ namespace frontline
 		bool HasConvoy() const { return IsRescue() || Definition().kind == JourneyObjective::Escort; }
         bool HasSunJian() const { return mission==YangrenMission; }
         bool IsPortAssault() const { return campaignFlow && mission==1; }
+        int GuangzongCommandsLeft() const;
+        const JourneyBattleReview::Guangzong& GuangzongSupport() const;
         static constexpr int PortOpeningCycles=2;
         bool SunJianAtRally() const;
         bool HasDepotInterception() const
@@ -180,6 +182,7 @@ namespace frontline
         void RecordDefenseChecks();
 		void SetupBattlefield();
 		void Evaluate();
+        void CheckGuangzong();
 		void Finish(bool success, const char32_t* reason);
         void CompleteBattleReview(bool success);
         void CompleteBattleStory(bool success);

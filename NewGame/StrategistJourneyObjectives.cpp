@@ -247,6 +247,7 @@ namespace frontline
         if(depotInterception && stage==JourneyStage::Battle)
             return U"荷駄隊を捕らえよ ／ "+Number(DepotMovesIn())+U"指揮後に次の移動";
         if(mission==LuoyangMission) return Definition().objective;
+        if(mission==YellowTurbanMission) return Definition().objective;
         if(Definition().kind==JourneyObjective::CaptureCamp) return U"指揮所へ一隊を入れ、隣接する敵を退けて占領。護送・残敵掃討は不要";
 		if (Definition().kind == JourneyObjective::HoldPositions)
 			return U"二拠点の維持 " + Number(heldTurns) + U" / "+Number(RequiredHoldTurns())+U"指揮・Gで固守：隣接敵１隊まで維持";
@@ -290,6 +291,7 @@ namespace frontline
 		if (stage != JourneyStage::Battle)
 			return;
         if(IsPortAssault()) ExpirePortOpening();
+        if(mission==YellowTurbanMission && battleReview.guangzong.tracked) CheckGuangzong();
 		if (world.armies[0].troops + world.armies[1].troops + world.armies[2].troops < 1800)
 		{
 			Finish(false, U"主力の兵が1,800を下回った。任務を中止して撤退した。");
@@ -337,11 +339,16 @@ namespace frontline
             {
                 world.tiles[goal].owner=world.player;++world.revision;
                 if(IsPortAssault()) RecordPortCapture();
+                auto& guangzong=battleReview.guangzong;
+                if(mission==YellowTurbanMission && guangzong.tracked)
+                    guangzong.swift=GuangzongCommandsLeft()>0;
                 Finish(true,HasSunJian() ? U"陽人の辻を確保し、南から来た孫堅と合流した。":
                     mission==LuoyangMission ? (luoyangPlan==LuoyangPlan::WesternDepot ?
                         U"荷駄陣を確保。兵糧1,000を持ち帰り、義勇軍の蓄えに加えた。":U"南門前を確保し、孫堅本隊へ入城の合図を送った。"):
                     mission==CoalitionMission ? U"董卓軍の前哨を占領。曹操の先行隊に渡河の合図を送った。":
-                    mission==YellowTurbanMission ? U"黄巾の前陣を占領。官軍が前へ出る道を開いた。":
+                    mission==YellowTurbanMission ? (guangzong.swift ?
+                        U"黄巾の南翼が戻る前に、前陣を取った。鄒靖の官軍が前へ出る。":
+                        U"黄巾の前陣を占領。官軍が前へ出る道を開いた。"):
                     U"河港の指揮所を占領。敵の連絡路が断たれ、義勇軍は官軍の共同作戦へ合流する。残敵を追う必要はない。");
                 return;
             }

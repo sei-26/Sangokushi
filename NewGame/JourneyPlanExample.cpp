@@ -58,12 +58,11 @@ namespace frontline
         }
         else if(j.mission==YellowTurbanMission)
         {
-            p.name=U"北の林で引きつけ、南から前陣へ";
-            p.purpose=U"劉備は林の南端を固め、関羽は北の林で伏兵。張飛は南の平地から前陣へ。";
-            p.assignments={JourneyAssignment{JourneyDuty::Hold,Campaign::At(8,9)},
-                JourneyAssignment{JourneyDuty::Ambush,Campaign::At(8,8)},JourneyAssignment{}};
-            p.manualTask=U"張飛を南へ進め、反撃隊を退ける。劉備か関羽で守備隊を前陣から引き離し、一隊を入れる。";
-            p.caution=U"敵が前陣に隣接したままでは占領できない。先に引き離すか押し返そう。";
+            p.name=U"前陣を揺らし、張飛を街道へ回す";
+            p.purpose=U"劉備と関羽で前陣へ迫る。張飛は南の街道にも届く位置を取る。";
+            p.assignments[1]={JourneyDuty::Ambush,Campaign::At(8,8)};
+            p.manualTask=U"南翼が動いたら張飛を街道へ。敵が寄る前に道を開き、別の隊で前陣を取ろう。";
+            p.caution=U"前陣を取るとその時点で決着。民を助けるなら街道が先。";
         }
         else if(j.mission==LuoyangMission)
         {

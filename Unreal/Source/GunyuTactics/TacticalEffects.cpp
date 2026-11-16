@@ -110,6 +110,15 @@ void ATacticalField::RenderEffects()
     }
     const bool bWeaponSwing=gunyuweapon::IsAttack(State->Units,Beat,Progress);
     const auto& H = State->HUD;
+    const auto& J=State->Journey;
+    if(!Beat && H.bBattle && J.mission==frontline::YellowTurbanMission && J.GuangzongCommandsLeft()>0)
+    {
+        const auto Road=SurfaceLocation(frontline::GuangzongRoad)+FVector(0,0,16);
+        const auto Front=SurfaceLocation(J.goal)+FVector(0,0,16);
+        const bool bEvacuated=J.battleReview.guangzong.roadOfficer>=0;
+        Ring(Road,108,5,bEvacuated ? FLinearColor(.42f,.95f,.73f,.95f):FLinearColor(.38f,.76f,1.f,.94f),true);
+        Ring(Front,114,5,FLinearColor(1.f,.69f,.28f,.90f),true);
+    }
     if(!Beat && H.bPortOpening)
     {
         const auto Center=SurfaceLocation(H.GoalTile)+FVector(0,0,16);

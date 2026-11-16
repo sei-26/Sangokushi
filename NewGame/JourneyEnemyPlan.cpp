@@ -71,6 +71,13 @@ namespace frontline
 			ApplyJourneyEnemyDoctrine(*view,context,plan);
 			if (unit.scouting && plan.intent == JourneyEnemyIntent::Engage)
 				plan.intent = JourneyEnemyIntent::Search;
+            if(context.guangzong && id==4)
+            {
+                plan.target=context.guangzongTarget;
+                plan.targetArmy=-1;
+                plan.occupyTarget=TacticChain::Free(*view,plan.target);
+                plan.intent=plan.from==plan.target ? JourneyEnemyIntent::Reserve:JourneyEnemyIntent::Counterattack;
+            }
 			if (!context.yangren && !context.depotInterception && unit.stance == battle::Stance::Guard && context.policy == 1 && id == 3 &&
 			    context.objective != JourneyObjective::HoldPositions &&
                 !(plan.role==JourneyEnemyRole::Anchor && plan.occupyTarget && plan.from!=context.goal))

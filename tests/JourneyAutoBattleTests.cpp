@@ -10,6 +10,81 @@
 #include <memory>
 #include <iostream>
 using namespace frontline;
+
+static void VerifyGuangzongChoices(const JourneySaveData& deployed)
+{
+    auto session=std::make_unique<JourneySaveData>(deployed);
+    auto& battle=session->journey;
+    const int nearFront=Campaign::At(11,8);
+    battle.world.armies[0].tile=battle.world.armies[0].target=Campaign::At(10,8);
+    battle.world.armies[2].tile=battle.world.armies[2].target=Campaign::At(10,10);
+    battle.RefreshIntelligence();
+    assert(!battle.GuangzongCommandsLeft() && battle.Move(0,nearFront));
+    assert(battle.GuangzongCommandsLeft()==GuangzongWindow);
+    const auto known=battle.ReadEnemyPlans();
+    const auto reserve=std::find_if(known.begin(),known.end(),[](const auto& plan){return plan.army==4;});
+    assert(reserve!=known.end() && reserve->target==GuangzongRoad);
+    auto advancing=std::make_unique<StrategistJourney>(battle);
+    assert(advancing->EndTurn() && advancing->world.armies[4].tile!=GuangzongReserve);
+    for(int i=1;i<GuangzongWindow;++i) assert(advancing->EndTurn());
+    assert(!advancing->GuangzongCommandsLeft());
+    auto realtime=std::make_unique<StrategistJourney>(battle);
+    JourneyRealtime movement;
+    assert(movement.Queue(*realtime,2,JourneyDirective::March,GuangzongRoad));
+    assert(movement.Resolve(*realtime) && realtime->battleReview.guangzong.roadOfficer==2);
+
+    std::vector<std::uint8_t> bytes;
+    assert(EncodeJourneySave(*session,bytes) && DecodeJourneySave(bytes,*session));
+    assert(battle.GuangzongCommandsLeft()==GuangzongWindow);
+    for(const bool aidStreet:{false,true})
+    {
+        for(const bool swift:{false,true})
+        {
+            auto victory=std::make_unique<StrategistJourney>(battle);
+            if(aidStreet) assert(victory->Move(2,GuangzongRoad));
+            assert(victory->battleReview.guangzong.roadOfficer==(aidStreet ? 2:-1));
+            // Set up the last move after the two enemy detachments have been fought off.
+            victory->world.armies[3].troops=victory->world.armies[4].troops=0;
+            if(!swift)
+                while(victory->GuangzongCommandsLeft()) assert(victory->EndTurn());
+            victory->world.armies[1].tile=victory->world.armies[1].target=Campaign::At(11,7);
+            victory->RefreshIntelligence();
+            assert(victory->Move(1,victory->goal) && victory->won && victory->Continue());
+            assert(victory->GuangzongSupport().swift==swift);
+            assert(victory->GuangzongSupport().roadOfficer==(aidStreet ? 2:-1));
+            for(const auto plan:{CoalitionPlan::Advance,CoalitionPlan::Protect})
+            {
+                auto next=std::make_unique<StrategistJourney>(*victory);
+                assert(next->ChooseCoalitionPlan(plan));
+                const auto starts=next->PreparationPositions(1);
+                assert((starts[1]!=next->Definition().positions[1])==aidStreet);
+                assert((starts[2]!=next->Definition().positions[2])==swift);
+                for(int tile:starts) assert(next->PlanningTerrain(tile)!=Terrain::River);
+                assert(next->Prepare(1,next->enemyPolicy));
+                for(int i=0;i<3;++i) assert(next->world.armies[i].tile==starts[i]);
+            }
+        }
+    }
+}
+
+static void PlayGuangzongWithThreeOfficers(const StrategistJourney& council)
+{
+    auto battle=std::make_unique<StrategistJourney>(council);
+    battle->SelectDifficulty(JourneyDifficulty::Standard);
+    assert(battle->Prepare(1,1));
+    auto move=[&](int officer,int x,int y){assert(battle->Move(officer,Campaign::At(x,y)));};
+    move(0,10,8);move(1,9,8);move(2,10,11);
+    assert(battle->battleReview.guangzong.roadOfficer==2 && battle->EndTurn());
+    move(0,11,8);move(1,10,8);move(2,10,10);
+    assert(battle->EndTurn());
+    move(1,10,7);move(2,10,9);
+    assert(battle->Execute({{0,3,ChainTactic::Disrupt}}).completed==1 && battle->EndTurn());
+    move(1,11,7);move(2,11,9);
+    const auto combo=battle->Execute({{0,3,ChainTactic::Disrupt},{1,3,ChainTactic::AzureDragon},{2,3,ChainTactic::Breakthrough}});
+    assert(combo.completed==3 && battle->won && battle->turn==4 &&
+        battle->GuangzongSupport().swift && battle->GuangzongSupport().roadOfficer==2);
+}
+
 int main()
 {
     auto j=std::make_unique<StrategistJourney>();j->ResetCampaign();j->Meet();
@@ -110,10 +185,12 @@ int main()
     assert(PlanExample(old->journey).name.find(U"前陣")!=std::u32string::npos);
     previousReview.relief.pop_back();
     assert(old->journey.ApplyPlanExample());
+    PlayGuangzongWithThreeOfficers(old->journey);
     old->beforeBattle=old->journey;
     assert(old->journey.Prepare(1,old->journey.enemyPolicy) && old->journey.goal==old->journey.Definition().goal && !old->journey.HasConvoy());
     assert(old->journey.world.generals[3].name==EpisodeSpeakerName(ZhangLiang) &&
         old->journey.world.generals[3].trait==Trait::Resolute && old->journey.world.generals[3].tactic==Tactic::Rally);
+    VerifyGuangzongChoices(*old);
     {
         auto pressure=std::make_unique<StrategistJourney>(old->journey);
         auto& front=pressure->world.armies[3];

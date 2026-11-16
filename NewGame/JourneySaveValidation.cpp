@@ -88,6 +88,13 @@ namespace frontline
                 Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3) && Range(r.coordinatedOfficers,0,7) &&
                 Range(r.confirmedDefenders,0,7) && Range(r.spentGuardFailures,0,7);
         }
+        bool GuangzongReview(const JourneyBattleReview::Guangzong& g,bool allowed,int turn,bool won)
+        {
+            if(!g.tracked) return !g.alarmTurn && g.roadOfficer==-1 && !g.swift;
+            return allowed && Range(g.alarmTurn,0,turn) && Range(g.roadOfficer,-1,2) &&
+                (g.alarmTurn || (g.roadOfficer<0 && !g.swift)) &&
+                (!g.swift || (won && turn-g.alarmTurn<GuangzongWindow));
+        }
         bool ChainRecord(const ChainResult& r)
         {
             if(r.prediction || r.events.size()>3) return false;
@@ -169,6 +176,8 @@ namespace frontline
             if(!PortReview(j.battleReview,portRun,j.stage==JourneyStage::Battle,j.turn) ||
                 (portRun && j.stage==JourneyStage::Debrief &&
                  !(j.battleReview.port==j.history[1].review.port))) return false;
+            if(!GuangzongReview(j.battleReview.guangzong,j.mission==YellowTurbanMission && j.campaignFlow &&
+                j.stage!=JourneyStage::Preparation,j.turn,j.won)) return false;
             if(!Enum(j.stage,4) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
                !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.Battlefield(),j.IsRescue(),j.stage==JourneyStage::Preparation) ||
@@ -208,6 +217,7 @@ namespace frontline
                 const bool validAssignments=Assignments(h.assignments,m,map,m==0) || Assignments(h.assignments,m,legacy,m==0);
                 if(!Enum(h.difficulty,1) || !validAssignments || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
                    !PortReview(h.review,m==1 && h.campaignFlow && h.completed,false,h.review.endedAt) ||
+                   !GuangzongReview(h.review.guangzong,m==YellowTurbanMission && h.campaignFlow && h.completed,h.review.endedAt,h.won) ||
                    !YangrenReview(h.review.yangren,m,false) || (h.review.yangren.tracked && !h.completed) ||
                    (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
             }

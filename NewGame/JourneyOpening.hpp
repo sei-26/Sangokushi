@@ -56,5 +56,11 @@ namespace frontline
                     clearedOn==other.clearedOn && capturedBy==other.capturedBy;
             }
         } port;
+        struct Guangzong
+        {
+            bool tracked=false;
+            int alarmTurn=0, roadOfficer=-1;
+            bool swift=false;
+        } guangzong;
     };
 }

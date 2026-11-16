@@ -136,6 +136,7 @@ namespace frontline
 		heldTurns = convoyStep = recoveredCargo = 0;
         battleReview={};battleReview.preparationTracked=campaignFlow;battleReview.reliefTracked=campaignFlow;retryRelief.reset();retryDefense.reset();
         battleReview.yangren.tracked=HasSunJian();
+        battleReview.guangzong.tracked=campaignFlow && mission==YellowTurbanMission;
         for(auto& a:assignments) a.completed=false;
 		guarding = {};
 		defenseChecks = {};
@@ -179,9 +180,11 @@ namespace frontline
 			army.general = i;
 			army.faction = i < 3 ? 0 : 1;
 			army.tile = army.target = i<3 ? starts[i]:Definition().positions[i];
+            if(i==4 && battleReview.guangzong.tracked) army.tile=army.target=GuangzongReserve;
 			if (i == 4 && policy == 2 && mission < 2)
 				army.tile = army.target = mission == 1 ? Campaign::At(12, 8) : Campaign::At(7, 11);
 			army.troops = i < 3 ? deployed / 3 + (i < deployed % 3 ? 1 : 0) : i == 3 ? 1800 : 1300;
+            if(i==3 && battleReview.guangzong.tracked) army.troops=1450;
 			if(i>=3) army.troops=army.troops*CombatSettings(difficulty).enemyPercent/100;
 			army.food = i < 3 ? (food - (escort ? 900 : 0) - reserveFood) / 3 : 3000;
 			army.morale = i<3 ? PreparationMorale(choice,i):90;

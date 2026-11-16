@@ -9,7 +9,9 @@ namespace frontline
         JourneyEnemyContext Context(const StrategistJourney& journey)
         {
             return {journey.Definition().kind, journey.goal, journey.Definition().secondGoal,
-                    journey.enemyPolicy, journey.HasConvoy(),journey.campaignFlow,journey.HasSunJian(),journey.depotInterception};
+                    journey.enemyPolicy, journey.HasConvoy(),journey.campaignFlow,journey.HasSunJian(),journey.depotInterception,
+                    journey.mission==YellowTurbanMission && journey.battleReview.guangzong.tracked,
+                    journey.GuangzongCommandsLeft()>0 ? GuangzongRoad:GuangzongReserve};
         }
         std::unique_ptr<Campaign> EnemyView(const Campaign& world, const BattleIntelligence& known)
         {

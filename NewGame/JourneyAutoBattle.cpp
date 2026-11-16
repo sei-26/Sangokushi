@@ -31,7 +31,14 @@ namespace frontline
         };
         if(j.Definition().kind==JourneyObjective::HoldPositions)
         { Assign(j.goal);Assign(j.Definition().secondGoal); }
-        else if(capture) Assign(j.goal);
+        else if(capture)
+        {
+            Assign(j.goal);
+            const auto& guangzong=j.battleReview.guangzong;
+            if(j.mission==YellowTurbanMission && guangzong.tracked && guangzong.roadOfficer<0 &&
+                (!guangzong.alarmTurn || j.GuangzongCommandsLeft()>0))
+                Assign(GuangzongRoad);
+        }
         else if(j.depotInterception) Assign(intercept);
         std::array<bool,3> defending{};
         for(int a=0;a<3;++a)

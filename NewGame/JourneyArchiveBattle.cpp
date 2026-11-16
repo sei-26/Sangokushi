@@ -35,7 +35,10 @@ namespace frontline
       else if(reading) y={};
       auto& p=v.port;
       if(version>=20) (*this)(p.crossedBy,p.clearedBy,p.clearedOn,p.capturedBy);
-      else if(reading) p={}; }
+      else if(reading) p={};
+      auto& g=v.guangzong;
+      if(version>=21) (*this)(g.tracked,g.alarmTurn,g.roadOfficer,g.swift);
+      else if(reading) g={}; }
     void JourneyArchive::IO(JourneyAssignment& v)
     { (*this)(v.duty,v.tile,v.completed); }
     void JourneyArchive::IO(JourneyResult& v)

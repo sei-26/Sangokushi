@@ -17,13 +17,25 @@ namespace frontline
     {
         const auto& authored=Definition().positions;
         std::array<int,3> result{authored[0],authored[1],authored[2]};
+        if(campaignFlow && mission==YellowTurbanMission)
+        {
+            result[0]=Campaign::At(9,8);
+            result[2]=Campaign::At(10,10);
+        }
+        if(mission==CoalitionMission && !legacyBattlefield)
+        {
+            const auto& support=GuangzongSupport();
+            const bool maintain=coalitionPlan==CoalitionPlan::Protect;
+            if(support.swift) result[2]=Campaign::At(maintain ? 8:10,maintain ? 9:7);
+            if(support.roadOfficer>=0) result[1]=Campaign::At(maintain ? 9:10,maintain ? 7:5);
+        }
         if(!campaignFlow || choice!=0 || assignments[1].duty!=JourneyDuty::Ambush) return result;
         const int destination=assignments[1].tile;
         if(!OnMap(destination) || destination==result[0] || destination==result[2] ||
            PlanningTerrain(destination)!=Terrain::Forest) return result;
         // Two public-terrain steps, never enemy positions/policy or the previous battlefield.
         std::array<int,Width*Height> distance;distance.fill(-1);
-        std::queue<int> pending;pending.push(authored[1]);distance[authored[1]]=0;
+        std::queue<int> pending;pending.push(result[1]);distance[result[1]]=0;
         while(!pending.empty())
         {
             const int from=pending.front();pending.pop();

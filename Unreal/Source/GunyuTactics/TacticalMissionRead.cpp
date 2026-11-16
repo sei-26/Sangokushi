@@ -91,6 +91,19 @@ void ATacticalField::BuildMissionPresentation()
             TEXT("両翼を守る配置。次の指揮でも維持しよう。"):!North ? TEXT("北の守備を整えよう。占位・兵・士気と近くの敵を確認。"):TEXT("南の守備を整えよう。占位・兵・士気と近くの敵を確認。"));
         H.MissionDetail+=TEXT("\n目標へ / U：守備を整えたい烽火を見る。判定の案内は現在の捕捉に基づき、視界外の敵は不明。");
     }
+    else if(J.mission==YellowTurbanMission && J.battleReview.guangzong.tracked)
+    {
+        const auto& Review=J.battleReview.guangzong;
+        const int Left=J.GuangzongCommandsLeft();
+        if(Left>0 && Review.roadOfficer<0) H.MissionFocusTile=GuangzongRoad;
+        H.MissionAdvice=Left>0 && Review.roadOfficer<0 ? TEXT("前陣か、民の街道か"):TEXT("前陣を押さえよう");
+        H.MissionStep=Left>0 ? (Review.roadOfficer>=0 ?
+            FString::Printf(TEXT("民は退いた ｜ あと%d指揮で前陣を取れば官軍が先行"),Left):
+            FString::Printf(TEXT("黄巾の南翼が転進 ｜ あと%d指揮・街道へ回すなら今"),Left)):
+            !Review.alarmTurn ? TEXT("前陣に圧力をかけ、黄巾の南翼を動かそう"):
+            Review.roadOfficer>=0 ? TEXT("民は避難済み ｜ 前陣を取れば決着"):TEXT("南翼が戻り始めた ｜ 前陣を取れば決着");
+        H.MissionDetail=TEXT("前陣を取れば決着。南翼が転進している間に前陣を取ると、次戦で張飛が前から出陣する。間に街道へ一隊を入れ、近くの敵を退ければ民が避難し、次戦で関羽が脇道から出陣する。両方達成できる。");
+    }
     else if(J.Definition().kind==JourneyObjective::CaptureCamp)
     {
         const bool Luoyang=J.mission==LuoyangMission;

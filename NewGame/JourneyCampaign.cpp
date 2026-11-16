@@ -22,11 +22,15 @@ namespace frontline
         enemyPolicy=1;
         goal=Definition().goal;
         assignments={};
+        battleReview={};
         convoyRoute=JourneyConvoyRoute::Road;
         reinforced=false;
         retryRelief.reset();
         retryDefense.reset();
-        Report(std::u32string(CoalitionPlanName(plan))+U"。酸棗で出陣の軍議を開いた。");
+        const auto& support=GuangzongSupport();
+        Report(std::u32string(CoalitionPlanName(plan))+U"。酸棗で出陣の軍議を開いた。"+
+            (support.swift ? std::u32string(U" 鄒靖の援兵が陣を支え、張飛隊は前から出られる。"):U"")+
+            (support.roadOfficer>=0 ? std::u32string(U" 広宗で助けた人の案内で、関羽隊は脇道から出られる。"):U""));
         return true;
     }
     int StrategistJourney::SunJianTrust() const
@@ -117,7 +121,7 @@ namespace frontline
             if(j.stage==JourneyStage::Debrief && !j.won)
                 return {U"第一章 ／ 黄巾の乱",U"広宗の前陣は落ちなかった。",U"直前の軍議へ戻り、どの隊を先に通すか決め直す。",U"鄒靖に従う義勇軍"};
             return {U"第一章 ／ 黄巾の乱",finished ? U"黄巾の前陣を奪い、官軍が前へ出る道を開いた。":U"鄒靖の軍に従い、広宗の前陣を攻める。",finished ?
-                U"広宗と下曲陽の戦いを経て、黄巾の乱は大きな転機を迎える。":U"正面の守備隊を引きつけ、南の平地から別の隊を前陣へ通す。",U"鄒靖に従う義勇軍"};
+                U"広宗と下曲陽の戦いを経て、黄巾の乱は大きな転機を迎える。":U"前陣に迫って南翼を動かし、官軍の先行と街道の避難を見極める。",U"鄒靖に従う義勇軍"};
         }
         if(j.stage==JourneyStage::Complete)
             return {U"序章 完 ／ 義勇軍の軍師へ",j.history[0].won && j.history[1].won ? U"民の退路、河港、決戦の両翼。三つの采配が、一人の軍師の実績になった。":U"任された戦いを越え、主人公は義勇軍の正式な軍師として迎えられた。",U"第一章「黄巾の乱」へ。鄒靖の軍に従い、広宗へ向かう。",U"義勇軍の正式な軍師"};

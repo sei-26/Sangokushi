@@ -51,10 +51,10 @@ void ATacticalField::BuildPreparationMap()
             {TEXT("先行隊へ合図を送れる場所だ。"),TEXT("前哨の守備を引き離そう。"),TEXT("俺を通す橋を決めてくれ！")});
     else if(J.mission==YellowTurbanMission)
     {
-        Add(J.Definition().goal,TEXT("黄巾の前陣"),TEXT("隣接する敵を退け、一隊を入れると占領できる。"),
-            {TEXT("占領したら、追う隊にも戻る合図を。"),TEXT("守備隊を前陣から引き離す。"),TEXT("俺を通すなら、南の敵に一発食らわせようぜ！")});
-        Add(Campaign::At(10,10),TEXT("南の平地"),TEXT("前陣へ回り込む道。南から来る反撃隊に注意。"),
-            {TEXT("正面へ全員を出さず、ここを通る隊を残そう。"),TEXT("南へ敵が向いたなら、正面にも道が開く。"),TEXT("合図が来たら、ここから行くぜ。")});
+        Add(J.Definition().goal,TEXT("黄巾の前陣"),TEXT("ここへ迫ると黄巾の南翼が街道へ向かう。敵が戻る前に前陣を取れば、官軍がその先へ進む。占領で決着。"),
+            {TEXT("占領したら、追う隊にも戻る合図を。"),TEXT("南翼が出たら正面の守りが薄くなる。"),TEXT("敵の旗が動いた時が攻め時だ！")});
+        Add(GuangzongRoad,TEXT("民の街道"),TEXT("南翼が向かったら、近くの敵を退けて一隊を置く。民が避難し、次戦で脇道を案内してくれる。"),
+            {TEXT("ここにいる民にも、退く場所が要る。"),TEXT("攻める隊と別に、街道に届く一隊を残す。"),TEXT("先に前陣を取れば、残った民を助ける間もなく決着だ。")});
     }
     else if(J.HasDepotInterception())
     {
@@ -80,6 +80,14 @@ void ATacticalField::BuildPreparationMap()
             J.HasConvoy() ? TEXT("車がここへ着くまで護送は続く。味方で出口を塞がず、敵を寄せつけない配置を考える。"):
                 TEXT("安全に確保するか、先鋒を崩して道を開く。撃破だけに頼らない勝ち方も考えられる。"),
             {TEXT("最後に誰がここを空けるかまで、決めておこう。"),TEXT("追撃と任務の達成は同じではない。出口への道を残せ。"),TEXT("突っ込んだ後に戻る役も要るんだな。合図を頼むぜ！")});
+    if(J.mission==CoalitionMission && !J.legacyBattlefield)
+    {
+        const auto& Support=J.GuangzongSupport();
+        if(Support.swift)
+            Add(Starts[2],TEXT("鄒靖の援兵"),TEXT("広宗で前陣をすばやく取った。援兵が後ろを支え、張飛隊はここから前に出られる。"),{});
+        if(Support.roadOfficer>=0)
+            Add(Starts[1],TEXT("地元の案内"),TEXT("広宗で助けた人の案内がある。関羽隊はここから脇道を使える。"),{});
+    }
     int Bridge=0;
     for(const auto& Cell:Map.Cells)
         if(Cell.Terrain==uint8(Terrain::Bridge))

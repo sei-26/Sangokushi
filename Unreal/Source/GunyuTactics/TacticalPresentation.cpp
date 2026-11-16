@@ -43,6 +43,14 @@ void ATacticalField::BuildPresentation()
         J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("河港の指揮所"):J.mission == 1 ? TEXT("糧車の搬入先") : TEXT("北の烽火");
     HUD.SecondGoalLabel=J.HasSunJian() ? TEXT("孫堅と合流"):J.Definition().kind==JourneyObjective::HoldPositions ? TEXT("南の烽火"):HUD.GoalLabel;
     if(J.HasSunJian()) HUD.SecondGoalTile=YangrenRally;
+    if(J.mission==YellowTurbanMission && J.battleReview.guangzong.tracked)
+    {
+        HUD.SecondGoalTile=GuangzongRoad;
+        const auto& Review=J.battleReview.guangzong;
+        HUD.SecondGoalLabel=Review.roadOfficer>=0 ? TEXT("民が避難した街道"):
+            J.GuangzongCommandsLeft()>0 ? TEXT("街道を開く"):
+            Review.alarmTurn ? TEXT("避難の機会を逸した街道"):TEXT("民の街道");
+    }
     if(J.depotInterception && HUD.bBattle)
         if(const auto* Column=J.intelligence[0].Find(4);Column && Column->current)
         { HUD.SecondGoalTile=Column->observed.tile+1;HUD.SecondGoalLabel=TEXT("封鎖地点"); }

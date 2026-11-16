@@ -14,6 +14,8 @@ namespace frontline
 		bool campaign = false;
         bool yangren = false;
         bool depotInterception = false;
+        bool guangzong = false;
+        int guangzongTarget = -1;
 	};
 	struct JourneyEnemyPlan
 	{

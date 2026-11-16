@@ -72,6 +72,7 @@ bool ATacticalController::PrepareCoalitionStoryPreview(int Page)
     Journey.Meet();
     const bool YellowPortrait=Page>=-12 && Page<=-10;
     const bool YellowField=Page==-13;
+    const bool GuangzongChoice=Page==-14;
     for(int Mission=0;Mission<=YellowTurbanMission;++Mission)
     {
         if(Mission==YellowTurbanMission)
@@ -82,8 +83,15 @@ bool ATacticalController::PrepareCoalitionStoryPreview(int Page)
             Save->beforeBattle=Journey;
         }
         if(Journey.mission!=Mission || !Journey.Prepare(1,Journey.enemyPolicy)) return false;
-        if(Mission==YellowTurbanMission && (Page==-4 || YellowField))
+        if(Mission==YellowTurbanMission && (Page==-4 || YellowField || GuangzongChoice))
         {
+            if(GuangzongChoice)
+            {
+                Journey.world.armies[0].tile=Journey.world.armies[0].target=Campaign::At(10,8);
+                Journey.RefreshIntelligence();
+                if(!Journey.Move(0,Campaign::At(11,8)) || !Journey.EndTurn() || !Journey.GuangzongCommandsLeft() ||
+                    Journey.world.armies[4].tile==GuangzongReserve) return false;
+            }
             if(YellowField)
             {
                 Journey.world.armies[0].tile=Campaign::At(11,9);
@@ -137,6 +145,13 @@ bool ATacticalController::PrepareCoalitionStoryPreview(int Page)
     }
     if(Page==-3) return P.bComplete && P.CoalitionEpisode.Lines.IsEmpty() && P.PrimaryLabel.Contains(TEXT("黄巾の乱"));
     if(Page==-4) return Field->Presentation().bBattle && Field->Presentation().GoalLabel==TEXT("黄巾の前陣");
+    if(GuangzongChoice)
+    {
+        CameraYaw=90;CameraElevation=54;
+        Focus=ATacticalField::TileLocation(Campaign::At(11,9));Distance=ViewDistance=2900;
+        return Field->Presentation().SecondGoalTile==GuangzongRoad &&
+            Field->Presentation().MissionAdvice.Contains(TEXT("前陣か、民の街道か"));
+    }
     if(YellowField)
     {
         Field->SelectAt(Journey.world.armies[3].tile);
