@@ -201,6 +201,7 @@ struct FBattleBeat
     bool bReliefRecovered=false;
     int SupportGoal=-1,SupportGuard=-1;
     bool SupportNorth=true;
+    int PortCaptor=-1;
 };
 struct FTacticCinematicRead
 {
@@ -232,6 +233,9 @@ struct FTacticalPresentation
     TArray<FBeaconDefensePresentation> Defenses;
     FString BattleChoicePrompt;
     int MissionFocusTile=-1;
+    struct FPortCrossing { int Tile=-1;FString Caption; };
+    FPortCrossing PortCrossings[2];
+    bool bPortOpening=false;
     bool bConvoyMission=false;
     FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;
     FString ClockLabel, StandingOrderLabel, SpeedLabel;

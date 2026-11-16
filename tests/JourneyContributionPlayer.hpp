@@ -4,6 +4,24 @@
 #include <memory>
 namespace contributionqa
 {
+    inline constexpr int PortSouthBridge=11+11*Width,PortBridgeExit=12+10*Width,PortBlocker=13+10*Width;
+    // Start one step before the crossing. All credited moves and attacks still use the normal commands.
+    inline std::unique_ptr<JourneySaveData> PortApproach()
+    {
+        auto save=std::make_unique<JourneySaveData>();
+        auto& j=save->journey;
+        j.ResetCampaign();j.SelectDifficulty(JourneyDifficulty::Story);j.Meet();j.mission=1;
+        save->beforeBattle=j;
+        if(!j.Prepare(1,1)) return {};
+        const std::array<int,5> tiles{Campaign::At(12,12),Campaign::At(11,8),PortSouthBridge,PortBlocker,Campaign::At(14,3)};
+        for(int id=0;id<5;++id) j.world.armies[id].tile=j.world.armies[id].target=tiles[id];
+        j.world.armies[3].morale=55;
+        j.world.armies[3].stance=battle::Stance::Balanced;
+        j.world.armies[4].troops=0;
+        j.RefreshIntelligence();
+        return save;
+    }
+
     // Actual public commands, not a fabricated settled victory or hidden enemy policy.
     inline std::unique_ptr<JourneySaveData> Play(int variant,bool withDuties=false)
     {

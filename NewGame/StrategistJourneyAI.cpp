@@ -120,6 +120,7 @@ namespace frontline
                 if(campaignFlow && world.armies[plan.army].stance==battle::Stance::Guard) world.armies[plan.army].stance=battle::Stance::Balanced;
                 ++world.revision;
             }
+        if(IsPortAssault()) ExpirePortOpening();
         RefreshIntelligence();
     }
     void StrategistJourney::EnemyTurn()

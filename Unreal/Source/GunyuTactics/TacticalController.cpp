@@ -132,13 +132,15 @@ void ATacticalController::PlayerTick(float Delta)
     const bool bCinemaCapture = bCapture && (FParse::Param(FCommandLine::Get(), TEXT("GunyuCinema")) || bSignatureCapture || bSoloCapture || bWeaponCapture);
     const bool bSignalCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuChainSignal"));
     const bool bDecisionCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision"));
+    int PortHandoffView=-1;
+    const bool bPortHandoffCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("PortHandoffView="),PortHandoffView);
     int SupportPreviewMode=0;const bool bSupportActionCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportActionPreview="),SupportPreviewMode);
     int SupportComboMode=0;const bool bSupportComboCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportComboPreview="),SupportComboMode);
     int DefenseMode=0;const bool bDefenseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefensePreview="),DefenseMode);
     int DefenseRetryPayoff=0;const bool bRetryPayoffCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefenseRetryPayoff="),DefenseRetryPayoff);
     int DutyResponse=0;const bool bDutyResponseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DutyResponse="),DutyResponse);
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
-    if (!bCinemaCapture && !bDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture && !bDutyResponseCapture)
+    if (!bCinemaCapture && !bDecisionCapture && !bPortHandoffCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture && !bDutyResponseCapture)
     {
         if (Field->bRealtimeCommand && !bCapture && !bSmoke && !FApp::HasFocus() && !Field->RealtimePaused())
             Field->Issue(ETacticalCommand::RealtimePause);
@@ -496,6 +498,12 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=PreparationMeaningSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCampaignOnly")))
     { const bool bPassed=CampaignPacingSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPortHandoffOnly")))
+    {
+        const bool Passed=PreparePortHandoffPreview(Field,3);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_PORT_HANDOFF: %s (both bridges, timed clearance, real flag and next council)"),Passed ? TEXT("PASS"):TEXT("FAIL"));
+        FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return;
+    }
     if (bSmoke && Frames == 2)
     {
         bool bPassed = Field->AutoBattleSmokeTest();
@@ -853,6 +861,23 @@ void ATacticalController::PlayerTick(float Delta)
         const bool Valid=Deployed ? Field->Presentation().bBattle && Field->RealtimePaused():P.bPreparation && P.ExampleAdviser==(CooperationCouncil==3 ? 2:1);
         UE_LOG(LogTemp,Display,TEXT("GUNYU_COOPERATION_CAPTURE: %s (%s)"),Valid ? TEXT("PASS"):TEXT("FAIL"),*P.ExampleReason);
         if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
+    if(bPortHandoffCapture && Frames==8)
+    {
+        CloseEpisode();
+        const bool Valid=PreparePortHandoffPreview(Field,PortHandoffView);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_PORT_HANDOFF_CAPTURE: %s (view %d)"),Valid ? TEXT("PASS"):TEXT("FAIL"),PortHandoffView);
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        if(PortHandoffView<2)
+        {
+            Focus=Field->SurfaceLocation(frontline::Campaign::At(11,9));
+            Distance=3000;
+        }
+        else if(PortHandoffView==2)
+        {
+            OpenEpisode();EpisodePage=1;NovelElapsed=1000;NovelStageTime=NovelLineTime=1;
+        }
+        else OpenJourneyEntry();
     }
     int ContributionScene=0;
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("ContributionScene="),ContributionScene))

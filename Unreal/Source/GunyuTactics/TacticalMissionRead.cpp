@@ -101,6 +101,7 @@ void ATacticalField::BuildMissionPresentation()
             (EnemiesNear(J.goal)>0 ? TEXT(" ｜ 付近の敵を離し、占領する隊を通そう。"):
                 TEXT(" ｜ 一隊を入れよう。見えていない周囲は確認を。"));
         H.MissionDetail+=TEXT("\n目標へ / U：")+H.GoalLabel+TEXT("を見る。周囲を確保して一隊を入れる。");
+        if(J.IsPortAssault()) BuildPortAssaultPresentation();
     }
     else
     {

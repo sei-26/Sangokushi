@@ -57,6 +57,8 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
     if(Kind==EBattleCue::Enemy || Kind==EBattleCue::Guard || Kind==EBattleCue::Conceal)
     { Beat.MissionBefore=MoveTemp(MissionBefore);Beat.MissionAfter=CaptureMissionProgress(); }
     Beat.Actor = Actor; Beat.Target = Target; Beat.Kind = Kind;
+    if(State->Journey.IsPortAssault() && State->Journey.stage==JourneyStage::Debrief)
+        Beat.PortCaptor=State->Journey.battleReview.port.capturedBy;
     if(Kind==EBattleCue::March) Beat.MissionBefore=Beat.MissionAfter=CaptureMissionProgress();
     if(Kind==EBattleCue::March || Kind==EBattleCue::Enemy) AttachMissionCredit(Beat);
     if(State->bNoPlayback) return;
@@ -135,6 +137,8 @@ void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
         Beat.MissionBefore=Beat.MissionAfter=CaptureMissionProgress();AttachMissionCredit(Beat);
         State->Beats.Add(MoveTemp(Beat));
     }
+    if(!State->Beats.IsEmpty() && State->Journey.IsPortAssault() && State->Journey.stage==JourneyStage::Debrief)
+        State->Beats.Last().PortCaptor=State->Journey.battleReview.port.capturedBy;
     BeginPlayback();
 }
 

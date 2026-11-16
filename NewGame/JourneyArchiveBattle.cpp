@@ -32,7 +32,10 @@ namespace frontline
       if(version>=11) (*this)(v.confirmedDefenders,v.spentGuardFailures);else if(reading) { v.confirmedDefenders=v.spentGuardFailures=0; }
       auto& y=v.yangren;
       if(version>=17) (*this)(y.tracked,y.wasBlocked,y.blockers,y.pendingOfficer,y.roadOfficer,y.cavalryOfficer,y.counter);
-      else if(reading) y={}; }
+      else if(reading) y={};
+      auto& p=v.port;
+      if(version>=20) (*this)(p.crossedBy,p.clearedBy,p.clearedOn,p.capturedBy);
+      else if(reading) p={}; }
     void JourneyArchive::IO(JourneyAssignment& v)
     { (*this)(v.duty,v.tile,v.completed); }
     void JourneyArchive::IO(JourneyResult& v)

@@ -31,7 +31,7 @@ FVector2D ATacticalController::GoalLabelSize(int Index) const
 
 void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
 {
-    for (int Index = 0; Index < 5; ++Index)
+    for (int Index = 0; Index < 7; ++Index)
         Canvas->AddSlot().Position_Lambda([this,Index] { return GoalLabelPosition(Index); })
         .Size_Lambda([this,Index] { return GoalLabelSize(Index); })
         [SNew(SBorder).Visibility(EVisibility::HitTestInvisible).Clipping(EWidgetClipping::ClipToBounds).Padding(FMargin(8, 4))
@@ -46,16 +46,19 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
                       return FLinearColor(Tint.R,Tint.G,Tint.B,.97f);
                   }
               }
-              return Index==4 ? FLinearColor(.025f,.15f,.13f,.96f):FLinearColor(.07f,.055f,.02f,.94f);
+              if(Index>=4 || (Index==0 && Field->Presentation().bPortOpening)) return FLinearColor(.025f,.15f,.13f,.96f);
+              return FLinearColor(.07f,.055f,.02f,.94f);
           })
          [SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[Label([this,Index]
           {
               const auto& H=Field->Presentation();
+              if(Index>=5) return H.PortCrossings[Index-5].Caption;
               if(Index==4) return TEXT("◆ ")+H.OpeningOrder.Name+TEXT("の目印");
               if(Index==3) return FString(TEXT("◆ 行軍が重なる地点"));
+              if(Index==0 && H.bPortOpening) return FString(TEXT("◆ 占領の好機"));
               return Index==2 ? FString(TEXT("◆ 軍議の担当地点")):TEXT("◆ ")+(Index==0 ? H.GoalLabel:H.SecondGoalLabel);
-          },13,Index==4 ? FLinearColor(.72f,.98f,.90f):Gold)]
+          },13,Index>=4 ? FLinearColor(.72f,.98f,.90f):Gold)]
           + SVerticalBox::Slot().AutoHeight()[SNew(SVerticalBox)
              .Visibility_Lambda([this,Index] { return Field->Presentation().Defenses.IsValidIndex(Index) ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
              + SVerticalBox::Slot().AutoHeight()[Label([this,Index]

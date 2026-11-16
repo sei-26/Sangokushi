@@ -68,6 +68,16 @@ namespace frontline
                 (y.pendingOfficer<0 || (y.blockers && y.roadOfficer<0)) &&
                 (inBattle || (!y.blockers && y.pendingOfficer<0));
         }
+        bool PortReview(const JourneyBattleReview& r,bool allowed,bool inBattle,int turn)
+        {
+            const auto& p=r.port;
+            if(!allowed) return p==JourneyBattleReview::PortAssault{};
+            if(!Range(p.crossedBy[0],-1,2) || !Range(p.crossedBy[1],-1,2) ||
+                !Range(p.clearedBy,-1,2) || !Range(p.clearedOn,0,turn) || !Range(p.capturedBy,-1,2) ||
+                (p.clearedBy<0)!=(p.clearedOn==0)) return false;
+            if(p.capturedBy>=0 && (inBattle || r.resolution!=JourneyResolution::Captured)) return false;
+            return p.clearedBy<0 || ((inBattle || p.capturedBy>=0) && turn-p.clearedOn<=StrategistJourney::PortOpeningCycles);
+        }
         bool Review(const JourneyBattleReview& r)
         {
             if(!ReliefReview(r)) return false;
@@ -155,6 +165,10 @@ namespace frontline
                 (!j.campaignFlow || j.preparation!=1 || j.stage!=JourneyStage::Battle))) return false;
             if(!YangrenReview(j.battleReview.yangren,j.mission,j.stage==JourneyStage::Battle) ||
                 (j.battleReview.yangren.tracked && j.stage==JourneyStage::Preparation)) return false;
+            const bool portRun=j.IsPortAssault() && (j.stage==JourneyStage::Battle || j.stage==JourneyStage::Debrief);
+            if(!PortReview(j.battleReview,portRun,j.stage==JourneyStage::Battle,j.turn) ||
+                (portRun && j.stage==JourneyStage::Debrief &&
+                 !(j.battleReview.port==j.history[1].review.port))) return false;
             if(!Enum(j.stage,4) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
                !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.Battlefield(),j.IsRescue(),j.stage==JourneyStage::Preparation) ||
@@ -193,6 +207,7 @@ namespace frontline
                 // Old histories and failed escorts may predate the individual route layouts.
                 const bool validAssignments=Assignments(h.assignments,m,map,m==0) || Assignments(h.assignments,m,legacy,m==0);
                 if(!Enum(h.difficulty,1) || !validAssignments || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
+                   !PortReview(h.review,m==1 && h.campaignFlow && h.completed,false,h.review.endedAt) ||
                    !YangrenReview(h.review.yangren,m,false) || (h.review.yangren.tracked && !h.completed) ||
                    (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
             }

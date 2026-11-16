@@ -133,8 +133,10 @@ namespace frontline
     bool StrategistJourney::StrikeInBattle(int army,int enemy)
     {
         const auto before=ReadYangrenEnemies();
+        const int portBefore=PortBlockers();
         if(!chain.Strike(world,intelligence[0],army,enemy,message,campaignFlow)) return false;
         if(battleReview.yangren.tracked) RecordYangrenAction(army,enemy,before,ReadYangrenEnemies(),false);
+        if(IsPortAssault()) RecordPortClearance(army,enemy,portBefore,PortBlockers());
         return true;
     }
     void StrategistJourney::AdvanceSunJian()
@@ -287,6 +289,7 @@ namespace frontline
 	{
 		if (stage != JourneyStage::Battle)
 			return;
+        if(IsPortAssault()) ExpirePortOpening();
 		if (world.armies[0].troops + world.armies[1].troops + world.armies[2].troops < 1800)
 		{
 			Finish(false, U"主力の兵が1,800を下回った。任務を中止して撤退した。");
@@ -333,6 +336,7 @@ namespace frontline
             if(PositionSecured(goal) && (!HasSunJian() || SunJianAtRally()))
             {
                 world.tiles[goal].owner=world.player;++world.revision;
+                if(IsPortAssault()) RecordPortCapture();
                 Finish(true,HasSunJian() ? U"陽人の辻を確保し、南から来た孫堅と合流した。":
                     mission==LuoyangMission ? (luoyangPlan==LuoyangPlan::WesternDepot ?
                         U"荷駄陣を確保。兵糧1,000を持ち帰り、義勇軍の蓄えに加えた。":U"南門前を確保し、孫堅本隊へ入城の合図を送った。"):

@@ -335,6 +335,7 @@ private:
     void IssueMarchPlan(ETacticalCommand Command);
     void BuildPresentation();
     void BuildMissionPresentation();
+    void BuildPortAssaultPresentation();
     void BuildOpeningOrder();
     void BuildDefensePresentation();
     void BuildBattleChoices();

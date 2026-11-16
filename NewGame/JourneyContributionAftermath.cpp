@@ -3,6 +3,7 @@
 namespace frontline
 {
     JourneyEpisodeLine ContributionAftermathVoice(int actor,int other,int kind,bool painful);
+    JourneyEpisodeLine PortAssaultVoice(int actor,int other,bool planted);
     JourneyRoleAftermath ReadContributionAftermath(const StrategistJourney& j)
     {
         JourneyRoleAftermath result;
@@ -23,11 +24,24 @@ namespace frontline
         const bool costly=h.story.recorded ? h.story.costly:(j.deployed+j.convoyEscort>0 && h.casualties*4>=j.deployed+j.convoyEscort);
         const bool broken=h.story.recorded && h.story.pledge!=JourneyPledge::None && !h.story.pledgeKept;
         const bool painful=!h.won || h.withdrawn || costly || broken;
+        const bool handoff=captor>=0 && r.port.capturedBy==captor && r.port.JointCapture();
         std::u32string facts;
         if(captor>=0)
         {
             result.summary=std::u32string(U"河港に旗を立てた：")+EpisodeSpeakerName(captor);
-            facts=std::u32string(EpisodeSpeakerName(captor))+U"が指揮所に入り、河港の旗が替わった。";
+            for(int bridge=0;bridge<2;++bridge)
+            {
+                const int first=r.port.crossedBy[bridge];
+                if(first>=0 && first<3)
+                    facts+=std::u32string(bridge==0 ? U"北橋":U"南橋")+U"を最初に越えたのは"+EpisodeSpeakerName(first)+U"。";
+            }
+            if(handoff)
+            {
+                result.summary+=std::u32string(U" ／ 道を開いた：")+EpisodeSpeakerName(r.port.clearedBy);
+                facts+=std::u32string(EpisodeSpeakerName(r.port.clearedBy))+U"が最後の守備隊を退け、"+EpisodeSpeakerName(captor)+
+                    U"がその隙に旗を立てた。本隊もこの合図を採り入れ、次の烽火は二指揮でつながる。";
+            }
+            else facts+=std::u32string(EpisodeSpeakerName(captor))+U"が指揮所に入り、河港の旗が替わった。";
         }
         if(mask)
         {
@@ -41,11 +55,13 @@ namespace frontline
         result.lines.push_back({-1,facts,U"主人公は、旗の印と武将たちの駒を地図に残す。"});
         int lead=captor;
         if(lead<0) for(int id=0;id<3;++id) if((mask&(1<<id)) && living(id)) { lead=id;break; }
-        int partner=-1;
-        for(int id=0;id<3;++id) if(id!=lead && (mask&(1<<id)) && living(id)) { partner=id;break; }
+        int partner=handoff && living(r.port.clearedBy) ? r.port.clearedBy:-1;
+        for(int id=0;id<3 && partner<0;++id) if(id!=lead && (mask&(1<<id)) && living(id)) { partner=id;break; }
         if(captor>=0 && partner<0) for(int id=0;id<3;++id) if(id!=lead && living(id)) { partner=id;break; }
-        if(lead>=0) result.lines.push_back(ContributionAftermathVoice(lead,partner,captor>=0 ? 0:1,painful));
-        if(partner>=0) result.lines.push_back(ContributionAftermathVoice(partner,lead,mask&(1<<partner) ? 2:3,painful));
+        if(lead>=0) result.lines.push_back(handoff && !painful ? PortAssaultVoice(lead,r.port.clearedBy,true):
+            ContributionAftermathVoice(lead,partner,captor>=0 ? 0:1,painful));
+        if(partner>=0) result.lines.push_back(handoff && !painful && partner==r.port.clearedBy ? PortAssaultVoice(partner,lead,false):
+            ContributionAftermathVoice(partner,lead,mask&(1<<partner) ? 2:3,painful));
         const auto hero=painful ? U"働いてくれた名前も、残した代償も忘れない。次の軍議では、俺の命令から見直す。":
             captor>=0 ? U"最後に旗を立てるところまでが、俺たちの策だ。皆、次の地図も一緒に開いてくれ！":
             U"その一手は、お前たちがつないだ。次も俺が合図を出す。誰か一人に、全部背負わせない。";

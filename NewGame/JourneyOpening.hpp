@@ -45,5 +45,16 @@ namespace frontline
         bool preparationTracked=false;
         int openingAmbushes=0,resupplyTurn=0,resupplyMorale=0,postSupplySteps=0;
         JourneyYangrenReview yangren;
+        struct PortAssault
+        {
+            std::array<int,2> crossedBy{-1,-1};
+            int clearedBy=-1,clearedOn=0,capturedBy=-1;
+            bool JointCapture() const { return clearedBy>=0 && capturedBy>=0 && clearedBy!=capturedBy; }
+            bool operator==(const PortAssault& other) const
+            {
+                return crossedBy==other.crossedBy && clearedBy==other.clearedBy &&
+                    clearedOn==other.clearedOn && capturedBy==other.capturedBy;
+            }
+        } port;
     };
 }

@@ -110,6 +110,17 @@ void ATacticalField::RenderEffects()
     }
     const bool bWeaponSwing=gunyuweapon::IsAttack(State->Units,Beat,Progress);
     const auto& H = State->HUD;
+    if(!Beat && H.bPortOpening)
+    {
+        const auto Center=SurfaceLocation(H.GoalTile)+FVector(0,0,16);
+        Ring(Center,116,5,FLinearColor(.33f,1.f,.78f,.85f),true);
+    }
+    if(Beat && Beat->PortCaptor>=0 && Progress>=.84f && State->Units.IsValidIndex(Beat->PortCaptor))
+    {
+        const auto Center=State->Units[Beat->PortCaptor].Position+FVector(0,0,16);
+        Ring(Center,118,7,FLinearColor(1.f,.78f,.26f,.94f),true);
+        Ring(Center,128+28*FMath::SmoothStep(.84f,1.f,Progress),4,FLinearColor(1.f,.78f,.26f,.43f),true);
+    }
     if (!Beat && H.bBattle && H.bThreatOverlay)
     {
         // Estimate only: dashed hexes and one-cell route. Do not draw final

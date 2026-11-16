@@ -298,7 +298,7 @@ namespace frontline
 		const bool result = chain.Move(world, intelligence[0], army, tile, message);
 		if (result)
 		{
-            RecordReliefMove(army,from,tile);
+            RecordBattleMove(army,from,tile);
 			RefreshIntelligence();
 			Evaluate();
 		}
@@ -335,9 +335,11 @@ namespace frontline
 			return {};
         std::array<int,3> before{};for(int i=0;i<3;++i) before[i]=world.armies[i].tile;
         const auto yangrenBefore=ReadYangrenEnemies();
+        const int portBefore=PortBlockers();
 		lastChain = chain.Execute(world, intelligence[0], orders, campaignFlow);
         if(battleReview.yangren.tracked) RecordYangrenChain(yangrenBefore,lastChain);
-        for(int i=0;i<3;++i) if(world.armies[i].tile!=before[i]) RecordReliefMove(i,before[i],world.armies[i].tile);
+        if(IsPortAssault()) RecordPortChain(portBefore,lastChain);
+        for(int i=0;i<3;++i) if(world.armies[i].tile!=before[i]) RecordBattleMove(i,before[i],world.armies[i].tile);
         RecordCooperation(lastChain);
         if(battleReview.preparationTracked)
         {
@@ -382,6 +384,11 @@ namespace frontline
             world.cities[0].food+=WesternDepotFood;
 		casualties = deployed + convoyEscort - survivors;
         FinalizeRelief();
+        if(IsPortAssault() && !success)
+        {
+            battleReview.port.clearedBy=-1;
+            battleReview.port.clearedOn=0;
+        }
         CompleteBattleReview(success);
 		history[mission] = {true, success, withdrawn, success && IsRescue(), survivors, casualties};
         history[mission].review=battleReview;history[mission].route=convoyRoute;history[mission].assignments=assignments;history[mission].difficulty=difficulty;history[mission].campaignFlow=campaignFlow;
@@ -429,6 +436,7 @@ namespace frontline
 		else
 		{
 			++mission;turn=1;
+            battleReview.port={};
             legacyBattlefield=false;
             if(campaignFlow) world.day+=beginYangren ? 365:mission==1 ? 7:21; // Montage without income or replenishment.
             convoyRoute=JourneyConvoyRoute::Road;assignments={};retryRelief.reset();retryDefense.reset();

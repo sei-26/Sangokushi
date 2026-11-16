@@ -8,6 +8,9 @@ FString ATacticalField::ReadPlaybackReport() const
     const auto C=ReadTacticCinema();
     if(C.bVisible && !C.bResolved) return C.Tactic+TEXT(" / 発動準備：")+C.Voice;
     const float Progress=BeatProgress();
+    if(B->PortCaptor>=0 && B->After.IsValidIndex(B->PortCaptor))
+        return Progress>=.84f ? B->After[B->PortCaptor].Name+TEXT("隊が指揮所に旗を立てた。"):
+            FString(TEXT("指揮所での部隊の動きを確認中。"));
     if(B->Kind==EBattleCue::Enemy)
     {
         if(B->MissionBefore.Convoy>=0 && Progress<.78f) return TEXT("交戦と護送車の動きを確認中。");

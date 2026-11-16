@@ -1,6 +1,17 @@
 ﻿#include "JourneyEpisode.hpp"
 namespace frontline
 {
+    JourneyEpisodeLine PortAssaultVoice(int actor,int other,bool planted)
+    {
+        const char32_t* flag[]={U"が道を開けた時、向こうから声がしたんだ。『今だ』って。あとは迷わず旗まで走ったよ。",
+            U"が守備隊を引き離した、その一瞬だ。迷わず入れと、軍師の声が聞こえた。",
+            U"が敵をどかしたとこに俺が飛び込んだ！ 旗を持って走るのも、案外悪くねえな。"};
+        const char32_t* cleared[]={U"の旗が見えたよ。敵を追いたくなる所で、君が次の隊を送り出した。その合図を覚えておこう。",
+            U"が入るところまで見届けた。敵を崩す手は、その後の一手で生きるものだな。",
+            U"の旗が上がったの、俺も見たぜ！ 軍師、次は俺が旗を持って走ってもいいんだろ？"};
+        return {actor,std::u32string(EpisodeSpeakerName(other))+(planted ? flag[actor]:cleared[actor]),
+            planted ? U"武将が、指揮所の旗を見上げた。":U"遠くの旗へ目を向け、ようやく武将の肩から力が抜けた。",1<<actor};
+    }
     // Capture, chain speaker, recorded chain partner, or a witness with no chain credit.
     JourneyEpisodeLine ContributionAftermathVoice(int actor,int other,int kind,bool painful)
     {

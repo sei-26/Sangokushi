@@ -103,6 +103,8 @@ namespace frontline
 		bool IsRescue() const { return mission == 0 && promise == JourneyPromise::EscortRefugees; }
 		bool HasConvoy() const { return IsRescue() || Definition().kind == JourneyObjective::Escort; }
         bool HasSunJian() const { return mission==YangrenMission; }
+        bool IsPortAssault() const { return campaignFlow && mission==1; }
+        static constexpr int PortOpeningCycles=2;
         bool SunJianAtRally() const;
         bool HasDepotInterception() const
         { return luoyangPlan==LuoyangPlan::WesternDepot && (stage==JourneyStage::Preparation || depotInterception); }
@@ -111,7 +113,12 @@ namespace frontline
         int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles+
             (campaignFlow && mission==1 && history[0].rescued ? 2:0); }
         int RequiredHoldTurns() const
-        { const int mask=history[1].review.coordinatedOfficers;return campaignFlow && mission==2 && history[1].won && (mask&(mask-1)) ? 2:Definition().requiredProgress; }
+        {
+            const auto& port=history[1];
+            const int mask=port.review.coordinatedOfficers;
+            return campaignFlow && mission==2 && port.won && ((mask&(mask-1)) || port.review.port.JointCapture())
+                ? 2:Definition().requiredProgress;
+        }
         std::u32string ObjectiveBrief() const;
 		bool Prepare(int choice, int policy);
 		bool Move(int army, int tile);
@@ -179,6 +186,12 @@ namespace frontline
         void RecordCooperation(const ChainResult&);
         void RecordAssignment(int officer);
         void RecordReliefMove(int army,int from,int to);
+        void RecordBattleMove(int army,int from,int to);
+        int PortBlockers() const;
+        void ExpirePortOpening();
+        void RecordPortClearance(int officer,int enemy,int before,int after);
+        void RecordPortChain(int blockers,const ChainResult&);
+        void RecordPortCapture();
         void CheckReliefOutcome();
         void FinalizeRelief();
 		void Report(const std::u32string& text);

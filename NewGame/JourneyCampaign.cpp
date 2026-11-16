@@ -137,6 +137,8 @@ namespace frontline
             b.change=finished ? U"河港を奪取して敵の連絡路を断った。義勇軍は官軍の共同作戦に加わり、主人公は決戦の一方面を任される。":
                 U"初陣の働きが認められ、今度は攻める一戦を任される。橋を越え、敵の指揮所へ。";
             b.next=U"次の局面：戦役は数週間先の決戦へ。二つの烽火を守り、本隊の包囲を完成させる。";
+            if(finished && j.history[1].review.port.JointCapture())
+                b.next+=U" 河港でつないだ合図により、守る時間は二指揮に短縮される。";
             b.standing=finished ? U"共同作戦の一方面を預かる軍師":U"河港急襲の作戦責任者";
         }
         else
@@ -157,7 +159,9 @@ namespace frontline
         if(j.mission==1 && j.history[0].rescued)
             b.change+=U" 季安たちの先導が急襲を支え、河港戦の期限に２指揮の余裕が生まれた。";
         if(j.mission==2 && j.RequiredHoldTurns()==2)
-            b.change+=U" 前戦での二隊連鎖をもとに本隊との合図が整い、包囲完成までの保持が３指揮から２指揮へ短縮された。";
+            b.change+=j.history[1].review.port.JointCapture() ?
+                U" 河港で道を開く隊と旗を立てる隊をつないだ合図が本隊に伝わり、守る時間は３指揮から２指揮へ短縮された。":
+                U" 前戦での二隊連鎖をもとに本隊との合図が整い、包囲完成までの保持が３指揮から２指揮へ短縮された。";
         if(j.stage==JourneyStage::Debrief && !j.won)
         { b.change=U"任務はまだ達成していない。戦役の先へ進まず、直前の軍議から立て直せる。";b.next=U"次の一手：配置と準備を見直し、同じ戦役へ再挑戦。"; }
         return b;

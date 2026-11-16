@@ -61,7 +61,7 @@ namespace frontline
         for (int army=0;army<3;++army)
             if (next[army]!=from[army])
                 if(journey.chain.Move(journey.world,journey.intelligence[0],army,next[army],journey.message))
-                    journey.RecordReliefMove(army,from[army],next[army]);
+                    journey.RecordBattleMove(army,from[army],next[army]);
         for (auto& plan : enemyPlans) plan.next=next[plan.army];
         journey.ApplyEnemyPlans(enemyPlans);
         for (int army=0;army<3 && journey.stage==JourneyStage::Battle;++army)

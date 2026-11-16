@@ -10,7 +10,7 @@
 void ATacticalController::LayoutMapLabels()
 {
     using namespace gunyumaplabel;
-    LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(Hidden,6);GoalLabelPositions.Init(Hidden,5);MapLabelLeaders.Reset();
+    LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(Hidden,6);GoalLabelPositions.Init(Hidden,7);MapLabelLeaders.Reset();
     if(!Field || Field->Presentation().Journey.bVisible) return;
     const auto& Units=Field->VisualUnits();const FVector2D Size(132,86);
     const bool WideShot=bTacticCinema && Field->ReadTacticCinema().bVisible;
@@ -55,7 +55,8 @@ void ATacticalController::LayoutMapLabels()
     const auto& H=Field->Presentation();
     const int DutyTile=SelectedDutyTile();
     const int TrafficTile=DutyTile>=0 && H.DutyProgress.bTraffic ? H.DutyProgress.InspectTile:-1;
-    const int Tiles[]={H.GoalTile,H.SecondGoalTile,DutyTile,TrafficTile,ShowOpeningOrder() ? H.OpeningOrder.Tile:-1};
+    const int Tiles[]={H.GoalTile,H.SecondGoalTile,DutyTile,TrafficTile,ShowOpeningOrder() ? H.OpeningOrder.Tile:-1,
+        H.PortCrossings[0].Tile,H.PortCrossings[1].Tile};
     for(int Index=0;Index<UE_ARRAY_COUNT(Tiles) && H.bBattle;++Index)
     {
         const int Tile=Tiles[Index];
