@@ -9,6 +9,7 @@
 #include "JourneySupportActions.hpp"
 #include "TacticalMissionResponse.h"
 #include "TacticalMissionSignals.h"
+#include "TacticalDecisionMoment.h"
 #include <memory>
 
 struct FRetryDefenseAid
@@ -26,6 +27,7 @@ struct FJourneyState
     frontline::JourneyBattleWatch BattleWatch;
     std::array<frontline::JourneyOrderRead,3> OrderReads{};
     bool bWatchPending=false,bWatchPauseAfterPlayback=false;
+    gunyudecision::FMoment DecisionPending,DecisionPaused;
     bool bAutoBattle=false,bAutoCyclePending=false; // Explicit delegation; saves resume in manual control.
     bool bRealtimeInBattle=false,bRealtimeStepping=false,bRealtimeChainRequested=false,bRealtimePauseAfterPlayback=false;
     TArray<TPair<int,int>> RealtimeRoutes;

@@ -53,12 +53,16 @@ bool PreparePortHandoffPreview(ATacticalField* Field,int Stage)
     const auto* Beat=Field->CurrentBeat();
     if(!Beat || Beat->PortCaptor!=0 || Field->CueReason().Contains(TEXT("旗を立てた"))) return false;
     Field->AdvancePresentation(Beat->Duration*.9f);
-    if(!Field->IsPlaying() || !Field->CueReason().Contains(TEXT("劉備隊が指揮所に旗を立てた"))) return false;
+    if(!Field->IsPlaying() || !Field->CueReason().Contains(TEXT("劉備隊が指揮所に旗を立てた")) ||
+        Field->Presentation().bPortOpening || !Field->Presentation().MissionStep.Contains(TEXT("旗が立った"))) return false;
     if(Stage==1) return true;
     Field->AdvancePresentation(10);
     if(!Field->Presentation().Journey.CampaignChange.Contains(TEXT("道を開いた：張飛")) ||
         !Field->Presentation().Journey.CampaignChange.Contains(TEXT("河港に旗を立てた：劉備"))) return false;
+    const auto Carryover=Field->Presentation().Journey.CampaignCarryover;
+    if(!Carryover.Contains(TEXT("3指揮から2指揮"))) return false;
     if(Stage==2) return true;
     Field->Issue(ETacticalCommand::Continue);
-    return Field->Presentation().Mission==2 && Field->Presentation().Journey.PlanObjective.Contains(TEXT("２指揮"));
+    return Field->Presentation().Mission==2 && Field->Presentation().Journey.PlanObjective.Contains(TEXT("２指揮")) &&
+        Field->Presentation().Journey.CampaignCarryover==Carryover;
 }

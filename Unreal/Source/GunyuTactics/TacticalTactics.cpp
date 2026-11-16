@@ -64,6 +64,8 @@ void ATacticalField::DispatchQueuedChain()
     auto& J=State->Journey;
     const auto Before=ObserveUnits();
     const auto WatchBefore=bRealtimeCommand ? JourneyBattleWatch::Capture(J,State->Realtime) : JourneyWatchSnapshot{};
+    const bool WatchDecision=State->bAutoBattle && bPauseOnBattleAlert;
+    const auto DecisionBefore=WatchDecision ? gunyudecision::Capture(J):gunyudecision::FSnapshot{};
     const int Requested=static_cast<int>(State->Orders.size());
         const auto Result = J.Execute(State->Orders);
         State->Report.Reset();
@@ -82,5 +84,10 @@ void ATacticalField::DispatchQueuedChain()
     {
         if (IsPlaying()) State->bRealtimePauseAfterPlayback=true;
         else State->Realtime.paused=true;
+    }
+    if(WatchDecision)
+    {
+        State->DecisionPending=gunyudecision::Compare(DecisionBefore,gunyudecision::Capture(J));
+        if(!IsPlaying()) PublishDecisionMoment();
     }
 }

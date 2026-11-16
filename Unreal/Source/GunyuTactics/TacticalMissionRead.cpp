@@ -127,4 +127,18 @@ void ATacticalField::BuildMissionPresentation()
     if(J.preparation==0)
         H.MissionDetail+=J.chain.concealed[1] ? TEXT("\n軍議の先遣伏兵：関羽が潜伏中。動けば潜伏が解ける。"):TEXT("\n軍議の先遣伏兵：関羽は今は潜伏していない。現在の位置から打てる策を比べよう。");
     else H.MissionDetail+=J.CanResupply() ? TEXT("\n軍議の予備糧：一度の補給を使える。詳細の采配から配る時を選ぼう。"):TEXT("\n軍議の予備糧：今は補給を使えない。使用済みか残兵を確認しよう。");
+    if(State->DecisionPaused.Kind!=gunyudecision::EKind::None)
+    {
+        H.bDecisionPaused=true;
+        H.MissionFocusTile=State->DecisionPaused.Tile;
+        H.MissionStep=State->DecisionPaused.Message;
+        if(State->DecisionPaused.Kind==gunyudecision::EKind::GuangzongSplit)
+            H.MissionStep+=FString::Printf(TEXT(" ／ あと%d指揮"),J.GuangzongCommandsLeft());
+        if(State->DecisionPaused.Kind==gunyudecision::EKind::PortOpening)
+        {
+            const int Left=StrategistJourney::PortOpeningCycles-(J.turn-J.battleReview.port.clearedOn);
+            H.MissionStep+=Left>0 ? FString::Printf(TEXT(" ／ あと%d指揮"),Left):FString(TEXT(" ／ この指揮まで"));
+        }
+        H.MissionDetail=H.MissionStep+TEXT("\n指揮を引き取るか、Spaceで武将に任せたまま再開できます。\n")+H.MissionDetail;
+    }
 }

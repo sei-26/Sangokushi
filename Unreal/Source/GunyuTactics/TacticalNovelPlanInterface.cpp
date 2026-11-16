@@ -45,6 +45,9 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
     Body->AddSlot().AutoHeight().Padding(0,0,0,16)[Companions];
     Body->AddSlot().AutoHeight()[Label([] { return TEXT("この一戦で、何を成す？"); },20,Gold)];
     Body->AddSlot().AutoHeight().Padding(0,7)[Label([this] { return Field->Presentation().Journey.PlanObjective; },20)];
+    Body->AddSlot().AutoHeight()[SNew(SBox).Visibility_Lambda([this]
+        { return Field->Presentation().Journey.CampaignCarryover.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+        [Label([this] { return Field->Presentation().Journey.CampaignCarryover; },15,Gold)]];
     Body->AddSlot().AutoHeight().Padding(0,8)[Button([this] { return bNovelDetails ? TEXT("細かな数値を閉じる"):TEXT("詳しく比較する：兵力・士気・物資"); },[this] { bNovelDetails=!bNovelDetails; })];
     Body->AddSlot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this] { return Field->Presentation().Journey.PlanRoute; },15)]];
     Body->AddSlot().AutoHeight().Padding(0,6,0,10)[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.PledgeText.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
@@ -57,7 +60,7 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
              .OnClicked_Lambda([this,Index] { SelectNovelPlan(Index);return FReply::Handled(); })
              [SNew(SVerticalBox)
               + SVerticalBox::Slot().AutoHeight()[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? FString::Printf(TEXT("%d　%s %s"),Index+1,P[Index].bSelected ? TEXT("●"):TEXT("○"),*P[Index].Title):FString(); },24,Gold)]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return !P.IsValidIndex(Index) ? FString():bNovelDetails || !Field->Presentation().Journey.bCampaignFlow ? P[Index].Description:Index==0 ? FString(TEXT("開幕の一手を仕込む。関羽を先遣し、森林から伏兵を狙おう。")):FString(TEXT("戦闘中に一度、兵糧を配って士気を立て直せる。使う時は自分で決める。")); },16)]
+              + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Description:FString(); },16)]
               + SVerticalBox::Slot().AutoHeight().Padding(0,4)[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Tradeoff:FString(); },13,Gold)]]
               + SVerticalBox::Slot().AutoHeight().Padding(0,5)[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].MoraleText:FString(); },12,Gold)]]
               + SVerticalBox::Slot().AutoHeight().Padding(0,6)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return !P.IsValidIndex(Index) ? FString():bNovelDetails ? P[Index].Cost:FString::Printf(TEXT("消費：兵糧 %d　軍資金 %d"),P[Index].Food,P[Index].Gold); },15,Gold)]

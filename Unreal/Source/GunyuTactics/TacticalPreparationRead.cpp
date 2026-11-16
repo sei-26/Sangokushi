@@ -38,13 +38,16 @@ void ATacticalField::BuildPreparationPresentation()
         if(J.campaignFlow)
         {
             const int Start=J.PreparationPositions(Choice)[1];
+            const bool InForest=J.PlanningTerrain(Start)==Terrain::Forest;
             Plan.Title=Choice==0 ? TEXT("先遣伏兵"):TEXT("陣中補給");
-            Plan.Description=Choice==0 ? FString::Printf(TEXT("初手を仕込む。関羽を森林(%d,%d)で伏兵準備。初手の移動・戦法を残せる。"),Start%frontline::Width,Start/frontline::Width):
+            Plan.Description=Choice==0 ? (InForest ? FString::Printf(TEXT("関羽を森林(%d,%d)へ先遣し、開戦前に伏兵を準備する。"),Start%frontline::Width,Start/frontline::Width):
+                FString(TEXT("現在の出陣地点は森の外。伏兵を仕込むには、作戦図で陸路2歩以内の森林を指定する。"))):
                 TEXT("戦法の後に立て直す。戦闘中に１回、主力へ糧1,800を分配し、士気＋20。使う時は自分で決める。");
             Plan.Tradeoff=Choice==0 ? TEXT("代償：追加の予備糧なし。動けば隠蔽解除、敵の接近・斥候で露見。Mで２歩以内の伏兵地点を指定可。"):
                 TEXT("代償：先遣・初期伏兵なし。行動権や固有戦法の回数は戻らない。未使用の糧は帰還時に回収。");
             if(Choice==0 && J.assignments[1].duty==JourneyDuty::Ambush && Start!=J.assignments[1].tile)
-                Plan.Tradeoff=TEXT("指定の森林は先遣範囲外／他隊の出陣地点と重なる。関羽は通常位置の森で準備し、戦場で移動。予備糧はなし。");
+                Plan.Tradeoff=InForest ? TEXT("指定地点へ先遣できない。関羽は出陣位置の森で構える。予備糧はなし。"):
+                    TEXT("指定地点へ先遣できない。この配置では開戦時の伏兵なし。予備糧もなし。");
         }
         Plan.Food=Cost.TotalFood();Plan.Gold=Cost.gold;Plan.MinimumTroops=Cost.MinimumTroops();
         Plan.MissingFood=FMath::Max(0,Plan.Food-Camp.food);Plan.MissingGold=FMath::Max(0,Plan.Gold-Camp.gold);
@@ -76,7 +79,7 @@ void ATacticalField::BuildPreparationPresentation()
         J.mission==YellowTurbanMission ? TEXT("前陣に迫ると黄巾の南翼が動く。留守を突く隊と、民の街道へ回せる隊を考えよう。"):
         J.Definition().kind==JourneyObjective::CaptureCamp ? TEXT("北橋か南橋を渡り、指揮所を取る。勝利後は本隊との共同作戦へ進む。二隊連鎖も成せば、決戦の合図が早くなる。"):
         J.mission==1 ? TEXT("積荷は1,200以上残して届ける。追撃より先に、糧車が通る場所を考えてほしい。"):
-        J.mission==2 ? TEXT("二つの烽火を、同時に三指揮守る。片方に全員を集めず、誰を信じて残すか決めよう。"):
+        J.mission==2 ? FString::Printf(TEXT("二つの烽火を、同時に%d指揮守る。片方に全員を集めず、誰を残すか決めよう。"),J.RequiredHoldTurns()):
         TEXT("先鋒を崩すか、安全な出口を確保して道を開く。敵を倒すことと、役目を果たすことを一緒に考えよう。");
     FString Guan=!Selected.bAffordable ? TEXT("まず兵と糧を確かめよ。不足のある案で出ることはできぬ。別の案と、現在の蓄えを比べるのだ。"):
         J.CurrentPledge()==JourneyPledge::Preserve ? TEXT("九割を連れ帰ると言ったな。士気も、退く場所も要る。高い士気を選ぶ代わりに何を使うか、そこまで見て決めよ。"):

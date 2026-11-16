@@ -114,13 +114,13 @@ namespace frontline
         bool DepotGuardProtects(int columnTile,int guardTile,int guardTroops,bool disordered) const;
         int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles+
             (campaignFlow && mission==1 && history[0].rescued ? 2:0); }
-        int RequiredHoldTurns() const
+        bool HasPortSignal() const
         {
             const auto& port=history[1];
             const int mask=port.review.coordinatedOfficers;
-            return campaignFlow && mission==2 && port.won && ((mask&(mask-1)) || port.review.port.JointCapture())
-                ? 2:Definition().requiredProgress;
+            return campaignFlow && port.won && ((mask&(mask-1)) || port.review.port.JointCapture());
         }
+        int RequiredHoldTurns() const { return mission==2 && HasPortSignal() ? 2:Definition().requiredProgress; }
         std::u32string ObjectiveBrief() const;
 		bool Prepare(int choice, int policy);
 		bool Move(int army, int tile);

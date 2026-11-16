@@ -21,7 +21,8 @@ void ATacticalController::BuildBattleHeader(TSharedRef<SCanvas> Canvas)
     InputPanels.Add(RetreatBox);Canvas->AddSlot().Position(FVector2D(1290,32)).Size(FVector2D(282,40))[RetreatBox];
     auto Goal=SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().bBattle ? EVisibility::Visible:EVisibility::Collapsed; })
       .ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().MissionDetail); })
-      [Button([] { return TEXT("目標へ / U"); },[this] { FocusMissionObjective(); },[this] { return !Field->IsPlaying() && Field->Presentation().MissionFocusTile>=0; },true)];
+      [Button([this] { return Field->Presentation().bDecisionPaused ? TEXT("変化の地点へ / U"):TEXT("目標へ / U"); },
+        [this] { FocusMissionObjective(); },[this] { return !Field->IsPlaying() && Field->Presentation().MissionFocusTile>=0; },true)];
     InputPanels.Add(Goal);Canvas->AddSlot().Position(FVector2D(1290,76)).Size(FVector2D(282,26))[Goal];
     AddBattlePanel(Canvas,FVector2D(1268,820),FVector2D(316,64),Button([this] { return Field->Presentation().NextLabel; },[this]
     {

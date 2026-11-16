@@ -80,6 +80,7 @@ void ATacticalField::IssueRealtime(ETacticalCommand Command)
         { const double Speed=RT.speed;RT.Reset();RT.speed=Speed; }
         State->ChainSignal.Cancel();State->SignalRead={};
         State->BattleWatch.Reset();State->bWatchPending=State->bWatchPauseAfterPlayback=false;
+        State->DecisionPending={};State->DecisionPaused={};
         State->bRealtimeChainRequested=false;State->Input=ETacticalInput::Select;
         State->Report=bRealtimeCommand ? TEXT("戦術ポーズ付きの同時進行。停止中に行軍・攻撃・固守を指示し、Spaceで作戦開始。")
             : TEXT("手動指揮に戻した。継続行軍の指示は解除。戦法の予約と戦況は引き継ぐ。");
@@ -87,13 +88,13 @@ void ATacticalField::IssueRealtime(ETacticalCommand Command)
     case ETacticalCommand::RealtimePause:
         if (State->bRealtimeStepping) { State->bRealtimeStepping=false;RT.paused=true; }
         else RT.paused=!RT.paused;
-        if(!RT.paused) State->OpeningOfficer=-1;
+        if(!RT.paused) { State->OpeningOfficer=-1;State->DecisionPaused={}; }
         break;
     case ETacticalCommand::RealtimeSpeed:
         RT.speed=RT.speed<.75 ? 1. : RT.speed<1.5 ? 2. : RT.speed<2.5 ? 3. : .5;break;
     case ETacticalCommand::RealtimeAlertPause:
         bPauseOnBattleAlert=!bPauseOnBattleAlert;
-        State->Report=bPauseOnBattleAlert ? TEXT("危険時停止をON。新たな捕捉・損耗・護送車の被害・停滞を報告し、演出後に停止する。") :
+        State->Report=bPauseOnBattleAlert ? TEXT("危険時停止をON。損耗や停滞、軍師が判断したい戦況の変化で停止する。") :
             TEXT("危険時停止をOFF。報告は記録し、作戦を続ける。合図の発動後・失効時の停止は維持する。");break;
     case ETacticalCommand::RealtimeStep:
         RunRealtimeCycle(true);return;
@@ -129,6 +130,8 @@ void ATacticalField::RunRealtimeCycle(bool bSingleStep)
     const auto Before=ObserveUnits();
     const auto MissionBefore=CaptureMissionProgress();
     const auto WatchBefore=JourneyBattleWatch::Capture(State->Journey,State->Realtime);
+    const bool WatchDecision=State->bAutoBattle && bPauseOnBattleAlert;
+    const auto DecisionBefore=WatchDecision ? gunyudecision::Capture(State->Journey):gunyudecision::FSnapshot{};
     if (!State->Realtime.Resolve(State->Journey,State->ChainSignal.ReservedAttacks())) return;
     State->Realtime.Consume(bSingleStep);
     State->bRealtimeStepping=bSingleStep;
@@ -143,8 +146,10 @@ void ATacticalField::RunRealtimeCycle(bool bSingleStep)
     State->Report=FString::Printf(TEXT("味方の行軍 %d / 進路待ち %d。交戦・補給・護送を更新。 "),Moved,Waiting)+JourneyText(State->Journey.message);
     QueueAction(EBattleCue::Enemy,-1,-1,Before,MissionBefore);
     RecordBattleWatch(WatchBefore);
+    if(WatchDecision)
+        State->DecisionPending=gunyudecision::Compare(DecisionBefore,gunyudecision::Capture(State->Journey));
     if (IsPlaying()) State->Beats[0].Title=TEXT("全軍進行 / 移動と交戦");
-    else State->bRealtimeStepping=false;
+    else { State->bRealtimeStepping=false;PublishDecisionMoment(); }
     Refresh();
 }
 void ATacticalField::AdvanceRealtime(float Delta)
@@ -185,9 +190,10 @@ void ATacticalField::UpdateRealtimePresentation()
     else H.ChainSignalLabel=FString::Printf(TEXT("%d/%d手成立 / %d手目を待つ\n未成立の条件は右の予約欄。"),State->SignalRead.completed,State->SignalRead.total,State->SignalRead.completed+1);
     H.ClockProgress=FMath::Clamp(static_cast<float>(RT.elapsed/JourneyRealtime::Period),0.f,1.f);
     H.SpeedLabel=FString::Printf(TEXT("%.1f×"),RT.speed);
-    H.ClockLabel=State->bRealtimeStepping ? TEXT("戦場が動いている") :
+    H.ClockLabel=H.bDecisionPaused ? TEXT("軍師の采配待ち") :
+        State->bRealtimeStepping ? TEXT("戦場が動いている") :
         H.bRealtimePaused ? TEXT("ひと休み / 指示を出せる") :
-        FString::Printf(TEXT("進行中 / 次 %.1f秒"),FMath::Max(0.,JourneyRealtime::Period-RT.elapsed));
+        FString::Printf(TEXT("進行中 / 次 %.1f秒"),FMath::Max(0.,JourneyRealtime::Period-RT.elapsed)/RT.speed);
     if (!bRealtimeCommand) return;
     H.Selected=State->Selected;
     for (int Id=0;Id<H.Officers.Num();++Id) H.Officers[Id].bSelected=Id==State->Selected;
@@ -209,5 +215,6 @@ void ATacticalField::UpdateRealtimePresentation()
     }
     if (State->Input==ETacticalInput::Move) H.Hint=TEXT("停止中。行軍の目的地をクリック。敵を右クリックで追撃。");
     else if (IsPlaying()) H.Hint=TEXT("行軍先・固守は次の更新から。経由地・連鎖の編集は演出完了後。");
-    if (H.bBattle) H.NextLabel=H.bRealtimePaused ? TEXT("戦いを進める / Space") : TEXT("一時停止 / Space");
+    if (H.bBattle) H.NextLabel=H.bDecisionPaused ? TEXT("武将に任せて再開 / Space"):
+        H.bRealtimePaused ? TEXT("戦いを進める / Space"):TEXT("一時停止 / Space");
 }

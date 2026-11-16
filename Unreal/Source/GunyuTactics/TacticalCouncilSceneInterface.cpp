@@ -15,9 +15,13 @@ void ATacticalController::BuildCouncilScene(TSharedRef<SCanvas> Canvas)
       [SNew(SHorizontalBox)
        + SHorizontalBox::Slot().FillWidth(1)[SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.PlanObjective; },14,Gold)]
-          + SVerticalBox::Slot().AutoHeight().Padding(0,5)[Label([this] { return CouncilExchange.Subject; },25)]]
+          + SVerticalBox::Slot().AutoHeight().Padding(0,3)[Label([this] { return CouncilExchange.Subject; },25)]
+          + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this]
+             { return Field->Presentation().Journey.CampaignCarryover.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+             [Label([this] { return Field->Presentation().Journey.CampaignCarryover; },13,Gold)]]]
        + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Button([] { return TEXT("配置・物資を詳しく"); },[this] { bCouncilLedger=true; })]];
-    Canvas->AddSlot().Position(FVector2D(40,24)).Size(FVector2D(1520,94))[Header];InputPanels.Add(Header);
+    Canvas->AddSlot().Position(FVector2D(40,24)).Size_Lambda([this]
+        { return FVector2D(1520,Field->Presentation().Journey.CampaignCarryover.IsEmpty() ? 94:108); })[Header];InputPanels.Add(Header);
     for(int I=0;I<3;++I)
     {
         auto Voice=SNew(SBox).Visibility_Lambda(Visible)

@@ -16,13 +16,8 @@ void ATacticalField::BuildPortAssaultPresentation()
         H.PortCrossings[Bridge].Caption=FString(Bridge==0 ? TEXT("北橋を突破"):TEXT("南橋を突破"))+TEXT(" ／ ")+Name(Officer);
     }
 
-    // Clearing is a useful opening only while the whole approach can still be seen.
-    if(Port.clearedBy<0 || !J.intelligence[0].visible[J.goal]) return;
-    for(int Tile:J.world.MapNeighbors(J.goal))
-        if(StrategistJourney::OnMap(Tile) && J.world.tiles[Tile].terrain!=Terrain::River &&
-            J.world.tiles[Tile].terrain!=Terrain::Sea && !J.intelligence[0].visible[Tile]) return;
+    if(!gunyudecision::CanSeePortOpening(J)) return;
     const int Remaining=StrategistJourney::PortOpeningCycles-(J.turn-Port.clearedOn);
-    if(Remaining<0) return;
     H.bPortOpening=true;
     H.MissionAdvice=TEXT("別の隊で旗を立てよう");
     const FString Limit=Remaining==0 ? FString(TEXT("この指揮まで")):FString::Printf(TEXT("あと%d指揮"),Remaining);

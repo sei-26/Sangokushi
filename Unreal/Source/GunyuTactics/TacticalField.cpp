@@ -159,6 +159,8 @@ void ATacticalField::PostEditChangeProperty(FPropertyChangedEvent& PropertyChang
 #endif
 void ATacticalField::StartTrial()
 {
+    State->DecisionPending={};State->DecisionPaused={};
+    State->bAutoBattle=State->bAutoCyclePending=false;
     State->MissionResponse={};State->MissionResponseRemaining=0;
     State->SettledMissionSignals={};State->MissionSignalRemaining={};
     State->RetryDefenseAid={};

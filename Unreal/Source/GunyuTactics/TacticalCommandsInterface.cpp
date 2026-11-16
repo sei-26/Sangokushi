@@ -54,6 +54,9 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
        + SVerticalBox::Slot().AutoHeight()[Command(ETacticalCommand::Resupply,[this] { return Field->Presentation().ResupplyLabel; })]
        + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("主力へ糧1,800を分配・士気＋20。行動権は戻らない"); },11,Gold)]];
     auto Simple=SNew(SVerticalBox);
+    Simple->AddSlot().AutoHeight().Padding(0,0,0,8)
+      [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().bDecisionPaused ? EVisibility::Visible:EVisibility::Collapsed; })
+       [Command(ETacticalCommand::AutoBattle,[] { return TEXT("ここから自分で指揮"); })]];
     Simple->AddSlot().AutoHeight().Padding(0,0,0,6)[OpeningOrderCard()];
     Simple->AddSlot().AutoHeight().Padding(0,0,0,4)
       [SNew(SBox).Visibility_Lambda([this] { return ShowOpeningOrder() ? EVisibility::Visible:EVisibility::Collapsed; })
@@ -101,7 +104,8 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
     Simple->AddSlot().AutoHeight().Padding(0,6,0,2)[BuildBattleChoicesInterface()];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,4)[BuildSupportChoicesInterface()];
     Simple->AddSlot().AutoHeight().Padding(0,2,0,6)[SNew(SBox).HeightOverride(38)
-      .ToolTipText_Lambda([this] { return FText::FromString(Field->CanIssue(ETacticalCommand::AutoBattle) ? TEXT("味方3隊の移動・戦法・目標の守備を任せる。損耗と戦果は本当の結果。いつでも指揮へ戻れる。"):TEXT("予約した戦法や合図を実行・解除してから任せよう。") ); })
+      .Visibility_Lambda([this] { return Field->Presentation().bDecisionPaused ? EVisibility::Collapsed:EVisibility::Visible; })
+      .ToolTipText_Lambda([this] { return FText::FromString(Field->CanIssue(ETacticalCommand::AutoBattle) ? TEXT("味方3隊の移動と戦法を任せる。危険時停止がONなら、重要な戦況の変化で止まる。いつでも指揮を引き取れる。"):TEXT("予約した戦法や合図を実行・解除してから任せよう。") ); })
       [Button([this] { return Field->IsAutoBattle() ? TEXT("自分で指揮する"):Field->Presentation().bConvoyMission ? TEXT("護送を任せる"):TEXT("武将たちに任せる"); },[this] { Field->Issue(ETacticalCommand::AutoBattle); },[this] { return Field->CanIssue(ETacticalCommand::AutoBattle); })]];
     Simple->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SBox).HeightOverride(4).Visibility_Lambda([this] { return Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })
       [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this] { return Field->Presentation().ClockProgress; }).FillColorAndOpacity(Gold)]];

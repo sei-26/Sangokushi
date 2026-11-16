@@ -35,6 +35,10 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
         [SNew(STacticalChrome).Visibility_Lambda([this] { return Field->Presentation().Journey.bPreparation ? EVisibility::Visible : EVisibility::Collapsed; })
          .Padding(12).Accent(FLinearColor(.64f,.45f,.16f))
          [Label([this] { return Field->Presentation().Journey.Outcome; },17,Gold)]];
+    Text->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SBox).Visibility_Lambda([this]
+        { return Field->Presentation().Journey.CampaignCarryover.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+        [SNew(STacticalChrome).Padding(12).Accent(FLinearColor(.35f,.65f,.56f))
+          [Label([this] { return Field->Presentation().Journey.CampaignCarryover; },16,Gold)]]];
     auto People = SNew(SHorizontalBox).Visibility_Lambda([this] { const auto& P = Field->Presentation().Journey; return P.bPreparation || P.bDebrief ? EVisibility::Visible : EVisibility::Collapsed; });
     const ETacticalCommand Talks[] = {ETacticalCommand::TalkLiu, ETacticalCommand::TalkGuan, ETacticalCommand::TalkZhang};
     const FString Names[] = {TEXT("劉備と話す"), TEXT("関羽と話す"), TEXT("張飛と話す")};

@@ -86,6 +86,7 @@ void ATacticalField::BuildJourneyPresentation()
     P = {};
     P.bCampaignFlow=J.campaignFlow;
     const auto Beat=CampaignBeat(J);P.CampaignPhase=JourneyText(Beat.phase);P.CampaignChange=JourneyText(Beat.change);P.CampaignNext=JourneyText(Beat.next);P.CampaignStanding=JourneyText(Beat.standing);
+    P.CampaignCarryover=ReadCampaignCarryover();
     P.bStoryDifficulty=J.difficulty==JourneyDifficulty::Story;P.DifficultyName=JourneyText(DifficultyName(J.difficulty));
     const auto Settings=CombatSettings(J.difficulty);
     P.DifficultyDetail=FString::Printf(TEXT("敵の初期兵力%d％ ／ 期限＋%d指揮 ／ 軍議で変更可"),Settings.enemyPercent,Settings.extraCycles);

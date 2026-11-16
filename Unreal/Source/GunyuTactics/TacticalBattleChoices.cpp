@@ -6,7 +6,13 @@ void ATacticalField::BuildBattleChoices()
     auto& H=State->HUD;const auto& J=State->Journey;
     State->bSupportBattleChoices=false;
     if(IsPlaying() || J.stage!=JourneyStage::Battle) return;
-    if(State->bAutoBattle) { H.BattleChoiceReason=TEXT("皆に任せて進軍中。勝負どころで自分の指揮へ戻ろう。");return; }
+    if(State->bAutoBattle)
+    {
+        H.BattleChoiceReason=H.bDecisionPaused ? TEXT("自動指揮は停止中。采配を引き取るか、武将に任せて再開できる。"):
+            RealtimePaused() ? TEXT("自動指揮は停止中。再開すれば武将たちが動く。"):
+            TEXT("武将たちが進軍中。いつでも指揮を引き取れる。");
+        return;
+    }
     if(State->bRealtimeStepping || State->bRealtimeChainRequested)
     { H.BattleChoiceReason=TEXT("命令を実行待ち。完了してから次の一手を選ぼう。");return; }
     if(!State->Orders.empty() || State->ChainSignal.Armed())

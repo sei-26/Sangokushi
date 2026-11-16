@@ -177,6 +177,7 @@ void ATacticalField::FinishPlayback(bool bShowMissionResponse)
     State->bWatchPauseAfterPlayback=false;
     PublishBattleNotices();
     State->bRealtimeStepping=false;
+    PublishDecisionMoment();
     Refresh();
 }
 void ATacticalField::AdvancePresentation(float Delta)
@@ -201,6 +202,15 @@ void ATacticalField::AdvancePresentation(float Delta)
         if (!IsPlaying()) { FinishPlayback(); return; }
         const auto& Beat = *CurrentBeat();
         const float Progress = BeatProgress();
+        if(Beat.PortCaptor>=0 && Progress>=.84f && State->HUD.bPortOpening)
+        {
+            State->HUD.bPortOpening=false;
+            State->HUD.MissionStep=TEXT("河港占領 ｜ 指揮所に旗が立った");
+            State->HUD.MissionAdvice=TEXT("指揮所を確保した");
+            State->HUD.BattleChoiceTarget.Reset();
+            State->HUD.BattleChoiceReason=TEXT("旗が立った。演出の後、戦果を確認しよう。");
+            State->HUD.BattleChoices.Reset();
+        }
         if (!State->bImpactPlayed && Progress >= .48f)
         { PlayCueSound(true); State->bImpactPlayed = true; }
 

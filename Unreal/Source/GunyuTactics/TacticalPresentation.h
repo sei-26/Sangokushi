@@ -129,7 +129,7 @@ struct FJourneyPresentation
     TArray<FPlanningDuty> ExampleDuties;
     TArray<FString> ExampleOrders;
     bool bStoryDifficulty=false,bCampaignFlow=false;
-    FString CampaignPhase,CampaignChange,CampaignNext,CampaignStanding;
+    FString CampaignPhase,CampaignChange,CampaignNext,CampaignStanding,CampaignCarryover;
     FPreparationMap Map;
     TArray<FDialoguePresentation> PlanAdvice;
     bool bNeedsReply=false;
@@ -233,6 +233,7 @@ struct FTacticalPresentation
     TArray<FBeaconDefensePresentation> Defenses;
     FString BattleChoicePrompt;
     int MissionFocusTile=-1;
+    bool bDecisionPaused=false;
     struct FPortCrossing { int Tile=-1;FString Caption; };
     FPortCrossing PortCrossings[2];
     bool bPortOpening=false;

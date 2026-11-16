@@ -134,13 +134,14 @@ void ATacticalController::PlayerTick(float Delta)
     const bool bDecisionCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuDecision"));
     int PortHandoffView=-1;
     const bool bPortHandoffCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("PortHandoffView="),PortHandoffView);
+    const bool bAutoDecisionCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("AutoDecisionPreview"));
     int SupportPreviewMode=0;const bool bSupportActionCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportActionPreview="),SupportPreviewMode);
     int SupportComboMode=0;const bool bSupportComboCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("SupportComboPreview="),SupportComboMode);
     int DefenseMode=0;const bool bDefenseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefensePreview="),DefenseMode);
     int DefenseRetryPayoff=0;const bool bRetryPayoffCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DefenseRetryPayoff="),DefenseRetryPayoff);
     int DutyResponse=0;const bool bDutyResponseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DutyResponse="),DutyResponse);
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
-    if (!bCinemaCapture && !bDecisionCapture && !bPortHandoffCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture && !bDutyResponseCapture)
+    if (!bCinemaCapture && !bDecisionCapture && !bPortHandoffCapture && !bAutoDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture && !bDutyResponseCapture)
     {
         if (Field->bRealtimeCommand && !bCapture && !bSmoke && !FApp::HasFocus() && !Field->RealtimePaused())
             Field->Issue(ETacticalCommand::RealtimePause);
@@ -468,6 +469,15 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=CouncilSceneSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAutoOnly")))
     { const bool Passed=Field->AutoBattleSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bAutoDecisionCapture && Frames==8)
+    {
+        const bool Started=Field->PrepareDecisionPausePreview(true);
+        if(Started) Field->AdvancePresentation(10);
+        const bool Valid=Started && Field->Presentation().bDecisionPaused;
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_AUTO_DECISION_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        FocusMissionObjective();CameraYaw=90;CameraElevation=54;Distance=ViewDistance=2900;
+    }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuAccessibilityOnly")))
     {
         const bool bPassed=AccessibilitySmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return;

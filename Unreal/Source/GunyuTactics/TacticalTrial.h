@@ -168,6 +168,7 @@ public:
     FChainReview ReadChainReview() const;
     bool RealtimeSmokeTest();
     bool AutoBattleSmokeTest();
+    bool PrepareDecisionPausePreview(bool bAlerts);
     bool BattleChoicesSmokeTest();
     bool UseBattleChoice(int Index,int ExpectedVersion);
     bool UseSupportChoice(int Index,int ExpectedVersion);
@@ -284,6 +285,8 @@ private:
     void FinishPlayback(bool bShowMissionResponse=true);
     void PublishMissionSignals();
     FMissionProgress CaptureMissionProgress() const;
+    void PublishDecisionMoment();
+    FString ReadCampaignCarryover() const;
     void AttachMissionCredit(FBattleBeat&);
     void PublishMissionResponse();
     static int RetryDefenseSupporter(const frontline::StrategistJourney& Council);
