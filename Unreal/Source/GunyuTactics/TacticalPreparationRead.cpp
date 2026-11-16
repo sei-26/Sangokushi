@@ -58,8 +58,12 @@ void ATacticalField::BuildPreparationPresentation()
         for(int I=0;I<3;++I) Plan.Morale.Add(J.PreparationMorale(Choice,I));
         Plan.MoraleText=FString::Printf(TEXT("出陣士気　劉備%d / 関羽%d / 張飛%d"),Plan.Morale[0],Plan.Morale[1],Plan.Morale[2]);
         Plan.Cost=FString::Printf(TEXT("出陣 %d%s\n兵糧 %d / 資金 %d"),Deployed,Cost.escort ? TEXT(" ＋護衛600"):TEXT(""),Plan.Food,Plan.Gold);
-        if(J.campaignFlow) Plan.Cost=FString::Printf(TEXT("出陣%d%s ／ 携行糧%d%s\n支払：糧%d・資金%d"),Deployed,Cost.escort ? TEXT("＋護衛600"):TEXT(""),Cost.food-(Choice==1 ? 1800:0)-(Cost.escort ? 900:0),
-            Choice==1 ? TEXT("＋予備1,800"):TEXT(""),Plan.Food,Plan.Gold);
+        if(J.campaignFlow)
+        {
+            Plan.Cost=FString::Printf(TEXT("出陣%d%s ／ 携行糧%d%s\n消費する兵糧 %d"),Deployed,Cost.escort ? TEXT("＋護衛600"):TEXT(""),
+                Cost.food-(Choice==1 ? 1800:0)-(Cost.escort ? 900:0),Choice==1 ? TEXT("＋予備1,800"):TEXT(""),Plan.Food);
+            if(Plan.Gold) Plan.Cost+=FString::Printf(TEXT(" ／ 林道の案内料 %d"),Plan.Gold);
+        }
         Plan.Remaining=FString::Printf(TEXT("残兵 %d / 糧 %d\n残資金 %d"),Camp.troops-Deployed-Cost.escort,Camp.food-Plan.Food,Camp.gold-Plan.Gold);
         if(Cost.cargo) Plan.Description+=TEXT(" 積荷2,000と護衛用の糧900を含む。");
         Plan.bSelected=Choice==State->PreparationChoice;Plan.bAffordable=J.CanPrepare(Choice);
@@ -73,6 +77,8 @@ void ATacticalField::BuildPreparationPresentation()
     P.PlanReadiness=Selected.bAffordable ? TEXT("出陣条件を満たしている。選択中：")+Selected.Title:TEXT("出陣できない：")+Selected.Shortage;
     if(!Selected.bAffordable && P.Plans[1-State->PreparationChoice].bAffordable)
         P.PlanReadiness+=FString::Printf(TEXT("　案%dなら現在の資源で出陣できる。"),2-State->PreparationChoice);
+    if(Selected.MissingGold>0 && J.IsRescue() && J.convoyRoute==JourneyConvoyRoute::SouthernWood)
+        P.PlanReadiness+=TEXT(" ／ 街道に戻せば案内料は不要");
     const TCHAR* Names[]={TEXT("劉備"),TEXT("関羽"),TEXT("張飛")};
     const FString Liu=J.IsRescue() ? TEXT("敵の旗が倒れても、季安の車が着くまでは終わらない。道に残す隊を、先に決めよう。"):
         J.mission>=CoalitionMission ? JourneyText(J.Definition().briefing):

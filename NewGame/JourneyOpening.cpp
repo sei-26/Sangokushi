@@ -82,6 +82,7 @@ namespace frontline
         case JourneyResolution::ForceLost:return U"主力の損耗で任務中止";
         case JourneyResolution::ConvoyLost:return U"護送の必要条件を失った";
         case JourneyResolution::Deadline:return U"任務の期限を超過";
+        case JourneyResolution::Unfought:return U"兵や兵糧が足りず出陣を見合わせた";
         default:return U"軍議で次の策を考える";
         }
     }

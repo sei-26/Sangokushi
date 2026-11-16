@@ -21,7 +21,9 @@ bool ATacticalController::PreparationReadSmokeTest()
             if(!Check(Plans[Choice].Morale[I]==Actual->world.armies[I].morale,TEXT("shown morale matches real deployment, including caps and penalties"))) return false;
         if(!Check(Camp.food-Actual->world.cities[0].food==Plans[Choice].Food && Camp.gold-Actual->world.cities[0].gold==Plans[Choice].Gold,TEXT("shown expense equals the actual debit"))) return false;
     }
-    if(!Check(Field->Presentation().Journey.PlanDifference.Contains(TEXT("+1800")) && Field->Presentation().Journey.PlanDifference.Contains(TEXT("-120")),TEXT("the two tradeoffs are expressed as actual differences"))) return false;
+    const auto& Difference=Field->Presentation().Journey.PlanDifference;
+    if(!Check(Source->journey.campaignFlow ? Difference.Contains(TEXT("立て直し")) : Difference.Contains(TEXT("+1800")) && Difference.Contains(TEXT("-120")),
+        TEXT("the two tradeoffs are expressed for the current rules"))) return false;
     OpenEpisode();OpenNovelPlan();std::vector<std::uint8_t> Before,After;
     if(!Check(Field->ExportSession(Before),TEXT("before reading officer perspectives"))) return false;
     HandleEpisodeKey(EKeys::A);HandleEpisodeKey(EKeys::A);
@@ -45,7 +47,9 @@ bool ATacticalController::PreparationReadSmokeTest()
     for(int Choice=0;Choice<2;++Choice)
     {
         const auto& P=Field->Presentation().Journey.Plans[Choice];
-        if(!Check(P.MissingFood==P.Food && P.MissingGold==P.Gold && P.MissingTroops==P.MinimumTroops && P.Shortage.Contains(TEXT("兵あと")) && P.Shortage.Contains(TEXT("兵糧あと")) && P.Shortage.Contains(TEXT("軍資金あと")),TEXT("all three deficits use the real minimum requirements"))) return false;
+        if(!Check(P.MissingFood==P.Food && P.MissingGold==P.Gold && P.MissingTroops==P.MinimumTroops &&
+            P.Shortage.Contains(TEXT("兵あと")) && P.Shortage.Contains(TEXT("兵糧あと")) &&
+            P.Shortage.Contains(TEXT("軍資金あと"))==(P.Gold>0),TEXT("shortages report only resources that the actual deployment requires"))) return false;
     }
     Field->PrepareBattleStoryPreview(false);Field->Issue(ETacticalCommand::StoryReplyPreserve);Field->Issue(ETacticalCommand::Continue);
     if(!Check(Field->Presentation().Journey.PlanAdvice[1].Text.Contains(TEXT("九割")),TEXT("Guan Yu's advice remembers the actual preservation vow"))) return false;

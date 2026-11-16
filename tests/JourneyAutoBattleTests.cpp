@@ -11,6 +11,60 @@
 #include <iostream>
 using namespace frontline;
 
+static void VerifyCampaignSetbacks()
+{
+    auto session=std::make_unique<JourneySaveData>();
+    auto& j=session->journey;
+    j.ResetCampaign();j.Meet();
+    auto& camp=j.world.cities[0];
+    camp.troops=camp.food=camp.gold=0;
+    auto Round=[&]
+    {
+        std::vector<std::uint8_t> bytes;
+        auto loaded=std::make_unique<JourneySaveData>();
+        assert(EncodeJourneySave(*session,bytes) && DecodeJourneySave(bytes,*loaded));
+        assert(loaded->journey.stage==j.stage && loaded->journey.mission==j.mission && loaded->journey.won==j.won);
+    };
+    auto StayInCamp=[&]
+    {
+        assert(!j.CanPrepare(0) && !j.CanPrepare(1) && j.AcceptCampaignSetback());
+        const auto& record=j.history[j.mission];
+        assert(record.completed && !record.won && !record.rescued && record.review.resolution==JourneyResolution::Unfought);
+        assert(!j.AcceptCampaignSetback() && !BuildJourneyEpisode(j).lines.empty());
+        Round();
+    };
+    for(int mission=0;mission<YellowTurbanMission;++mission)
+    {
+        assert(j.mission==mission);
+        StayInCamp();
+        assert(j.world.cities[0].troops==0 && j.world.cities[0].food==0);
+        assert(j.Continue());Round();
+    }
+    assert(j.mission==YellowTurbanMission && j.CanPrepare(0) && j.world.cities[0].gold==0);
+    j.world.cities[0].food=0;
+    StayInCamp();
+    assert(j.CanChooseCoalitionPlan() && !BuildCoalitionEpisode(j).lines.empty());
+    assert(j.ChooseCoalitionPlan(CoalitionPlan::Protect) && j.CanPrepare(0));
+    session->beforeBattle=j;
+    assert(j.Prepare(0,1) && j.world.cities[0].gold==0 && !j.CanAcceptCampaignSetback());
+    j.world.armies[0].troops-=142;
+    assert(j.Withdraw());Round();
+    const int casualties=j.casualties;
+    const auto settled=j.world.cities[0];
+    auto retry=std::make_unique<StrategistJourney>(j);
+    assert(retry->RetryAtCouncil(*session->beforeBattle) && retry->CanPrepare(0));
+    assert(!j.CanContinue() && j.AcceptCampaignSetback() && !j.RetryAtCouncil(*session->beforeBattle));
+    session->beforeBattle.reset();
+    assert(j.history[CoalitionMission].withdrawn && j.history[CoalitionMission].casualties==casualties &&
+        j.world.cities[0].troops==settled.troops && j.world.cities[0].food==settled.food);
+    assert(j.CanBeginYangren() && j.Continue() && !j.HasCoalitionGuide());Round();
+    j.world.cities[0].food=0;
+    StayInCamp();
+    assert(!j.SunJianTrust() && !j.CanChooseLuoyangPlan(LuoyangPlan::WesternDepot) && j.ChooseLuoyangPlan(LuoyangPlan::SouthGate));
+    StayInCamp();
+    assert(j.stage==JourneyStage::Complete && !j.CanContinue() && !j.CanAcceptCampaignSetback());
+}
+
 static void VerifyGuangzongChoices(const JourneySaveData& deployed)
 {
     auto session=std::make_unique<JourneySaveData>(deployed);
@@ -87,6 +141,7 @@ static void PlayGuangzongWithThreeOfficers(const StrategistJourney& council)
 
 int main()
 {
+    VerifyCampaignSetbacks();
     auto j=std::make_unique<StrategistJourney>();j->ResetCampaign();j->Meet();
     auto beforeBattle=std::make_unique<StrategistJourney>(*j);assert(j->Prepare(0,0));
     auto session=std::make_unique<JourneySaveData>();session->journey=*j;session->beforeBattle=*beforeBattle;

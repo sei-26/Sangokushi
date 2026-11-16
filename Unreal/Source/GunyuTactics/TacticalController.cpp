@@ -506,6 +506,12 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=PlanAdviceSmokeTest() && CouncilSceneSmokeTest() && NovelFlowSmokeTest() && CampaignPacingSmokeTest() && ReliefAdviceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPreparationOnly")))
     { const bool bPassed=PreparationMeaningSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
+    if(bCapture && Frames==8 && FParse::Param(FCommandLine::Get(),TEXT("StorySetbackPreview")))
+    {
+        const bool Valid=CampaignPacingSmokeTest();
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_STORY_SETBACK_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCampaignOnly")))
     { const bool bPassed=CampaignPacingSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPortHandoffOnly")))

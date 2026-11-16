@@ -83,7 +83,7 @@ namespace frontline
             if(!ReliefReview(r)) return false;
             return Range(r.openingAmbushes,0,1) && Range(r.resupplyTurn,0,16) && Range(r.resupplyMorale,0,60) && Range(r.postSupplySteps,0,r.tacticSteps) &&
                 (r.preparationTracked || (!r.openingAmbushes && !r.resupplyTurn && !r.resupplyMorale && !r.postSupplySteps)) &&
-                (r.resupplyTurn || (!r.resupplyMorale && !r.postSupplySteps)) && Enum(r.resolution,9) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
+                (r.resupplyTurn || (!r.resupplyMorale && !r.postSupplySteps)) && Enum(r.resolution,10) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
                 Range(r.trafficStops,0,100) && Range(r.tacticAttempts,0,1000) &&
                 Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3) && Range(r.coordinatedOfficers,0,7) &&
                 Range(r.confirmedDefenders,0,7) && Range(r.spentGuardFailures,0,7);
@@ -153,8 +153,8 @@ namespace frontline
             {
                 const auto& previous=j.history[j.mission-1];
                 const auto& battle=j.history[j.mission];
-                if(!previous.completed || !previous.won || j.stage==JourneyStage::Encounter ||
-                    (j.stage==JourneyStage::Complete && (!battle.completed || !battle.won || !j.won))) return false;
+                if(!previous.completed || (!previous.won && !previous.campaignFlow) || j.stage==JourneyStage::Encounter ||
+                    (j.stage==JourneyStage::Complete && (!battle.completed || battle.won!=j.won))) return false;
             }
             if(j.retryDefense)
             {
@@ -193,7 +193,10 @@ namespace frontline
             if(j.depotInterception && j.stage!=JourneyStage::Preparation &&
                 (n!=5 || w.armies[4].faction!=1 || w.armies[4].arm!=Arm::Transport || w.armies[4].general!=4 ||
                  !IsDepotRoadTile(w.armies[4].tile) || j.goal!=DepotEscape)) return false;
-            if(j.HasSunJian() && j.stage!=JourneyStage::Preparation &&
+            if(j.battleReview.resolution==JourneyResolution::Unfought &&
+                (!j.campaignFlow || j.stage!=JourneyStage::Complete || j.won || n!=0 ||
+                 j.history[j.mission].review.resolution!=JourneyResolution::Unfought)) return false;
+            if(j.HasSunJian() && j.stage!=JourneyStage::Preparation && j.battleReview.resolution!=JourneyResolution::Unfought &&
                 (n!=6 || w.armies[5].faction!=0 || w.armies[5].arm!=Arm::Spear || w.armies[5].general!=5 ||
                     w.armies[3].faction!=1 || w.armies[3].arm!=Arm::Cavalry)) return false;
             for(const auto& t:w.tiles) if(!Enum(t.terrain,5) || !Range(t.owner,-1,1)) return false;
@@ -215,6 +218,8 @@ namespace frontline
                 const auto legacy=SelectJourneyMap(m,false,h.route,false,j.coalitionPlan,true,j.luoyangPlan);
                 // Old histories and failed escorts may predate the individual route layouts.
                 const bool validAssignments=Assignments(h.assignments,m,map,m==0) || Assignments(h.assignments,m,legacy,m==0);
+                if(h.review.resolution==JourneyResolution::Unfought &&
+                    (!h.completed || !h.campaignFlow || h.won || h.rescued || h.withdrawn || h.casualties || h.survivors || h.story.recorded)) return false;
                 if(!Enum(h.difficulty,1) || !validAssignments || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
                    !PortReview(h.review,m==1 && h.campaignFlow && h.completed,false,h.review.endedAt) ||
                    !GuangzongReview(h.review.guangzong,m==YellowTurbanMission && h.campaignFlow && h.completed,h.review.endedAt,h.won) ||

@@ -236,7 +236,7 @@ namespace frontline
             else world.generals[AlliedArmy]=general;
             Army ally;
             ally.general=AlliedArmy;
-            ally.tile=ally.target=SunJianStart(coalitionPlan==CoalitionPlan::Protect);
+            ally.tile=ally.target=SunJianStart(HasCoalitionGuide());
             ally.troops=1300;ally.food=3000;
             world.armies.push_back(ally);
         }
@@ -409,12 +409,12 @@ namespace frontline
     bool StrategistJourney::CanBeginYellowTurban() const
     {
         return campaignFlow && stage==JourneyStage::Complete && mission==YellowTurbanMission-1 &&
-            history[mission].completed && history[mission].won;
+            history[mission].completed;
     }
     bool StrategistJourney::CanBeginYangren() const
     {
         return campaignFlow && stage==JourneyStage::Complete && mission==CoalitionMission &&
-            history[mission].completed && history[mission].won;
+            history[mission].completed;
     }
 	bool StrategistJourney::Continue()
 	{
@@ -439,7 +439,7 @@ namespace frontline
 		else
 		{
 			++mission;turn=1;
-            battleReview.port={};
+            battleReview={};
             legacyBattlefield=false;
             if(campaignFlow) world.day+=beginYangren ? 365:mission==1 ? 7:21; // Montage without income or replenishment.
             convoyRoute=JourneyConvoyRoute::Road;assignments={};retryRelief.reset();retryDefense.reset();
@@ -449,7 +449,8 @@ namespace frontline
             if(beginYellowTurban)
             {
                 goal=Definition().goal;
-                Report(U"第一章「黄巾の乱」。劉備は鄒靖の軍に従い、義勇軍は広宗の前陣を攻める軍議を開いた。");
+                Report(MusterCampaignSupport() ? U"第一章「黄巾の乱」。鄒靖の軍から最低限の兵と兵糧が届き、広宗の軍議を開いた。":
+                    U"第一章「黄巾の乱」。劉備は鄒靖の軍に従い、義勇軍は広宗の前陣を攻める軍議を開いた。");
             }
             else if(beginYangren)
             {

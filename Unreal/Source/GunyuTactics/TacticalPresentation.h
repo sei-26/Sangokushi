@@ -10,7 +10,7 @@ enum class ETacticalCommand : uint8
     PromiseRoad, PromiseRescue, Withdraw, TalkLiu, TalkGuan, TalkZhang,
     RealtimeMode, RealtimePause, RealtimeSpeed, RealtimeStep, RealtimeStop, RealtimeChainSignal, RealtimeAlertPause,
     RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate, DifficultyStory, DifficultyStandard, PlanExample, Resupply, ReleaseGuard, ResumeDuty,
-    CoalitionAdvance, CoalitionProtect, LuoyangGate, LuoyangDepot
+    CoalitionAdvance, CoalitionProtect, LuoyangGate, LuoyangDepot, AcceptSetback
 };
 enum class ETacticalInput : uint8 { Select, Move, Lure, Position };
 
@@ -129,7 +129,7 @@ struct FJourneyPresentation
     TArray<FPlanningDuty> ExampleDuties;
     TArray<FString> ExampleOrders;
     bool bStoryDifficulty=false,bCampaignFlow=false;
-    FString CampaignPhase,CampaignChange,CampaignNext,CampaignStanding,CampaignCarryover;
+    FString CampaignPhase,CampaignChange,CampaignNext,CampaignStanding,CampaignCarryover,SetbackLabel;
     FPreparationMap Map;
     TArray<FDialoguePresentation> PlanAdvice;
     bool bNeedsReply=false;

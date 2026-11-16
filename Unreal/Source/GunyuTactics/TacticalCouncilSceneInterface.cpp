@@ -71,7 +71,10 @@ void ATacticalController::BuildCouncilScene(TSharedRef<SCanvas> Canvas)
     Canvas->AddSlot().Position(FVector2D(48,752)).Size(FVector2D(1504,68))[Choices];InputPanels.Add(Choices);
     auto Footer=SNew(SHorizontalBox).Visibility_Lambda(Visible)
       + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([this] { const auto& P=Field->Presentation().Journey;const auto* Plan=P.Plans.FindByPredicate([](const FPreparationPresentation& V) { return V.bSelected; });
-          return Plan && Plan->bAffordable ? FString::Printf(TEXT("準備：%s ／ 兵糧 %d・軍資金 %d"),*Plan->Title,Plan->Food,Plan->Gold):P.PlanReadiness; },14,Gold)]
+          if(!Plan || !Plan->bAffordable) return P.PlanReadiness;
+          auto Cost=FString::Printf(TEXT("%s ／ 兵糧 %d"),*Plan->Title,Plan->Food);
+          if(Plan->Gold) Cost+=FString::Printf(TEXT(" ／ 案内料 %d"),Plan->Gold);
+          return Cost; },14,Gold)]
       + SHorizontalBox::Slot().AutoWidth()
         [SNew(SBox).Visibility_Lambda([this]
          {
@@ -82,7 +85,10 @@ void ATacticalController::BuildCouncilScene(TSharedRef<SCanvas> Canvas)
          [Button([] { return TEXT("作戦図 / M"); },[this] { OpenCouncilMap(); })]]
       + SHorizontalBox::Slot().AutoWidth().Padding(20,0)[Button([] { return TEXT("皆の意見に戻る"); },[this] { OpenCouncilVoice(-1); })]
       + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(320)
-        [Button([] { return TEXT("この策で、出陣だ！ / D"); },[this] { DeployNovelPlan(); },[this] { return Field->CanIssue(ETacticalCommand::Deploy); })]];
+        [Button([this]
+            { const auto& P=Field->Presentation().Journey;return P.SetbackLabel.IsEmpty() ? FString(TEXT("この策で、出陣だ！ / D")):P.SetbackLabel; },
+            [this] { if(Field->CanIssue(ETacticalCommand::AcceptSetback)) ResolveCampaignSetback(); else DeployNovelPlan(); },
+            [this] { return Field->CanIssue(ETacticalCommand::Deploy) || Field->CanIssue(ETacticalCommand::AcceptSetback); })]];
     auto FooterPanel=SNew(STacticalChrome).Padding(FMargin(12,3)).Opacity(.94f).Visibility_Lambda(Visible)[Footer];
     Canvas->AddSlot().Position(FVector2D(48,830)).Size(FVector2D(1504,56))[FooterPanel];InputPanels.Add(FooterPanel);
 }

@@ -7,7 +7,8 @@ namespace frontline
 	JourneySupplies StrategistJourney::PreparationCosts(int choice) const
 	{
 		const bool escort = Definition().kind == JourneyObjective::Escort;
-		return {(choice == 0 ? 3000 : 4800) + (HasConvoy() ? 900 : 0), (choice == 0 ? 200 : 80)+(IsRescue() ? ConvoyPlan(convoyRoute).guideGold : 0),
+        const int setupGold=campaignFlow ? 0:(choice == 0 ? 200:80);
+		return {(choice == 0 ? 3000 : 4800) + (HasConvoy() ? 900 : 0), setupGold+(IsRescue() ? ConvoyPlan(convoyRoute).guideGold : 0),
 		        escort ? 2000 : 0, HasConvoy() ? 600 : 0};
 	}
 

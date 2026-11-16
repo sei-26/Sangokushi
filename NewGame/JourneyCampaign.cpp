@@ -5,11 +5,54 @@ namespace frontline
     void StrategistJourney::ResetCampaign() { Reset();campaignFlow=true; }
     bool StrategistJourney::UpgradeCampaignAtCouncil()
     { if(stage!=JourneyStage::Preparation) return false;campaignFlow=true;return true; }
+    bool StrategistJourney::CanAcceptCampaignSetback() const
+    {
+        if(!campaignFlow) return false;
+        if(stage==JourneyStage::Debrief) return !won && history[mission].completed;
+        if(stage!=JourneyStage::Preparation || world.cities.empty()) return false;
+        const auto& camp=world.cities[0];
+        // The cheaper ordinary sortie is always available for zero gold.
+        // A paid alternate route or an editable order should not qualify as a resource shortage.
+        const auto cost=PreparationCosts(0);
+        return camp.food<cost.TotalFood() || camp.troops<cost.MinimumTroops();
+    }
+    bool StrategistJourney::AcceptCampaignSetback()
+    {
+        if(!CanAcceptCampaignSetback()) return false;
+        if(stage==JourneyStage::Preparation)
+        {
+            won=withdrawn=false;
+            deployed=casualties=survivors=bestChain=convoyEscort=recoveredCargo=reserveFood=0;
+            battleReview={};battleReview.resolution=JourneyResolution::Unfought;
+            lastChain={};
+            world.armies.clear();chain.Reset(world);
+            for(auto& side:intelligence) side.Reset(world);
+            auto& result=history[mission];result={};
+            result.completed=result.campaignFlow=true;result.difficulty=difficulty;
+            result.review=battleReview;result.route=convoyRoute;
+        }
+        stage=JourneyStage::Complete;
+        retryRelief.reset();retryDefense.reset();
+        Report(battleReview.resolution==JourneyResolution::Unfought ?
+            U"義勇軍は出陣を見合わせた。残った兵と物資を抱え、戦役の報せを待つ。":
+            U"任務を果たせなかった結果を引き受ける。帰った兵と残った物資で、次の局面へ向かう。");
+        return true;
+    }
+    bool StrategistJourney::MusterCampaignSupport()
+    {
+        auto& camp=world.cities[0];
+        const auto cost=PreparationCosts(0);
+        if(camp.food>=cost.TotalFood() && camp.troops>=cost.MinimumTroops()) return false;
+        camp.food=std::max(camp.food,cost.TotalFood());
+        camp.troops=std::max(camp.troops,cost.MinimumTroops()+1200);
+        ++world.revision;
+        return true;
+    }
     bool StrategistJourney::CanChooseCoalitionPlan() const
     {
         const auto& yellowTurban=history[YellowTurbanMission];
         return campaignFlow && stage==JourneyStage::Complete && mission==YellowTurbanMission &&
-            won && yellowTurban.completed && yellowTurban.won && coalitionPlan==CoalitionPlan::None;
+            yellowTurban.completed && coalitionPlan==CoalitionPlan::None;
     }
     bool StrategistJourney::ChooseCoalitionPlan(CoalitionPlan plan)
     {
@@ -27,8 +70,10 @@ namespace frontline
         reinforced=false;
         retryRelief.reset();
         retryDefense.reset();
+        const bool muster=MusterCampaignSupport();
         const auto& support=GuangzongSupport();
         Report(std::u32string(CoalitionPlanName(plan))+U"。酸棗で出陣の軍議を開いた。"+
+            (muster ? std::u32string(U" 連合から最低限の兵と兵糧が届いた。"):U"")+
             (support.swift ? std::u32string(U" 鄒靖の援兵が陣を支え、張飛隊は前から出られる。"):U"")+
             (support.roadOfficer>=0 ? std::u32string(U" 広宗で助けた人の案内で、関羽隊は脇道から出られる。"):U""));
         return true;
@@ -40,8 +85,8 @@ namespace frontline
     }
     bool StrategistJourney::CanChooseLuoyangPlan(LuoyangPlan plan) const
     {
-        return campaignFlow && stage==JourneyStage::Complete && HasSunJian() && won &&
-            history[YangrenMission].completed && history[YangrenMission].won &&
+        return campaignFlow && stage==JourneyStage::Complete && HasSunJian() &&
+            history[YangrenMission].completed &&
             (plan==LuoyangPlan::SouthGate || (plan==LuoyangPlan::WesternDepot && SunJianTrust()>=SunJianFlankTrust));
     }
     bool StrategistJourney::ChooseLuoyangPlan(LuoyangPlan plan)
@@ -73,6 +118,24 @@ namespace frontline
     {
         JourneyCampaignBeat b;
         if(!j.campaignFlow) return b;
+        if((j.stage==JourneyStage::Complete || j.stage==JourneyStage::Debrief) && !j.won)
+        {
+            const char32_t* Next[]={
+                U"数日後、義勇軍は河港の作戦に加わる。",
+                U"官軍は別の道で進み、義勇軍には決戦の両翼を守る役が回る。",
+                U"官軍の戦いは広宗へ。義勇軍は鄒靖の指揮下に入る。",
+                U"黄巾の乱は転機を迎え、やがて洛陽の政変が諸侯を動かす。",
+                U"連合は別の戦線でも動いている。陽人へ向かい、孫堅と合流する。",
+                U"孫堅は兵を立て直し、董卓が退いた洛陽へ向かう。",
+                U"孫堅本隊は機を見て洛陽に入った。反董卓連合編はここで結末を迎える。"};
+            const bool Unfought=j.battleReview.resolution==JourneyResolution::Unfought;
+            return {Unfought ? U"出陣見合わせ":j.withdrawn ? U"撤収の記録":U"任務未達",
+                Unfought ? U"義勇軍は兵と糧を立て直すため陣に残った。":
+                    j.withdrawn ? U"義勇軍は撤収した。帰った兵と残りの物資で次に備える。":
+                    U"義勇軍は任務を果たせなかった。受けた損失と仲間の記憶が残る。",
+                j.stage==JourneyStage::Debrief ? U"軍議からやり直すか、この結果を引き受けて物語を進める。":Next[j.mission],
+                U"義勇軍と歩む軍師"};
+        }
         const bool finished=j.stage==JourneyStage::Debrief && j.won;
         if(j.mission==LuoyangMission)
         {
@@ -100,7 +163,8 @@ namespace frontline
                 return {U"第二章 ／ 陽人の戦い",U"陽人の辻と孫堅隊の合流を果たせなかった。",U"軍議へ戻り、平地で騎兵を受ける位置と南への援護を見直す。",U"孫堅と共闘する軍師"};
             return {U"第二章 ／ 陽人の戦い",j.Definition().briefing,j.coalitionPlan==CoalitionPlan::Advance ?
                 U"曹操の斥候が北の抜け道を教えた。関羽を林の奥から出せる。":
-                U"張邈の案内人が南道を通した。孫堅は合流地点に近い位置から出る。",U"孫堅と共闘する軍師"};
+                    j.HasCoalitionGuide() ? U"張邈の案内人が南道を通した。孫堅は合流地点に近い位置から出る。":
+                    U"孫堅は南の街道から進む。北の辻と、南から来る隊の行く手を見よう。",U"孫堅と共闘する軍師"};
         }
         if(j.mission==CoalitionMission)
         {
@@ -139,7 +203,8 @@ namespace frontline
         {
             b.phase=U"第二幕 ／ 数日後、河港から戦役の主戦線へ";
             b.change=finished ? U"河港を奪取して敵の連絡路を断った。義勇軍は官軍の共同作戦に加わり、主人公は決戦の一方面を任される。":
-                U"初陣の働きが認められ、今度は攻める一戦を任される。橋を越え、敵の指揮所へ。";
+                j.history[0].won ? U"初陣の働きが認められ、今度は攻める一戦を任される。橋を越え、敵の指揮所へ。":
+                U"義勇軍は態勢を立て直し、官軍の河港作戦に加わる。橋を越え、敵の指揮所へ。";
             b.next=U"次の局面：戦役は数週間先の決戦へ。二つの烽火を守り、本隊の包囲を完成させる。";
             if(finished && j.history[1].review.port.JointCapture())
                 b.next+=U" 河港でつないだ合図により、守る時間は二指揮に短縮される。";
@@ -149,7 +214,8 @@ namespace frontline
         {
             b.phase=U"第三幕 ／ 数週間後、本隊の決戦を支える";
             b.change=finished ? U"両翼の烽火をそろえ、本隊の包囲が完成した。主人公は劉備から正式に軍師として迎えられる。":
-                (j.history[1].campaignFlow ? U"河港の制圧を足場に決戦へ進んだ。左右の守備を分担し、本隊の攻撃が決まる時間を作る。":U"前の任務を足場に決戦へ進む。左右の守備を分担し、本隊の攻撃が決まる時間を作る。");
+                (j.history[1].won ? U"河港の制圧を足場に決戦へ進んだ。左右の守備を分担し、本隊の攻撃が決まる時間を作る。":
+                    U"官軍は別の道で決戦へ進んだ。左右の守備を分担し、本隊の攻撃が決まる時間を作る。");
             b.next=U"この戦いの先：義勇軍の軍師として迎えられ、黄巾の前陣を攻める役目が待つ。";
             b.standing=finished ? U"義勇軍の正式な軍師":U"決戦の両翼を預かる軍師";
         }

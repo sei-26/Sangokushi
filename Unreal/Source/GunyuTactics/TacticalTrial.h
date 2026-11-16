@@ -602,6 +602,7 @@ private:
     bool YangrenSmokeTest();
     bool PrepareBattlefieldLayoutCapture(int Variant);
     void OpenJourneyEntry();
+    void ResolveCampaignSetback();
     bool CampaignPacingSmokeTest();
     void CloseEpisode();
     void StepEpisode(int Direction);

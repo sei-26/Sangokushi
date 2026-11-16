@@ -58,7 +58,7 @@ int main()
     // The reserve is paid at deployment, not secretly added on top of the food total.
     auto s=Council();auto& j=s->journey;const auto camp=j.world.cities[0];s->beforeBattle=j;
     assert(j.Prepare(1,0) && j.reserveFood==1800 && j.world.armies[0].food==1000 && j.world.armies[0].morale==90);
-    assert(TotalFood(j)==camp.food && j.world.cities[0].gold==camp.gold-80);
+    assert(TotalFood(j)==camp.food && j.world.cities[0].gold==camp.gold);
     auto loaded=Round(*s);assert(loaded->journey.CanResupply());
     // Morale unlocks an ordinary solo tactic; spending the reserve does not reset action/signature state.
     j.battleReview.preparationTracked=false; // A v7 in-flight reserve must become trackable on actual use.

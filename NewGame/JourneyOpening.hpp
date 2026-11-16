@@ -14,7 +14,7 @@ namespace frontline
         std::vector<int> tiles; // Includes the starting cell.
     };
     const JourneyConvoyPlan& ConvoyPlan(JourneyConvoyRoute);
-    enum class JourneyResolution { None, EnemyBroken, ExitSecured, Delivered, Held, Withdrawn, ForceLost, ConvoyLost, Deadline, Captured };
+    enum class JourneyResolution { None, EnemyBroken, ExitSecured, Delivered, Held, Withdrawn, ForceLost, ConvoyLost, Deadline, Captured, Unfought };
     enum class YangrenCounter { None, ForestLure, Disrupted, Defeated };
     struct JourneyYangrenReview
     {

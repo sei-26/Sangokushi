@@ -43,8 +43,8 @@ void ATacticalField::BuildPreparationMap()
         Add(J.Definition().goal,TEXT("陽人の辻"),TEXT("一隊を入れ、隣接する敵を退けて確保する。"),
             {TEXT("孫堅が来るまで旗を残そう。"),TEXT("北の林から呂布を引きつける。"),TEXT("南の敵は俺が引き受けるぞ！")});
         Add(YangrenRally,TEXT("孫堅の合流地点"),TEXT("孫堅隊は南から自動で進む。合流地点に味方の隊を置かず、進路を空けておく。"),{});
-        Add(SunJianStart(J.coalitionPlan==CoalitionPlan::Protect),TEXT("孫堅隊の出陣位置"),
-            J.coalitionPlan==CoalitionPlan::Protect ? TEXT("張邈の案内で峠の手前から出陣する。"):TEXT("孫堅隊は南の街道を進む。"),{});
+        Add(SunJianStart(J.HasCoalitionGuide()),TEXT("孫堅隊の出陣位置"),
+            J.HasCoalitionGuide() ? TEXT("張邈の案内で峠の手前から出陣する。"):TEXT("孫堅隊は南の街道を進む。"),{});
     }
     else if(J.mission==CoalitionMission)
         Add(J.Definition().goal,TEXT("董卓軍の前哨"),TEXT("北橋を渡り、隣接する敵を退けて一隊を入れる。"),

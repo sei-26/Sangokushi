@@ -121,6 +121,9 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
          + SHorizontalBox::Slot().FillWidth(1)
            [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bPreparation ? EVisibility::Visible : EVisibility::Collapsed; })
             [Command(ETacticalCommand::Reinforce, [] { return TEXT("義勇兵1,200を募る / 軍資金250・兵糧500"); })]]
+         + SHorizontalBox::Slot().AutoWidth().Padding(16, 0, 0, 0)
+           [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.SetbackLabel.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+            [Button([this] { return Field->Presentation().Journey.SetbackLabel; },[this] { ResolveCampaignSetback(); })]]
          + SHorizontalBox::Slot().FillWidth(1).Padding(16, 0, 0, 0)
            [Button([this] { return Field->Presentation().Journey.PrimaryLabel; }, [this]
             {

@@ -10,6 +10,12 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     auto& J = State->Journey;
     switch (Command)
     {
+    case ETacticalCommand::AcceptSetback:
+        if(!J.AcceptCampaignSetback()) return;
+        State->BeforeBattle.reset();
+        State->Orders.clear();State->ChainSignal.Cancel();State->Realtime.Reset();
+        State->Input=ETacticalInput::Select;State->Selected=0;State->Target=3;
+        break;
     case ETacticalCommand::Dialogue:
         if (++State->DialogueIndex >= 3) J.Meet();
         break;
@@ -87,6 +93,8 @@ void ATacticalField::BuildJourneyPresentation()
     P.bCampaignFlow=J.campaignFlow;
     const auto Beat=CampaignBeat(J);P.CampaignPhase=JourneyText(Beat.phase);P.CampaignChange=JourneyText(Beat.change);P.CampaignNext=JourneyText(Beat.next);P.CampaignStanding=JourneyText(Beat.standing);
     P.CampaignCarryover=ReadCampaignCarryover();
+    if(J.CanAcceptCampaignSetback())
+        P.SetbackLabel=J.stage==JourneyStage::Preparation ? TEXT("出陣を見合わせて物語へ"):TEXT("この結果を引き受けて物語へ");
     P.bStoryDifficulty=J.difficulty==JourneyDifficulty::Story;P.DifficultyName=JourneyText(DifficultyName(J.difficulty));
     const auto Settings=CombatSettings(J.difficulty);
     P.DifficultyDetail=FString::Printf(TEXT("敵の初期兵力%d％ ／ 期限＋%d指揮 ／ 軍議で変更可"),Settings.enemyPercent,Settings.extraCycles);
@@ -161,7 +169,9 @@ void ATacticalField::BuildJourneyPresentation()
     }
     for (int Index = 0; Index < int(J.history.size()); ++Index)
         if (J.history[Index].completed)
-            P.History += FString::Printf(TEXT("第%d戦: %s / 帰還 %d / 損失 %d  "), Index + 1,
+            P.History += J.history[Index].review.resolution==JourneyResolution::Unfought ?
+                FString::Printf(TEXT("第%d戦: 出陣見合わせ  "),Index+1):
+                FString::Printf(TEXT("第%d戦: %s / 帰還 %d / 損失 %d  "), Index + 1,
                 J.history[Index].rescued ? TEXT("季安の避難車を護送") : J.history[Index].won ? TEXT("任務達成") : J.history[Index].withdrawn ? TEXT("任務中止・撤収") : TEXT("未達"),
                 J.history[Index].survivors, J.history[Index].casualties);
     BuildOfficerConversation();
@@ -190,6 +200,11 @@ void ATacticalField::BuildJourneyPresentation()
                 FString::Printf(TEXT("西の荷駄隊　孫堅の信頼 %d / %d\n陽人で南道を開くか、呂布を抑えると選べる"),J.SunJianTrust(),SunJianFlankTrust);
         }
         if(J.mission==LuoyangMission) P.Heading=TEXT("第二章 完  ―  反董卓連合");
+        if(!J.won && J.mission<YellowTurbanMission-1)
+        {
+            P.Heading=P.CampaignPhase;
+            P.PrimaryLabel=J.mission==0 ? TEXT("河港の軍議へ / Enter"):TEXT("烽火の軍議へ / Enter");
+        }
         P.Dialogue=P.CampaignChange;
         P.Outcome=P.CampaignNext;
     }

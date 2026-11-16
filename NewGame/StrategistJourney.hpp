@@ -141,6 +141,9 @@ namespace frontline
 		bool EndTurn();
 		bool Continue();
         bool CanContinue() const;
+        bool CanAcceptCampaignSetback() const;
+        bool AcceptCampaignSetback();
+        bool HasCoalitionGuide() const { return coalitionPlan==CoalitionPlan::Protect && history[CoalitionMission].won; }
         bool CanBeginYellowTurban() const;
         bool CanBeginYangren() const;
         bool CanChooseCoalitionPlan() const;
@@ -183,6 +186,7 @@ namespace frontline
 		void SetupBattlefield();
 		void Evaluate();
         void CheckGuangzong();
+        bool MusterCampaignSupport();
 		void Finish(bool success, const char32_t* reason);
         void CompleteBattleReview(bool success);
         void CompleteBattleStory(bool success);

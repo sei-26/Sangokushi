@@ -1,6 +1,8 @@
 ﻿#include "TacticalTrial.h"
 #include "JourneySave.hpp"
 #include "TacticalContributionQA.h"
+#include "Misc/Parse.h"
+#include "Misc/CommandLine.h"
 #include <memory>
 bool ATacticalController::CampaignPacingSmokeTest()
 {
@@ -9,6 +11,40 @@ bool ATacticalController::CampaignPacingSmokeTest()
     CloseEpisode();Field->bLegacyJourney=false;
     auto Save=std::make_unique<JourneySaveData>();Save->journey.ResetCampaign();Save->journey.Meet();Save->journey.mission=1;Save->journey.SelectDifficulty(JourneyDifficulty::Story);Save->realtimeMode=true;
     std::vector<std::uint8_t> Bytes,Before,After;
+    auto Shortage=std::make_unique<JourneySaveData>();
+    Shortage->journey.ResetCampaign();Shortage->journey.Meet();
+    Shortage->journey.world.cities[0].food=0;
+    if(!Check(EncodeJourneySave(*Shortage,Bytes) && Field->ImportSession(Bytes),TEXT("restore a real council without food"))) return false;
+    OpenJourneyEntry();
+    if(!Check(bNovelPlan && !Field->CanIssue(ETacticalCommand::Deploy) && Field->CanIssue(ETacticalCommand::AcceptSetback) &&
+        Field->Presentation().Journey.SetbackLabel.Contains(TEXT("出陣を見合わせ")),TEXT("the normal council shows an explicit path out of resource shortage"))) return false;
+    if(FParse::Param(FCommandLine::Get(),TEXT("StorySetbackPreview")))
+    {
+        CouncilElapsed=1000;CouncilStageTime=CouncilLineTime=1;
+        return true;
+    }
+    ResolveCampaignSetback();
+    if(!Check(bEpisodeOpen && Field->Presentation().Journey.bComplete && !Field->CanIssue(ETacticalCommand::Retry) &&
+        Field->ExportSession(Bytes) && DecodeJourneySave(Bytes,*Shortage) &&
+        Shortage->journey.history[0].review.resolution==JourneyResolution::Unfought && Shortage->journey.world.cities[0].food==0,
+        TEXT("the council choice plays an honest scene and saves the unchanged supplies"))) return false;
+    EpisodePage=EpisodeSnapshot.Lines.Num()-1;NovelElapsed=1000;ReadNextNovel();
+    if(!Check(Field->Presentation().Journey.bPreparation && Field->Presentation().Mission==1,
+        TEXT("reading the last line advances to the next real council"))) return false;
+    CloseEpisode();
+    Shortage->journey.ResetCampaign();Shortage->journey.Meet();Shortage->journey.world.cities[0].gold=0;
+    if(!Check(EncodeJourneySave(*Shortage,Bytes) && Field->ImportSession(Bytes) && Field->CanIssue(ETacticalCommand::Deploy),
+        TEXT("ordinary departure is available with zero military funds"))) return false;
+    Field->Issue(ETacticalCommand::Deploy);
+    Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Withdraw);Field->Issue(ETacticalCommand::Skip);
+    if(!Check(Field->CanIssue(ETacticalCommand::Retry) && Field->CanIssue(ETacticalCommand::AcceptSetback),
+        TEXT("actual withdrawal gives a choice between retry and accepting the result"))) return false;
+    ResolveCampaignSetback();
+    if(!Check(Field->ExportSession(Bytes) && DecodeJourneySave(Bytes,*Shortage) &&
+        Shortage->journey.history[0].withdrawn && !Shortage->journey.history[0].won,
+        TEXT("accepting an actual withdrawal preserves the real result on disk"))) return false;
+    CloseEpisode();
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_STORY_SETBACK: PASS (zero-gold deployment, no-food council, next episode, actual withdrawal, retry and save)"));
     if(!Check(EncodeJourneySave(*Save,Bytes) && Field->ImportSession(Bytes),TEXT("new campaign council imports"))) return false;
     Field->ExportSession(Before);OpenJourneyEntry();Field->ExportSession(After);
     if(!Check(bNovelPlan && bEpisodeOpen && Before==After && Field->Presentation().Journey.CampaignPhase.Contains(TEXT("河港")),TEXT("council goes directly to a plot-aware operation review without spending"))) return false;

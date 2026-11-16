@@ -32,7 +32,7 @@ FString ATacticalField::ReadCampaignCarryover() const
         return FString::Join(Changes,TEXT(" ／ "));
     }
 
-    if(((Won && J.mission==CoalitionMission) || (Planning && J.HasSunJian())) && J.coalitionPlan==CoalitionPlan::Protect)
+    if(((Won && J.mission==CoalitionMission) || (Planning && J.HasSunJian())) && J.HasCoalitionGuide())
         return TEXT("張邈の案内で、孫堅隊が合流地点に近い場所から進軍");
 
     if(Won && J.HasSunJian() && J.SunJianTrust()>=SunJianFlankTrust)

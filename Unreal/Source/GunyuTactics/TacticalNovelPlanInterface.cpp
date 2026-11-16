@@ -63,7 +63,15 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
               + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Description:FString(); },16)]
               + SVerticalBox::Slot().AutoHeight().Padding(0,4)[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Tradeoff:FString(); },13,Gold)]]
               + SVerticalBox::Slot().AutoHeight().Padding(0,5)[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].MoraleText:FString(); },12,Gold)]]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,6)[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return !P.IsValidIndex(Index) ? FString():bNovelDetails ? P[Index].Cost:FString::Printf(TEXT("消費：兵糧 %d　軍資金 %d"),P[Index].Food,P[Index].Gold); },15,Gold)]
+              + SVerticalBox::Slot().AutoHeight().Padding(0,6)[Label([this,Index]
+                {
+                    const auto& P=Field->Presentation().Journey.Plans;
+                    if(!P.IsValidIndex(Index)) return FString();
+                    if(bNovelDetails) return P[Index].Cost;
+                    auto Cost=FString::Printf(TEXT("兵糧 %d"),P[Index].Food);
+                    if(P[Index].Gold) Cost+=FString::Printf(TEXT(" ／ 軍資金 %d"),P[Index].Gold);
+                    return Cost;
+                },15,Gold)]
               + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return bNovelDetails ? EVisibility::Visible:EVisibility::Collapsed; })[Label([this,Index] { const auto& P=Field->Presentation().Journey.Plans;return P.IsValidIndex(Index) ? P[Index].Remaining:FString(); },13)]]]];
     }
     Body->AddSlot().AutoHeight().Padding(0,8,0,12)[SNew(SBox).Visibility_Lambda([this] { return bNovelAdvice ? EVisibility::Collapsed:EVisibility::Visible; })[Plans]];
@@ -94,7 +102,10 @@ void ATacticalController::BuildNovelPlan(TSharedRef<SCanvas> Canvas)
               return Field->Presentation().Journey.Map.bChooseRoute ? TEXT("1・2：準備案　R：経路変更　Esc：地図を閉じる"):
                   TEXT("1・2：準備案　Esc：地図を閉じる");
           },14)]
-        + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(360).HeightOverride(48)
+        + SHorizontalBox::Slot().AutoWidth().Padding(10,0)[SNew(SBox)
+          .Visibility_Lambda([this] { return Field->Presentation().Journey.SetbackLabel.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+          [Button([this] { return Field->Presentation().Journey.SetbackLabel; },[this] { ResolveCampaignSetback(); })]]
+        + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(330).HeightOverride(48)
           [Button([this] { return Field->CanIssue(ETacticalCommand::Deploy) ? TEXT("この作戦で出陣する / D"):TEXT("出陣できない：資源を確認"); },[this] { DeployNovelPlan(); },[this] { return Field->CanIssue(ETacticalCommand::Deploy); })]]];
     auto Panel=SNew(STacticalChrome).Padding(28).Opacity(.93f).Accent(gunyustyle::Brass).Visibility_Lambda(Visible)[Contents];
     Canvas->AddSlot().Position(FVector2D(150,50)).Size(FVector2D(1300,800))[Panel];InputPanels.Add(Panel);

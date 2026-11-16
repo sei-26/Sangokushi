@@ -32,6 +32,12 @@ void ATacticalController::OpenJourneyEntry()
 }
 void ATacticalController::CloseEpisode()
 { bEpisodeOpen=false;bNovelPlan=bNovelMap=bNovelHistory=bNovelAdvice=false;IgnoreMapInputThroughFrame=Frames+1; }
+void ATacticalController::ResolveCampaignSetback()
+{
+    if(!Field->CanIssue(ETacticalCommand::AcceptSetback)) return;
+    Field->Issue(ETacticalCommand::AcceptSetback);
+    OpenEpisode();
+}
 void ATacticalController::StepEpisode(int Direction)
 {
     if(!bEpisodeOpen || bNovelHistory || bNovelPlan) return;

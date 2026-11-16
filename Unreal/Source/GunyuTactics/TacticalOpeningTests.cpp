@@ -50,18 +50,19 @@ bool ATacticalField::OpeningUpgradeSmokeTest()
     { if (!Value) UE_LOG(LogTemp,Error,TEXT("GUNYU_OPENING_UPGRADE: FAIL: %s"),Reason);return Value; };
     State->bNoPlayback=true;PrepareOpeningPreview(false);
     auto& J=State->Journey;const auto Camp=J.world.cities[0];
-    if (!Check(Presentation().Journey.bSouthernRoute && Presentation().Journey.bChooseRoute && J.PreparationCosts(0).gold==320,
+    const int BaseGold=J.campaignFlow ? 0:200;
+    if (!Check(Presentation().Journey.bSouthernRoute && Presentation().Journey.bChooseRoute && J.PreparationCosts(0).gold==BaseGold+120,
         TEXT("council shows a real alternative and its guide cost"))) return false;
     Issue(ETacticalCommand::RouteRoad);Issue(ETacticalCommand::RouteSouthernWood);
     if (!Check(J.world.cities[0].gold==Camp.gold && J.world.cities[0].food==Camp.food,TEXT("route selection cannot charge or duplicate resources"))) return false;
     Issue(ETacticalCommand::Deploy);
-    if (!Check(J.world.cities[0].gold==Camp.gold-320 && Presentation().ConvoyRoute.Num()==8 && Presentation().Objective.Contains(TEXT("7区間")),
+    if (!Check(J.world.cities[0].gold==Camp.gold-BaseGold-120 && Presentation().ConvoyRoute.Num()==8 && Presentation().Objective.Contains(TEXT("7区間")),
         TEXT("deployment charges once and presents the actual seven-leg route"))) return false;
     Issue(ETacticalCommand::Withdraw);Issue(ETacticalCommand::Withdraw);Issue(ETacticalCommand::Retry);
     if (!Check(J.stage==JourneyStage::Preparation && J.convoyRoute==JourneyConvoyRoute::SouthernWood && J.world.cities[0].gold==Camp.gold,
         TEXT("retry restores the council and its selected route without settlement exploits"))) return false;
     Issue(ETacticalCommand::RouteRoad);Issue(ETacticalCommand::Deploy);
-    if (!Check(J.world.cities[0].gold==Camp.gold-200 && J.battleReview.tacticSteps==0,TEXT("replanning starts with clean battle facts and the new bill"))) return false;
+    if (!Check(J.world.cities[0].gold==Camp.gold-BaseGold && J.battleReview.tacticSteps==0,TEXT("replanning starts with clean battle facts and the new bill"))) return false;
     PrepareOpeningPreview(true);
     if (!Check(J.won && J.history[0].rescued && J.world.armies[3].troops>450 && J.battleReview.longestChain==2,
         TEXT("public UI commands deliver the southern convoy without breaking the front or a three-officer chain"))) return false;

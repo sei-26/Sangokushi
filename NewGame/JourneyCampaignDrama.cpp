@@ -10,6 +10,18 @@ namespace frontline
     JourneyEpisode BuildLuoyangEpisode(const StrategistJourney&);
     JourneyEpisode CampaignEpisode(const StrategistJourney& j)
     {
+        if(j.stage==JourneyStage::Complete && !j.won)
+        {
+            const auto beat=CampaignBeat(j);
+            JourneyEpisode e{beat.phase,U"義勇軍 ／ 戦役の知らせ",beat.change,beat.next};
+            e.lines={{-1,beat.change,U"義勇軍の旗の下に、次の戦役を知らせる使者が来た。"},
+                {0,j.battleReview.resolution==JourneyResolution::Unfought ? U"今日は兵を出さずにすんだ。だが、待っていた人には私たちの口から伝えよう。":
+                    U"帰れた兵の名から呼ぼう。何が起きたかは、明日の私たちにも聞かせておかなくては。",U"劉備は報告を机に置き、主人公の隣に腰を下ろした。"},
+                {-1,beat.next,U"義勇軍が受け持った局地戦の記録を残し、戦役は次の局面へ移る。"}};
+            if(j.mission==YangrenMission)
+                e.lines.push_back({SunJian,U"焼けた都へ行く。次は南門の外で引き受けられる仕事がある。どうだ、来るか。",U"孫堅の使者が、新しい作戦図を広げた。"});
+            return e;
+        }
         if(j.mission==YellowTurbanMission) return BuildYellowTurbanEpisode(j);
         if(j.mission==CoalitionMission) return BuildCoalitionBattleEpisode(j);
         if(j.HasSunJian()) return BuildYangrenEpisode(j);
@@ -34,7 +46,8 @@ namespace frontline
                 {1,U"敵を追って散るな。最後に指揮所へ入る隊も決めておけ。",U"占領が、この戦いの決着になる。"},
                 {3,U"港を取るぞ！ この川の先まで、俺たちの旗を届かせる。皆、力を貸してくれ！",U"地図の先には大河。その向こうには、まだ見ぬ戦場がある。"}});
             else e.lines.insert(e.lines.end(),{
-                {0,U"河港から開いた道を、本隊が進んだ。決戦の両翼を、君に任せたい。",U"本隊の使者が、主人公へ作戦図を手渡す。"},
+                {0,j.history[1].won ? U"河港から開いた道を、本隊が進んだ。決戦の両翼を、君に任せたい。":
+                    U"本隊は河港を回って先へ進んだ。今度は、両翼の守りをこちらが引き受ける。",U"本隊の使者が、主人公へ作戦図を手渡す。"},
                 {1,j.RequiredHoldTurns()==2 ? U"河港の合図を、本隊も覚えた。二指揮持たせれば決着する。":U"両方を三指揮持たせる。その時間が、本隊の勝ち筋になる。",U"前戦の采配が、必要な時間まで変えた。"},
                 {2,U"向こうの山まで、火をつなぐんだな！ どうせなら、天下に見せてやろうぜ！",U"張飛が遠い尾根へ手をかざす。"},
                 {1,U"見せるとも。私とお前、どちらの火も消させぬ。軍師、合図を頼む。",U"二人が左右の駒へ手を添える。"},
@@ -45,7 +58,8 @@ namespace frontline
                 {2,U"聞いたか、軍師！ 次の戦も、お前が俺を走らせるんだぞ！",U"張飛は、初めて会った日と同じ声で呼ぶ。"},
                 {1,U"だが、乱が終わっても天下はまだ定まらぬ。次は、誰のために策を立てる。",U"地図の外に、次の時代がある。"},
                 {3,U"ここから先も、俺は皆と行く。次の策は、もっと遠くまで届かせる。",U"軍旗の下に、軍師の席がある。序章、完。"}};
-        else if(!j.won) e.lines={{3,U"俺の策では、任務を果たせなかった。直前の軍議へ戻り、配置から直す。",U"戦役の先へは進まず、再挑戦できる。"},{1,U"どこで止まり、どこを空けたか。次はそこを変えるのだ。",U"失敗の理由を、次の一手へ。"}};
+        else if(!j.won) e.lines={{3,U"俺の策では、任務を果たせなかった。やり直せるなら、どこを変えるか。ここで引くなら、誰を連れて帰るか。",U"軍議に戻るか、この結果を引き受ける。"},
+            {1,U"どちらにせよ、どこで止まり、どこを空けたかは覚えておけ。",U"関羽は盤上に残った駒を指した。"}};
         else e.lines={{-1,beat.change,U"一戦の結果が、次の役目を変える。"},
             {j.mission==1 ? 2:0,j.mission==1 ? U"港の旗が変わったぞ！ 軍師、これで本隊が動けるんだな。":U"君の采配で、次へ進む道ができた。残った兵も糧も、そのまま次へ連れていこう。",U"勝った理由と代償が、仲間の記憶に残る。"},
             {3,beat.next,U"次へ進む返答と約束は、戦後の画面で任意に選べる。"}};
@@ -57,7 +71,9 @@ namespace frontline
     {
         if(j.stage==JourneyStage::Preparation)
         {
-            if(who==0) return {{0,j.history[0].rescued ? U"季安が港の道を教えてくれた。あの時、君が待った車が、今度は我らの策を助けている。":U"君が開いた道を通って、兵が集まった。今度は、その力で港を取る策を聞かせてほしい。"},
+            if(who==0) return {{0,j.history[0].rescued ? U"季安が港の道を教えてくれた。あの時、君が待った車が、今度は我らの策を助けている。":
+                j.history[0].won ? U"君が開いた道を通って、兵が集まった。今度は、その力で港を取る策を聞かせてほしい。":
+                    U"いま戻った兵でできる策を聞かせてほしい。河港なら、正面だけが道じゃない。"},
                 {3,j.CurrentPledge()==JourneyPledge::Preserve ? U"兵を守ると答えた。北橋から回る配置で、正面へ全員をぶつけるのを避けたい。":U"南橋の前衛を崩し、指揮所へつなぐ。俺たちの勝ち方で、本隊も動かしたい。"},
                 {0,U"ああ。君の一戦が、もう他の人の明日にもつながっている。私は、その策に兵を預ける。"}};
             if(who==1) return {{1,U"橋を渡った後まで策をつなげ。斬った敵の数ではなく、指揮所を取れたかで終わる戦いだ。"},
