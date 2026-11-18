@@ -38,7 +38,10 @@ namespace frontline
       else if(reading) p={};
       auto& g=v.guangzong;
       if(version>=21) (*this)(g.tracked,g.alarmTurn,g.roadOfficer,g.swift);
-      else if(reading) g={}; }
+      else if(reading) g={};
+      auto& grand=v.grand;
+      if(version>=23) (*this)(grand.active,grand.openedBy,grand.openedOn,grand.ralliedOn,grand.alliedStarted,grand.alliedLosses);
+      else if(reading) grand={}; }
     void JourneyArchive::IO(JourneyAssignment& v)
     { (*this)(v.duty,v.tile,v.completed); }
     void JourneyArchive::IO(JourneyResult& v)
@@ -69,6 +72,7 @@ namespace frontline
       if(version>=18) (*this)(v.luoyangPlan,v.history[LuoyangMission]);
       else if(reading) { v.luoyangPlan=LuoyangPlan::None;v.history[LuoyangMission]={}; }
       if(version>=19) IO(v.depotInterception);else if(reading) v.depotInterception=false;
+      if(version>=23) IO(v.grandCampaign);else if(reading) v.grandCampaign=false;
       if(reading && version<17 && v.HasSunJian() && v.stage==JourneyStage::Battle)
           v.battleReview.yangren.tracked=true; }
 }

@@ -1,4 +1,5 @@
-param([string]$EngineRoot = 'C:\Program Files\Epic Games\UE_5.7', [switch]$SkipEditor)
+param([string]$EngineRoot = 'C:\Program Files\Epic Games\UE_5.7', [switch]$SkipEditor,
+    [ValidateRange(1,64)][int]$MaxParallelActions = 4)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $repoRoot = Split-Path $projectRoot -Parent
@@ -36,6 +37,6 @@ $batchPath = Join-Path $rulesDir 'build-rules.cmd'
 if ($LASTEXITCODE -ne 0) { throw 'Shared rule build failed' }
 [IO.File]::WriteAllText($headerStamp, $headerState, [Text.UTF8Encoding]::new($false))
 if (!$SkipEditor) {
-    & (Join-Path $EngineRoot 'Engine\Build\BatchFiles\Build.bat') GunyuTacticsEditor Win64 Development "-Project=$projectFile" -WaitMutex -NoHotReloadFromIDE '-CompilerVersion=14.44.35207'
+    & (Join-Path $EngineRoot 'Engine\Build\BatchFiles\Build.bat') GunyuTacticsEditor Win64 Development "-Project=$projectFile" -WaitMutex -NoHotReloadFromIDE '-CompilerVersion=14.44.35207' "-MaxParallelActions=$MaxParallelActions"
     if ($LASTEXITCODE -ne 0) { throw 'Unreal Editor module build failed' }
 }

@@ -20,9 +20,9 @@ FString ATacticalField::CueReason() const { return CurrentBeat() ? State->HUD.Re
 TArray<FVisualUnit> ATacticalField::ObserveUnits() const
 {
     TArray<FVisualUnit> Result;
-    Result.SetNum(6);
     const auto& J = State->Journey;
-    for (int Id = 0; Id < static_cast<int>(J.world.armies.size()) && Id < 6; ++Id)
+    Result.SetNum(FMath::Max(6,int(J.world.armies.size())));
+    for (int Id = 0; Id < static_cast<int>(J.world.armies.size()); ++Id)
     {
         const auto& Actual = J.world.armies[Id];
         const Army* Seen = &Actual;
@@ -38,6 +38,7 @@ TArray<FVisualUnit> ATacticalField::ObserveUnits() const
         if(Unit.Name==JourneyText(EpisodeSpeakerName(ZhangLiang))) Unit.HistoricalSpeaker=ZhangLiang;
         if(J.HasSunJian() && Id==3) Unit.HistoricalSpeaker=LuBu;
         if(J.HasSunJian() && Id==StrategistJourney::AlliedArmy) Unit.HistoricalSpeaker=SunJian;
+        if(J.HasGrandBattle() && !J.HasSunJian() && Id==StrategistJourney::AlliedArmy) Unit.HistoricalSpeaker=HuangfuSong;
         Unit.bTransport=Seen->arm==Arm::Transport;
         Unit.bCavalry=Seen->arm==Arm::Cavalry;
         Unit.Position = SurfaceLocation(Seen->tile);

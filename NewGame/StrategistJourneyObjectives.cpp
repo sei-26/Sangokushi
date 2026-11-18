@@ -335,7 +335,12 @@ namespace frontline
         }
         else if(kind==JourneyObjective::CaptureCamp)
         {
-            if(PositionSecured(goal) && (!HasSunJian() || SunJianAtRally()))
+            if(HasGrandBattle())
+            {
+                CheckGrandBattle();
+                if(stage!=JourneyStage::Battle) return;
+            }
+            else if(PositionSecured(goal) && (!HasSunJian() || SunJianAtRally()))
             {
                 world.tiles[goal].owner=world.player;++world.revision;
                 if(IsPortAssault()) RecordPortCapture();

@@ -122,6 +122,7 @@ bool ATacticalField::AutoBattleSmokeTest()
         J.lastChain.events.back().comboPercent==150 && J.chain.signatureUsed[0] &&
         J.chain.spent[0] && J.chain.spent[1] && J.chain.spent[2],
         TEXT("delegation dispatches a real three-officer combo, rally first and 150 percent finisher"))) return false;
+    Issue(ETacticalCommand::Skip); // Finish the tested combo before restoring the next test's battle.
     bRealtimeCommand=Mode;bStartWithCouncil=Council;bLegacyJourney=Legacy;FirstMission=Mission;bPauseOnBattleAlert=Alerts;State->bNoPlayback=Playback;
     Issue(ETacticalCommand::Restart);
     UE_LOG(LogTemp,Display,TEXT("GUNYU_AUTO_BATTLE: PASS (coordinated approaches, three-officer combo, rally, actual costs, decision pause, takeover, reservations and load)"));return true;

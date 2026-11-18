@@ -15,6 +15,7 @@ namespace frontline
 	}
 	const char32_t* StrategistJourney::MissionName() const
 	{
+		if(PlansGrandBattle()) return HasSunJian() ? U"陽人大決戦 ／ 孫堅本隊と敵本陣を突け":U"広宗大決戦 ／ 官軍全軍の総攻撃";
 		return Definition().title;
 	}
 	void StrategistJourney::Report(const std::u32string& text)
@@ -57,7 +58,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
-        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=false;reserveFood=0;
+        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=grandCampaign=false;reserveFood=0;
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -119,6 +120,7 @@ namespace frontline
 			message = U"兵・兵糧・軍資金が不足。募兵か準備方針を見直そう。";
 			return false;
 		}
+		world.generals.resize(5);
 		convoyEscort = cost.escort;
         depotInterception=HasDepotInterception();
 		SetupBattlefield();
@@ -240,6 +242,7 @@ namespace frontline
             ally.troops=1300;ally.food=3000;
             world.armies.push_back(ally);
         }
+		PrepareGrandBattle();
 		stage = JourneyStage::Battle;
 		chain.Reset(world);
 		if (choice == 0)
@@ -362,6 +365,13 @@ namespace frontline
 	}
 	void StrategistJourney::Finish(bool success, const char32_t* reason)
 	{
+        if(HasGrandBattle())
+        {
+            int remaining=0;
+            for(int army=5;army<int(world.armies.size());++army)
+                if(world.armies[army].faction==world.player) remaining+=world.armies[army].troops;
+            battleReview.grand.alliedLosses=std::max(0,battleReview.grand.alliedStarted-remaining);
+        }
 		won = success;
 		stage = JourneyStage::Debrief;
 		survivors = 0;

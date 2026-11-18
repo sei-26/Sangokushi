@@ -277,4 +277,5 @@ struct FTacticalPresentation
     int Mission = 0;
     FString GoalLabel,SecondGoalLabel;
     bool bBattle = false, bWon = false, bComplete = false, bBusy = false;
+    bool bGrandBattle=false;
 };

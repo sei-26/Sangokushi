@@ -9,11 +9,12 @@ bool ATacticalField::HasChainReview() const
 FChainReview ATacticalField::ReadChainReview() const
 {
     if(!HasChainReview()) return {};
-    const auto& J=State->Journey;TArray<FString> Names;Names.SetNum(6);
+    const auto& J=State->Journey;TArray<FString> Names;Names.SetNum(FMath::Max(6,int(J.world.armies.size())));
     auto Name=[&](int General)
     { return General>=0 && General<int(J.world.generals.size()) ? JourneyText(J.world.generals[General].name):FString(); };
     for(int I=0;I<3 && I<int(J.world.armies.size());++I) Names[I]=Name(J.world.armies[I].general);
     // Reports may name a past observation. Never inspect an unknown enemy army.
-    for(int I=3;I<5;++I) if(const auto* Contact=J.intelligence[0].Find(I)) Names[I]=Name(Contact->observed.general);
+    for(const auto& Contact:J.intelligence[0].contacts)
+        if(Names.IsValidIndex(Contact.id)) Names[Contact.id]=Name(Contact.observed.general);
     return gunyureview::Build(J.lastChain,Names);
 }

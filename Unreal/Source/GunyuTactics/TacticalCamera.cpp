@@ -37,6 +37,12 @@ void ATacticalController::FocusSelectedOfficer()
 }
 void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
 {
+    const auto& Presentation=Field->Presentation();
+    if(!Presentation.bGrandBattle || !Presentation.bBattle) GrandCameraMission=-1;
+    else if(GrandCameraMission!=Presentation.Mission)
+    {
+        ResetBattleCamera();GrandCameraMission=Presentation.Mission;
+    }
     // Reframe a newly reached battle once. Panning within its vista is preserved.
     if(CameraPreset==3 && VistaMission!=Field->Presentation().Mission)
     {

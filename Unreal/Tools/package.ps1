@@ -2,7 +2,8 @@
     [string]$EngineRoot = 'C:\Program Files\Epic Games\UE_5.7',
     [ValidateSet('Development','Shipping')][string]$Configuration = 'Development',
     [string]$OutputRoot,
-    [switch]$SkipRulesBuild
+    [switch]$SkipRulesBuild,
+    [ValidateRange(1,64)][int]$MaxParallelActions = 4
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
@@ -12,7 +13,7 @@ $uat = Join-Path $EngineRoot 'Engine\Build\BatchFiles\RunUAT.bat'
 if (!(Test-Path -LiteralPath $uat)) { throw "Unreal automation tool missing: $uat" }
 if (!$OutputRoot) { $OutputRoot = Join-Path $repoRoot "Releases\GunyuSenzen-$Configuration" }
 $OutputRoot = [IO.Path]::GetFullPath($OutputRoot)
-if (!$SkipRulesBuild) { & (Join-Path $PSScriptRoot 'build.ps1') -EngineRoot $EngineRoot -SkipEditor }
+if (!$SkipRulesBuild) { & (Join-Path $PSScriptRoot 'build.ps1') -EngineRoot $EngineRoot -SkipEditor -MaxParallelActions $MaxParallelActions }
 if (!(Test-Path -LiteralPath (Join-Path $projectRoot 'Intermediate\Rules\sangokushi_rules.lib'))) {
     throw 'Build the shared rules before packaging.'
 }
@@ -21,7 +22,7 @@ $uatArguments = @(
     '-unattended', '-utf8output', '-nocompileeditor',
     '-platform=Win64', "-clientconfig=$Configuration", '-build', '-cook',
     '-stage', '-pak', '-prereqs', '-archive', '-nodebuginfo',
-    "-archivedirectory=$OutputRoot", '-UbtArgs=-CompilerVersion=14.44.35207'
+    "-archivedirectory=$OutputRoot", "-UbtArgs=-CompilerVersion=14.44.35207 -MaxParallelActions=$MaxParallelActions"
 )
 & $uat @uatArguments
 if ($LASTEXITCODE -ne 0) { throw "BuildCookRun failed with exit code $LASTEXITCODE" }
@@ -67,12 +68,13 @@ Play.cmd でフルスクリーン起動。Unreal Editor は不要です。
 合戦の速さ：右の速度ボタンで0.5・1・2・3・4・5倍。戦法の演出中も右下で変更。
 記録：F6。カメラ：ホイールで拡大、中ドラッグで回転、Homeで全景。
 
-序章の三戦を終えたら「第一章　黄巾の乱へ」。広宗郊外の戦いに出陣します。
-広宗で黄巾の南翼が街道へ転進したら、前陣を急ぐか民の街道に別隊を送るかを決めます。時間内の占領と避難の成果は、酸棗での張飛・関羽の出陣位置に反映されます。
+序章の三戦を終えたら「第一章　黄巾の乱へ」。広宗は味方本隊・両翼と戦う11部隊の大合戦です。
+前陣を開くと皇甫嵩本隊が進出。合流した本隊と黄巾軍本陣を撃破して決着します。南翼から民の街道を守る判断も残り、前陣の突破時刻と避難の成果は酸棗での出陣位置に反映されます。
 黄巾の乱の結末を読むと「第二章　反董卓連合へ」。酸棗の軍議で1・2を選ぶと、曹操の前哨攻めか張邈の街道守備へ出陣できます。
 護送の街道・南の林道、河港の南渡し・北橋、酸棗の二つの作戦はそれぞれ別の戦場です。出陣前に軍議の地図で道と目標を確認できます。
 河港では最後の守備隊を退けると占領の好機。別の隊でその指揮と後の２指揮以内に旗を立てると、次の烽火の守備は３指揮から２指揮になります。
-酸棗を終えたら「陽人の戦いへ」。辻を確保して孫堅隊と合流したら、戦後の会話で洛陽の任務を選びます。
+酸棗を終えたら「陽人の戦いへ」。こちらも11部隊の会戦です。辻を開いて孫堅本隊と合流し、董卓軍本陣を撃破。戦後の会話で洛陽の任務を選びます。
+両会戦は最初に全景で表示します。前陣の突破役と味方の損耗が戦後の掛け合いに残ります。進行中の旧記録の戦いは保ち、次の対象戦の出陣から新構成を使います。
 「南門を開く」で本隊を通すか、陽人で孫堅の信頼を4以上得た場合は「西の荷駄隊を捕らえる」を選べます。西では車の１マス東を塞ぎ、護衛を崩すと兵糧1,000を得ます。洛陽の任務を達成すると第二章完結です。
 長期の歴史戦役、仕官先の選択、完成版の美術は制作途中です。
 フォントのライセンスは Windows/GunyuTactics/Content/UI/Fonts/OFL.txt に収録。

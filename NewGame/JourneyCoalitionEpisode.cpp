@@ -6,6 +6,7 @@ namespace frontline
 {
     JourneyEpisode BuildYangrenEpisode(const StrategistJourney& j)
     {
+        if(j.PlansGrandBattle() || j.HasGrandBattle()) return BuildGrandBattleEpisode(j);
         const auto beat=CampaignBeat(j);
         JourneyEpisode e{beat.phase,U"一九一年・反董卓連合 ／ 陽人の山麓",beat.change,beat.next};
         const bool advance=j.coalitionPlan==CoalitionPlan::Advance;

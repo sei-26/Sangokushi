@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+広宗・陽人の11部隊の会戦は `NewGame/JourneyGrandBattle.hpp/.cpp`、対応する掛け合いは `JourneyGrandDrama.cpp`。保存版23で突破・本隊合流・味方の損耗を記録する。共通の検証は `tests/JourneyGrandBattleTests.cpp`、実エンジンの検証は `TacticalGrandBattleQA.cpp`。[実装範囲](GRAND_HISTORICAL_BATTLES.md)。
+
 守備の反省から再挑戦の役を変える案は `JourneyDefenseAdvice.hpp/.cpp` と `JourneyDefenseRetryPlan.cpp`、４台詞は `JourneyDefenseRetryCouncil.cpp`。参考は歴史と分けて版12で保存する。[反省と役割の選び直し](DEFENSE_RETRY.md)。
 
 攻めと守りを振り返る戦後の会話は `NewGame/JourneyDefenseAftermath.cpp`、人物の声は `JourneyDefenseVoices.cpp`。根拠の実守備記録は `JourneyDefense.cpp`、保存は版11。[実記録と帰陣の会話](DEFENSE_AFTERMATH.md)。

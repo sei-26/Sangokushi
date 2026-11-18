@@ -15,7 +15,20 @@ void ATacticalField::BuildMissionPresentation()
             if(Seen.current && Seen.observed.troops>0 && J.world.Hostile(0,Seen.observed.faction) && J.world.MapDistance(Seen.observed.tile,Tile)<=1) ++Count;
         return Count;
     };
-    if(J.depotInterception)
+    if(J.HasGrandBattle())
+    {
+        const auto& Grand=J.battleReview.grand;
+        const auto& Main=J.world.armies[StrategistJourney::AlliedArmy];
+        const auto* Commander=J.intelligence[0].Find(GrandCommander);
+        H.MissionFocusTile=Grand.openedOn ? J.GrandRallyTile():J.goal;
+        if(Grand.openedOn && Commander && Commander->current) H.MissionFocusTile=Commander->observed.tile;
+        H.MissionAdvice=Grand.openedOn ? TEXT("本隊とともに、本陣を落とせ"):TEXT("前陣を突破し、全軍へ合図を送れ");
+        H.MissionStep=FString::Printf(TEXT("%s ｜ 本隊 %d兵 ｜ 左翼 %d兵・右翼 %d兵"),Grand.openedOn ? TEXT("全軍総攻撃"):TEXT("両翼が交戦中"),
+            Main.troops,J.world.armies[6].troops,J.world.armies[7].troops);
+        H.MissionDetail=JourneyText(J.ObjectiveBrief())+TEXT("\n味方本隊と両翼は自律して移動・交戦する。前陣の占領は総攻撃の合図。本隊を生かし、前陣を保持しながら敵本陣を落とす。");
+        if(Commander && Commander->current) H.MissionDetail+=FString::Printf(TEXT("\n敵本陣 %d兵。味方本隊の損失も戦後へ記録する。"),Commander->observed.troops);
+    }
+    else if(J.depotInterception)
     {
         const auto* Column=J.intelligence[0].Find(4);
         const auto* Guard=J.intelligence[0].Find(3);

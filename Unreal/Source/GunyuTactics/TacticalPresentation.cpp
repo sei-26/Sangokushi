@@ -31,6 +31,7 @@ void ATacticalField::BuildPresentation()
     HUD = {};
     HUD.Mission=J.mission;
     HUD.bBattle = J.stage == JourneyStage::Battle;
+    HUD.bGrandBattle=J.HasGrandBattle();
     HUD.bWon = J.won;
     HUD.bComplete = J.stage == JourneyStage::Complete;
     HUD.Selected = State->Selected;
@@ -54,6 +55,11 @@ void ATacticalField::BuildPresentation()
     if(J.depotInterception && HUD.bBattle)
         if(const auto* Column=J.intelligence[0].Find(4);Column && Column->current)
         { HUD.SecondGoalTile=Column->observed.tile+1;HUD.SecondGoalLabel=TEXT("封鎖地点"); }
+    if(J.HasGrandBattle())
+    {
+        HUD.SecondGoalTile=13+6*Width;
+        HUD.SecondGoalLabel=J.HasSunJian() ? TEXT("董卓軍の本陣"):TEXT("黄巾軍の本陣");
+    }
     HUD.bHasResupplyPlan=J.campaignFlow && J.preparation==1;
     HUD.ResupplyLabel=J.CanResupply() ? TEXT("全軍へ補給  ／ 残り１回"):TEXT("予備糧なし ／ 補給できない");
     HUD.Difficulty=JourneyText(DifficultyName(J.difficulty));

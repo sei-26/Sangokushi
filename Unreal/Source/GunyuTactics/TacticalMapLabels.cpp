@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "HexGrid.hpp"
+#include "JourneyGrandBattle.hpp"
 #include "WorldLayout.hpp"
 #include "TacticalWidgets.h"
 #include "TacticalTargetVisual.h"
@@ -89,7 +90,7 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
           + SVerticalBox::Slot().AutoHeight()[SNew(SBox)
              .Visibility_Lambda([this,Index] { return GoalDutyStatus(Index).IsEmpty() ? EVisibility::Collapsed:EVisibility::HitTestInvisible; })
              [Label([this,Index] { return GoalDutyStatus(Index); },11,FLinearColor(.68f,.86f,.79f))]]]];
-    for (int Index = 0; Index < 6; ++Index)
+    for (int Index = 0; Index < frontline::GrandBattleArmyCount; ++Index)
     {
         auto Contents=SNew(SVerticalBox).Visibility(EVisibility::HitTestInvisible)
           + SVerticalBox::Slot().AutoHeight()

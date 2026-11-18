@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalChrome.h"
+#include "JourneyGrandBattle.hpp"
 #include "Campaign.hpp"
 #include "TacticalTargetVisual.h"
 #include "TacticalActionFocus.h"
@@ -10,7 +11,7 @@
 void ATacticalController::LayoutMapLabels()
 {
     using namespace gunyumaplabel;
-    LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(Hidden,6);GoalLabelPositions.Init(Hidden,7);MapLabelLeaders.Reset();
+    LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(Hidden,frontline::GrandBattleArmyCount);GoalLabelPositions.Init(Hidden,7);MapLabelLeaders.Reset();
     if(!Field || Field->Presentation().Journey.bVisible) return;
     const auto& Units=Field->VisualUnits();const FVector2D Size(132,86);
     const bool WideShot=bTacticCinema && Field->ReadTacticCinema().bVisible;
@@ -77,7 +78,7 @@ void ATacticalController::LayoutMapLabels()
     TArray<int> Priority;
     if(Focused) { Priority.Add(Action.Actor);Priority.AddUnique(Action.Target); }
     Priority.AddUnique(Field->Presentation().Selected);Priority.AddUnique(5);
-    for(int Id=0;Id<6;++Id) Priority.AddUnique(Id);
+    for(int Id=0;Id<Units.Num();++Id) Priority.AddUnique(Id);
     for(int Id:Priority)
     {
         if(!Units.IsValidIndex(Id) || Units[Id].Id<0 || (Units[Id].Troops<=0 && !Field->IsPlaying())) continue;
@@ -118,7 +119,7 @@ FString ATacticalController::UnitMapStatus(int Index) const
     if(Index<3 && O.IsValidIndex(Index)) return O[Index].Command;
     if(U.bTransport) return TEXT("護送車");
     if(U.bCavalry) return TEXT("騎兵");
-    return Index==5 ? TEXT("共闘・自動進軍"):FString();
+    return Index>=5 && !U.bEnemy ? TEXT("共闘・自動進軍"):FString();
 }
 
 void ATacticalController::SelectMapUnit(int Index)

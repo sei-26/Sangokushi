@@ -6,6 +6,7 @@ namespace frontline
 {
     JourneyEpisode BuildYellowTurbanEpisode(const StrategistJourney& j)
     {
+        if(j.PlansGrandBattle() || j.HasGrandBattle()) return BuildGrandBattleEpisode(j);
         const auto beat=CampaignBeat(j);
         JourneyEpisode e;
         e.title=beat.phase;

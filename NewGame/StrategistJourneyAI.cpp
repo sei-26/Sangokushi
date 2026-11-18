@@ -79,6 +79,34 @@ namespace frontline
             }
             return plans;
         }
+        void ApplyGrandEnemyRoles(const Campaign& observed,std::vector<JourneyEnemyPlan>& plans)
+        {
+            for(auto& plan:plans)
+            {
+                if(plan.army==GrandCommander)
+                {
+                    plan.next=plan.target=plan.from;plan.targetArmy=-1;
+                    plan.intent=JourneyEnemyIntent::HoldCamp;plan.role=JourneyEnemyRole::Anchor;
+                }
+                else if(plan.army>=8)
+                {
+                    if(plan.targetArmy>=0 && observed.MapDistance(plan.from,observed.armies[plan.targetArmy].tile)<=1) continue;
+                    const int opponent=plan.army==8 ? 6:7;
+                    plan.targetArmy=observed.armies[opponent].troops>0 ? opponent:-1;
+                    plan.target=plan.targetArmy>=0 ? observed.armies[opponent].tile:Campaign::At(5,plan.army==8 ? 3:12);
+                    plan.next=JourneyAdvanceStep(observed,plan.from,plan.target,false);
+                    plan.intent=JourneyEnemyIntent::MainAttack;plan.role=JourneyEnemyRole::MainAttack;
+                }
+                else continue;
+                auto next=std::make_unique<Campaign>(observed);
+                next->armies[plan.army].tile=plan.next;plan.danger.clear();
+                for(int y=1;y<13;++y) for(int x=1;x<15;++x)
+                {
+                    const int tile=Campaign::At(x,y);
+                    if(tile!=plan.next && next->tiles[tile].terrain!=Terrain::Sea && next->CanStrike(plan.army,tile)) plan.danger.push_back(tile);
+                }
+            }
+        }
     }
     std::vector<JourneyEnemyPlan> StrategistJourney::ReadEnemyPlans() const
     {
@@ -105,12 +133,18 @@ namespace frontline
         BattleIntelligence assumed;
         assumed.Reset(*observed); assumed.Observe(*observed, 1);
         auto view = EnemyView(*observed, assumed);
-        return AdaptivePlans(*view,chain,Context(*this),campaignFlow);
+        auto plans=AdaptivePlans(*view,chain,Context(*this),campaignFlow);
+        if(HasGrandBattle()) ApplyGrandEnemyRoles(*view,plans);
+        return plans;
     }
     std::vector<JourneyEnemyPlan> StrategistJourney::PlanEnemyTurn() const
     {
         auto observed=EnemyView(world,intelligence[1]);
-        return AdaptivePlans(*observed,chain,Context(*this),campaignFlow);
+        auto plans=AdaptivePlans(*observed,chain,Context(*this),campaignFlow);
+        if(HasGrandBattle()) ApplyGrandEnemyRoles(*observed,plans);
+        auto allies=PlanGrandAllies();
+        plans.insert(plans.end(),allies.begin(),allies.end());
+        return plans;
     }
     void StrategistJourney::ApplyEnemyPlans(const std::vector<JourneyEnemyPlan>& plans)
     {
@@ -123,6 +157,12 @@ namespace frontline
                 ++world.revision;
             }
         if(IsPortAssault()) ExpirePortOpening();
+        if(HasGrandBattle() && TacticChain::Living(world,AlliedArmy))
+            for(int officer=0;officer<3;++officer)
+                if(TacticChain::Living(world,officer) && world.armies[officer].morale<45 &&
+                   world.MapDistance(world.armies[officer].tile,world.armies[AlliedArmy].tile)<=2 &&
+                   world.ActivateTactic(AlliedArmy,true))
+                { Report(U"味方本隊が鼓舞を発動。太鼓に応え、周囲の兵が顔を上げた。");break; }
         RefreshIntelligence();
     }
     void StrategistJourney::EnemyTurn()
@@ -148,7 +188,7 @@ namespace frontline
         if(HasSunJian())
         {
             RefreshIntelligence(); // Queued attacks may have cleared Sun Jian's path this cycle.
-            AdvanceSunJian();
+            if(!HasGrandBattle() || !battleReview.grand.ralliedOn) AdvanceSunJian();
             const auto& cavalry=world.armies[3];
             if(!chain.disordered[3] && world.tiles[cavalry.tile].terrain==Terrain::Plain &&
                intelligence[1].EnemyNear(world,cavalry.tile,1))

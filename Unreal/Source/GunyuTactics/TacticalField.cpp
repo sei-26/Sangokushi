@@ -172,6 +172,7 @@ void ATacticalField::StartTrial()
     State->TerrainSnapshot.Reset();State->BackdropSnapshot.Reset();
     State->Beats.Reset(); State->BeatIndex = 0; State->BeatTime = 0;
     if(bLegacyJourney) State->Journey.Reset();else State->Journey.ResetCampaign();
+    State->Journey.grandCampaign=!bLegacyJourney && bGrandHistoricalBattles;
     if(!bStartOnStandardDifficulty) State->Journey.SelectDifficulty(frontline::JourneyDifficulty::Story);
     State->Journey.mission = FMath::Clamp(FirstMission, 0, 2);
     State->Journey.enemyPolicy = FMath::Clamp(EnemyPolicy, 0, 2);

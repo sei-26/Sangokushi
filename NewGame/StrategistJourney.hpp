@@ -55,7 +55,7 @@ namespace frontline
         int reserveFood=0; // Paid, unissued supply. Never reconstructed for a loaded battle.
 		int goal = Campaign::At(12, 10);
 		static constexpr int ConvoyArmy = 5;
-        static constexpr int AlliedArmy = 5; // Only Yangren uses this slot for a combat unit.
+        static constexpr int AlliedArmy = 5; // Yangren or the grand battle's allied main force.
 		int heldTurns = 0, convoyStep = 0, convoyEscort = 0, recoveredCargo = 0;
 		std::array<bool, 3> guarding{};
         std::array<JourneyDefenseRead,2> defenseChecks{}; // Transient local results, excluded from save/archive and rewards.
@@ -67,6 +67,7 @@ namespace frontline
         std::optional<JourneyDefenseLesson> retryDefense; // Separate retry reference; never a confirmed battle result.
         JourneyDifficulty difficulty=JourneyDifficulty::Standard;
         bool campaignFlow=false;
+        bool grandCampaign=false;
         bool SelectDifficulty(JourneyDifficulty);
         bool ApplyPlanExample();
         bool RetryAtCouncil(const StrategistJourney& beforeBattle);
@@ -103,6 +104,10 @@ namespace frontline
 		bool IsRescue() const { return mission == 0 && promise == JourneyPromise::EscortRefugees; }
 		bool HasConvoy() const { return IsRescue() || Definition().kind == JourneyObjective::Escort; }
         bool HasSunJian() const { return mission==YangrenMission; }
+        bool HasGrandBattle() const { return battleReview.grand.active; }
+        bool PlansGrandBattle() const { return grandCampaign && campaignFlow &&
+            (mission==YellowTurbanMission || mission==YangrenMission) && (stage==JourneyStage::Preparation || HasGrandBattle()); }
+        int GrandRallyTile() const { return HasSunJian() ? YangrenRally:GrandRally; }
         bool IsPortAssault() const { return campaignFlow && mission==1; }
         int GuangzongCommandsLeft() const;
         const JourneyBattleReview::Guangzong& GuangzongSupport() const;
@@ -113,7 +118,7 @@ namespace frontline
         int DepotMovesIn() const { return 2-(turn-1)%2; }
         bool DepotGuardProtects(int columnTile,int guardTile,int guardTroops,bool disordered) const;
         int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles+
-            (campaignFlow && mission==1 && history[0].rescued ? 2:0); }
+            (campaignFlow && mission==1 && history[0].rescued ? 2:0)+(PlansGrandBattle() ? 8:0); }
         bool HasPortSignal() const
         {
             const auto& port=history[1];
@@ -166,6 +171,9 @@ namespace frontline
 		const char32_t* MissionName() const;
 
 	private:
+        void PrepareGrandBattle();
+        void CheckGrandBattle();
+        std::vector<JourneyEnemyPlan> PlanGrandAllies() const;
         friend class JourneyRealtime;
         std::vector<JourneyEnemyPlan> PlanEnemyTurn() const;
         void ApplyEnemyPlans(const std::vector<JourneyEnemyPlan>& plans);

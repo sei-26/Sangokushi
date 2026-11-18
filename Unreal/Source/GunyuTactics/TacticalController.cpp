@@ -172,7 +172,16 @@ void ATacticalController::PlayerTick(float Delta)
         int Width, Height; GetViewportSize(Width, Height);
         UE_LOG(LogTemp, Display, TEXT("GUNYU_WINDOW: mode=%d viewport=%dx%d"), static_cast<int>(GEngine->GameViewport->GetWindow()->GetWindowMode()), Width, Height);
     }
-    if (Frames == 3 && (bCapture || FParse::Param(FCommandLine::Get(), TEXT("GunyuBattlePreview")) || FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilPreview"))))
+    int GrandPreview=0;
+    const bool bGrandPreview=FParse::Value(FCommandLine::Get(),TEXT("GrandPreview="),GrandPreview);
+    if(Frames==3 && bGrandPreview)
+    {
+        int Phase=0;FParse::Value(FCommandLine::Get(),TEXT("GrandPhase="),Phase);
+        const bool Valid=Field->PrepareGrandBattlePreview(GrandPreview,Phase);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_GRAND_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
+    if (Frames == 3 && !bGrandPreview && (bCapture || FParse::Param(FCommandLine::Get(), TEXT("GunyuBattlePreview")) || FParse::Param(FCommandLine::Get(),TEXT("GunyuCouncilPreview"))))
     {
         const bool bDutyHandoffCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuDutyHandoff"));
         // Explicit cinematic QA captures use fixed manual playback; editor map
@@ -433,6 +442,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=CoalitionStorySmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuYangrenOnly")))
     { const bool Passed=YangrenSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGrandOnly")))
+    { const bool Passed=Field->GrandBattleSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuLuoyangOnly")))
     { const bool Passed=LuoyangSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningOnly")))

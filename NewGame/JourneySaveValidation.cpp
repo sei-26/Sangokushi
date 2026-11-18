@@ -13,7 +13,7 @@ namespace frontline
         {
             if(!Enum(o.kind,4) || !Enum(o.arrival,2) || o.waypoints.size()>3) return false;
             if(o.kind==JourneyDirective::March && !Cell(o.destination)) return false;
-            if(o.kind==JourneyDirective::Attack && !Range(o.target,3,4)) return false;
+            if(o.kind==JourneyDirective::Attack && !Range(o.target,3,GrandBattleArmyCount-1)) return false;
             for(int p:o.waypoints) if(!Cell(p)) return false;
             return true;
         }
@@ -24,7 +24,7 @@ namespace frontline
             for(const auto& o:orders)
             {
                 if(!Range(o.army,0,2) || used[o.army] || !Enum(o.tactic,7) ||
-                   !Range(o.enemy,-1,4) || (o.destination!=-1 && !Cell(o.destination))) return false;
+                   !Range(o.enemy,-1,GrandBattleArmyCount-1) || (o.destination!=-1 && !Cell(o.destination))) return false;
                 used[o.army]=true;
             }
             return true;
@@ -81,19 +81,27 @@ namespace frontline
         bool Review(const JourneyBattleReview& r)
         {
             if(!ReliefReview(r)) return false;
-            return Range(r.openingAmbushes,0,1) && Range(r.resupplyTurn,0,16) && Range(r.resupplyMorale,0,60) && Range(r.postSupplySteps,0,r.tacticSteps) &&
+            const auto& g=r.grand;
+            if(g.active)
+            {
+                if(!Range(g.openedBy,-1,2) || !Range(g.openedOn,0,64) || !Range(g.ralliedOn,0,64) ||
+                   (g.ralliedOn && (!g.openedOn || g.ralliedOn<g.openedOn)) ||
+                   (g.openedOn==0)!=(g.openedBy<0) || !Range(g.alliedStarted,1,50000) || !Range(g.alliedLosses,0,g.alliedStarted)) return false;
+            }
+            else if(g.openedBy!=-1 || g.openedOn || g.ralliedOn || g.alliedStarted || g.alliedLosses) return false;
+            return Range(r.openingAmbushes,0,1) && Range(r.resupplyTurn,0,64) && Range(r.resupplyMorale,0,60) && Range(r.postSupplySteps,0,r.tacticSteps) &&
                 (r.preparationTracked || (!r.openingAmbushes && !r.resupplyTurn && !r.resupplyMorale && !r.postSupplySteps)) &&
                 (r.resupplyTurn || (!r.resupplyMorale && !r.postSupplySteps)) && Enum(r.resolution,10) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
                 Range(r.trafficStops,0,100) && Range(r.tacticAttempts,0,1000) &&
                 Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3) && Range(r.coordinatedOfficers,0,7) &&
                 Range(r.confirmedDefenders,0,7) && Range(r.spentGuardFailures,0,7);
         }
-        bool GuangzongReview(const JourneyBattleReview::Guangzong& g,bool allowed,int turn,bool won)
+        bool GuangzongReview(const JourneyBattleReview::Guangzong& g,bool allowed,int turn,bool won,const JourneyGrandBattle& grand={})
         {
             if(!g.tracked) return !g.alarmTurn && g.roadOfficer==-1 && !g.swift;
             return allowed && Range(g.alarmTurn,0,turn) && Range(g.roadOfficer,-1,2) &&
                 (g.alarmTurn || (g.roadOfficer<0 && !g.swift)) &&
-                (!g.swift || (won && turn-g.alarmTurn<GuangzongWindow));
+                (!g.swift || ((won || grand.active) && (grand.active ? grand.openedOn:turn)-g.alarmTurn<GuangzongWindow));
         }
         bool ChainRecord(const ChainResult& r)
         {
@@ -141,6 +149,13 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
+            if(j.HasGrandBattle())
+            {
+                if(!j.PlansGrandBattle() || j.stage==JourneyStage::Preparation || n!=GrandBattleArmyCount) return false;
+                for(int army=5;army<GrandBattleArmyCount;++army)
+                    if(w.armies[army].faction!=(army<8 ? 0:1) || w.armies[army].general!=army ||
+                       w.armies[army].arm==Arm::Transport) return false;
+            }
             if(!Range(j.mission,0,j.campaignFlow ? LuoyangMission:YellowTurbanMission-1) || !Enum(j.coalitionPlan,2) || !Enum(j.luoyangPlan,2) ||
                 (j.mission==LuoyangMission)!=(j.luoyangPlan!=LuoyangPlan::None) ||
                 (j.luoyangPlan==LuoyangPlan::WesternDepot && j.SunJianTrust()<SunJianFlankTrust) ||
@@ -177,12 +192,12 @@ namespace frontline
                 (portRun && j.stage==JourneyStage::Debrief &&
                  !(j.battleReview.port==j.history[1].review.port))) return false;
             if(!GuangzongReview(j.battleReview.guangzong,j.mission==YellowTurbanMission && j.campaignFlow &&
-                j.stage!=JourneyStage::Preparation,j.turn,j.won)) return false;
+                j.stage!=JourneyStage::Preparation,j.turn,j.won,j.battleReview.grand)) return false;
             if(!Enum(j.stage,4) || !Enum(j.difficulty,1) || !Range(j.turn,1,j.TurnBudget()+1) || !Range(j.enemyPolicy,0,2) ||
                !ChainRecord(j.lastChain) || !Enum(j.promise,1) || !Enum(j.convoyRoute,1) || !Cell(j.goal) || !Range(j.preparation,0,1) ||
                !Range(j.convoyStep,0,7) || !Range(j.heldTurns,0,12) || !Review(j.battleReview) || !Assignments(j.assignments,j.mission,j.Battlefield(),j.IsRescue(),j.stage==JourneyStage::Preparation) ||
-               w.cities.size()!=2 || w.generals.size()<5 || w.generals.size()>6 || n>6 ||
-               ((j.stage==JourneyStage::Battle || j.stage==JourneyStage::Debrief) && n!=((j.HasConvoy() || j.HasSunJian())?6u:5u)) ||
+               w.cities.size()!=2 || w.generals.size()<5 || w.generals.size()>GrandBattleArmyCount || n>GrandBattleArmyCount ||
+               ((j.stage==JourneyStage::Battle || j.stage==JourneyStage::Debrief) && n!=(j.HasGrandBattle() ? GrandBattleArmyCount:((j.HasConvoy() || j.HasSunJian())?6u:5u))) ||
                !w.hexMap || w.player!=0 || !Range(w.day,0,10000)) return false;
             for(const auto& c:w.cities) if(!Cell(c.tile) || !Range(c.owner,0,1) || !Range(c.troops,0,1000000) ||
                 !Range(c.food,0,10000000) || !Range(c.gold,0,10000000)) return false;
@@ -197,7 +212,7 @@ namespace frontline
                 (!j.campaignFlow || j.stage!=JourneyStage::Complete || j.won || n!=0 ||
                  j.history[j.mission].review.resolution!=JourneyResolution::Unfought)) return false;
             if(j.HasSunJian() && j.stage!=JourneyStage::Preparation && j.battleReview.resolution!=JourneyResolution::Unfought &&
-                (n!=6 || w.armies[5].faction!=0 || w.armies[5].arm!=Arm::Spear || w.armies[5].general!=5 ||
+                (n!=(j.HasGrandBattle() ? GrandBattleArmyCount:6u) || w.armies[5].faction!=0 || w.armies[5].arm!=Arm::Spear || w.armies[5].general!=5 ||
                     w.armies[3].faction!=1 || w.armies[3].arm!=Arm::Cavalry)) return false;
             for(const auto& t:w.tiles) if(!Enum(t.terrain,5) || !Range(t.owner,-1,1)) return false;
             for(const auto& b:w.bonds) if(!Range(b.a,0,5) || !Range(b.b,0,5) || !Range(b.value,0,100)) return false;
@@ -205,7 +220,7 @@ namespace frontline
                 &j.chain.pressured,&j.chain.inspired,&j.chain.signatureUsed}) if(bits->size()!=n) return false;
             for(const auto& known:j.intelligence)
             {
-                if(known.contacts.size()>6) return false;
+                if(known.contacts.size()>GrandBattleArmyCount) return false;
                 for(const auto& c:known.contacts) if(!Range(c.id,0,static_cast<int>(n)-1) ||
                     !ArmyValid(c.observed,static_cast<int>(w.generals.size()))) return false;
             }
@@ -222,7 +237,7 @@ namespace frontline
                     (!h.completed || !h.campaignFlow || h.won || h.rescued || h.withdrawn || h.casualties || h.survivors || h.story.recorded)) return false;
                 if(!Enum(h.difficulty,1) || !validAssignments || !Review(h.review) || !Enum(h.route,1) || !Story(h.story) ||
                    !PortReview(h.review,m==1 && h.campaignFlow && h.completed,false,h.review.endedAt) ||
-                   !GuangzongReview(h.review.guangzong,m==YellowTurbanMission && h.campaignFlow && h.completed,h.review.endedAt,h.won) ||
+                   !GuangzongReview(h.review.guangzong,m==YellowTurbanMission && h.campaignFlow && h.completed,h.review.endedAt,h.won,h.review.grand) ||
                    !YangrenReview(h.review.yangren,m,false) || (h.review.yangren.tracked && !h.completed) ||
                    (h.story.recorded && !h.completed) || (!h.won && h.story.reply!=JourneyPledge::None)) return false;
             }
@@ -234,7 +249,7 @@ namespace frontline
     bool JourneyArchive::SessionValid(const JourneySaveData& s)
     {
         if(!Journey(s.journey) || (s.beforeBattle && (!Journey(*s.beforeBattle) || s.beforeBattle->stage!=JourneyStage::Preparation)) ||
-           !Range(s.selected,0,2) || !Range(s.target,-1,4) || !Range(s.dialogue,0,3) ||
+           !Range(s.selected,0,2) || !Range(s.target,-1,GrandBattleArmyCount-1) || !Range(s.dialogue,0,3) ||
            !Range(s.preparation,0,1) || !Range(s.interlocutor,0,2) || !ChainOrders(s.orders) || !ChainOrders(s.signal.sequence)) return false;
         if((s.journey.stage==JourneyStage::Battle || s.journey.stage==JourneyStage::Debrief) &&
             (!s.beforeBattle || s.beforeBattle->mission!=s.journey.mission || s.beforeBattle->coalitionPlan!=s.journey.coalitionPlan ||
@@ -249,7 +264,7 @@ namespace frontline
         for(const auto& o:s.watch.lastOrders) if(!Order(o)) return false;
         for(int count:s.watch.stalled) if(!Range(count,0,10000)) return false;
         if(s.watch.history.size()>JourneyBattleWatch::HistoryLimit) return false;
-        for(const auto& h:s.watch.history) if(!Enum(h.kind,5) || !Range(h.army,0,5) || !Cell(h.tile) || !Range(h.turn,0,16)) return false;
+        for(const auto& h:s.watch.history) if(!Enum(h.kind,5) || !Range(h.army,0,GrandBattleArmyCount-1) || !Cell(h.tile) || !Range(h.turn,0,64)) return false;
         return true;
     }
     bool ValidJourneySave(const JourneySaveData& s) { return JourneyArchive::SessionValid(s); }

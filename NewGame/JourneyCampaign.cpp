@@ -111,6 +111,8 @@ namespace frontline
     }
     std::u32string StrategistJourney::ObjectiveBrief() const
     {
+        if(PlansGrandBattle()) return HasSunJian() ? U"陽人の辻を開き、孫堅本隊を合流させ、董卓軍本陣を撃破する":
+            U"前陣を突破して官軍本隊に総攻撃の合図を送り、黄巾軍本陣を撃破する";
         if(campaignFlow && mission==2) return RequiredHoldTurns()==2 ? U"両翼の烽火を２指揮維持し、本隊の包囲を完成させる":U"両翼の烽火を３指揮維持し、本隊の包囲を完成させる";
         return Definition().objective;
     }

@@ -168,6 +168,8 @@ public:
     FChainReview ReadChainReview() const;
     bool RealtimeSmokeTest();
     bool AutoBattleSmokeTest();
+    bool GrandBattleSmokeTest();
+    bool PrepareGrandBattlePreview(int Mission,int Phase);
     bool PrepareDecisionPausePreview(bool bAlerts);
     bool BattleChoicesSmokeTest();
     bool UseBattleChoice(int Index,int ExpectedVersion);
@@ -231,6 +233,8 @@ public:
     bool bStartOnStandardDifficulty = false;
     UPROPERTY(EditAnywhere, Category="Trial|Scenario")
     bool bLegacyJourney = false;
+    UPROPERTY(EditAnywhere,Category="Trial|Campaign")
+    bool bGrandHistoricalBattles = true;
     UPROPERTY(EditAnywhere, Category="Trial|Scenario")
     bool bPauseOnBattleAlert = true;
 private:
@@ -628,6 +632,7 @@ private:
     float Distance = 2800,ViewDistance=2800;
     float CameraYaw=90,CameraElevation=48.f;
     int CameraPreset=0, VistaMission=-1;
+    int GrandCameraMission=-1;
     bool bOrbitDragging=false;
     FVector2D PreviousOrbitCursor;
     int Frames = 0;

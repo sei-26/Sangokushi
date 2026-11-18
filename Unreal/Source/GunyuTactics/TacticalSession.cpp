@@ -24,12 +24,14 @@ bool ATacticalField::ImportSession(const std::vector<std::uint8_t>& Bytes)
     auto Restored=TUniquePtr<FJourneyState,FJourneyDeleter>(new FJourneyState);
     Restored->Journey=std::move(Save->journey);
     if(!bLegacyJourney) Restored->Journey.UpgradeCampaignAtCouncil();
+    if(!bLegacyJourney && bGrandHistoricalBattles) Restored->Journey.grandCampaign=true;
     Restored->Realtime=std::move(Save->realtime);
     Restored->ChainSignal=std::move(Save->signal);Restored->BattleWatch=std::move(Save->watch);
     Restored->Orders=std::move(Save->orders);Restored->SelectedTactics=Save->tactics;
     Restored->Selected=Save->selected;Restored->Target=Save->target;
     Restored->DialogueIndex=Save->dialogue;Restored->PreparationChoice=Save->preparation;Restored->Interlocutor=Save->interlocutor;
     if(Save->beforeBattle) Restored->BeforeBattle=std::make_unique<StrategistJourney>(std::move(*Save->beforeBattle));
+    if(Restored->BeforeBattle) Restored->BeforeBattle->grandCampaign=Restored->Journey.grandCampaign;
     bRealtimeCommand=Save->realtimeMode;bPauseOnBattleAlert=Save->pauseOnAlert;
     Restored->bThreatOverlay=Save->threatOverlay;
     Restored->bRealtimeInBattle=bRealtimeCommand && Restored->Journey.stage==JourneyStage::Battle;
