@@ -12,6 +12,125 @@
 #include <chrono>
 using namespace frontline;
 
+static std::unique_ptr<StrategistJourney> OpenAutoField(int mission)
+{
+    auto journey=std::make_unique<StrategistJourney>();
+    journey->ResetCampaign();journey->mission=mission;journey->Meet();
+    assert(journey->Prepare(1,0));
+    for(int y=0;y<StrategistJourney::Rows;++y)
+        for(int x=0;x<StrategistJourney::Columns;++x)
+            journey->world.tiles[Campaign::At(x,y)].terrain=Terrain::Plain;
+    for(int army=3;army<int(journey->world.armies.size());++army) journey->world.armies[army].troops=0;
+    return journey;
+}
+
+static void VerifyAutoTeamMovement()
+{
+    // A geometrically close officer is trapped by water. Choose the officer
+    // with a real route to the beacon and leave the other beacon staffed.
+    auto defense=OpenAutoField(2);
+    auto& world=defense->world;
+    world.armies[0].tile=world.armies[0].target=Campaign::At(7,4);
+    world.armies[1].tile=world.armies[1].target=Campaign::At(10,6);
+    world.armies[2].tile=world.armies[2].target=defense->Definition().secondGoal;
+    for(int tile:world.MapNeighbors(world.armies[0].tile)) world.tiles[tile].terrain=Terrain::River;
+    defense->RefreshIntelligence();
+    const auto duties=PlanJourneyAutoBattle(*defense);
+    assert(duties.movement.orders[1].kind==JourneyDirective::March &&
+        duties.movement.orders[1].destination==defense->goal && !duties.movement.Route(*defense,1).empty());
+    assert(duties.movement.orders[2].kind==JourneyDirective::Hold);
+
+    // Two equally reachable fronts must not split a healthy assault group.
+    auto assault=OpenAutoField(0);
+    auto& field=assault->world;
+    for(int officer=0;officer<3;++officer)
+        field.armies[officer].tile=field.armies[officer].target=Campaign::At(6,6+officer);
+    field.armies[3].tile=field.armies[3].target=Campaign::At(9,6);
+    field.armies[4].tile=field.armies[4].target=Campaign::At(9,8);
+    field.armies[3].troops=field.armies[4].troops=2000;
+    assault->RefreshIntelligence();
+    const auto coordinated=PlanJourneyAutoBattle(*assault);
+    int focus=-1,participants=0;
+    for(const auto& order:coordinated.movement.orders)
+        if(order.kind==JourneyDirective::Attack)
+        {
+            if(focus<0) focus=order.target;
+            assert(order.target==focus);++participants;
+        }
+    assert(participants>=2);
+
+    // Private enemy displacement cannot alter the observed team decision.
+    auto hidden=std::make_unique<StrategistJourney>(*assault);
+    hidden->world.armies[3].tile=Campaign::At(14,2);
+    hidden->world.armies[4].tile=Campaign::At(14,3);
+    const auto same=PlanJourneyAutoBattle(*hidden);
+    for(int officer=0;officer<3;++officer)
+        assert(SameJourneyOrder(coordinated.movement.orders[officer],same.movement.orders[officer]));
+
+    // A nearer but unreachable enemy must not pin the entire attack group.
+    auto isolated=OpenAutoField(0);
+    auto& map=isolated->world;
+    const std::array<int,3> starts{Campaign::At(5,8),Campaign::At(6,9),Campaign::At(7,9)};
+    for(int officer=0;officer<3;++officer)
+    {
+        map.armies[officer].tile=map.armies[officer].target=starts[officer];
+        map.armies[officer].scouting=true;
+    }
+    map.armies[3].tile=map.armies[3].target=Campaign::At(5,6);
+    map.armies[4].tile=map.armies[4].target=Campaign::At(9,9);
+    map.armies[3].troops=map.armies[4].troops=2000;
+    for(int tile:map.MapNeighbors(map.armies[3].tile)) map.tiles[tile].terrain=Terrain::River;
+    isolated->RefreshIntelligence();
+    assert(isolated->intelligence[0].Find(3) && isolated->intelligence[0].Find(3)->current);
+    const auto reachable=PlanJourneyAutoBattle(*isolated);
+    assert(reachable.movement.orders[0].kind==JourneyDirective::Attack && reachable.movement.orders[0].target==4 &&
+        !reachable.movement.Route(*isolated,0).empty());
+    map.armies[4].tile=map.armies[4].target=Campaign::At(14,12);
+    isolated->intelligence[0].Observe(map,0,true);
+    const auto distant=PlanJourneyAutoBattle(*isolated);
+    assert(distant.movement.orders[0].kind==JourneyDirective::Attack && distant.movement.orders[0].target==4 &&
+        !distant.movement.Route(*isolated,0).empty());
+
+    // Two attacks originally share their next cell. The second officer can
+    // approach the other flank instead of losing the entire movement pulse.
+    auto flanking=std::make_unique<StrategistJourney>(*assault);
+    auto& flank=flanking->world;
+    flank.armies[0].tile=flank.armies[0].target=Campaign::At(7,6);
+    flank.armies[1].tile=flank.armies[1].target=Campaign::At(7,5);
+    flank.armies[2].troops=flank.armies[4].troops=0;
+    flank.armies[3].tile=flank.armies[3].target=Campaign::At(9,7);
+    flanking->chain.disordered[3]=true;
+    flanking->RefreshIntelligence();
+    JourneyRealtime direct;
+    assert(direct.Queue(*flanking,0,JourneyDirective::Attack,3) && direct.Queue(*flanking,1,JourneyDirective::Attack,3));
+    const auto originalFirst=direct.Route(*flanking,0),originalSecond=direct.Route(*flanking,1);
+    assert(originalFirst.size()>1 && originalSecond.size()>1 && originalFirst[1]==originalSecond[1]);
+    auto spread=PlanJourneyAutoBattle(*flanking);
+    const auto first=spread.movement.Route(*flanking,0),second=spread.movement.Route(*flanking,1);
+    assert(first.size()>1 && second.size()>1 && first[1]!=second[1] && spread.tactics.empty());
+    assert(spread.movement.Resolve(*flanking) && flank.armies[0].tile==first[1] && flank.armies[1].tile==second[1]);
+}
+
+static void VerifyAutoEscortGroup()
+{
+    for(auto difficulty:{JourneyDifficulty::Story,JourneyDifficulty::Standard})
+        for(int policy:{0,1,2})
+        {
+            auto battle=std::make_unique<StrategistJourney>();
+            battle->ResetCampaign();battle->Meet();
+            assert(battle->SelectDifficulty(difficulty) && battle->SelectPromise(JourneyPromise::EscortRefugees) &&
+                battle->Prepare(1,policy));
+            for(int cycle=0;cycle<18 && battle->stage==JourneyStage::Battle;++cycle)
+            {
+                auto plan=PlanJourneyAutoBattle(*battle);
+                if(!plan.tactics.empty()) battle->Execute(plan.tactics);
+                if(battle->stage==JourneyStage::Battle) assert(plan.movement.Resolve(*battle));
+            }
+            assert(battle->won && battle->history[0].rescued &&
+                battle->convoyStep==int(battle->ConvoyPath().size())-1);
+        }
+}
+
 static void VerifyAutoCombos()
 {
     auto session=std::make_unique<StrategistJourney>();
@@ -227,6 +346,8 @@ static void PlayGuangzongWithThreeOfficers(const StrategistJourney& council)
 
 int main()
 {
+    VerifyAutoTeamMovement();
+    VerifyAutoEscortGroup();
     VerifyAutoCombos();
     VerifyCampaignSetbacks();
     auto j=std::make_unique<StrategistJourney>();j->ResetCampaign();j->Meet();

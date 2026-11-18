@@ -2,6 +2,7 @@
 namespace frontline
 {
     void CoordinateJourneyAutoMovement(const StrategistJourney&,JourneyAutoPlan&);
+    void CoordinateJourneyAutoEngagement(const StrategistJourney&,JourneyAutoPlan&,const std::array<int,3>&);
     std::vector<ChainOrder> PlanJourneyAutoTactics(const StrategistJourney&,const std::array<bool,3>&);
     JourneyAutoPlan PlanJourneyAutoBattle(const StrategistJourney& j)
     {
@@ -21,9 +22,13 @@ namespace frontline
             int best=-1,score=100000;
             for(int a=0;a<3;++a) if(TacticChain::Living(w,a) && duties[a]<0)
             {
-                if(capture && !CanOccupyObjective(w.armies[a])) continue;
-                const int value=w.MapDistance(w.armies[a].tile,tile)*10+
-                    (w.armies[a].troops<500 ? 20:0);
+                if(!CanOccupyObjective(w.armies[a])) continue;
+                JourneyRealtime approach;
+                approach.Queue(j,a,JourneyDirective::March,tile);
+                auto route=approach.Route(j,a);
+                if(route.empty()) route=approach.ReliefApproach(j,a,tile).route;
+                const int distance=route.empty() ? 200+w.MapDistance(w.armies[a].tile,tile):int(route.size())-1;
+                const int value=distance*10+(w.armies[a].troops<500 || w.armies[a].morale<40 ? 30:0);
                 if(value<score) { score=value;best=a; }
             }
             if(best>=0) duties[best]=tile;
@@ -100,6 +105,7 @@ namespace frontline
                 plan.reasons[a]=j.HasConvoy() ? U"車道を空け、前へ。見えていない敵にも備える！":U"目標へ進み、次の敵を探る！";
             }
         }
+        CoordinateJourneyAutoEngagement(j,plan,duties);
         plan.tactics=PlanJourneyAutoTactics(j,defending);
         CoordinateJourneyAutoMovement(j,plan);
         return plan;

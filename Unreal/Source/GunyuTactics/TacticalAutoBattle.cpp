@@ -81,6 +81,23 @@ bool ATacticalField::AutoBattleSmokeTest()
     Issue(ETacticalCommand::Skip);
     bRealtimeCommand=false;bLegacyJourney=true;FirstMission=0;bPauseOnBattleAlert=false;
     Issue(ETacticalCommand::Restart);
+    {
+        auto& FlankJourney=State->Journey;auto& FlankWorld=FlankJourney.world;
+        for(int Y=0;Y<StrategistJourney::Rows;++Y)
+            for(int X=0;X<StrategistJourney::Columns;++X) FlankWorld.tiles[Campaign::At(X,Y)].terrain=Terrain::Plain;
+        FlankWorld.armies[0].tile=FlankWorld.armies[0].target=Campaign::At(7,6);
+        FlankWorld.armies[1].tile=FlankWorld.armies[1].target=Campaign::At(7,5);
+        FlankWorld.armies[2].troops=FlankWorld.armies[4].troops=0;
+        FlankWorld.armies[3].tile=FlankWorld.armies[3].target=Campaign::At(9,7);
+        FlankWorld.armies[3].troops=2000;
+        FlankJourney.chain.Reset(FlankWorld);FlankJourney.chain.disordered[3]=true;
+        FlankJourney.RefreshIntelligence();Refresh();
+        Issue(ETacticalCommand::AutoBattle);AdvanceRealtime(12.1f);
+        if(!Check(IsPlaying() && FlankWorld.armies[0].tile==Campaign::At(8,6) &&
+            FlankWorld.armies[1].tile==Campaign::At(8,5),
+            TEXT("the auto clock advances both officers on distinct approaches instead of cancelling one"))) return false;
+    }
+    Issue(ETacticalCommand::Skip);bRealtimeCommand=false;Issue(ETacticalCommand::Restart);
     auto& J=State->Journey;auto& W=J.world;
     for(int A=3;A<int(W.armies.size());++A) W.armies[A].troops=0;
     const int Target=Campaign::At(7,7);
@@ -107,7 +124,7 @@ bool ATacticalField::AutoBattleSmokeTest()
         TEXT("delegation dispatches a real three-officer combo, rally first and 150 percent finisher"))) return false;
     bRealtimeCommand=Mode;bStartWithCouncil=Council;bLegacyJourney=Legacy;FirstMission=Mission;bPauseOnBattleAlert=Alerts;State->bNoPlayback=Playback;
     Issue(ETacticalCommand::Restart);
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_AUTO_BATTLE: PASS (three-officer combo, full-morale rally, actual costs, decision pause, takeover, reservations and load)"));return true;
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_AUTO_BATTLE: PASS (coordinated approaches, three-officer combo, rally, actual costs, decision pause, takeover, reservations and load)"));return true;
 }
 
 bool ATacticalField::PrepareDecisionPausePreview(bool bAlerts)

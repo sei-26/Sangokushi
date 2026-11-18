@@ -15,6 +15,7 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyEnemyPlan.cpp
     NewGame/JourneyEnemyDoctrine.cpp
     NewGame/JourneyAutoBattle.cpp
+    NewGame/JourneyAutoEngagement.cpp
     NewGame/JourneyAutoTactics.cpp
     NewGame/JourneyBattleChoices.cpp
     NewGame/JourneyAutoPosition.cpp
