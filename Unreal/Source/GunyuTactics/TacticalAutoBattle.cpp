@@ -76,9 +76,38 @@ bool ATacticalField::AutoBattleSmokeTest()
     if(!Check(PrepareDecisionPausePreview(false),TEXT("turning points also occur with optional pauses disabled"))) return false;
     AdvancePresentation(10);
     if(!Check(!RealtimePaused() && IsAutoBattle() && !Presentation().bDecisionPaused,TEXT("disabled alert pauses let delegation continue"))) return false;
+    // Exercise the actual auto clock and dispatch, including a support opening
+    // at full morale instead of choosing the largest solo hit first.
+    Issue(ETacticalCommand::Skip);
+    bRealtimeCommand=false;bLegacyJourney=true;FirstMission=0;bPauseOnBattleAlert=false;
+    Issue(ETacticalCommand::Restart);
+    auto& J=State->Journey;auto& W=J.world;
+    for(int A=3;A<int(W.armies.size());++A) W.armies[A].troops=0;
+    const int Target=Campaign::At(7,7);
+    const auto Neighbours=W.MapNeighbors(Target);
+    for(int A=0;A<3;++A)
+    {
+        W.armies[A].tile=W.armies[A].target=Neighbours[A];
+        W.armies[A].troops=1400;W.armies[A].morale=100;
+        W.tiles[Neighbours[A]].terrain=Terrain::Plain;
+    }
+    int Support=-1;
+    for(int Tile:W.MapNeighbors(W.armies[1].tile))
+        if(W.MapDistance(Tile,Target)==2 && W.MapDistance(Tile,W.armies[2].tile)<=2 && TacticChain::Free(W,Tile))
+        { Support=Tile;break; }
+    if(!Check(Support>=0,TEXT("the support officer has a legal position behind the attackers"))) return false;
+    W.armies[0].tile=W.armies[0].target=Support;
+    W.armies[3].tile=W.armies[3].target=Target;W.armies[3].troops=10000;W.armies[3].morale=100;
+    W.armies[3].stance=battle::Stance::Guard;W.tiles[Target].terrain=Terrain::Plain;
+    J.chain.Reset(W);J.RefreshIntelligence();Refresh();
+    Issue(ETacticalCommand::AutoBattle);AdvanceRealtime(12.1f);
+    if(!Check(IsPlaying() && J.lastChain.completed==3 && J.lastChain.events.front().tactic==ChainTactic::Oath &&
+        J.lastChain.events.back().comboPercent==150 && J.chain.signatureUsed[0] &&
+        J.chain.spent[0] && J.chain.spent[1] && J.chain.spent[2],
+        TEXT("delegation dispatches a real three-officer combo, rally first and 150 percent finisher"))) return false;
     bRealtimeCommand=Mode;bStartWithCouncil=Council;bLegacyJourney=Legacy;FirstMission=Mission;bPauseOnBattleAlert=Alerts;State->bNoPlayback=Playback;
     Issue(ETacticalCommand::Restart);
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_AUTO_BATTLE: PASS (actual costs, deferred decision pause, safe takeover, optional continuation, reservations and load)"));return true;
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_AUTO_BATTLE: PASS (three-officer combo, full-morale rally, actual costs, decision pause, takeover, reservations and load)"));return true;
 }
 
 bool ATacticalField::PrepareDecisionPausePreview(bool bAlerts)

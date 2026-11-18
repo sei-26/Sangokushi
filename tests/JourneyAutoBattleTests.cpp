@@ -9,7 +9,93 @@
 #include <cassert>
 #include <memory>
 #include <iostream>
+#include <chrono>
 using namespace frontline;
+
+static void VerifyAutoCombos()
+{
+    auto session=std::make_unique<StrategistJourney>();
+    session->ResetCampaign();session->Meet();assert(session->Prepare(1,0));
+    auto& j=*session;
+    auto& w=j.world;
+    for(int y=0;y<StrategistJourney::Rows;++y)
+        for(int x=0;x<StrategistJourney::Columns;++x) w.tiles[Campaign::At(x,y)].terrain=Terrain::Plain;
+    for(int a=3;a<int(w.armies.size());++a) w.armies[a].troops=0;
+    const int target=Campaign::At(7,7);
+    const auto neighbours=w.MapNeighbors(target);
+    for(int a=0;a<3;++a)
+    {
+        w.armies[a].tile=w.armies[a].target=neighbours[a];
+        w.armies[a].troops=1400;w.armies[a].morale=100;
+    }
+    w.armies[3].tile=w.armies[3].target=target;
+    w.armies[3].troops=10000;w.armies[3].morale=100;
+    w.armies[3].stance=battle::Stance::Guard;
+    j.chain.Reset(w);j.RefreshIntelligence();
+
+    // A high-damage first strike used to strand the finishers after a push.
+    const auto started=std::chrono::steady_clock::now();
+    const auto all=PlanJourneyAutoBattle(j);
+    const auto elapsed=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-started).count();
+    const auto prediction=j.Preview(all.tactics);
+    assert(prediction.completed==3 && prediction.events.back().comboPercent==150);
+    int total=0;for(const auto& event:prediction.events) total+=event.damage;
+    const auto solo=j.Preview({{1,3,ChainTactic::AzureDragon,-1}});
+    assert(total>solo.events.front().damage);
+    std::cerr<<"auto combo completed="<<prediction.completed<<" damage="<<total<<" planning_ms="<<elapsed<<"\n";
+
+    // Liu Bei cannot reach the enemy, but his rally still starts a three-officer
+    // chain at full morale and strengthens both adjacent finishers.
+    int support=-1;
+    for(int tile:w.MapNeighbors(w.armies[1].tile))
+        if(w.MapDistance(tile,target)==2 && w.MapDistance(tile,w.armies[2].tile)<=2 && TacticChain::Free(w,tile))
+        { support=tile;break; }
+    assert(support>=0);
+    w.armies[0].tile=w.armies[0].target=support;j.RefreshIntelligence();
+    const auto rally=PlanJourneyAutoBattle(j);
+    assert(rally.tactics.size()==3 && rally.tactics.front().tactic==ChainTactic::Oath);
+    auto unseen=std::make_unique<StrategistJourney>(j);
+    unseen->world.armies[3].tile=Campaign::At(14,2);
+    const auto sameObservation=PlanJourneyAutoBattle(*unseen);
+    assert(sameObservation.tactics.size()==rally.tactics.size());
+    for(std::size_t i=0;i<rally.tactics.size();++i)
+        assert(sameObservation.tactics[i].army==rally.tactics[i].army &&
+            sameObservation.tactics[i].enemy==rally.tactics[i].enemy && sameObservation.tactics[i].tactic==rally.tactics[i].tactic);
+    const auto expected=j.Preview(rally.tactics);
+    assert(expected.completed==3 && expected.events[1].comboPercent==125 && expected.events[2].comboPercent==150);
+    int withRally=0;for(const auto& event:expected.events) withRally+=event.damage;
+    for(int first:{1,2})
+        for(auto opening:TacticChain::Loadout(w,first))
+            for(auto finishing:TacticChain::Loadout(w,3-first))
+            {
+                const auto alternative=j.Preview({{first,3,opening,-1},{3-first,3,finishing,-1}});
+                int damage=0;for(const auto& event:alternative.events) damage+=event.damage;
+                assert(withRally>damage);
+            }
+    auto used=std::make_unique<StrategistJourney>(j);
+    used->chain.signatureUsed[0]=true;
+    const auto withoutRally=PlanJourneyAutoBattle(*used);
+    assert(withoutRally.tactics.size()==2);
+    auto exhausted=std::make_unique<StrategistJourney>(j);
+    exhausted->chain.spent[1]=true;
+    for(const auto& order:PlanJourneyAutoBattle(*exhausted).tactics) assert(order.army!=1);
+
+    // Planning leaves the real state untouched. Actual execution must produce
+    // the same combo without refilling morale, signatures or action budgets.
+    assert(!j.chain.spent[0] && !j.chain.signatureUsed[0] && w.armies[3].troops==10000);
+    const auto actual=j.Execute(rally.tactics);
+    assert(actual.completed==3 && j.chain.signatureUsed[0]);
+    for(int a=0;a<3;++a) assert(j.chain.spent[a] && actual.events[a].damage==expected.events[a].damage);
+    assert(PlanJourneyAutoBattle(j).tactics.empty());
+
+    // Finishing a nearly defeated enemy needs one affordable action, not a
+    // rally solely to manufacture a higher combo count.
+    j.chain.Reset(w);w.armies[3].troops=1;j.RefreshIntelligence();
+    const auto finish=PlanJourneyAutoBattle(j);
+    assert(finish.tactics.size()==1 && finish.tactics.front().tactic!=ChainTactic::Oath);
+    j.chain.Reset(w);w.armies[3].troops=0;j.RefreshIntelligence();
+    assert(PlanJourneyAutoBattle(j).tactics.empty());
+}
 
 static void VerifyCampaignSetbacks()
 {
@@ -141,6 +227,7 @@ static void PlayGuangzongWithThreeOfficers(const StrategistJourney& council)
 
 int main()
 {
+    VerifyAutoCombos();
     VerifyCampaignSetbacks();
     auto j=std::make_unique<StrategistJourney>();j->ResetCampaign();j->Meet();
     auto beforeBattle=std::make_unique<StrategistJourney>(*j);assert(j->Prepare(0,0));

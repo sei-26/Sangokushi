@@ -1,9 +1,8 @@
 ﻿#include "JourneyAutoBattle.hpp"
-#include <limits>
-#include <memory>
 namespace frontline
 {
     void CoordinateJourneyAutoMovement(const StrategistJourney&,JourneyAutoPlan&);
+    std::vector<ChainOrder> PlanJourneyAutoTactics(const StrategistJourney&,const std::array<bool,3>&);
     JourneyAutoPlan PlanJourneyAutoBattle(const StrategistJourney& j)
     {
         JourneyAutoPlan plan;
@@ -101,48 +100,7 @@ namespace frontline
                 plan.reasons[a]=j.HasConvoy() ? U"車道を空け、前へ。見えていない敵にも備える！":U"目標へ進み、次の敵を探る！";
             }
         }
-        // Greedily extend a fully successful observed-state combo. Never spend a beacon guard's action.
-        std::array<bool,3> used{};
-        for(int step=0;step<3;++step)
-        {
-            int bestScore=0;ChainOrder best;
-            for(int a=0;a<3;++a) if(!used[a] && !defending[a] && TacticChain::Living(w,a) && !j.chain.spent[a])
-                for(auto tactic:TacticChain::Loadout(w,a))
-                {
-                    // Automatic retreat selection could abandon the promised objective; leave lure to manual command.
-                    if(tactic==ChainTactic::Lure) continue;
-                    const bool enemy=TacticChain::Definition(tactic).targetsEnemy;
-                    std::vector<int> targets;
-                    if(!enemy)
-                    {
-                        bool needs=false;
-                        for(int b=0;b<3;++b) if(TacticChain::Living(w,b) && w.MapDistance(w.armies[a].tile,w.armies[b].tile)<=2 && w.armies[b].morale<65) needs=true;
-                        if(needs) targets.push_back(-1);
-                    }
-                    else for(const auto& c:j.intelligence[0].contacts)
-                        if(c.current && c.observed.troops>0 && w.Hostile(w.player,c.observed.faction) &&
-                           (!j.depotInterception || c.id==3)) targets.push_back(c.id);
-                    for(int target:targets)
-                    {
-                        auto orders=plan.tactics;orders.push_back({a,target,tactic,-1});
-                        const auto prediction=j.Preview(orders);
-                        if(prediction.completed!=int(orders.size()) || prediction.events.empty()) continue;
-                        const auto& e=prediction.events.back();
-                        int score=e.damage+(!enemy ? 85:20);
-                        if(j.depotInterception && target==3 && !j.chain.disordered[3])
-                            for(const auto& change:e.changes)
-                                if(change.army==3 && change.disordered) score+=240;
-                        if(target>=0 && j.HasConvoy())
-                        {
-                            const auto* c=j.intelligence[0].Find(target);
-                            if(c && w.MapDistance(c->observed.tile,w.armies[StrategistJourney::ConvoyArmy].tile)<=2) score+=60;
-                        }
-                        if(score>bestScore) { bestScore=score;best=orders.back(); }
-                    }
-                }
-            if(bestScore<=0) break;
-            used[best.army]=true;plan.tactics.push_back(best);
-        }
+        plan.tactics=PlanJourneyAutoTactics(j,defending);
         CoordinateJourneyAutoMovement(j,plan);
         return plan;
     }
