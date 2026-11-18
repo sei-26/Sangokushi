@@ -4,7 +4,7 @@ using namespace frontline;
 
 bool ATacticalField::RealtimeSmokeTest()
 {
-    const bool SavedMode=bRealtimeCommand,SavedCouncil=bStartWithCouncil,SavedPlayback=State->bNoPlayback;
+    const bool SavedMode=bRealtimeCommand,SavedCouncil=bStartWithCouncil,SavedPlayback=State->bNoPlayback,SavedLegacy=bLegacyJourney;
     const int SavedMission=FirstMission,SavedPolicy=EnemyPolicy;
     const float SavedSpeed=PlaybackSpeed;
     auto Check=[](bool Value,const TCHAR* Reason)
@@ -62,18 +62,42 @@ bool ATacticalField::RealtimeSmokeTest()
     if(!Check(IsPlaying() && FMath::IsNearlyEqual(State->BeatTime,.6f),TEXT("manual playback advances three times without a second speed multiplier"))) return false;
     const float BeforeSpeed=State->BeatTime;
     Issue(ETacticalCommand::RealtimeSpeed);
-    if(!Check(State->Realtime.speed==.5 && State->BeatTime==BeforeSpeed,TEXT("changing speed during playback preserves progress"))) return false;
+    if(!Check(State->Realtime.speed==4 && State->HUD.SpeedLabel==TEXT("4.0×"),TEXT("speed selection includes four times"))) return false;
+    Issue(ETacticalCommand::RealtimeSpeed);
+    if(!Check(State->Realtime.speed==5 && State->HUD.SpeedLabel==TEXT("5.0×"),TEXT("speed selection includes five times"))) return false;
+    const float BeforeFast=State->BeatTime;
+    AdvancePresentation(.1f);
+    if(!Check(IsPlaying() && FMath::IsNearlyEqual(State->BeatTime,BeforeFast+.5f),TEXT("playback advances at five times"))) return false;
+    Issue(ETacticalCommand::RealtimeSpeed);
+    if(!Check(State->Realtime.speed==.5 && FMath::IsNearlyEqual(State->BeatTime,BeforeSpeed+.5f),TEXT("speed wraps to half without restarting playback"))) return false;
     Issue(ETacticalCommand::RealtimeSpeed);Issue(ETacticalCommand::RealtimeSpeed);Issue(ETacticalCommand::RealtimeSpeed);
+    Issue(ETacticalCommand::RealtimeSpeed);Issue(ETacticalCommand::RealtimeSpeed);
     AdvancePresentation(20);
     if(!Check(!IsPlaying() && InitialEnemy-State->Journey.world.armies[3].troops==Damage,TEXT("fast playback neither duplicates damage nor changes its result"))) return false;
     Issue(ETacticalCommand::AutoBattle);AdvanceRealtime(1);
-    if(!Check(IsAutoBattle() && State->Realtime.speed==3 && FMath::IsNearlyEqual(State->Realtime.elapsed,3.),TEXT("delegation retains three-times speed and advances the actual clock"))) return false;
+    if(!Check(IsAutoBattle() && State->Realtime.speed==5 && FMath::IsNearlyEqual(State->Realtime.elapsed,5.),TEXT("delegation retains five-times speed and advances the actual clock"))) return false;
     Issue(ETacticalCommand::RealtimePause);const double Paused=State->Realtime.elapsed;AdvanceRealtime(20);
     if(!Check(State->Realtime.elapsed==Paused,TEXT("three-times clock still respects pause"))) return false;
     std::vector<std::uint8_t> Saved;
-    if(!Check(ExportSession(Saved) && ImportSession(Saved) && State->Realtime.speed==3 && RealtimePaused() && !IsAutoBattle(),TEXT("three-times save reloads paused with its selected speed"))) return false;
+    if(!Check(ExportSession(Saved) && ImportSession(Saved) && State->Realtime.speed==5 && RealtimePaused() && !IsAutoBattle(),TEXT("five-times save reloads paused with its selected speed"))) return false;
+    bRealtimeCommand=true;bLegacyJourney=true;FirstMission=1;State->bNoPlayback=true;Issue(ETacticalCommand::Restart);
+    auto& GateJourney=State->Journey;
+    GateJourney.world.armies[3].troops=GateJourney.world.armies[4].troops=0;
+    GateJourney.world.armies[0].tile=GateJourney.world.armies[0].target=Campaign::At(11,11);
+    GateJourney.world.armies[1].tile=GateJourney.world.armies[1].target=GateJourney.goal;
+    GateJourney.chain.BeginTurn(GateJourney.world);GateJourney.RefreshIntelligence();Refresh();
+    SelectOfficer(1);CommandAt(Campaign::At(13,11));
+    const FVector Gate=SurfaceLocation(GateJourney.goal),View=Gate+FVector(310,-400,1000);
+    if(!Check(PickSurfaceTile(View,(Gate-View).GetSafeNormal())==GateJourney.goal,TEXT("the visible convoy gate picks its playable hex"))) return false;
+    SelectOfficer(0);CommandAt(Campaign::At(14,11));
+    const auto GateRoute=State->Realtime.Route(GateJourney,0);
+    if(!Check(GateRoute.size()>1 && GateRoute[1]==GateJourney.goal,TEXT("marching beyond the gate follows a departing friendly unit"))) return false;
+    Issue(ETacticalCommand::RealtimeStep);
+    if(!Check(GateJourney.world.armies[1].tile==Campaign::At(13,11) && GateJourney.world.armies[0].tile==GateJourney.goal,
+        TEXT("normal UI orders move the leader out and follower through the convoy gate"))) return false;
     bRealtimeCommand=SavedMode;bStartWithCouncil=SavedCouncil;FirstMission=SavedMission;EnemyPolicy=SavedPolicy;
+    bLegacyJourney=SavedLegacy;
     State->bNoPlayback=SavedPlayback;PlaybackSpeed=SavedSpeed;Issue(ETacticalCommand::Restart);
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_REALTIME: PASS (paused planning, autonomous pulse, persistent march, single-step, mode switching, frozen playback, live orders, timed chain, debrief, manual/auto 3x speed and paused reload)"));
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_REALTIME: PASS (convoy gate following, paused planning, persistent march, single-step, frozen playback, timed chain, manual/auto 5x speed and paused reload)"));
     return true;
 }

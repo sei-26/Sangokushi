@@ -7,7 +7,7 @@ namespace frontline
     void JourneyRealtime::Advance(double seconds)
     {
         if (paused || !std::isfinite(seconds) || seconds<=0) return;
-        const double delta=seconds*std::clamp(speed,.5,3.);
+        const double delta=seconds*std::clamp(speed,.5,5.);
         elapsed+=delta;activeSeconds+=delta;
     }
     void JourneyRealtime::Consume(bool singleStep)
@@ -56,12 +56,31 @@ namespace frontline
             for (int other=0;other<static_cast<int>(next.size());++other)
                 if (other!=army && TacticChain::Living(world,other) &&
                     (desired[army]==from[other] || (desired[other]!=from[other] && desired[army]==desired[other])))
-                { next[army]=from[army];break; }
+                {
+                    const bool followGate=army<3 && other<3 && journey.HasConvoy() && desired[army]==journey.goal &&
+                        desired[army]==from[other] && desired[other]!=from[other] && desired[other]!=from[army];
+                    if(!followGate) { next[army]=from[army];break; }
+                }
         }
-        for (int army=0;army<3;++army)
+        // A planned departure can still lose its destination to another move.
+        // Only follow after the leading unit has a confirmed free departure.
+        for(int army=0;army<3;++army)
+            if(next[army]!=from[army] && journey.HasConvoy() && next[army]==journey.goal)
+                for(int other=0;other<3;++other)
+                    if(other!=army && TacticChain::Living(world,other) && from[other]==journey.goal && next[other]==from[other])
+                        next[army]=from[army];
+        auto MoveFriendly=[&](int army)
+        {
             if (next[army]!=from[army])
                 if(journey.chain.Move(journey.world,journey.intelligence[0],army,next[army],journey.message))
                     journey.RecordBattleMove(army,from[army],next[army]);
+        };
+        int gateLeader=-1;
+        if(journey.HasConvoy())
+            for(int army=0;army<3;++army)
+                if(from[army]==journey.goal && next[army]!=from[army]) gateLeader=army;
+        if(gateLeader>=0) MoveFriendly(gateLeader);
+        for (int army=0;army<3;++army) if(army!=gateLeader) MoveFriendly(army);
         for (auto& plan : enemyPlans) plan.next=next[plan.army];
         journey.ApplyEnemyPlans(enemyPlans);
         for (int army=0;army<3 && journey.stage==JourneyStage::Battle;++army)

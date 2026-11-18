@@ -185,7 +185,7 @@ void ATacticalField::AdvancePresentation(float Delta)
     State->MissionResponseRemaining=FMath::Max(0.f,State->MissionResponseRemaining-FMath::Max(0.f,Delta));
     for(float& Remaining:State->MissionSignalRemaining)
         Remaining=FMath::Max(0.f,Remaining-FMath::Max(0.f,Delta));
-    float Elapsed=FMath::Max(0.f,Delta)*FMath::Clamp(static_cast<float>(State->Realtime.speed),.5f,3.f);
+    float Elapsed=FMath::Max(0.f,Delta)*FMath::Clamp(static_cast<float>(State->Realtime.speed),.5f,5.f);
     if (bRealtimeCommand && !State->bSupplyPlayback)
         Elapsed=State->Realtime.paused && !State->bRealtimeStepping ? 0.f : Elapsed;
     State->VisualTime += Elapsed;

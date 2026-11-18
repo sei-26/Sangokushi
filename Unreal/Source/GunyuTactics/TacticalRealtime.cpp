@@ -91,7 +91,7 @@ void ATacticalField::IssueRealtime(ETacticalCommand Command)
         if(!RT.paused) { State->OpeningOfficer=-1;State->DecisionPaused={}; }
         break;
     case ETacticalCommand::RealtimeSpeed:
-        RT.speed=RT.speed<.75 ? 1. : RT.speed<1.5 ? 2. : RT.speed<2.5 ? 3. : .5;break;
+        RT.speed=RT.speed<.75 ? 1. : RT.speed<1.5 ? 2. : RT.speed<2.5 ? 3. : RT.speed<3.5 ? 4. : RT.speed<4.5 ? 5. : .5;break;
     case ETacticalCommand::RealtimeAlertPause:
         bPauseOnBattleAlert=!bPauseOnBattleAlert;
         State->Report=bPauseOnBattleAlert ? TEXT("危険時停止をON。損耗や停滞、軍師が判断したい戦況の変化で停止する。") :

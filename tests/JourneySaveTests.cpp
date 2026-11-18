@@ -19,7 +19,9 @@ int main()
     s->journey.SelectConvoyRoute(JourneyConvoyRoute::SouthernWood);s->journey.Reinforce();
     s->dialogue=3;s->preparation=1;s->interlocutor=2;Round(*s);
     s->beforeBattle=s->journey;assert(s->journey.Prepare(1,1));s->realtimeMode=true;
-    s->realtime.speed=3;assert(Round(*s)->realtime.speed==3);s->realtime.speed=1;
+    for(double speed:{.5,1.,2.,3.,4.,5.})
+    { s->realtime.speed=speed;assert(Round(*s)->realtime.speed==speed); }
+    s->realtime.speed=1;
     assert(s->realtime.Queue(s->journey,0,JourneyDirective::March,Campaign::At(8,12)));
     assert(s->realtime.AppendWaypoint(s->journey,0,Campaign::At(9,12)));
     assert(s->realtime.SetArrival(s->journey,0,JourneyArrival::Hold));
@@ -51,7 +53,7 @@ int main()
     bad=good;bad[4]=99;assert(!DecodeJourneySave(bad,*debrief));
     bad=good;bad.push_back(0);assert(!DecodeJourneySave(bad,*debrief));
     auto invalid=std::make_unique<JourneySaveData>(*loaded);invalid->journey.world.armies[0].general=1000;
-    invalid->journey.world.armies[0].general=0;invalid->realtime.speed=4;assert(!EncodeJourneySave(*invalid,bad));invalid->realtime.speed=1;
+    invalid->journey.world.armies[0].general=0;invalid->realtime.speed=6;assert(!EncodeJourneySave(*invalid,bad));invalid->realtime.speed=1;
     invalid->journey.world.armies[0].general=1000;
     assert(!EncodeJourneySave(*invalid,bad));invalid->journey.world.armies[0].general=0;
     invalid->journey.chain.spent.clear();assert(!EncodeJourneySave(*invalid,bad));

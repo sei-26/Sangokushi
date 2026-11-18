@@ -13,13 +13,22 @@ namespace frontline
                 tile%Width<StrategistJourney::Columns-1 && tile/Width<StrategistJourney::Rows-1 &&
                 world.tiles[tile].terrain!=Terrain::River && world.tiles[tile].terrain!=Terrain::Sea && world.CityAt(tile)<0;
         }
-        std::unique_ptr<Campaign> PlayerView(const StrategistJourney& journey)
+        std::unique_ptr<Campaign> PlayerView(const StrategistJourney& journey,const JourneyRealtime* clock=nullptr,int actor=-1)
         {
             auto seen=std::make_unique<Campaign>(journey.world);
             for (auto& unit : seen->armies) if (unit.faction!=0) unit.troops=0;
             for (const auto& contact : journey.intelligence[0].contacts)
                 if (contact.current && contact.id>=0 && contact.id<static_cast<int>(seen->armies.size()))
                     seen->armies[contact.id]=contact.observed;
+            if(clock && journey.HasConvoy())
+                for(int officer=0;officer<3;++officer)
+                {
+                    const auto& order=clock->orders[officer];
+                    const auto& unit=seen->armies[officer];
+                    if(officer!=actor && unit.tile==journey.goal && !journey.chain.moved[officer] &&
+                       order.kind==JourneyDirective::March && order.destination!=unit.tile)
+                        seen->armies[officer].troops=0;
+                }
             return seen;
         }
         std::vector<int> Path(const Campaign& seen,int start,int goal)
@@ -46,7 +55,7 @@ namespace frontline
         if(journey.stage!=JourneyStage::Battle || army<0 || army>=3 || !TacticChain::Living(journey.world,army)) return {};
         const auto& order=clock.orders[army];
         if(order.kind!=JourneyDirective::March || !Walkable(journey.world,order.destination)) return {};
-        auto view=PlayerView(journey);
+        auto view=PlayerView(journey,&clock,army);
         const int start=view->armies[army].tile;
         if(!Path(*view,start,order.destination).empty()) return {};
         JourneyMarchBlocker best;
@@ -68,7 +77,7 @@ namespace frontline
         if (army<0 || army>=3 || !TacticChain::Living(journey.world,army)) return {};
         const auto& order=orders[army];
         if (order.kind!=JourneyDirective::March && order.kind!=JourneyDirective::Attack) return {};
-        auto seen=PlayerView(journey);
+        auto seen=PlayerView(journey,this,army);
         const int start=seen->armies[army].tile;
         if (order.kind==JourneyDirective::March) return Ground(*seen,order.destination) ? Path(*seen,start,order.destination) : std::vector<int>{};
         const auto* target=journey.intelligence[0].Find(order.target);
@@ -89,7 +98,7 @@ namespace frontline
         if (army<0 || army>=3 || !TacticChain::Living(journey.world,army) || orders[army].kind!=JourneyDirective::March) return plan;
         const auto& order=orders[army];plan.points={order.destination};
         plan.points.insert(plan.points.end(),order.waypoints.begin(),order.waypoints.end());
-        auto seen=PlayerView(journey);int from=seen->armies[army].tile;plan.route={from};
+        auto seen=PlayerView(journey,this,army);int from=seen->armies[army].tile;plan.route={from};
         for (int point : plan.points)
         {
             if (!Ground(*seen,point)) { plan.complete=false;break; }

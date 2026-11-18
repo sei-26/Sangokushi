@@ -40,6 +40,34 @@ int main()
         clock.Advance(3.9);assert(!clock.Due());clock.Advance(.1);assert(clock.Due());
         clock.Consume();assert(clock.pulses==1 && std::abs(clock.elapsed)<1e-7 && std::abs(clock.activeSeconds-12)<1e-7);
         clock.paused=true;clock.Advance(100);assert(clock.pulses==1 && std::abs(clock.elapsed)<1e-7);
+        for(double speed:{4.,5.})
+        {
+            clock.Reset();clock.paused=false;clock.speed=speed;
+            clock.Advance(12./speed-.01);assert(!clock.Due());clock.Advance(.01);assert(clock.Due());
+            clock.Consume();assert(clock.pulses==1 && std::abs(clock.elapsed)<1e-7);
+        }
+    }
+    {
+        auto j=CreateRealtimeMission();Quiet(*j);JourneyRealtime rt;
+        const int gate=j->goal,bridge=Campaign::At(11,11),beyond=Campaign::At(13,11);
+        j->world.armies[0].tile=j->world.armies[0].target=bridge;
+        j->world.armies[1].tile=j->world.armies[1].target=gate;
+        // A narrow eastern approach with no alternate river crossing.
+        for(int tile:{Campaign::At(12,10),Campaign::At(12,12),Campaign::At(11,8)})
+            j->world.tiles[tile].terrain=Terrain::River;
+        j->chain.BeginTurn(j->world);j->RefreshIntelligence();
+        assert(rt.Queue(*j,1,JourneyDirective::March,beyond) && rt.Queue(*j,0,JourneyDirective::March,Campaign::At(14,11)));
+        const auto route=rt.Route(*j,0);
+        assert(route.size()>1 && route[1]==gate && rt.MarchPlan(*j,0).route==route);
+        assert(ReadJourneyMarchBlocker(*j,rt,0).army<0);
+        auto stationary=rt;stationary.Queue(*j,1,JourneyDirective::Hold);
+        assert(stationary.Route(*j,0).empty());
+        auto blocked=std::make_unique<StrategistJourney>(*j);
+        blocked->world.armies[2].tile=blocked->world.armies[2].target=beyond;blocked->RefreshIntelligence();
+        auto waiting=rt;
+        assert(waiting.Resolve(*blocked) && blocked->world.armies[0].tile==bridge && blocked->world.armies[1].tile==gate);
+        assert(rt.Resolve(*j) && j->world.armies[1].tile==beyond && j->world.armies[0].tile==gate);
+        assert(j->world.armies[0].tile!=j->world.armies[1].tile && j->turn==2);
     }
     {
         auto j=CreateRealtimeMission();Quiet(*j);JourneyRealtime rt;
