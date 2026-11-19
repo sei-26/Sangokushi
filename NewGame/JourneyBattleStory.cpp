@@ -33,7 +33,9 @@ namespace frontline
         const auto pledge=CurrentPledge();if(pledge==JourneyPledge::None) return {};
         if(pledge==JourneyPledge::Preserve)
         {
-            int returned=0;for(const auto& unit:world.armies) if(unit.faction==world.player) returned+=unit.troops;
+            int returned=0;
+            for(int army=0;army<int(world.armies.size());++army)
+                if(world.armies[army].faction==world.player && (army<3 || (HasConvoy() && army==ConvoyArmy))) returned+=world.armies[army].troops;
             const int initial=deployed+convoyEscort;
             return U"主人公の約束：兵の損失 "+Number(std::max(0,initial-returned))+U" / "+Number(initial/10)+U"以内で勝利";
         }

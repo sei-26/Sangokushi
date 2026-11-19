@@ -50,3 +50,21 @@ TSharedRef<SWidget> ATacticalController::MarchRouteOverlay(bool bConvoy)
         });
     View->ForceVolatile(true);return View;
 }
+
+TSharedRef<SWidget> ATacticalController::GrandAdvanceOverlay()
+{
+    auto View=SNew(SMarchRouteOverlay).Visibility(EVisibility::HitTestInvisible).Clipping(EWidgetClipping::ClipToBounds)
+        .Color(FLinearColor(.18f,.88f,1.f,.95f)).Points([this]
+        {
+            TArray<FVector2f> Points;
+            if(Field->IsPlaying() || !Field->Presentation().bBattle || Field->Presentation().Journey.bVisible) return Points;
+            for(int Tile:Field->Presentation().GrandAdvanceRoute)
+            {
+                const auto Point=MapLabelPosition(Field->SurfaceLocation(Tile)+FVector(0,0,18),FVector2D::ZeroVector);
+                if(Point.X<=-1000) return TArray<FVector2f>{};
+                Points.Add(FVector2f(Point-gunyulayout::MapOrigin));
+            }
+            return Points;
+        });
+    View->ForceVolatile(true);return View;
+}

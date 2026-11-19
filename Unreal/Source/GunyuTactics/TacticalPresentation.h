@@ -223,6 +223,9 @@ struct FTacticalPresentation
     FString BattleChoiceReason,BattleChoiceTarget;
     int BattleChoiceVersion=0;
     FString MissionStep,MissionAdvice,MissionDetail;
+    bool bGrandOrdersPending=false;
+    FString GrandOrderStatus;
+    TArray<int> GrandAdvanceRoute;
     FOpeningOrderPresentation OpeningOrder;
     struct FDutyProgress
     {

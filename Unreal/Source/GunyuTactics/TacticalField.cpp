@@ -173,6 +173,7 @@ void ATacticalField::StartTrial()
     State->Beats.Reset(); State->BeatIndex = 0; State->BeatTime = 0;
     if(bLegacyJourney) State->Journey.Reset();else State->Journey.ResetCampaign();
     State->Journey.grandCampaign=!bLegacyJourney && bGrandHistoricalBattles;
+    State->Journey.grandStrategyCampaign=State->Journey.grandCampaign;
     if(!bStartOnStandardDifficulty) State->Journey.SelectDifficulty(frontline::JourneyDifficulty::Story);
     State->Journey.mission = FMath::Clamp(FirstMission, 0, 2);
     State->Journey.enemyPolicy = FMath::Clamp(EnemyPolicy, 0, 2);
@@ -200,6 +201,8 @@ FVector ATacticalField::TileLocation(int Tile)
 void ATacticalField::Refresh()
 {
     auto& J = State->Journey;
+    if(!bLegacyJourney && bGrandHistoricalBattles && J.stage==frontline::JourneyStage::Preparation && J.grandCampaign)
+        J.grandStrategyCampaign=true;
     if (J.stage != frontline::JourneyStage::Battle) State->RoadClearArmy=State->RoadClearStep=State->RoadClearTile=-1;
     RetargetObservedEnemy();
     SyncRealtime();

@@ -2,6 +2,8 @@
 
 広宗・陽人の11部隊の会戦は `NewGame/JourneyGrandBattle.hpp/.cpp`、対応する掛け合いは `JourneyGrandDrama.cpp`。保存版23で突破・本隊合流・味方の損耗を記録する。共通の検証は `tests/JourneyGrandBattleTests.cpp`、実エンジンの検証は `TacticalGrandBattleQA.cpp`。[実装範囲](GRAND_HISTORICAL_BATTLES.md)。
 
+広宗の二つの方針と実費の強行軍は `JourneyGrandApproach.cpp`、新しい地形は `JourneyBattlefield.hpp` の `GuangzongFronts`。救援と生還に応じる会話は `JourneyGrandStrategyDrama.cpp`、次戦の配置は `JourneyPreparation.cpp`。UEの表示と入力は `TacticalGrandStrategy.cpp` / `TacticalGrandOrderInterface.cpp`。保存版24と共通検証 `JourneyGrandStrategyTests.cpp`。[具体的な挙動](GUANGZONG_STRATEGY.md)。
+
 守備の反省から再挑戦の役を変える案は `JourneyDefenseAdvice.hpp/.cpp` と `JourneyDefenseRetryPlan.cpp`、４台詞は `JourneyDefenseRetryCouncil.cpp`。参考は歴史と分けて版12で保存する。[反省と役割の選び直し](DEFENSE_RETRY.md)。
 
 攻めと守りを振り返る戦後の会話は `NewGame/JourneyDefenseAftermath.cpp`、人物の声は `JourneyDefenseVoices.cpp`。根拠の実守備記録は `JourneyDefense.cpp`、保存は版11。[実記録と帰陣の会話](DEFENSE_AFTERMATH.md)。

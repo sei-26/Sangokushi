@@ -4,6 +4,7 @@
 
 namespace frontline
 {
+    void AdvanceGrandForcedMarch(StrategistJourney&);
     namespace
     {
         JourneyEnemyContext Context(const StrategistJourney& journey)
@@ -148,14 +149,17 @@ namespace frontline
     }
     void StrategistJourney::ApplyEnemyPlans(const std::vector<JourneyEnemyPlan>& plans)
     {
+        bool mainMoved=false;
         for (const auto& plan : plans)
             if (plan.next!=plan.from && TacticChain::Free(world,plan.next))
             {
                 world.armies[plan.army].tile=world.armies[plan.army].target=plan.next;
+                if(plan.army==5) mainMoved=true;
                 // Re-forming costs the guard's brace. A blocked move above never pays this cost.
                 if(campaignFlow && world.armies[plan.army].stance==battle::Stance::Guard) world.armies[plan.army].stance=battle::Stance::Balanced;
                 ++world.revision;
             }
+        if(mainMoved) AdvanceGrandForcedMarch(*this);
         if(IsPortAssault()) ExpirePortOpening();
         if(HasGrandBattle() && TacticChain::Living(world,AlliedArmy))
             for(int officer=0;officer<3;++officer)

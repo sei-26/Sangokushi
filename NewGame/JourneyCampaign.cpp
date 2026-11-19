@@ -76,6 +76,11 @@ namespace frontline
             (muster ? std::u32string(U" 連合から最低限の兵と兵糧が届いた。"):U"")+
             (support.swift ? std::u32string(U" 鄒靖の援兵が陣を支え、張飛隊は前から出られる。"):U"")+
             (support.roadOfficer>=0 ? std::u32string(U" 広宗で助けた人の案内で、関羽隊は脇道から出られる。"):U""));
+        const auto& previous=history[YellowTurbanMission];
+        const auto& grand=previous.review.grand;
+        if(previous.won && grand.relievedOn && grand.leftReturned>0)
+            Report(std::u32string(U"広宗で生還した左翼の兵から激励が届いた。")+
+                world.generals[grand.reliefOfficer].name+U"隊は案内を受けて先行配置、出陣士気＋10（上限100）。北でつないだ道を、兵たちは覚えている。");
         return true;
     }
     int StrategistJourney::SunJianTrust() const

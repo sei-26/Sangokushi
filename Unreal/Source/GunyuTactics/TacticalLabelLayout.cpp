@@ -106,6 +106,13 @@ FString ATacticalController::UnitMapStatus(int Index) const
     }
     if(Field->IsPlaying()) return Field->ReadUnitActivity(Index).Caption;
     if(U.Troops<=0) return TEXT("戦闘不能");
+    if(U.bEnemy && !bDetailedBattle && !Field->Presentation().GrandOrderStatus.IsEmpty())
+    {
+        if(U.Morale<25) return TEXT("戦意低下・敗走");
+        if(U.bDisordered) return TEXT("混乱");
+        if(U.bGuarded) return TEXT("固守");
+        return Index==8 ? TEXT("北の敵軍"):Index==9 ? TEXT("南の敵軍"):Index==10 ? TEXT("敵本陣"):TEXT("前陣の敵軍");
+    }
     if(Field->Presentation().Position.Relief.bVisible && Field->Presentation().Position.Relief.Incoming==Index) return TEXT("後任を比較中");
     if(const auto* Read=gunyutargetui::Find(Field->Presentation(),Index))
         return Read->Badge+(U.bDisordered ? TEXT(" / 混乱"):U.bPressured ? TEXT(" / 隙"):U.bGuarded ? TEXT(" / 固守"):TEXT(""));

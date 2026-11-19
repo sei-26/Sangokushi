@@ -12,6 +12,9 @@ namespace frontline
         for(const auto& contact:journey.intelligence[0].contacts)
         {
             if(!contact.current || contact.observed.troops<=0 ||
+               (journey.HasGrandStrategy() && contact.id!=GrandCommander && contact.observed.morale<25) ||
+               (journey.HasGrandStrategy() && journey.battleReview.grand.approach==GrandApproach::CentralAssault &&
+                   !journey.battleReview.grand.openedOn && world.MapDistance(contact.observed.tile,journey.goal)>2) ||
                !world.Hostile(world.player,contact.observed.faction) ||
                (journey.depotInterception && contact.id==4)) continue;
             int fighters=0;
@@ -31,6 +34,7 @@ namespace frontline
             }
             if(!reachable) continue;
             int score=fighters*90-travel*12;
+            if(journey.HasGrandStrategy() && journey.battleReview.grand.ralliedOn && contact.id==GrandCommander) score+=1000;
             if(contact.observed.troops<600) score+=35;
             if(journey.Definition().kind==JourneyObjective::CaptureCamp && !journey.depotInterception)
                 score+=std::max(0,4-world.MapDistance(contact.observed.tile,journey.goal))*110;
@@ -65,7 +69,8 @@ namespace frontline
             const auto current=plan.movement.Route(journey,officer);
             // Keep an engaged front if joining the main attack would expose it
             // to a free pursuit. Distant units can instead join its relief.
-            if(!current.empty() && route.size()>current.size()+1) continue;
+            if(!current.empty() && route.size()>current.size()+1 &&
+                !(journey.HasGrandStrategy() && journey.battleReview.grand.ralliedOn && focus==GrandCommander)) continue;
             plan.movement.orders[officer]=movement.orders[officer];
             plan.reasons[officer]=U"仲間と同じ敵へ。隊を集め、戦法をつなぐ！";
         }

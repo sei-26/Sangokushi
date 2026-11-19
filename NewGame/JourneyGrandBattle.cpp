@@ -29,6 +29,18 @@ namespace frontline
         Add(1,HasSunJian() ? U"董卓軍・南陣":U"黄巾軍・南陣",Campaign::At(13,12),3200,72);
         Add(1,HasSunJian() ? U"胡軫・本陣":U"黄巾軍・本陣",Campaign::At(13,6),6000,82);
         world.armies[GrandCommander].stance=battle::Stance::Guard;
+        if(mission==YellowTurbanMission && grandStrategyCampaign)
+        {
+            review.ordersEnabled=true;
+            battleReview.guangzong={}; // This layout's side objective is the northern relief.
+            world.armies[5].tile=world.armies[5].target=Campaign::At(4,6);
+            world.armies[6].tile=world.armies[6].target=GrandLeftAnchor;
+            world.armies[6].troops=1800;world.armies[6].morale=65;world.armies[6].stance=battle::Stance::Guard;
+            world.armies[3].troops=1000*CombatSettings(difficulty).enemyPercent/100;
+            world.armies[4].troops=900*CombatSettings(difficulty).enemyPercent/100;
+            world.armies[GrandCommander].troops=4200*CombatSettings(difficulty).enemyPercent/100;
+            world.armies[GrandCommander].stance=battle::Stance::Balanced;
+        }
         for(int army=5;army<GrandBattleArmyCount;++army)
             if(world.armies[army].faction==0) review.alliedStarted+=world.armies[army].troops;
     }
@@ -55,13 +67,28 @@ namespace frontline
                 target=commander && commander->current ? commander->observed.tile:Campaign::At(13,6);
             }
             bool occupy=main && !battleReview.grand.openedOn;
+            if(battleReview.grand.ordersEnabled)
+            {
+                const auto& grand=battleReview.grand;
+                if(army==6 && !grand.relievedOn)
+                { target=GrandLeftAnchor;occupy=true; }
+                else if(!main && grand.ralliedOn)
+                { target=GrandMainTarget();occupy=false; }
+                if(main)
+                {
+                    target=GrandMainTarget();
+                    occupy=target==Campaign::At(7,8) || target==Campaign::At(9,8);
+                }
+            }
             int nearest=100000;
             for(const auto& contact:intelligence[0].contacts)
             {
-                if(!contact.current || contact.observed.troops<=0) continue;
+                if(!contact.current || contact.observed.troops<=0 ||
+                    (battleReview.grand.ordersEnabled && contact.observed.morale<25)) continue;
                 const int distance=world.MapDistance(plan.from,contact.observed.tile);
+                if(battleReview.grand.ordersEnabled && !main && distance>(battleReview.grand.ralliedOn ? 1:3)) continue;
                 const int priority=distance+(contact.id==army+2 ? -3:0);
-                if((!main || distance<=1) && priority<nearest)
+                if(((!main && !(army==6 && battleReview.grand.ordersEnabled && !battleReview.grand.relievedOn)) || distance<=1) && priority<nearest)
                 { nearest=priority;target=contact.observed.tile;occupy=false; }
             }
             plan.target=target;
@@ -75,6 +102,7 @@ namespace frontline
     void StrategistJourney::CheckGrandBattle()
     {
         auto& review=battleReview.grand;
+        CheckGrandRelief();
         if(!TacticChain::Living(world,AlliedArmy))
         { Finish(false,U"味方本隊が崩れ、全軍が退く。軍師の旗は残ったが、会戦を支えきれなかった。");return; }
         if(!review.openedOn && PositionSecured(goal))
@@ -82,7 +110,7 @@ namespace frontline
                 if(TacticChain::Living(world,officer) && world.armies[officer].tile==goal)
                 {
                     review.openedBy=officer;review.openedOn=turn;
-                    battleReview.guangzong.swift=mission==YellowTurbanMission && GuangzongCommandsLeft()>0;
+                    if(battleReview.guangzong.tracked) battleReview.guangzong.swift=mission==YellowTurbanMission && GuangzongCommandsLeft()>0;
                     world.tiles[goal].owner=world.player;++world.revision;
                     Report(world.generals[officer].name+U"の旗が前陣に立った。本隊が攻勢へ！ 両翼と合流し、敵の本陣を落とそう。");
                     break;
@@ -93,7 +121,7 @@ namespace frontline
             Report(HasSunJian() ? U"孫堅「合流したぞ！ ここからは俺たちも一緒だ。本陣まで突っ切る！」":
                 U"皇甫嵩本隊が前陣を通過。両翼へ総攻撃の太鼓が渡り、敵本陣へ進み始めた。");
         }
-        if(review.openedOn && review.ralliedOn && !TacticChain::Living(world,GrandCommander) && PositionSecured(goal))
+        if(review.openedOn && review.ralliedOn && GrandHeadquartersBroken() && PositionSecured(goal))
             Finish(true,HasSunJian() ? U"孫堅本隊と両翼が敵本陣へ進出。董卓軍の戦列を崩し、陽人の会戦に勝利した。":
                 U"前陣の突破から官軍全軍が進出。黄巾軍の本陣を落とし、広宗の会戦に勝利した。");
     }

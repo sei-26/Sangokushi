@@ -27,6 +27,7 @@ void ATacticalField::BuildMissionPresentation()
             Main.troops,J.world.armies[6].troops,J.world.armies[7].troops);
         H.MissionDetail=JourneyText(J.ObjectiveBrief())+TEXT("\n味方本隊と両翼は自律して移動・交戦する。前陣の占領は総攻撃の合図。本隊を生かし、前陣を保持しながら敵本陣を落とす。");
         if(Commander && Commander->current) H.MissionDetail+=FString::Printf(TEXT("\n敵本陣 %d兵。味方本隊の損失も戦後へ記録する。"),Commander->observed.troops);
+        BuildGrandStrategyPresentation();
     }
     else if(J.depotInterception)
     {

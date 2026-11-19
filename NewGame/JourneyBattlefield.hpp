@@ -8,7 +8,7 @@
 
 namespace frontline
 {
-    enum class JourneyMap { Retreat, Port, Valley, Guangzong, CoalitionFord, RefugeeRoad, RefugeeWood, PortNorth, CoalitionRoad, Yangren, LuoyangGate, LuoyangDepot };
+    enum class JourneyMap { Retreat, Port, Valley, Guangzong, CoalitionFord, RefugeeRoad, RefugeeWood, PortNorth, CoalitionRoad, Yangren, LuoyangGate, LuoyangDepot, GuangzongFronts };
     inline JourneyMap SelectJourneyMap(int mission,bool rescue,JourneyConvoyRoute route,bool north,CoalitionPlan coalition,bool legacy,
         LuoyangPlan luoyang=LuoyangPlan::None)
     {
@@ -33,7 +33,7 @@ namespace frontline
     };
     inline const JourneyBattlefield& BattlefieldDefinition(JourneyMap map)
     {
-        static const std::array<JourneyBattlefield, 12> fields{{
+        static const std::array<JourneyBattlefield, 13> fields{{
             {U"林間の退路", U"森で誘い、街道を開く",
              {{"..MMM...MMMMM.",
                "..MMM..MMMMMMM",
@@ -189,7 +189,20 @@ namespace frontline
                "....FFF.......",
                "....FFF....MM.",
                ".......MMMMM..",
-               "........MMM..."}}}
+               "........MMM..."}}},
+            {U"広宗・三つの戦線", U"北の林道で左翼を救うか、中央の橋から前陣へ突き進む",
+             {{"....MMMMMMMM..",
+               "....MM..MMMM..",
+               ".....F.F..FF..",
+               "...FFF.~..FF..",
+               "...FFF.~..FF..",
+               ".......~......",
+               ".......~.FFF..",
+               ".......=......",
+               ".......~......",
+               ".......~......",
+               ".......=......",
+               ".......~......"}}}
         }};
         return fields[static_cast<int>(map)];
     }

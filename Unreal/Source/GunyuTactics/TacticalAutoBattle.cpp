@@ -31,6 +31,7 @@ bool ATacticalField::BeginAutoCycle()
     if(!State->bAutoBattle || IsPlaying() || State->Journey.stage!=JourneyStage::Battle) return false;
     // A manually reserved combo always owns its attack budgets.
     if(!State->Orders.empty() || State->ChainSignal.Armed()) { StopAutoBattle();return false; }
+    if(State->Journey.CanChooseGrandApproach()) State->Journey.ChooseGrandApproach(GrandApproach::CentralAssault);
     State->Journey.RefreshIntelligence();
     const auto Plan=PlanJourneyAutoBattle(State->Journey);
     State->Realtime.orders=Plan.movement.orders;

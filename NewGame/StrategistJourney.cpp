@@ -58,7 +58,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
-        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=grandCampaign=false;reserveFood=0;
+        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=grandCampaign=grandStrategyCampaign=false;reserveFood=0;
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -120,7 +120,9 @@ namespace frontline
 			message = U"兵・兵糧・軍資金が不足。募兵か準備方針を見直そう。";
 			return false;
 		}
-		world.generals.resize(5);
+        world.generals.resize(5);
+        world.bonds.erase(std::remove_if(world.bonds.begin(),world.bonds.end(),[](const auto& bond)
+            { return bond.a>=5 || bond.b>=5; }),world.bonds.end());
 		convoyEscort = cost.escort;
         depotInterception=HasDepotInterception();
 		SetupBattlefield();
@@ -371,6 +373,7 @@ namespace frontline
             for(int army=5;army<int(world.armies.size());++army)
                 if(world.armies[army].faction==world.player) remaining+=world.armies[army].troops;
             battleReview.grand.alliedLosses=std::max(0,battleReview.grand.alliedStarted-remaining);
+            if(battleReview.grand.ordersEnabled) battleReview.grand.leftReturned=world.armies[6].troops;
         }
 		won = success;
 		stage = JourneyStage::Debrief;

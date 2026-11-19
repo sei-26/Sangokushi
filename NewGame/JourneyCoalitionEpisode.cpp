@@ -179,6 +179,13 @@ namespace frontline
             if(support.roadOfficer>=0)
                 episode.lines[1]={1,U"広宗で会った人の縁だ。このあたりを知る者が、脇道に案内してくれる。私は皆より一足先に出よう。",
                     U"軍師は案内人から聞いた脇道に、関羽の駒を移した。"};
+            const auto& previous=j.history[YellowTurbanMission];const auto& grand=previous.review.grand;
+            if(previous.won && grand.relievedOn && grand.leftReturned>0)
+                episode.lines.push_back({grand.reliefOfficer,grand.reliefOfficer==1 ?
+                    U"北で道をつないだ兵からの報せだ。ここを通れば、先へ出られる。あの日の軍師の采配を、皆が覚えていてくれた。":grand.reliefOfficer==2 ?
+                    U"広宗の連中が、近道を教えてくれたぜ！ 北へ助けに行ったこと、まだ覚えてたんだな。軍師、先に行って待ってるぞ！":
+                    U"広宗の北で会った兵が、この道を教えてくれた。あの日の続きが、こんなところにもあったんだね。軍師、先に出て皆を待つよ。",
+                    U"主人公が、その武将の駒を案内された脇道へ進めた。幕の外から、懐かしい兵たちの声が届く。"});
         }
         else if(j.won)
         {

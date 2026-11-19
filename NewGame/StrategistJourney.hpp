@@ -68,6 +68,7 @@ namespace frontline
         JourneyDifficulty difficulty=JourneyDifficulty::Standard;
         bool campaignFlow=false;
         bool grandCampaign=false;
+        bool grandStrategyCampaign=false;
         bool SelectDifficulty(JourneyDifficulty);
         bool ApplyPlanExample();
         bool RetryAtCouncil(const StrategistJourney& beforeBattle);
@@ -105,6 +106,13 @@ namespace frontline
 		bool HasConvoy() const { return IsRescue() || Definition().kind == JourneyObjective::Escort; }
         bool HasSunJian() const { return mission==YangrenMission; }
         bool HasGrandBattle() const { return battleReview.grand.active; }
+        bool HasGrandStrategy() const { return mission==YellowTurbanMission &&
+            ((stage==JourneyStage::Preparation && grandCampaign && grandStrategyCampaign) || battleReview.grand.ordersEnabled); }
+        bool CanChooseGrandApproach() const;
+        bool ChooseGrandApproach(GrandApproach);
+        int GrandMainTarget() const;
+        bool GrandHeadquartersBroken() const;
+        void CheckGrandRelief();
         bool PlansGrandBattle() const { return grandCampaign && campaignFlow &&
             (mission==YellowTurbanMission || mission==YangrenMission) && (stage==JourneyStage::Preparation || HasGrandBattle()); }
         int GrandRallyTile() const { return HasSunJian() ? YangrenRally:GrandRally; }
@@ -117,8 +125,7 @@ namespace frontline
         { return luoyangPlan==LuoyangPlan::WesternDepot && (stage==JourneyStage::Preparation || depotInterception); }
         int DepotMovesIn() const { return 2-(turn-1)%2; }
         bool DepotGuardProtects(int columnTile,int guardTile,int guardTroops,bool disordered) const;
-        int TurnBudget() const { return (IsRescue() ? 10 : Definition().limit)+CombatSettings(difficulty).extraCycles+
-            (campaignFlow && mission==1 && history[0].rescued ? 2:0)+(PlansGrandBattle() ? 8:0); }
+        int TurnBudget() const;
         bool HasPortSignal() const
         {
             const auto& port=history[1];

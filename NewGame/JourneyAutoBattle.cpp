@@ -37,6 +37,8 @@ namespace frontline
         { Assign(j.goal);Assign(j.Definition().secondGoal); }
         else if(capture)
         {
+            if(j.HasGrandStrategy() && j.battleReview.grand.approach==GrandApproach::RelieveLeft &&
+                !j.battleReview.grand.relievedOn && TacticChain::Living(w,6)) Assign(GrandNorthPass);
             Assign(j.goal);
             const auto& guangzong=j.battleReview.guangzong;
             if(j.mission==YellowTurbanMission && guangzong.tracked && guangzong.roadOfficer<0 &&
@@ -53,6 +55,9 @@ namespace frontline
             for(const auto& c:j.intelligence[0].contacts)
             {
                 if(!c.current || c.observed.troops<=0 || !w.Hostile(w.player,c.observed.faction) ||
+                   (j.HasGrandStrategy() && c.id!=GrandCommander && c.observed.morale<25) ||
+                   (j.HasGrandStrategy() && j.battleReview.grand.approach==GrandApproach::CentralAssault &&
+                       !j.battleReview.grand.openedOn && w.MapDistance(c.observed.tile,j.goal)>2) ||
                    (j.depotInterception && c.id==4)) continue;
                 int value=w.MapDistance(at,c.observed.tile);
                 if(j.HasConvoy())

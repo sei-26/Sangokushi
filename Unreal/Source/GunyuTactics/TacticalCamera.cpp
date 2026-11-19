@@ -17,6 +17,7 @@ void ATacticalController::ResetBattleCamera()
 {
     CameraYaw=90;CameraElevation=48.f;CameraPreset=0;
     Focus=FVector(1600,1400,0);Distance=4300;
+    if(Field && Field->Presentation().bGrandBattle) Focus.X=2050;
 }
 void ATacticalController::CycleCameraView()
 {

@@ -82,6 +82,11 @@ namespace frontline
         {
             if(!ReliefReview(r)) return false;
             const auto& g=r.grand;
+            if(!Enum(g.approach,2) || !Range(g.chosenOn,0,1) ||
+                ((g.approach==GrandApproach::None)!=(g.chosenOn==0)) || !Range(g.relievedOn,0,64) ||
+                !Range(g.reliefOfficer,-1,2) || ((g.relievedOn==0)!=(g.reliefOfficer<0)) || !Range(g.leftReturned,0,2600)) return false;
+            if(!Range(g.forcedSteps,0,64) || (g.forcedSteps && g.approach!=GrandApproach::CentralAssault)) return false;
+            if(g.ordersEnabled ? !g.active : (g.approach!=GrandApproach::None || g.chosenOn || g.relievedOn || g.reliefOfficer!=-1 || g.leftReturned || g.forcedSteps)) return false;
             if(g.active)
             {
                 if(!Range(g.openedBy,-1,2) || !Range(g.openedOn,0,64) || !Range(g.ralliedOn,0,64) ||
@@ -152,6 +157,7 @@ namespace frontline
             if(j.HasGrandBattle())
             {
                 if(!j.PlansGrandBattle() || j.stage==JourneyStage::Preparation || n!=GrandBattleArmyCount) return false;
+                if(j.battleReview.grand.ordersEnabled && (j.mission!=YellowTurbanMission || !j.grandStrategyCampaign)) return false;
                 for(int army=5;army<GrandBattleArmyCount;++army)
                     if(w.armies[army].faction!=(army<8 ? 0:1) || w.armies[army].general!=army ||
                        w.armies[army].arm==Arm::Transport) return false;
@@ -215,7 +221,7 @@ namespace frontline
                 (n!=(j.HasGrandBattle() ? GrandBattleArmyCount:6u) || w.armies[5].faction!=0 || w.armies[5].arm!=Arm::Spear || w.armies[5].general!=5 ||
                     w.armies[3].faction!=1 || w.armies[3].arm!=Arm::Cavalry)) return false;
             for(const auto& t:w.tiles) if(!Enum(t.terrain,5) || !Range(t.owner,-1,1)) return false;
-            for(const auto& b:w.bonds) if(!Range(b.a,0,5) || !Range(b.b,0,5) || !Range(b.value,0,100)) return false;
+            for(const auto& b:w.bonds) if(!Range(b.a,0,int(w.generals.size())-1) || !Range(b.b,0,int(w.generals.size())-1) || !Range(b.value,0,100)) return false;
             for(const auto* bits:{&j.chain.concealed,&j.chain.moved,&j.chain.spent,&j.chain.disordered,
                 &j.chain.pressured,&j.chain.inspired,&j.chain.signatureUsed}) if(bits->size()!=n) return false;
             for(const auto& known:j.intelligence)
@@ -228,8 +234,9 @@ namespace frontline
             for(int m=0;m<int(j.history.size());++m)
             {
                 const auto& h=j.history[m];
+                if(h.review.grand.ordersEnabled && (m!=YellowTurbanMission || !h.completed || !h.campaignFlow)) return false;
                 const bool north=m==1 && h.campaignFlow && j.history[0].story.reply==JourneyPledge::Preserve;
-                const auto map=SelectJourneyMap(m,m==0,h.route,north,j.coalitionPlan,false,j.luoyangPlan);
+                const auto map=h.review.grand.ordersEnabled ? JourneyMap::GuangzongFronts:SelectJourneyMap(m,m==0,h.route,north,j.coalitionPlan,false,j.luoyangPlan);
                 const auto legacy=SelectJourneyMap(m,false,h.route,false,j.coalitionPlan,true,j.luoyangPlan);
                 // Old histories and failed escorts may predate the individual route layouts.
                 const bool validAssignments=Assignments(h.assignments,m,map,m==0) || Assignments(h.assignments,m,legacy,m==0);

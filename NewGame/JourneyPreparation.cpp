@@ -4,6 +4,11 @@
 #include <queue>
 namespace frontline
 {
+    int StrategistJourney::TurnBudget() const
+    {
+        return (IsRescue() ? 10:Definition().limit)+CombatSettings(difficulty).extraCycles+
+            (campaignFlow && mission==1 && history[0].rescued ? 2:0)+(PlansGrandBattle() ? 8:0)+(HasGrandStrategy() ? 6:0);
+    }
 	JourneySupplies StrategistJourney::PreparationCosts(int choice) const
 	{
 		const bool escort = Definition().kind == JourneyObjective::Escort;
@@ -13,7 +18,13 @@ namespace frontline
 	}
 
     int StrategistJourney::PreparationMorale(int choice,int officer) const
-    { return std::clamp((!campaignFlow && choice==1 ? 100:90)+StoryMoraleBonus(officer),0,100); }
+    {
+        const auto& previous=history[YellowTurbanMission];
+        const auto& grand=previous.review.grand;
+        const int thanks=mission==CoalitionMission && previous.won && grand.relievedOn && grand.leftReturned>0 &&
+            grand.reliefOfficer==officer ? 10:0;
+        return std::clamp((!campaignFlow && choice==1 ? 100:90)+StoryMoraleBonus(officer)+thanks,0,100);
+    }
     std::array<int,3> StrategistJourney::PreparationPositions(int choice) const
     {
         const auto& authored=Definition().positions;
@@ -23,12 +34,16 @@ namespace frontline
             result[0]=Campaign::At(9,8);
             result[2]=Campaign::At(10,10);
         }
+        if(HasGrandStrategy()) result={Campaign::At(6,8),Campaign::At(6,5),Campaign::At(7,10)};
         if(mission==CoalitionMission && !legacyBattlefield)
         {
             const auto& support=GuangzongSupport();
             const bool maintain=coalitionPlan==CoalitionPlan::Protect;
             if(support.swift) result[2]=Campaign::At(maintain ? 8:10,maintain ? 9:7);
             if(support.roadOfficer>=0) result[1]=Campaign::At(maintain ? 9:10,maintain ? 7:5);
+            const auto& previous=history[YellowTurbanMission];const auto& grand=previous.review.grand;
+            if(previous.won && grand.relievedOn && grand.leftReturned>0 && grand.reliefOfficer>=0)
+                result[grand.reliefOfficer]=Campaign::At(maintain ? 8:10,maintain ? 7:5);
         }
         if(!campaignFlow || choice!=0 || assignments[1].duty!=JourneyDuty::Ambush) return result;
         const int destination=assignments[1].tile;

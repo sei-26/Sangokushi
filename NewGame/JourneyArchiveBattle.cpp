@@ -41,7 +41,9 @@ namespace frontline
       else if(reading) g={};
       auto& grand=v.grand;
       if(version>=23) (*this)(grand.active,grand.openedBy,grand.openedOn,grand.ralliedOn,grand.alliedStarted,grand.alliedLosses);
-      else if(reading) grand={}; }
+      else if(reading) grand={};
+      if(version>=24) (*this)(grand.ordersEnabled,grand.approach,grand.chosenOn,grand.relievedOn,grand.reliefOfficer,grand.leftReturned,grand.forcedSteps);
+      else if(reading) { grand.ordersEnabled=false;grand.approach=GrandApproach::None;grand.chosenOn=grand.relievedOn=grand.leftReturned=grand.forcedSteps=0;grand.reliefOfficer=-1; } }
     void JourneyArchive::IO(JourneyAssignment& v)
     { (*this)(v.duty,v.tile,v.completed); }
     void JourneyArchive::IO(JourneyResult& v)
@@ -73,6 +75,10 @@ namespace frontline
       else if(reading) { v.luoyangPlan=LuoyangPlan::None;v.history[LuoyangMission]={}; }
       if(version>=19) IO(v.depotInterception);else if(reading) v.depotInterception=false;
       if(version>=23) IO(v.grandCampaign);else if(reading) v.grandCampaign=false;
+      if(version>=24) IO(v.grandStrategyCampaign);else if(reading) v.grandStrategyCampaign=false;
+      if(reading && version<24)
+          v.world.bonds.erase(std::remove_if(v.world.bonds.begin(),v.world.bonds.end(),[&](const auto& bond)
+              { return bond.a>=int(v.world.generals.size()) || bond.b>=int(v.world.generals.size()); }),v.world.bonds.end());
       if(reading && version<17 && v.HasSunJian() && v.stage==JourneyStage::Battle)
           v.battleReview.yangren.tracked=true; }
 }

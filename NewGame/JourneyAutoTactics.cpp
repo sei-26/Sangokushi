@@ -57,6 +57,7 @@ namespace frontline
         std::vector<int> targets;
         for(const auto& contact:j.intelligence[0].contacts)
             if(contact.current && contact.observed.troops>0 && w.Hostile(w.player,contact.observed.faction) &&
+               (!j.HasGrandStrategy() || contact.id==GrandCommander || contact.observed.morale>=25) &&
                (!j.depotInterception || contact.id==3)) targets.push_back(contact.id);
 
         // Only friendly state and current observations inform range checks, including

@@ -3,6 +3,7 @@
 
 namespace frontline
 {
+    void BuildGrandStrategyDrama(const StrategistJourney&,JourneyEpisode&);
     JourneyEpisode BuildGrandBattleEpisode(const StrategistJourney& journey)
     {
         JourneyEpisode episode;
@@ -60,6 +61,7 @@ namespace frontline
             episode.lines={
                 {commander,U"軍師、一隊の前進が全軍の前進になるとは限らぬ。どこで兵が止まり、どこから崩れたか。次はともに見よう。",U"戦場から、本隊と両翼の報告が集まる。"},
                 {3,U"俺たちの道だけを見ていた。次は、旗を立てた後に誰が続けるかまで決める。戻った兵から、話を聞かせてくれ。",U"主人公は北陣、中央、南陣の印を地図へ置き直す。"}};
+        BuildGrandStrategyDrama(journey,episode);
         return episode;
     }
 }

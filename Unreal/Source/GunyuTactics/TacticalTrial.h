@@ -169,7 +169,9 @@ public:
     bool RealtimeSmokeTest();
     bool AutoBattleSmokeTest();
     bool GrandBattleSmokeTest();
-    bool PrepareGrandBattlePreview(int Mission,int Phase);
+    bool PrepareGrandBattlePreview(int Mission,int Phase,int Approach=0);
+    bool CanUseGrandApproach() const;
+    bool UseGrandApproach(int Index);
     bool PrepareDecisionPausePreview(bool bAlerts);
     bool BattleChoicesSmokeTest();
     bool UseBattleChoice(int Index,int ExpectedVersion);
@@ -342,6 +344,7 @@ private:
     void IssueMarchPlan(ETacticalCommand Command);
     void BuildPresentation();
     void BuildMissionPresentation();
+    void BuildGrandStrategyPresentation();
     void BuildPortAssaultPresentation();
     void BuildOpeningOrder();
     void BuildDefensePresentation();
@@ -464,6 +467,8 @@ private:
     void BuildRosterInterface(TSharedRef<class SCanvas>);
     void BuildCommandInterface(TSharedRef<class SCanvas>);
     TSharedRef<class SWidget> BuildBattleChoicesInterface();
+    TSharedRef<class SWidget> BuildGrandOrderInterface();
+    TSharedRef<class SWidget> GrandAdvanceOverlay();
     TSharedRef<class SWidget> BuildSupportChoicesInterface();
     TSharedRef<class SWidget> ChainPlannerWidget();
     TSharedRef<class SWidget> ChainPlanOverlay();

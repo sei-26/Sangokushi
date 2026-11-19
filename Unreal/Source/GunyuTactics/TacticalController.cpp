@@ -177,7 +177,8 @@ void ATacticalController::PlayerTick(float Delta)
     if(Frames==3 && bGrandPreview)
     {
         int Phase=0;FParse::Value(FCommandLine::Get(),TEXT("GrandPhase="),Phase);
-        const bool Valid=Field->PrepareGrandBattlePreview(GrandPreview,Phase);
+        int Approach=0;FParse::Value(FCommandLine::Get(),TEXT("GrandOrder="),Approach);
+        const bool Valid=Field->PrepareGrandBattlePreview(GrandPreview,Phase,Approach);
         UE_LOG(LogTemp,Display,TEXT("GUNYU_GRAND_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
         if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
     }
