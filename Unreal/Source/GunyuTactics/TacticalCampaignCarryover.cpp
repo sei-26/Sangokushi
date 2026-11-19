@@ -9,6 +9,8 @@ FString ATacticalField::ReadCampaignCarryover() const
     const bool Planning=J.stage==JourneyStage::Preparation;
     const bool Won=J.won && (J.stage==JourneyStage::Debrief || J.stage==JourneyStage::Complete);
     if(!Planning && !Won) return {};
+    if(Won && J.mission==0 && J.shortPrelude)
+        return TEXT("この戦いの生存兵・残った糧・武将の信頼を持って、皇甫嵩の本隊へ合流。別働任務は選んで遊べる。");
 
     if((Won && J.mission==0) || (Planning && J.mission==1))
     {
@@ -27,6 +29,9 @@ FString ATacticalField::ReadCampaignCarryover() const
     {
         const auto& Support=J.GuangzongSupport();
         TArray<FString> Changes;
+        const auto& previous=J.history[YellowTurbanMission];const auto& grand=previous.review.grand;
+        if(previous.won && grand.relievedOn && grand.leftReturned>0)
+            Changes.Add(JourneyText(J.world.generals[grand.reliefOfficer].name)+TEXT("が救った左翼の案内で先行配置・士気支援"));
         if(Support.swift) Changes.Add(TEXT("鄒靖の援兵が張飛の前進を支える"));
         if(Support.roadOfficer>=0) Changes.Add(TEXT("広宗で助けた民の案内で関羽が脇道から出陣"));
         return FString::Join(Changes,TEXT(" ／ "));
@@ -35,7 +40,7 @@ FString ATacticalField::ReadCampaignCarryover() const
     if(((Won && J.mission==CoalitionMission) || (Planning && J.HasSunJian())) && J.HasCoalitionGuide())
         return TEXT("張邈の案内で、孫堅隊が合流地点に近い場所から進軍");
 
-    if(Won && J.HasSunJian() && J.SunJianTrust()>=SunJianFlankTrust)
+    if(((Won && J.HasSunJian()) || (Planning && J.mission==LuoyangMission)) && J.SunJianTrust()>=SunJianFlankTrust)
         return TEXT("陽人で得た孫堅の信頼で、洛陽西郊の荷駄隊を狙える");
 
     if(Won && J.mission==LuoyangMission && J.luoyangPlan==LuoyangPlan::WesternDepot)

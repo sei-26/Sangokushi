@@ -29,6 +29,17 @@ namespace frontline
         Add(1,HasSunJian() ? U"董卓軍・南陣":U"黄巾軍・南陣",Campaign::At(13,12),3200,72);
         Add(1,HasSunJian() ? U"胡軫・本陣":U"黄巾軍・本陣",Campaign::At(13,6),6000,82);
         world.armies[GrandCommander].stance=battle::Stance::Guard;
+        if(HasSunJian() && yangrenStrategyCampaign)
+        {
+            review.yangren.active=true;
+            world.armies[6].tile=world.armies[6].target=Campaign::At(7,7);
+            world.armies[7].tile=world.armies[7].target=Campaign::At(9,10);
+            auto& reserve=world.armies[8];reserve.tile=reserve.target=Campaign::At(13,4);
+            reserve.arm=Arm::Cavalry;reserve.troops=2800*CombatSettings(difficulty).enemyPercent/100;
+            reserve.stance=battle::Stance::Guard;
+            world.generals[8].name=U"呂布の親衛騎兵";world.generals[8].leadership=90;
+            world.generals[8].trait=Trait::Valiant;world.generals[8].tactic=Tactic::MountedCharge;
+        }
         if(mission==YellowTurbanMission && grandStrategyCampaign)
         {
             review.ordersEnabled=true;
@@ -67,6 +78,16 @@ namespace frontline
                 target=commander && commander->current ? commander->observed.tile:Campaign::At(13,6);
             }
             bool occupy=main && !battleReview.grand.openedOn;
+            if(HasYangrenStrategy())
+            {
+                target=army==6 ? Campaign::At(8,7):YangrenRally;
+                occupy=false;
+                if(main)
+                {
+                    const auto* first=intelligence[0].Find(3);
+                    target=!battleReview.grand.openedOn && first && first->current && first->observed.troops>0 ? first->observed.tile:YangrenRally;
+                }
+            }
             if(battleReview.grand.ordersEnabled)
             {
                 const auto& grand=battleReview.grand;
@@ -84,10 +105,11 @@ namespace frontline
             for(const auto& contact:intelligence[0].contacts)
             {
                 if(!contact.current || contact.observed.troops<=0 ||
-                    (battleReview.grand.ordersEnabled && contact.observed.morale<25)) continue;
+                    ((battleReview.grand.ordersEnabled || HasYangrenStrategy()) && contact.observed.morale<25)) continue;
                 const int distance=world.MapDistance(plan.from,contact.observed.tile);
                 if(battleReview.grand.ordersEnabled && !main && distance>(battleReview.grand.ralliedOn ? 1:3)) continue;
                 const int priority=distance+(contact.id==army+2 ? -3:0);
+                if(HasYangrenStrategy() && distance>2) continue;
                 if(((!main && !(army==6 && battleReview.grand.ordersEnabled && !battleReview.grand.relievedOn)) || distance<=1) && priority<nearest)
                 { nearest=priority;target=contact.observed.tile;occupy=false; }
             }
@@ -112,14 +134,24 @@ namespace frontline
                     review.openedBy=officer;review.openedOn=turn;
                     if(battleReview.guangzong.tracked) battleReview.guangzong.swift=mission==YellowTurbanMission && GuangzongCommandsLeft()>0;
                     world.tiles[goal].owner=world.player;++world.revision;
-                    Report(world.generals[officer].name+U"の旗が前陣に立った。本隊が攻勢へ！ 両翼と合流し、敵の本陣を落とそう。");
+                    Report(world.generals[officer].name+(HasYangrenStrategy() ?
+                        std::u32string(U"の旗が辻に立った。孫堅本隊と旗を合わせ、騎兵の反撃に備えよう。"):
+                        std::u32string(U"の旗が前陣に立った。本隊が攻勢へ！ 両翼と合流し、敵の本陣を落とそう。")));
                     break;
                 }
-        if(review.openedOn && !review.ralliedOn && world.MapDistance(world.armies[AlliedArmy].tile,GrandRallyTile())<=1)
+        if((review.openedOn || HasYangrenStrategy()) && !review.ralliedOn && world.MapDistance(world.armies[AlliedArmy].tile,GrandRallyTile())<=1)
         {
             review.ralliedOn=turn;++world.revision;
-            Report(HasSunJian() ? U"孫堅「合流したぞ！ ここからは俺たちも一緒だ。本陣まで突っ切る！」":
+            Report(HasYangrenStrategy() ? U"孫堅「合流したぞ！ ここからは一緒だ。騎兵が戻ってきても、互いの旗を離すな！」":
+                HasSunJian() ? U"孫堅「合流したぞ！ ここからは俺たちも一緒だ。本陣まで突っ切る！」":
                 U"皇甫嵩本隊が前陣を通過。両翼へ総攻撃の太鼓が渡り、敵本陣へ進み始めた。");
+        }
+        if(HasYangrenStrategy())
+        {
+            CheckYangrenCounter();
+            if(YangrenCounterRepelled() && PositionSecured(goal))
+                Finish(true,U"孫堅本隊と合流し、呂布の騎兵反撃を退けた。董卓軍は攻勢を失い、陽人の会戦は勝利に終わった。");
+            return;
         }
         if(review.openedOn && review.ralliedOn && GrandHeadquartersBroken() && PositionSecured(goal))
             Finish(true,HasSunJian() ? U"孫堅本隊と両翼が敵本陣へ進出。董卓軍の戦列を崩し、陽人の会戦に勝利した。":

@@ -10,6 +10,12 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     auto& J = State->Journey;
     switch (Command)
     {
+    case ETacticalCommand::JoinMainForce:
+    case ETacticalCommand::ContinuePrelude:
+        if(!(Command==ETacticalCommand::JoinMainForce ? J.JoinMainForce():J.ContinuePrelude())) return;
+        State->BeforeBattle.reset();State->Orders.clear();State->ChainSignal.Cancel();State->Realtime.Reset();
+        State->Selected=0;State->Target=3;State->Input=ETacticalInput::Select;
+        break;
     case ETacticalCommand::AcceptSetback:
         if(!J.AcceptCampaignSetback()) return;
         State->BeforeBattle.reset();
@@ -169,7 +175,8 @@ void ATacticalField::BuildJourneyPresentation()
     }
     for (int Index = 0; Index < int(J.history.size()); ++Index)
         if (J.history[Index].completed)
-            P.History += J.history[Index].review.resolution==JourneyResolution::Unfought ?
+            P.History += J.history[Index].review.resolution==JourneyResolution::JoinedMainForce ?
+                FString::Printf(TEXT("第%d戦: 別働任務を本隊へ引き継ぎ（未出陣）  "),Index+1):J.history[Index].review.resolution==JourneyResolution::Unfought ?
                 FString::Printf(TEXT("第%d戦: 出陣見合わせ  "),Index+1):
                 FString::Printf(TEXT("第%d戦: %s / 帰還 %d / 損失 %d  "), Index + 1,
                 J.history[Index].rescued ? TEXT("季安の避難車を護送") : J.history[Index].won ? TEXT("任務達成") : J.history[Index].withdrawn ? TEXT("任務中止・撤収") : TEXT("未達"),
@@ -224,4 +231,6 @@ void ATacticalField::BuildJourneyPresentation()
             J.HasSunJian() ? TEXT("孫堅と次の役目を決める ／ Enter"):
             J.mission==LuoyangMission ? TEXT("反董卓連合の結末へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
     }
+    P.CampaignRoad=JourneyText(J.CampaignRoad());P.bShortPrelude=J.shortPrelude;
+    if(J.shortPrelude && J.CanJoinMainForce()) P.PrimaryLabel=TEXT("第一章 黄巾の本戦へ ／ Enter");
 }

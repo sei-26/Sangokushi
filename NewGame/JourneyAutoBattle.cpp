@@ -10,6 +10,7 @@ namespace frontline
         if(j.stage!=JourneyStage::Battle) return plan;
         const auto& w=j.world;
         const bool capture=j.Definition().kind==JourneyObjective::CaptureCamp && !j.depotInterception;
+        const bool forestStage=j.HasYangrenStrategy() && j.battleReview.grand.yangren.approach==YangrenApproach::Forest && !j.YangrenFirstChargeBroken();
         int intercept=-1;
         if(j.depotInterception)
         {
@@ -33,7 +34,8 @@ namespace frontline
             }
             if(best>=0) duties[best]=tile;
         };
-        if(j.Definition().kind==JourneyObjective::HoldPositions)
+        if(forestStage) { Assign(Campaign::At(9,6));Assign(Campaign::At(9,8));Assign(Campaign::At(9,7)); }
+        else if(j.Definition().kind==JourneyObjective::HoldPositions)
         { Assign(j.goal);Assign(j.Definition().secondGoal); }
         else if(capture)
         {
@@ -55,6 +57,8 @@ namespace frontline
             for(const auto& c:j.intelligence[0].contacts)
             {
                 if(!c.current || c.observed.troops<=0 || !w.Hostile(w.player,c.observed.faction) ||
+                   (j.HasYangrenStrategy() && (c.id==GrandCommander || (c.id==8 && !j.battleReview.grand.yangren.counterOn))) ||
+                   (j.HasYangrenStrategy() && c.observed.morale<25) ||
                    (j.HasGrandStrategy() && c.id!=GrandCommander && c.observed.morale<25) ||
                    (j.HasGrandStrategy() && j.battleReview.grand.approach==GrandApproach::CentralAssault &&
                        !j.battleReview.grand.openedOn && w.MapDistance(c.observed.tile,j.goal)>2) ||
@@ -73,7 +77,7 @@ namespace frontline
                 if(at==duties[a])
                 {
                     plan.movement.Queue(j,a,JourneyDirective::Hold);
-                    defending[a]=true;plan.reasons[a]=U"旗を守る。仲間が動ける時間をつくる！";
+                    defending[a]=!forestStage;plan.reasons[a]=forestStage ? U"森で騎兵を受ける。仲間と戦法をつなぐ！":U"旗を守る。仲間が動ける時間をつくる！";
                 }
                 else
                 {

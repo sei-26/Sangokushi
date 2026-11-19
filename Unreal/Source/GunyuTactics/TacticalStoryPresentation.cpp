@@ -37,10 +37,13 @@ void ATacticalField::BuildStoryPresentation()
             if(Story.reply!=JourneyPledge::None) P.PledgeText=TEXT("次の戦いで交わした約束：")+JourneyText(PledgeName(Story.reply));
         }
         const auto& R=J.history[J.mission].review;
+        if(R.grand.yangren.active)
+            P.CampaignChange+=FString::Printf(TEXT("\n孫堅本隊の生還：%d兵 ／ 呂布の親衛騎兵の反撃%s"),R.grand.yangren.mainReturned,
+                R.grand.yangren.repelledOn ? TEXT("を撃退"):TEXT("は未達"));
         if(R.yangren.tracked)
         {
             const auto& Y=R.yangren;
-            const int Gain=Y.TrustGain(J.won);
+            const int Gain=J.SunJianTrust();
             if(Gain>0)
                 P.PersonalTrust+=FString::Printf(TEXT("　｜　孫堅の信頼 +%d"),Gain);
             if(Y.roadOfficer>=0)

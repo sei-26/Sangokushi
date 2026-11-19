@@ -15,6 +15,7 @@ namespace frontline
 	}
 	const char32_t* StrategistJourney::MissionName() const
 	{
+		if(HasYangrenStrategy()) return U"孫堅を守り、騎兵の反撃を退けろ";
 		if(PlansGrandBattle()) return HasSunJian() ? U"陽人大決戦 ／ 孫堅本隊と敵本陣を突け":U"広宗大決戦 ／ 官軍全軍の総攻撃";
 		return Definition().title;
 	}
@@ -58,7 +59,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
-        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=grandCampaign=grandStrategyCampaign=false;reserveFood=0;
+        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=grandCampaign=grandStrategyCampaign=shortPrelude=yangrenStrategyCampaign=false;reserveFood=0;
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -374,6 +375,7 @@ namespace frontline
                 if(world.armies[army].faction==world.player) remaining+=world.armies[army].troops;
             battleReview.grand.alliedLosses=std::max(0,battleReview.grand.alliedStarted-remaining);
             if(battleReview.grand.ordersEnabled) battleReview.grand.leftReturned=world.armies[6].troops;
+            if(battleReview.grand.yangren.active) battleReview.grand.yangren.mainReturned=world.armies[5].troops;
         }
 		won = success;
 		stage = JourneyStage::Debrief;
@@ -431,6 +433,7 @@ namespace frontline
     }
 	bool StrategistJourney::Continue()
 	{
+		if(shortPrelude && CanJoinMainForce()) return JoinMainForce();
 		if (!CanContinue())
 			return false;
         retryDefense.reset();

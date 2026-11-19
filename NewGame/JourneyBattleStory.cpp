@@ -27,7 +27,14 @@ namespace frontline
     int StrategistJourney::StoryMoraleBonus(int officer) const
     { return officer>=0 && officer<3 ? std::clamp(officerTrust[officer]/2,-5,8):0; }
     JourneyPledge StrategistJourney::CurrentPledge() const
-    { return mission>0 && history[mission-1].story.recorded ? history[mission-1].story.reply:JourneyPledge::None; }
+    {
+        for(int m=mission-1;m>=0;--m)
+        {
+            if(history[m].story.recorded) return history[m].story.reply;
+            if(history[m].review.resolution!=JourneyResolution::JoinedMainForce) break;
+        }
+        return JourneyPledge::None;
+    }
     std::u32string StrategistJourney::PledgeProgress() const
     {
         const auto pledge=CurrentPledge();if(pledge==JourneyPledge::None) return {};
@@ -44,7 +51,7 @@ namespace frontline
     bool StrategistJourney::NeedsStoryReply() const
     { return stage==JourneyStage::Debrief && won && mission<2 && history[mission].story.recorded && history[mission].story.reply==JourneyPledge::None; }
     bool StrategistJourney::CanContinue() const
-    { return CanBeginYellowTurban() || CanBeginYangren() ||
+    { return (shortPrelude && CanJoinMainForce()) || CanBeginYellowTurban() || CanBeginYangren() ||
         (campaignFlow && stage==JourneyStage::Complete && mission<2 && history[mission].completed) ||
         (stage==JourneyStage::Debrief && won && (campaignFlow || !NeedsStoryReply())); }
     bool StrategistJourney::ChooseStoryReply(JourneyPledge pledge)

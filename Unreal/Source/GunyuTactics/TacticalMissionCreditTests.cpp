@@ -10,7 +10,8 @@ bool ATacticalField::MissionCreditSmokeTest()
     const int Mission=FirstMission,Policy=EnemyPolicy;const float Speed=PlaybackSpeed,Volume=EffectsVolume;
     auto Check=[this](bool V,const TCHAR* Why) { if(!V) UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_CREDIT: FAIL %s (turn=%d held=%d stage=%d caption=%s report=%s)"),Why,State->Journey.turn,State->Journey.heldTurns,int(State->Journey.stage),*ReadMissionResponse().Caption,*State->Report);return V; };
     bStartWithCouncil=true;bRealtimeCommand=false;bLegacyJourney=false;FirstMission=0;EnemyPolicy=0;State->bNoPlayback=false;PlaybackSpeed=1;EffectsVolume=0;
-    Issue(ETacticalCommand::Restart);for(int I=0;I<4;++I) Action(EKeys::Enter);
+    Issue(ETacticalCommand::Restart);for(int I=0;I<3;++I) Action(EKeys::Enter);
+    Issue(ETacticalCommand::PromiseRescue);Action(EKeys::Enter);
     auto Save=std::make_unique<JourneySaveData>();std::vector<std::uint8_t> Initial,Before,After;
     ExportSession(Before);if(!Check(DecodeJourneySave(Before,*Save),TEXT("public escort deployment"))) return false;
     auto& J=Save->journey;const int Next=J.ConvoyPath()[1],Out=J.world.armies[2].tile,Other=Campaign::At(7,10);

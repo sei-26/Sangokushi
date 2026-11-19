@@ -5,7 +5,7 @@ using namespace frontline;
 
 bool ATacticalField::PrepareGrandBattlePreview(int Mission,int Phase,int Approach)
 {
-    if((Mission!=YellowTurbanMission && Mission!=YangrenMission) || Phase<0 || Phase>2) return false;
+    if((Mission!=YellowTurbanMission && Mission!=YangrenMission) || Phase<0 || Phase>3 || (Phase==3 && Mission!=YangrenMission)) return false;
     Issue(ETacticalCommand::Skip);
     bLegacyJourney=false;bGrandHistoricalBattles=true;bStartWithCouncil=false;bRealtimeCommand=true;
     FirstMission=0;State->bNoPlayback=true;bPauseOnBattleAlert=false;Issue(ETacticalCommand::Restart);
@@ -23,12 +23,16 @@ bool ATacticalField::PrepareGrandBattlePreview(int Mission,int Phase,int Approac
         Issue(ETacticalCommand::AutoBattle);
         for(int Cycle=0;Cycle<32 && J.stage==JourneyStage::Battle;++Cycle)
         {
-            AdvanceRealtime(12.1f);AdvancePresentation(60);AdvanceRealtime(.1f);AdvancePresentation(60);
+            AdvanceRealtime(12.1f);AdvancePresentation(60);
+            const auto* reserve=J.intelligence[0].Find(8);
+            if(Phase==3 && J.battleReview.grand.yangren.counterOn && reserve && reserve->current) break;
+            AdvanceRealtime(.1f);AdvancePresentation(60);
             if(Phase==1 && J.battleReview.grand.openedOn) break;
         }
         if(IsAutoBattle()) StopAutoBattle();
         if(Phase==1 && !J.battleReview.grand.openedOn) return false;
         if(Phase==2 && !J.won) return false;
+        if(Phase==3 && (!J.battleReview.grand.yangren.counterOn || J.battleReview.grand.yangren.repelledOn)) return false;
     }
     State->bNoPlayback=false;Refresh();
     return true;
@@ -45,14 +49,14 @@ bool ATacticalField::GrandBattleSmokeTest()
     {
         if(!Check(PrepareGrandBattlePreview(Battle,0),TEXT("normal deployment creates the main army, both wings and all eleven formations"))) return false;
         auto& J=State->Journey;
-        if(!Check(State->HUD.bGrandBattle && State->HUD.MissionStep.Contains(TEXT("左翼")) &&
+        if(!Check(State->HUD.bGrandBattle && State->HUD.MissionStep.Contains(Battle==YangrenMission ? TEXT("孫堅"):TEXT("左翼")) &&
             BuildJourneyEpisode(*State->BeforeBattle).lines.size()>=6,TEXT("council and battle describe the same large engagement"))) return false;
         std::vector<std::uint8_t> Bytes;
         if(!Check(ExportSession(Bytes) && ImportSession(Bytes) && State->Journey.HasGrandBattle(),TEXT("the large battle saves and reloads paused"))) return false;
         if(!Check(PrepareGrandBattlePreview(Battle,1) && State->Journey.stage==JourneyStage::Battle &&
-            State->HUD.MissionAdvice.Contains(TEXT("本陣")),TEXT("capturing the first objective starts a real general assault"))) return false;
+            State->HUD.MissionAdvice.Contains(Battle==YangrenMission ? TEXT("反撃"):TEXT("本陣")),TEXT("capturing the first objective starts the mission's second phase"))) return false;
         if(!Check(PrepareGrandBattlePreview(Battle,2) && State->Journey.history[Battle].review.grand.ralliedOn>0 &&
-            State->Journey.GrandHeadquartersBroken() && BuildJourneyEpisode(State->Journey).lines.size()>=4,
+            (State->Journey.HasYangrenStrategy() ? State->Journey.YangrenCounterRepelled():State->Journey.GrandHeadquartersBroken()) && BuildJourneyEpisode(State->Journey).lines.size()>=4,
             TEXT("the autonomous clock reaches the headquarters victory and its aftermath"))) return false;
     }
     if(!Check(PrepareGrandBattlePreview(YellowTurbanMission,0) && State->HUD.bGrandOrdersPending && CanUseGrandApproach(),

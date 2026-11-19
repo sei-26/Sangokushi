@@ -86,7 +86,9 @@ namespace frontline
     int StrategistJourney::SunJianTrust() const
     {
         const auto& result=history[YangrenMission];
-        return result.review.yangren.TrustGain(result.completed && result.won);
+        const auto& battle=result.review.grand.yangren;
+        return result.review.yangren.TrustGain(result.completed && result.won)+
+            (result.won && battle.active && battle.repelledOn && battle.mainReturned>=3500 ? 2:0);
     }
     bool StrategistJourney::CanChooseLuoyangPlan(LuoyangPlan plan) const
     {
@@ -116,6 +118,7 @@ namespace frontline
     }
     std::u32string StrategistJourney::ObjectiveBrief() const
     {
+        if(HasYangrenStrategy()) return U"孫堅本隊と合流し、辻を守って呂布の騎兵反撃を退ける";
         if(PlansGrandBattle()) return HasSunJian() ? U"陽人の辻を開き、孫堅本隊を合流させ、董卓軍本陣を撃破する":
             U"前陣を突破して官軍本隊に総攻撃の合図を送り、黄巾軍本陣を撃破する";
         if(campaignFlow && mission==2) return RequiredHoldTurns()==2 ? U"両翼の烽火を２指揮維持し、本隊の包囲を完成させる":U"両翼の烽火を３指揮維持し、本隊の包囲を完成させる";
@@ -125,6 +128,9 @@ namespace frontline
     {
         JourneyCampaignBeat b;
         if(!j.campaignFlow) return b;
+        if(j.shortPrelude && j.CanJoinMainForce())
+            return {U"序章 ／ 本隊へ",j.won ? U"義勇軍の最初の采配を、官軍の大きな戦いへつなぐ。":U"義勇軍の損失と未達の結果を抱え、官軍本隊へ向かう。",
+                U"皇甫嵩の軍へ合流し、広宗の大合戦へ。道中の別働任務は、選んで遊ぶこともできる。",U"英傑と歩む軍師"};
         if((j.stage==JourneyStage::Complete || j.stage==JourneyStage::Debrief) && !j.won)
         {
             const char32_t* Next[]={

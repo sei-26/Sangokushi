@@ -174,10 +174,11 @@ void ATacticalField::StartTrial()
     if(bLegacyJourney) State->Journey.Reset();else State->Journey.ResetCampaign();
     State->Journey.grandCampaign=!bLegacyJourney && bGrandHistoricalBattles;
     State->Journey.grandStrategyCampaign=State->Journey.grandCampaign;
+    State->Journey.yangrenStrategyCampaign=State->Journey.shortPrelude=State->Journey.grandCampaign;
     if(!bStartOnStandardDifficulty) State->Journey.SelectDifficulty(frontline::JourneyDifficulty::Story);
     State->Journey.mission = FMath::Clamp(FirstMission, 0, 2);
     State->Journey.enemyPolicy = FMath::Clamp(EnemyPolicy, 0, 2);
-    State->Journey.promise = bStartWithCouncil ? frontline::JourneyPromise::EscortRefugees : frontline::JourneyPromise::OpenRoad;
+    State->Journey.promise = bStartWithCouncil && !State->Journey.shortPrelude ? frontline::JourneyPromise::EscortRefugees : frontline::JourneyPromise::OpenRoad;
     State->DialogueIndex = 0; State->PreparationChoice = 0; State->BeforeBattle.reset();
     State->Interlocutor = 0; State->bConfirmWithdrawal = false;
     if (!bStartWithCouncil)
@@ -202,7 +203,7 @@ void ATacticalField::Refresh()
 {
     auto& J = State->Journey;
     if(!bLegacyJourney && bGrandHistoricalBattles && J.stage==frontline::JourneyStage::Preparation && J.grandCampaign)
-        J.grandStrategyCampaign=true;
+        J.grandStrategyCampaign=J.yangrenStrategyCampaign=true;
     if (J.stage != frontline::JourneyStage::Battle) State->RoadClearArmy=State->RoadClearStep=State->RoadClearTile=-1;
     RetargetObservedEnemy();
     SyncRealtime();

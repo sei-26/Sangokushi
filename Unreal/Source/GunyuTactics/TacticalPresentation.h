@@ -10,7 +10,7 @@ enum class ETacticalCommand : uint8
     PromiseRoad, PromiseRescue, Withdraw, TalkLiu, TalkGuan, TalkZhang,
     RealtimeMode, RealtimePause, RealtimeSpeed, RealtimeStep, RealtimeStop, RealtimeChainSignal, RealtimeAlertPause,
     RealtimeUndoWaypoint, RealtimeArrival, RouteRoad, RouteSouthernWood, StoryReplyPreserve, StoryReplyCoordinate, DifficultyStory, DifficultyStandard, PlanExample, Resupply, ReleaseGuard, ResumeDuty,
-    CoalitionAdvance, CoalitionProtect, LuoyangGate, LuoyangDepot, AcceptSetback
+    CoalitionAdvance, CoalitionProtect, LuoyangGate, LuoyangDepot, AcceptSetback, JoinMainForce, ContinuePrelude
 };
 enum class ETacticalInput : uint8 { Select, Move, Lure, Position };
 
@@ -130,6 +130,8 @@ struct FJourneyPresentation
     TArray<FString> ExampleOrders;
     bool bStoryDifficulty=false,bCampaignFlow=false;
     FString CampaignPhase,CampaignChange,CampaignNext,CampaignStanding,CampaignCarryover,SetbackLabel;
+    FString CampaignRoad;
+    bool bShortPrelude=false;
     FPreparationMap Map;
     TArray<FDialoguePresentation> PlanAdvice;
     bool bNeedsReply=false;
@@ -224,6 +226,9 @@ struct FTacticalPresentation
     int BattleChoiceVersion=0;
     FString MissionStep,MissionAdvice,MissionDetail;
     bool bGrandOrdersPending=false;
+    bool bYangrenCounter=false;
+    struct FGrandChoice { FString Title,Reason; };
+    TArray<FGrandChoice> GrandChoices;
     FString GrandOrderStatus;
     TArray<int> GrandAdvanceRoute;
     FOpeningOrderPresentation OpeningOrder;

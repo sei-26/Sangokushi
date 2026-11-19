@@ -19,7 +19,7 @@ namespace TacticalMap
         if(Map==JourneyMap::LuoyangDepot)
             return {FLinearColor(.185f,.205f,.135f),FLinearColor(.09f,.15f,.065f),
                 FLinearColor(.30f,.28f,.21f),FLinearColor(.54f,.34f,.17f),195.f,31000.f,1.06f,66.f};
-        if(Map==JourneyMap::Yangren)
+        if(Map==JourneyMap::Yangren || Map==JourneyMap::YangrenCounter)
             return {FLinearColor(.25f,.22f,.13f),FLinearColor(.11f,.16f,.075f),
                 FLinearColor(.34f,.27f,.21f),FLinearColor(.55f,.32f,.13f),265.f,38000.f,1.05f,75.f};
         if (Map == JourneyMap::Port)

@@ -1,5 +1,6 @@
 #pragma once
 #include "CampaignTypes.hpp"
+#include "JourneyYangrenBattle.hpp"
 
 namespace frontline
 {
@@ -18,5 +19,6 @@ namespace frontline
         GrandApproach approach=GrandApproach::None;
         int chosenOn=0,relievedOn=0,reliefOfficer=-1,leftReturned=0;
         int forcedSteps=0;
+        JourneyYangrenBattle yangren;
     };
 }

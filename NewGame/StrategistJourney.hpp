@@ -69,6 +69,12 @@ namespace frontline
         bool campaignFlow=false;
         bool grandCampaign=false;
         bool grandStrategyCampaign=false;
+        bool shortPrelude=false;
+        bool yangrenStrategyCampaign=false;
+        bool CanJoinMainForce() const;
+        bool JoinMainForce();
+        bool ContinuePrelude();
+        std::u32string CampaignRoad() const;
         bool SelectDifficulty(JourneyDifficulty);
         bool ApplyPlanExample();
         bool RetryAtCouncil(const StrategistJourney& beforeBattle);
@@ -112,6 +118,13 @@ namespace frontline
         bool ChooseGrandApproach(GrandApproach);
         int GrandMainTarget() const;
         bool GrandHeadquartersBroken() const;
+        bool HasYangrenStrategy() const { return mission==YangrenMission &&
+            (battleReview.grand.yangren.active || (stage==JourneyStage::Preparation && grandCampaign && yangrenStrategyCampaign)); }
+        bool CanChooseYangrenApproach() const;
+        bool ChooseYangrenApproach(YangrenApproach);
+        bool YangrenFirstChargeBroken() const;
+        bool YangrenCounterRepelled() const;
+        void CheckYangrenCounter();
         void CheckGrandRelief();
         bool PlansGrandBattle() const { return grandCampaign && campaignFlow &&
             (mission==YellowTurbanMission || mission==YangrenMission) && (stage==JourneyStage::Preparation || HasGrandBattle()); }

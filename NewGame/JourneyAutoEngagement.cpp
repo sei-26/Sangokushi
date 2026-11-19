@@ -12,6 +12,8 @@ namespace frontline
         for(const auto& contact:journey.intelligence[0].contacts)
         {
             if(!contact.current || contact.observed.troops<=0 ||
+               (journey.HasYangrenStrategy() && (contact.id==GrandCommander || (contact.id==8 && !journey.battleReview.grand.yangren.counterOn))) ||
+               (journey.HasYangrenStrategy() && contact.observed.morale<25) ||
                (journey.HasGrandStrategy() && contact.id!=GrandCommander && contact.observed.morale<25) ||
                (journey.HasGrandStrategy() && journey.battleReview.grand.approach==GrandApproach::CentralAssault &&
                    !journey.battleReview.grand.openedOn && world.MapDistance(contact.observed.tile,journey.goal)>2) ||
@@ -34,6 +36,8 @@ namespace frontline
             }
             if(!reachable) continue;
             int score=fighters*90-travel*12;
+            if(journey.HasYangrenStrategy() && journey.battleReview.grand.yangren.counterOn && contact.id==8) score+=1500;
+            if(journey.HasYangrenStrategy() && !journey.battleReview.grand.yangren.counterOn && contact.id==3) score+=500;
             if(journey.HasGrandStrategy() && journey.battleReview.grand.ralliedOn && contact.id==GrandCommander) score+=1000;
             if(contact.observed.troops<600) score+=35;
             if(journey.Definition().kind==JourneyObjective::CaptureCamp && !journey.depotInterception)
@@ -70,7 +74,8 @@ namespace frontline
             // Keep an engaged front if joining the main attack would expose it
             // to a free pursuit. Distant units can instead join its relief.
             if(!current.empty() && route.size()>current.size()+1 &&
-                !(journey.HasGrandStrategy() && journey.battleReview.grand.ralliedOn && focus==GrandCommander)) continue;
+                !(journey.HasGrandStrategy() && journey.battleReview.grand.ralliedOn && focus==GrandCommander) &&
+                !(journey.HasYangrenStrategy() && journey.battleReview.grand.yangren.counterOn && focus==8)) continue;
             plan.movement.orders[officer]=movement.orders[officer];
             plan.reasons[officer]=U"仲間と同じ敵へ。隊を集め、戦法をつなぐ！";
         }

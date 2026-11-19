@@ -47,6 +47,9 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyGuangzong.cpp
     NewGame/JourneyGrandBattle.cpp
     NewGame/JourneyGrandApproach.cpp
+    NewGame/JourneyPrelude.cpp
+    NewGame/JourneyYangrenBattle.cpp
+    NewGame/JourneyYangrenDrama.cpp
     NewGame/JourneyGrandDrama.cpp
     NewGame/JourneyGrandStrategyDrama.cpp
     NewGame/JourneyCouncilDrama.cpp
@@ -137,6 +140,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_auto tests/JourneyAutoBattleTests.cpp)
     add_rules_test(journey_grand tests/JourneyGrandBattleTests.cpp)
     add_rules_test(journey_grand_strategy tests/JourneyGrandStrategyTests.cpp)
+    add_rules_test(journey_epic_campaign tests/JourneyEpicCampaignTests.cpp)
     add_rules_test(journey_council_stage tests/JourneyCouncilStageTests.cpp)
     add_rules_test(tactic_battlefield tests/TacticBattlefieldTests.cpp)
     add_rules_test(journey_march tests/JourneyMarchTests.cpp)

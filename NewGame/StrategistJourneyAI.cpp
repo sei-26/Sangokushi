@@ -84,6 +84,7 @@ namespace frontline
         {
             for(auto& plan:plans)
             {
+                if(plan.intent==JourneyEnemyIntent::Recover) continue;
                 if(plan.army==GrandCommander)
                 {
                     plan.next=plan.target=plan.from;plan.targetArmy=-1;
@@ -136,6 +137,16 @@ namespace frontline
         auto view = EnemyView(*observed, assumed);
         auto plans=AdaptivePlans(*view,chain,Context(*this),campaignFlow);
         if(HasGrandBattle()) ApplyGrandEnemyRoles(*view,plans);
+        if(HasYangrenStrategy()) for(auto& plan:plans) if(plan.army==8)
+        {
+            if(plan.intent==JourneyEnemyIntent::Recover) continue;
+            if(!battleReview.grand.yangren.counterOn) { plan.next=plan.from;plan.intent=JourneyEnemyIntent::Reserve;plan.role=JourneyEnemyRole::Reserve; }
+            else
+            {
+                const auto& main=view->armies[5];plan.target=main.troops>0 ? main.tile:YangrenRally;
+                plan.next=JourneyAdvanceStep(*view,plan.from,plan.target,false);plan.intent=JourneyEnemyIntent::Counterattack;
+            }
+        }
         return plans;
     }
     std::vector<JourneyEnemyPlan> StrategistJourney::PlanEnemyTurn() const
@@ -143,6 +154,17 @@ namespace frontline
         auto observed=EnemyView(world,intelligence[1]);
         auto plans=AdaptivePlans(*observed,chain,Context(*this),campaignFlow);
         if(HasGrandBattle()) ApplyGrandEnemyRoles(*observed,plans);
+        if(HasYangrenStrategy()) for(auto& plan:plans) if(plan.army==8)
+        {
+            if(plan.intent==JourneyEnemyIntent::Recover) continue;
+            if(!battleReview.grand.yangren.counterOn) { plan.next=plan.from;plan.intent=JourneyEnemyIntent::Reserve; }
+            else
+            {
+                const auto& main=observed->armies[5];plan.target=main.troops>0 ? main.tile:YangrenRally;
+                plan.next=JourneyAdvanceStep(*observed,plan.from,plan.target,false);
+                plan.intent=JourneyEnemyIntent::Counterattack;
+            }
+        }
         auto allies=PlanGrandAllies();
         plans.insert(plans.end(),allies.begin(),allies.end());
         return plans;
@@ -192,11 +214,25 @@ namespace frontline
         if(HasSunJian())
         {
             RefreshIntelligence(); // Queued attacks may have cleared Sun Jian's path this cycle.
-            if(!HasGrandBattle() || !battleReview.grand.ralliedOn) AdvanceSunJian();
+            if((!HasGrandBattle() || !battleReview.grand.ralliedOn) &&
+                (!HasYangrenStrategy() || battleReview.grand.yangren.approach!=YangrenApproach::Forest || YangrenFirstChargeBroken()))
+            {
+                const int before=world.armies[5].tile;AdvanceSunJian();
+                auto& main=world.armies[5];
+                if(HasYangrenStrategy() && battleReview.grand.yangren.approach==YangrenApproach::Advance && main.tile!=before &&
+                    main.food>=100 && main.morale>=40 && !SunJianAtRally())
+                {
+                    const int after=main.tile;AdvanceSunJian();
+                    if(main.tile!=after) { main.food-=100;main.morale-=3; }
+                }
+            }
             const auto& cavalry=world.armies[3];
             if(!chain.disordered[3] && world.tiles[cavalry.tile].terrain==Terrain::Plain &&
                intelligence[1].EnemyNear(world,cavalry.tile,1))
                 world.ActivateTactic(3,true);
+            if(HasYangrenStrategy() && battleReview.grand.yangren.counterOn && TacticChain::Living(world,8) && !chain.disordered[8] &&
+                world.tiles[world.armies[8].tile].terrain==Terrain::Plain && intelligence[1].EnemyNear(world,world.armies[8].tile,1))
+                world.ActivateTactic(8,true);
         }
         if(campaignFlow && mission==YellowTurbanMission && world.generals[3].tactic==Tactic::Rally &&
            !chain.disordered[3] && world.armies[3].morale<=85 &&
@@ -212,6 +248,9 @@ namespace frontline
                 Report(U"張梁が「鼓舞」を発動。近くの黄巾兵の士気が上がった。");
             if(event.general==3 && event.tactic==Tactic::MountedCharge && enemy && enemy->current)
                 Report(U"呂布が騎兵突撃。平地を離れ、森で受け止めよう！");
+            const auto* reserve=intelligence[0].Find(8);
+            if(HasYangrenStrategy() && event.general==8 && event.tactic==Tactic::MountedCharge && reserve && reserve->current)
+                Report(U"呂布の親衛騎兵が突撃！ 森で受け止め、孫堅の隣に味方を残そう。");
         }
         for (int i = 0; i < 3; ++i) world.armies[i].scouting = false;
         ++turn;

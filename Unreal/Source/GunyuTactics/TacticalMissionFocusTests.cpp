@@ -19,7 +19,8 @@ bool ATacticalController::MissionFocusSmokeTest()
         TEXT("two overlapping projected beacons stay below the header and clear the response and each other"))) return false;
     CloseEpisode();Field->bStartWithCouncil=true;Field->bRealtimeCommand=false;Field->bLegacyJourney=false;Field->FirstMission=0;Field->EnemyPolicy=0;
     Field->Issue(ETacticalCommand::Restart);
-    for(int I=0;I<4;++I) Field->Action(EKeys::Enter);
+    for(int I=0;I<3;++I) Field->Action(EKeys::Enter);
+    Field->Issue(ETacticalCommand::PromiseRescue);Field->Action(EKeys::Enter);
     std::vector<std::uint8_t> Before,After;auto Save=std::make_unique<JourneySaveData>();
     if(!Check(Field->ExportSession(Before) && DecodeJourneySave(Before,*Save) && Save->journey.HasConvoy(),TEXT("ordinary public council deploys the promised escort"))) return false;
     auto& J=Save->journey;const int Next=J.ConvoyPath()[J.convoyStep+1],Original=J.world.armies[0].tile;

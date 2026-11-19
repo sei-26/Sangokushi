@@ -178,7 +178,7 @@ void ATacticalController::PlayerTick(float Delta)
     {
         int Phase=0;FParse::Value(FCommandLine::Get(),TEXT("GrandPhase="),Phase);
         int Approach=0;FParse::Value(FCommandLine::Get(),TEXT("GrandOrder="),Approach);
-        const bool Valid=Field->PrepareGrandBattlePreview(GrandPreview,Phase,Approach);
+        const bool Valid=GrandPreview==0 ? Field->PrepareEpicPreludePreview(Phase):Field->PrepareGrandBattlePreview(GrandPreview,Phase,Approach);
         UE_LOG(LogTemp,Display,TEXT("GUNYU_GRAND_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
         if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
     }
@@ -445,6 +445,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=YangrenSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGrandOnly")))
     { const bool Passed=Field->GrandBattleSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuEpicOnly")))
+    { const bool Passed=Field->EpicCampaignSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuLuoyangOnly")))
     { const bool Passed=LuoyangSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningOnly")))

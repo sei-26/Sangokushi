@@ -82,6 +82,11 @@ namespace frontline
         {
             if(!ReliefReview(r)) return false;
             const auto& g=r.grand;
+            const auto& y=g.yangren;
+            if(!Enum(y.approach,2) || !Range(y.orderedOn,0,1) ||
+                ((y.approach==YangrenApproach::None)!=(y.orderedOn==0)) || !Range(y.counterOn,0,64) ||
+                !Range(y.repelledOn,0,64) || (y.repelledOn && (!y.counterOn || y.repelledOn<y.counterOn)) || !Range(y.mainReturned,0,7000)) return false;
+            if(y.active ? !g.active : (y.approach!=YangrenApproach::None || y.orderedOn || y.counterOn || y.repelledOn || y.mainReturned)) return false;
             if(!Enum(g.approach,2) || !Range(g.chosenOn,0,1) ||
                 ((g.approach==GrandApproach::None)!=(g.chosenOn==0)) || !Range(g.relievedOn,0,64) ||
                 !Range(g.reliefOfficer,-1,2) || ((g.relievedOn==0)!=(g.reliefOfficer<0)) || !Range(g.leftReturned,0,2600)) return false;
@@ -90,13 +95,13 @@ namespace frontline
             if(g.active)
             {
                 if(!Range(g.openedBy,-1,2) || !Range(g.openedOn,0,64) || !Range(g.ralliedOn,0,64) ||
-                   (g.ralliedOn && (!g.openedOn || g.ralliedOn<g.openedOn)) ||
+                   (g.ralliedOn && !g.yangren.active && (!g.openedOn || g.ralliedOn<g.openedOn)) ||
                    (g.openedOn==0)!=(g.openedBy<0) || !Range(g.alliedStarted,1,50000) || !Range(g.alliedLosses,0,g.alliedStarted)) return false;
             }
             else if(g.openedBy!=-1 || g.openedOn || g.ralliedOn || g.alliedStarted || g.alliedLosses) return false;
             return Range(r.openingAmbushes,0,1) && Range(r.resupplyTurn,0,64) && Range(r.resupplyMorale,0,60) && Range(r.postSupplySteps,0,r.tacticSteps) &&
                 (r.preparationTracked || (!r.openingAmbushes && !r.resupplyTurn && !r.resupplyMorale && !r.postSupplySteps)) &&
-                (r.resupplyTurn || (!r.resupplyMorale && !r.postSupplySteps)) && Enum(r.resolution,10) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
+                (r.resupplyTurn || (!r.resupplyMorale && !r.postSupplySteps)) && Enum(r.resolution,11) && Range(r.endedAt,0,100) && Range(r.enemyStops,0,100) &&
                 Range(r.trafficStops,0,100) && Range(r.tacticAttempts,0,1000) &&
                 Range(r.tacticSteps,0,3000) && Range(r.longestChain,0,3) && Range(r.coordinatedOfficers,0,7) &&
                 Range(r.confirmedDefenders,0,7) && Range(r.spentGuardFailures,0,7);
@@ -154,10 +159,12 @@ namespace frontline
         bool Journey(const StrategistJourney& j)
         {
             const auto& w=j.world;const auto n=w.armies.size();
+            if(j.battleReview.resolution==JourneyResolution::JoinedMainForce) return false;
             if(j.HasGrandBattle())
             {
                 if(!j.PlansGrandBattle() || j.stage==JourneyStage::Preparation || n!=GrandBattleArmyCount) return false;
                 if(j.battleReview.grand.ordersEnabled && (j.mission!=YellowTurbanMission || !j.grandStrategyCampaign)) return false;
+                if(j.battleReview.grand.yangren.active && (j.mission!=YangrenMission || !j.yangrenStrategyCampaign)) return false;
                 for(int army=5;army<GrandBattleArmyCount;++army)
                     if(w.armies[army].faction!=(army<8 ? 0:1) || w.armies[army].general!=army ||
                        w.armies[army].arm==Arm::Transport) return false;
@@ -234,9 +241,12 @@ namespace frontline
             for(int m=0;m<int(j.history.size());++m)
             {
                 const auto& h=j.history[m];
+                if(h.review.grand.yangren.active && (m!=YangrenMission || !h.completed || !h.campaignFlow)) return false;
+                if(h.review.resolution==JourneyResolution::JoinedMainForce &&
+                    (m<1 || m>2 || !h.completed || !h.campaignFlow || h.won || h.withdrawn || h.rescued || h.casualties || h.survivors || h.story.recorded)) return false;
                 if(h.review.grand.ordersEnabled && (m!=YellowTurbanMission || !h.completed || !h.campaignFlow)) return false;
                 const bool north=m==1 && h.campaignFlow && j.history[0].story.reply==JourneyPledge::Preserve;
-                const auto map=h.review.grand.ordersEnabled ? JourneyMap::GuangzongFronts:SelectJourneyMap(m,m==0,h.route,north,j.coalitionPlan,false,j.luoyangPlan);
+                const auto map=h.review.grand.ordersEnabled ? JourneyMap::GuangzongFronts:h.review.grand.yangren.active ? JourneyMap::YangrenCounter:SelectJourneyMap(m,m==0,h.route,north,j.coalitionPlan,false,j.luoyangPlan);
                 const auto legacy=SelectJourneyMap(m,false,h.route,false,j.coalitionPlan,true,j.luoyangPlan);
                 // Old histories and failed escorts may predate the individual route layouts.
                 const bool validAssignments=Assignments(h.assignments,m,map,m==0) || Assignments(h.assignments,m,legacy,m==0);

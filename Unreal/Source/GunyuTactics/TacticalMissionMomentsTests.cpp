@@ -10,7 +10,8 @@ bool ATacticalField::MissionMomentsSmokeTest()
     const int Mission=FirstMission,Policy=EnemyPolicy;const float Speed=PlaybackSpeed,Volume=EffectsVolume;
     auto Check=[](bool V,const TCHAR* Why) { if(!V) UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_MOMENTS: FAIL %s"),Why);return V; };
     bStartWithCouncil=true;bRealtimeCommand=false;bLegacyJourney=false;FirstMission=0;EnemyPolicy=0;State->bNoPlayback=false;PlaybackSpeed=1;EffectsVolume=0;
-    Issue(ETacticalCommand::Restart);for(int I=0;I<4;++I) Action(EKeys::Enter);
+    Issue(ETacticalCommand::Restart);for(int I=0;I<3;++I) Action(EKeys::Enter);
+    Issue(ETacticalCommand::PromiseRescue);Action(EKeys::Enter);
     auto Save=std::make_unique<frontline::JourneySaveData>();std::vector<std::uint8_t> Initial,Natural,ReadBefore,ReadAfter;
     if(!Check(ExportSession(Initial) && frontline::DecodeJourneySave(Initial,*Save),TEXT("ordinary public escort deployment"))) return false;
     // A quiet route isolates progress feedback; no claimed combat victory.

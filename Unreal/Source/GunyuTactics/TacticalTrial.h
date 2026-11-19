@@ -169,6 +169,8 @@ public:
     bool RealtimeSmokeTest();
     bool AutoBattleSmokeTest();
     bool GrandBattleSmokeTest();
+    bool EpicCampaignSmokeTest();
+    bool PrepareEpicPreludePreview(int Phase);
     bool PrepareGrandBattlePreview(int Mission,int Phase,int Approach=0);
     bool CanUseGrandApproach() const;
     bool UseGrandApproach(int Index);
@@ -345,6 +347,7 @@ private:
     void BuildPresentation();
     void BuildMissionPresentation();
     void BuildGrandStrategyPresentation();
+    void BuildYangrenStrategyPresentation();
     void BuildPortAssaultPresentation();
     void BuildOpeningOrder();
     void BuildDefensePresentation();

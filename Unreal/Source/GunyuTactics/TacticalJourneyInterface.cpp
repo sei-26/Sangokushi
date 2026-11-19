@@ -21,12 +21,13 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
             [Label([] { return TEXT("策"); },28,Gold)]]]
         + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
           [SNew(SVerticalBox)
-           + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("黄巾の乱    /    軍師の旅路"); },11,Gold)]
+           + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("群雄戦線    /    軍師の旅路"); },11,Gold)]
            + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.Heading; },28)]]];
     Contents->AddSlot().AutoHeight()
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bCampaignFlow ? EVisibility::Visible:EVisibility::Collapsed; })
        [Label([this] { return Field->Presentation().Journey.CampaignPhase+TEXT(" ／ ")+Field->Presentation().Journey.CampaignStanding; },19,Gold)]];
     Contents->AddSlot().AutoHeight().Padding(0, 12, 0, 18)[Label([this] { return Field->Presentation().Journey.Resources; }, 16, Gold)];
+    Contents->AddSlot().AutoHeight().Padding(0,0,0,8)[Label([this] { return Field->Presentation().Journey.CampaignRoad; },15,Gold)];
     Contents->AddSlot().AutoHeight().Padding(0,0,0,8)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.PledgeText.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
        [Label([this] { return Field->Presentation().Journey.PledgeText; },16,Gold)]];
@@ -61,6 +62,12 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
           + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? P.CampaignChange:P.Episode.Setting; },15)]
           + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.Episode.Question; },16,Gold)]]];
     Text->AddSlot().AutoHeight()[OpeningRouteChoices()];
+    Text->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SBox).Visibility_Lambda([this]
+        { return Field->CanIssue(ETacticalCommand::JoinMainForce) && !Field->Presentation().Journey.bShortPrelude ? EVisibility::Visible:EVisibility::Collapsed; })
+      [Command(ETacticalCommand::JoinMainForce,[] { return TEXT("本隊へ合流して、黄巾の本戦へ"); })]];
+    Text->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SBox).Visibility_Lambda([this]
+        { return Field->CanIssue(ETacticalCommand::ContinuePrelude) && Field->Presentation().Journey.bShortPrelude ? EVisibility::Visible:EVisibility::Collapsed; })
+      [Command(ETacticalCommand::ContinuePrelude,[] { return TEXT("序章の別働任務も遊ぶ"); })]];
     Text->AddSlot().AutoHeight().Padding(0,0,0,12)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.CoalitionEpisode.Lines.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
        [Button([] { return TEXT("第二章　反董卓連合へ"); },[this] { OpenEpisode(true); })]];
@@ -111,8 +118,18 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
     auto Reply=SNew(SVerticalBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? EVisibility::Visible:EVisibility::Collapsed; });
     Reply->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().Journey.ReplyPrompt; },16,Gold)];
     Reply->AddSlot().AutoHeight().Padding(0,5)[SNew(SHorizontalBox)
-      + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,8,0)[Command(ETacticalCommand::StoryReplyPreserve,[this] { return Field->Presentation().Journey.bCampaignFlow ? (Field->Presentation().Mission==0 ? TEXT("1  兵を守ると約束する\n次戦は北橋を回る配置。兵損失一割以内を目指す"):TEXT("1  決戦でも兵を連れ帰る\n兵損失一割以内という約束を、次の采配にする")):TEXT("1  主人公：次は、みんなを連れて帰る\n次戦の兵損失を一割以内に抑えて勝つ"); })]
-      + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::StoryReplyCoordinate,[this] { return Field->Presentation().Journey.bCampaignFlow ? (Field->Presentation().Mission==0 ? TEXT("2  皆をつなぐと約束する\n次戦は南橋突破の配置。二隊連鎖で勝利を目指す"):TEXT("2  決戦でも皆をつなぐ\n二隊連鎖で勝つという約束を、次の采配にする")):TEXT("2  主人公：俺が合図を出して、皆をつなぐ\n次戦で二隊以上の戦法をつなぎ、任務を果たす"); })]];
+      + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,8,0)[Command(ETacticalCommand::StoryReplyPreserve,[this]
+        {
+            const auto& P=Field->Presentation().Journey;
+            if(P.bShortPrelude) return TEXT("1  兵を守ると約束する\n次の合戦を、出陣兵の損失一割以内で勝つ");
+            return P.bCampaignFlow ? (Field->Presentation().Mission==0 ? TEXT("1  兵を守ると約束する\n次戦は北橋を回る配置。兵損失一割以内を目指す"):TEXT("1  決戦でも兵を連れ帰る\n兵損失一割以内という約束を、次の采配にする")):TEXT("1  主人公：次は、みんなを連れて帰る\n次戦の兵損失を一割以内に抑えて勝つ");
+        })]
+      + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::StoryReplyCoordinate,[this]
+        {
+            const auto& P=Field->Presentation().Journey;
+            if(P.bShortPrelude) return TEXT("2  皆をつなぐと約束する\n次の合戦で二隊以上の戦法をつなぎ、勝つ");
+            return P.bCampaignFlow ? (Field->Presentation().Mission==0 ? TEXT("2  皆をつなぐと約束する\n次戦は南橋突破の配置。二隊連鎖で勝利を目指す"):TEXT("2  決戦でも皆をつなぐ\n二隊連鎖で勝つという約束を、次の采配にする")):TEXT("2  主人公：俺が合図を出して、皆をつなぐ\n次戦で二隊以上の戦法をつなぎ、任務を果たす");
+        })]];
     Contents->AddSlot().AutoHeight()[Reply];
     Contents->AddSlot().AutoHeight().Padding(0, 10, 0, 0)[Label([this] { return Field->Presentation().Journey.History; }, 14)];
     Contents->AddSlot().AutoHeight().Padding(0, 10, 0, 10)[Label([this] { return Field->Presentation().Journey.Relationships; }, 16, Gold)];

@@ -4,13 +4,16 @@ using namespace frontline;
 
 bool ATacticalField::CanUseGrandApproach() const
 {
-    return State->Journey.CanChooseGrandApproach() && !IsPlaying() && !State->bAutoBattle &&
+    return (State->Journey.CanChooseGrandApproach() || State->Journey.CanChooseYangrenApproach()) && !IsPlaying() && !State->bAutoBattle &&
         !State->bRealtimeStepping && !State->bRealtimeChainRequested && State->Orders.empty() && !State->ChainSignal.Armed();
 }
 bool ATacticalField::UseGrandApproach(int Index)
 {
     if(Index<0 || Index>1 || !CanUseGrandApproach()) return false;
-    if(!State->Journey.ChooseGrandApproach(Index==0 ? GrandApproach::RelieveLeft:GrandApproach::CentralAssault)) return false;
+    auto& J=State->Journey;
+    const bool Chosen=J.HasYangrenStrategy() ? J.ChooseYangrenApproach(Index==0 ? YangrenApproach::Forest:YangrenApproach::Advance):
+        J.ChooseGrandApproach(Index==0 ? GrandApproach::RelieveLeft:GrandApproach::CentralAssault);
+    if(!Chosen) return false;
     State->Realtime.paused=true;
     State->Report=JourneyText(State->Journey.message);
     Refresh();return true;
@@ -18,11 +21,14 @@ bool ATacticalField::UseGrandApproach(int Index)
 void ATacticalField::BuildGrandStrategyPresentation()
 {
     const auto& J=State->Journey;auto& H=State->HUD;
+    if(J.HasYangrenStrategy()) { BuildYangrenStrategyPresentation();return; }
     if(!J.HasGrandStrategy()) return;
     const auto& G=J.battleReview.grand;
     const bool LeftLives=J.world.armies[6].troops>0;
     const bool Rescue=G.approach==GrandApproach::RelieveLeft && !G.relievedOn && LeftLives;
     H.bGrandOrdersPending=J.CanChooseGrandApproach();
+    H.GrandChoices={{TEXT("北の仲間を救う"),TEXT("本隊は北の林道へ。中央の支援は後になる。")},
+        {TEXT("中央を一気に突破する"),TEXT("本隊が兵糧と士気を使い強行軍。左翼は自力で耐える。")}};
     H.GrandOrderStatus=G.approach==GrandApproach::RelieveLeft ? TEXT("左翼救援"):G.approach==GrandApproach::CentralAssault ? TEXT("中央強行軍"):TEXT("本隊の方針を選ぼう");
     const FString Left=G.relievedOn && LeftLives ? TEXT("救援成功"):!LeftLives ? TEXT("左翼壊滅"):TEXT("北の林で交戦中");
     H.MissionStep=FString::Printf(TEXT("%s ｜ 左翼 %d兵・%s ｜ 本隊 %d兵"),*H.GrandOrderStatus,J.world.armies[6].troops,*Left,J.world.armies[5].troops);
