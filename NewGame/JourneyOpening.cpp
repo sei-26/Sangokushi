@@ -69,7 +69,8 @@ namespace frontline
     {
         switch (battleReview.resolution)
         {
-        case JourneyResolution::Captured:return HasSunJian() ? U"陽人の辻を確保し、孫堅と合流":
+        case JourneyResolution::Captured:return HasCoalitionBattle() ? (coalitionPlan==CoalitionPlan::Protect ? U"汴水で曹操と援軍を西岸へ救出":U"汴水で曹操と徐栄軍を崩した"):
+            HasSunJian() ? U"陽人の辻を確保し、孫堅と合流":
             depotInterception ? U"西の荷駄隊を捕らえた":
             mission==LuoyangMission ? (luoyangPlan==LuoyangPlan::WesternDepot ? U"西の荷駄陣を占領":U"洛陽の南門前を確保"):
             mission==CoalitionMission ? U"酸棗の前哨を占領":

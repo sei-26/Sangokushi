@@ -15,6 +15,7 @@ namespace frontline
 	}
 	const char32_t* StrategistJourney::MissionName() const
 	{
+        if(HasCoalitionBattle()) return coalitionPlan==CoalitionPlan::Protect ? U"曹操と援軍を西岸へ連れ帰れ":U"曹操と渡河し、徐栄軍を崩せ";
 		if(HasYangrenStrategy()) return U"孫堅を守り、騎兵の反撃を退けろ";
 		if(PlansGrandBattle()) return HasSunJian() ? U"陽人大決戦 ／ 孫堅本隊と敵本陣を突け":U"広宗大決戦 ／ 官軍全軍の総攻撃";
 		return Definition().title;
@@ -59,7 +60,7 @@ namespace frontline
 		world.bonds = {{0, 1, 40}, {0, 2, 40}, {1, 2, 40}};
 		stage = JourneyStage::Encounter;
 		mission = trust = bestChain = preparation = deployed = casualties = survivors = 0;
-        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=grandCampaign=grandStrategyCampaign=shortPrelude=yangrenStrategyCampaign=false;reserveFood=0;
+        officerTrust={};assignments={};difficulty=JourneyDifficulty::Standard;campaignFlow=grandCampaign=grandStrategyCampaign=shortPrelude=yangrenStrategyCampaign=coalitionBattleCampaign=false;reserveFood=0;
 		turn = 1;
 		heldTurns = convoyStep = convoyEscort = recoveredCargo = 0;
 		guarding = {};
@@ -374,6 +375,11 @@ namespace frontline
             for(int army=5;army<int(world.armies.size());++army)
                 if(world.armies[army].faction==world.player) remaining+=world.armies[army].troops;
             battleReview.grand.alliedLosses=std::max(0,battleReview.grand.alliedStarted-remaining);
+            if(HasCoalitionBattle())
+            {
+                battleReview.grand.coalition.caoReturned=world.armies[5].troops;
+                battleReview.grand.coalition.reliefReturned=world.armies[6].troops;
+            }
             if(battleReview.grand.ordersEnabled) battleReview.grand.leftReturned=world.armies[6].troops;
             if(battleReview.grand.yangren.active) battleReview.grand.yangren.mainReturned=world.armies[5].troops;
         }
@@ -443,7 +449,7 @@ namespace frontline
 		{
 			stage = JourneyStage::Complete;
             if(mission==CoalitionMission)
-                Report(U"酸棗で引き受けた任務を果たした。次は陽人へ向かい、孫堅軍に合流する。");
+                Report(HasCoalitionBattle() ? U"汴水での采配と帰った兵を記録した。次は陽人へ向かい、孫堅軍に合流する。":U"酸棗で引き受けた任務を果たした。次は陽人へ向かい、孫堅軍に合流する。");
             else if(mission==YangrenMission)
                 Report(U"陽人で孫堅と合流した。次は焼けた洛陽で引き受ける役目を決める。");
             else if(mission==LuoyangMission)

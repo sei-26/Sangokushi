@@ -37,6 +37,13 @@ void ATacticalField::BuildStoryPresentation()
             if(Story.reply!=JourneyPledge::None) P.PledgeText=TEXT("次の戦いで交わした約束：")+JourneyText(PledgeName(Story.reply));
         }
         const auto& R=J.history[J.mission].review;
+        if(R.grand.coalition.active)
+        {
+            const auto& C=R.grand.coalition;
+            P.CampaignChange+=FString::Printf(TEXT("\n曹操軍の生還：%d兵 ／ 張邈の援軍：%d兵"),C.caoReturned,C.reliefReturned);
+            if(C.rescuedBy>=0) P.CampaignChange+=TEXT("\n")+JourneyText(EpisodeSpeakerName(C.rescuedBy))+TEXT("が包囲を開き、援軍へ救援を届けた。");
+            if(C.returnedOn) P.CampaignChange+=TEXT("\n曹操と援軍は南橋を渡り、西岸へ実際に帰還した。");
+        }
         if(R.grand.yangren.active)
             P.CampaignChange+=FString::Printf(TEXT("\n孫堅本隊の生還：%d兵 ／ 呂布の親衛騎兵の反撃%s"),R.grand.yangren.mainReturned,
                 R.grand.yangren.repelledOn ? TEXT("を撃退"):TEXT("は未達"));

@@ -12,6 +12,7 @@ namespace frontline
         for(const auto& contact:journey.intelligence[0].contacts)
         {
             if(!contact.current || contact.observed.troops<=0 ||
+               (journey.HasCoalitionBattle() && (contact.observed.morale<25 || (journey.coalitionPlan==CoalitionPlan::Protect && contact.id==GrandCommander))) ||
                (journey.HasYangrenStrategy() && (contact.id==GrandCommander || (contact.id==8 && !journey.battleReview.grand.yangren.counterOn))) ||
                (journey.HasYangrenStrategy() && contact.observed.morale<25) ||
                (journey.HasGrandStrategy() && contact.id!=GrandCommander && contact.observed.morale<25) ||
@@ -36,6 +37,8 @@ namespace frontline
             }
             if(!reachable) continue;
             int score=fighters*90-travel*12;
+            if(journey.HasCoalitionBattle() && journey.coalitionPlan==CoalitionPlan::Protect && !journey.battleReview.grand.coalition.rescuedOn && contact.id==9) score+=1500;
+            if(journey.HasCoalitionBattle() && journey.coalitionPlan==CoalitionPlan::Advance && journey.battleReview.grand.openedOn && contact.id==GrandCommander) score+=1000;
             if(journey.HasYangrenStrategy() && journey.battleReview.grand.yangren.counterOn && contact.id==8) score+=1500;
             if(journey.HasYangrenStrategy() && !journey.battleReview.grand.yangren.counterOn && contact.id==3) score+=500;
             if(journey.HasGrandStrategy() && journey.battleReview.grand.ralliedOn && contact.id==GrandCommander) score+=1000;

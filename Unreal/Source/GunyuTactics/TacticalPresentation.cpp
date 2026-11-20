@@ -37,7 +37,8 @@ void ATacticalField::BuildPresentation()
     HUD.Selected = State->Selected;
     HUD.GoalTile = J.goal;
     HUD.SecondGoalTile = J.Definition().secondGoal;
-    HUD.GoalLabel = J.depotInterception ? TEXT("東の撤収口"):
+    HUD.GoalLabel = J.HasCoalitionBattle() ? (J.coalitionPlan==CoalitionPlan::Protect ? TEXT("西岸の帰還地点"):TEXT("曹操と合流する前陣")):
+        J.depotInterception ? TEXT("東の撤収口"):
         J.mission==LuoyangMission ? (J.luoyangPlan==LuoyangPlan::WesternDepot ? TEXT("西の荷駄陣"):TEXT("洛陽の南門前")):
         J.HasSunJian() ? TEXT("陽人の辻"):J.mission==CoalitionMission && J.coalitionPlan==CoalitionPlan::Advance ? TEXT("董卓軍の前哨"):
         J.mission == YellowTurbanMission ? TEXT("黄巾の前陣"):J.mission == 0 ? TEXT("脱出地点") :

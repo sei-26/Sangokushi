@@ -35,6 +35,7 @@ namespace frontline
             result[2]=Campaign::At(10,10);
         }
         if(HasGrandStrategy()) result={Campaign::At(6,8),Campaign::At(6,5),Campaign::At(7,10)};
+        if(HasYangrenStrategy() && result[1]==Campaign::At(7,7)) result[1]=Campaign::At(7,6);
         if(mission==CoalitionMission && !legacyBattlefield)
         {
             const auto& support=GuangzongSupport();
@@ -44,6 +45,14 @@ namespace frontline
             const auto& previous=history[YellowTurbanMission];const auto& grand=previous.review.grand;
             if(previous.won && grand.relievedOn && grand.leftReturned>0 && grand.reliefOfficer>=0)
                 result[grand.reliefOfficer]=Campaign::At(maintain ? 8:10,maintain ? 7:5);
+        }
+        if(HasCoalitionBattle())
+        {
+            result={Campaign::At(5,6),Campaign::At(5,8),Campaign::At(6,9)};
+            if(GuangzongSupport().swift) result[2]=Campaign::At(6,7);
+            const auto& g=history[YellowTurbanMission].review.grand;
+            if(history[YellowTurbanMission].won && g.relievedOn && g.leftReturned>0 && g.reliefOfficer>=0)
+                result[g.reliefOfficer]=Campaign::At(6,4);
         }
         if(!campaignFlow || choice!=0 || assignments[1].duty!=JourneyDuty::Ambush) return result;
         const int destination=assignments[1].tile;

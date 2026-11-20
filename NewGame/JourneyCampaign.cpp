@@ -118,6 +118,7 @@ namespace frontline
     }
     std::u32string StrategistJourney::ObjectiveBrief() const
     {
+        if(HasCoalitionBattle()) return Definition().objective;
         if(HasYangrenStrategy()) return U"孫堅本隊と合流し、辻を守って呂布の騎兵反撃を退ける";
         if(PlansGrandBattle()) return HasSunJian() ? U"陽人の辻を開き、孫堅本隊を合流させ、董卓軍本陣を撃破する":
             U"前陣を突破して官軍本隊に総攻撃の合図を送り、黄巾軍本陣を撃破する";
@@ -181,6 +182,10 @@ namespace frontline
         }
         if(j.mission==CoalitionMission)
         {
+            if(j.HasCoalitionBattle()) return {U"第二章 ／ 汴水の会戦",j.won ?
+                (j.coalitionPlan==CoalitionPlan::Protect ? U"曹操と張邈の援軍を西岸へ連れ帰った。":U"曹操と対岸に旗を並べ、徐栄軍の攻勢を崩した。"):
+                j.Definition().briefing,j.HasCoalitionGuide() ? U"次の局面は陽人。救って生還させた援軍の道案内が、孫堅との合流を支える。":
+                    U"次の局面は陽人。孫堅軍との合流へ向かう。",j.coalitionPlan==CoalitionPlan::Protect ? U"援軍と曹操の救出":U"曹操との共同攻勢"};
             const bool protect=j.coalitionPlan==CoalitionPlan::Protect;
             const auto* plan=CoalitionPlanName(j.coalitionPlan);
             if(j.stage==JourneyStage::Complete || finished)

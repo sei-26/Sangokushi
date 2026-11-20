@@ -34,7 +34,11 @@ namespace frontline
             }
             if(best>=0) duties[best]=tile;
         };
-        if(forestStage) { Assign(Campaign::At(9,6));Assign(Campaign::At(9,8));Assign(Campaign::At(9,7)); }
+        const bool relief=j.HasCoalitionBattle() && j.coalitionPlan==CoalitionPlan::Protect;
+        const bool rescuing=relief && !j.battleReview.grand.coalition.rescuedOn;
+        if(rescuing) Assign(Campaign::At(9,8));
+        else if(relief) { Assign(j.goal);Assign(Campaign::At(8,6));Assign(Campaign::At(9,10)); }
+        else if(forestStage) { Assign(Campaign::At(9,6));Assign(Campaign::At(9,8));Assign(Campaign::At(9,7)); }
         else if(j.Definition().kind==JourneyObjective::HoldPositions)
         { Assign(j.goal);Assign(j.Definition().secondGoal); }
         else if(capture)
@@ -57,6 +61,7 @@ namespace frontline
             for(const auto& c:j.intelligence[0].contacts)
             {
                 if(!c.current || c.observed.troops<=0 || !w.Hostile(w.player,c.observed.faction) ||
+                   (j.HasCoalitionBattle() && (c.observed.morale<25 || (relief && c.id==GrandCommander))) ||
                    (j.HasYangrenStrategy() && (c.id==GrandCommander || (c.id==8 && !j.battleReview.grand.yangren.counterOn))) ||
                    (j.HasYangrenStrategy() && c.observed.morale<25) ||
                    (j.HasGrandStrategy() && c.id!=GrandCommander && c.observed.morale<25) ||
@@ -77,7 +82,7 @@ namespace frontline
                 if(at==duties[a])
                 {
                     plan.movement.Queue(j,a,JourneyDirective::Hold);
-                    defending[a]=!forestStage;plan.reasons[a]=forestStage ? U"森で騎兵を受ける。仲間と戦法をつなぐ！":U"旗を守る。仲間が動ける時間をつくる！";
+                    defending[a]=!forestStage && !rescuing;plan.reasons[a]=rescuing ? U"援軍の隣で包囲を崩す！":forestStage ? U"森で騎兵を受ける。仲間と戦法をつなぐ！":U"旗を守る。仲間が動ける時間をつくる！";
                 }
                 else
                 {
@@ -117,6 +122,17 @@ namespace frontline
         CoordinateJourneyAutoEngagement(j,plan,duties);
         plan.tactics=PlanJourneyAutoTactics(j,defending);
         CoordinateJourneyAutoMovement(j,plan);
+        if(forestStage)
+            for(const auto& enemy:j.ReadEnemyPlans()) if(enemy.army==3 && enemy.next!=enemy.from)
+                for(int a=0;a<3;++a)
+                {
+                    const auto route=plan.movement.Route(j,a);
+                    if(route.size()>1 && route[1]==enemy.next && w.MapDistance(w.armies[a].tile,enemy.from)>1)
+                    {
+                        plan.movement.Queue(j,a,JourneyDirective::Hold);
+                        plan.reasons[a]=U"森で待つ。騎兵を迎え入れてから、仲間と崩す！";
+                    }
+                }
         return plan;
     }
 }

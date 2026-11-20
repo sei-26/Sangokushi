@@ -170,6 +170,8 @@ public:
     bool AutoBattleSmokeTest();
     bool GrandBattleSmokeTest();
     bool EpicCampaignSmokeTest();
+    bool CoalitionGrandSmokeTest();
+    void BuildCoalitionBattlePresentation();
     bool PrepareEpicPreludePreview(int Phase);
     bool PrepareGrandBattlePreview(int Mission,int Phase,int Approach=0);
     bool CanUseGrandApproach() const;

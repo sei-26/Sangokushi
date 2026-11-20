@@ -4,6 +4,7 @@
 
 namespace frontline
 {
+    JourneyEpisode BuildCoalitionGrandEpisode(const StrategistJourney&);
     JourneyEpisode BuildYangrenEpisode(const StrategistJourney& j)
     {
         if(j.PlansGrandBattle() || j.HasGrandBattle()) return BuildGrandBattleEpisode(j);
@@ -148,11 +149,20 @@ namespace frontline
                 U"関羽が二通の書状の間に、義勇軍の駒を置いた。"},
             {3,U"兵は分けられない。どちらか一つ、俺が引き受ける。決めた役目を、皆で果たそう。",
                 U"軍師は、返事を待つ使者たちへ向き直る。"}};
+        if(j.grandCampaign && j.coalitionBattleCampaign)
+        {
+            episode.question=U"先行する曹操と押すか、孤立した援軍を連れて帰るか。";
+            episode.lines.resize(10);
+            episode.lines.push_back({CaoCao,U"俺は汴水を渡る。隣に旗を並べるなら来い。だが張邈の兵が南で孤立するなら、そちらを頼めるか。",U"曹操は西へ、張邈は南の援軍へ伝令を出す。"});
+            episode.lines.push_back({ZhangMiao,U"前へ進む者だけが戦っているわけではない。援軍の包囲を開き、孟徳も彼らも帰せる橋を残してくれ。",U"二つの役目が、同じ汴水の地図へ置かれた。"});
+            episode.lines.push_back({3,U"攻めをつなぐか、帰る旗をつなぐか。引き受ける役目は俺が決める。",U"主人公は、二人の使者へ向き直る。"});
+        }
         return episode;
     }
 
     JourneyEpisode BuildCoalitionBattleEpisode(const StrategistJourney& j)
     {
+        if(j.HasCoalitionBattle()) return BuildCoalitionGrandEpisode(j);
         const auto beat=CampaignBeat(j);
         const bool protect=j.coalitionPlan==CoalitionPlan::Protect;
         JourneyEpisode episode;

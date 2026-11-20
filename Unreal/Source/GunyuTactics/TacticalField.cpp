@@ -175,6 +175,7 @@ void ATacticalField::StartTrial()
     State->Journey.grandCampaign=!bLegacyJourney && bGrandHistoricalBattles;
     State->Journey.grandStrategyCampaign=State->Journey.grandCampaign;
     State->Journey.yangrenStrategyCampaign=State->Journey.shortPrelude=State->Journey.grandCampaign;
+    State->Journey.coalitionBattleCampaign=State->Journey.grandCampaign;
     if(!bStartOnStandardDifficulty) State->Journey.SelectDifficulty(frontline::JourneyDifficulty::Story);
     State->Journey.mission = FMath::Clamp(FirstMission, 0, 2);
     State->Journey.enemyPolicy = FMath::Clamp(EnemyPolicy, 0, 2);
@@ -204,6 +205,8 @@ void ATacticalField::Refresh()
     auto& J = State->Journey;
     if(!bLegacyJourney && bGrandHistoricalBattles && J.stage==frontline::JourneyStage::Preparation && J.grandCampaign)
         J.grandStrategyCampaign=J.yangrenStrategyCampaign=true;
+    if(!bLegacyJourney && bGrandHistoricalBattles && J.grandCampaign && (J.stage==frontline::JourneyStage::Preparation || J.CanChooseCoalitionPlan()))
+        J.coalitionBattleCampaign=true;
     if (J.stage != frontline::JourneyStage::Battle) State->RoadClearArmy=State->RoadClearStep=State->RoadClearTile=-1;
     RetargetObservedEnemy();
     SyncRealtime();

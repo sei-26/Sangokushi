@@ -1,6 +1,8 @@
 # コードを読むための地図
 
-現在の新規本編は初陣→広宗→酸棗→陽人→洛陽。序章の合流と任意の従来進行は `NewGame/JourneyPrelude.cpp`、陽人の方針・反撃は `JourneyYangrenBattle.hpp/.cpp`、本幕は `JourneyYangrenDrama.cpp`。UIは `TacticalYangrenStrategy.cpp` と既存の `TacticalGrandOrderInterface.cpp`。保存版25、共通検証 `JourneyEpicCampaignTests.cpp`、実エンジンの `TacticalEpicCampaignQA.cpp` を入口にする。[対象範囲](EPIC_CAMPAIGN_FLOW.md)。
+連合戦の現行入口は `JourneyCoalitionBattle.hpp/.cpp` と `JourneyCoalitionDrama.cpp`。二方針の11部隊・救援・橋の実帰還を扱う。表示は `TacticalCoalitionBattlePresentation.cpp`、保存版26、共通検証 `JourneyCoalitionGrandTests.cpp` と実エンジン `TacticalCoalitionGrandQA.cpp`。[汴水の実装](COALITION_GRAND_BATTLE.md)。
+
+現在の新規本編は初陣→広宗→汴水→陽人→洛陽。序章の合流と任意の従来進行は `NewGame/JourneyPrelude.cpp`、陽人の方針・反撃は `JourneyYangrenBattle.hpp/.cpp`、本幕は `JourneyYangrenDrama.cpp`。UIは `TacticalYangrenStrategy.cpp` と既存の `TacticalGrandOrderInterface.cpp`。保存は現在版26。序章短縮・陽人の共通検証は `JourneyEpicCampaignTests.cpp`、実エンジンは `TacticalEpicCampaignQA.cpp`。[版25で導入した範囲](EPIC_CAMPAIGN_FLOW.md)。
 
 広宗・陽人の11部隊の会戦は `NewGame/JourneyGrandBattle.hpp/.cpp`、対応する掛け合いは `JourneyGrandDrama.cpp`。保存版23で突破・本隊合流・味方の損耗を記録する。共通の検証は `tests/JourneyGrandBattleTests.cpp`、実エンジンの検証は `TacticalGrandBattleQA.cpp`。[実装範囲](GRAND_HISTORICAL_BATTLES.md)。
 

@@ -7,6 +7,7 @@ namespace frontline
     void StrategistJourney::PrepareGrandBattle()
     {
         if(!PlansGrandBattle()) return;
+        if(HasCoalitionBattle()) { PrepareCoalitionBattle();return; }
         auto& review=battleReview.grand;
         review.active=true;
         auto Add=[&](int faction,const std::u32string& name,int tile,int troops,int leadership)
@@ -60,6 +61,7 @@ namespace frontline
     {
         std::vector<JourneyEnemyPlan> plans;
         if(!HasGrandBattle()) return plans;
+        if(HasCoalitionBattle()) return PlanCoalitionAllies();
         auto observed=std::make_unique<Campaign>(world);
         for(auto& army:observed->armies) if(army.faction!=world.player) army.troops=0;
         for(const auto& contact:intelligence[0].contacts)
@@ -123,6 +125,7 @@ namespace frontline
 
     void StrategistJourney::CheckGrandBattle()
     {
+        if(HasCoalitionBattle()) { CheckCoalitionBattle();return; }
         auto& review=battleReview.grand;
         CheckGrandRelief();
         if(!TacticChain::Living(world,AlliedArmy))

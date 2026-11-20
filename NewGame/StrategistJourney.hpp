@@ -71,6 +71,7 @@ namespace frontline
         bool grandStrategyCampaign=false;
         bool shortPrelude=false;
         bool yangrenStrategyCampaign=false;
+        bool coalitionBattleCampaign=false;
         bool CanJoinMainForce() const;
         bool JoinMainForce();
         bool ContinuePrelude();
@@ -126,8 +127,14 @@ namespace frontline
         bool YangrenCounterRepelled() const;
         void CheckYangrenCounter();
         void CheckGrandRelief();
+        bool HasCoalitionBattle() const { return mission==CoalitionMission &&
+            (battleReview.grand.coalition.active || (stage==JourneyStage::Preparation && grandCampaign && coalitionBattleCampaign)); }
+        void PrepareCoalitionBattle();
+        std::vector<JourneyEnemyPlan> PlanCoalitionAllies() const;
+        void ApplyCoalitionEnemyRoles(const Campaign&,std::vector<JourneyEnemyPlan>&) const;
+        void CheckCoalitionBattle();
         bool PlansGrandBattle() const { return grandCampaign && campaignFlow &&
-            (mission==YellowTurbanMission || mission==YangrenMission) && (stage==JourneyStage::Preparation || HasGrandBattle()); }
+            (mission==YellowTurbanMission || mission==YangrenMission || HasCoalitionBattle()) && (stage==JourneyStage::Preparation || HasGrandBattle()); }
         int GrandRallyTile() const { return HasSunJian() ? YangrenRally:GrandRally; }
         bool IsPortAssault() const { return campaignFlow && mission==1; }
         int GuangzongCommandsLeft() const;
@@ -154,6 +161,7 @@ namespace frontline
 		bool Hold(int army);
 		const JourneyMission& Definition() const
 		{
+            if(HasCoalitionBattle()) return CoalitionGrandMission(coalitionPlan);
             if(mission==LuoyangMission) return LuoyangMissionDefinition(luoyangPlan,HasDepotInterception());
 			return campaignFlow ? CampaignMissionDefinition(mission,CurrentPledge()==JourneyPledge::Preserve,coalitionPlan,legacyBattlefield):MissionDefinition(mission);
 		}
@@ -168,7 +176,11 @@ namespace frontline
         bool CanContinue() const;
         bool CanAcceptCampaignSetback() const;
         bool AcceptCampaignSetback();
-        bool HasCoalitionGuide() const { return coalitionPlan==CoalitionPlan::Protect && history[CoalitionMission].won; }
+        bool HasCoalitionGuide() const
+        {
+            const auto& h=history[CoalitionMission];const auto& c=h.review.grand.coalition;
+            return h.won && (c.active ? c.rescuedOn>0 && c.reliefReturned>0:coalitionPlan==CoalitionPlan::Protect);
+        }
         bool CanBeginYellowTurban() const;
         bool CanBeginYangren() const;
         bool CanChooseCoalitionPlan() const;

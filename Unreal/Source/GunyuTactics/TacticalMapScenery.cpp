@@ -43,6 +43,12 @@ void ATacticalField::BuildMapScenery()
         }
     };
     const auto Map=J.Battlefield();
+    if(Map==JourneyMap::CoalitionFronts)
+    {
+        for(int Y:{5,9})
+            House(TileLocation(Campaign::At(3,Y))+FVector(-60,38,0),.58f,Y==5 ? 12:-8);
+        Field(TileLocation(Campaign::At(4,10))+FVector(-75,-65,0),6,8,138,10.f);
+    }
     if(Map==JourneyMap::CoalitionRoad || Map==JourneyMap::RefugeeRoad)
     {
         // Field borders and houses beside the road, clear of its formation centers.

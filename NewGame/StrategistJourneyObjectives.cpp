@@ -32,6 +32,7 @@ namespace frontline
 	}
     JourneyMap StrategistJourney::Battlefield() const
     {
+        if(HasCoalitionBattle()) return JourneyMap::CoalitionFronts;
         if(HasYangrenStrategy()) return JourneyMap::YangrenCounter;
         if(HasGrandStrategy()) return JourneyMap::GuangzongFronts;
         return SelectJourneyMap(mission,IsRescue(),convoyRoute,
@@ -219,7 +220,7 @@ namespace frontline
 			return false;
 		int adjacentEnemies = 0;
 		for (const auto& army : world.armies)
-            if (army.troops > 0 && (!(HasGrandStrategy() || HasYangrenStrategy()) || CanOccupyObjective(army)) && world.Hostile(world.player, army.faction) &&
+            if (army.troops > 0 && (!(HasGrandStrategy() || HasYangrenStrategy() || HasCoalitionBattle()) || CanOccupyObjective(army)) && world.Hostile(world.player, army.faction) &&
 			    world.MapDistance(army.tile, tile) <= 1)
 				++adjacentEnemies;
 		return adjacentEnemies == 0 ||

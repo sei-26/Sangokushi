@@ -5,19 +5,23 @@ using namespace frontline;
 
 bool ATacticalField::PrepareGrandBattlePreview(int Mission,int Phase,int Approach)
 {
-    if((Mission!=YellowTurbanMission && Mission!=YangrenMission) || Phase<0 || Phase>3 || (Phase==3 && Mission!=YangrenMission)) return false;
+    if((Mission!=YellowTurbanMission && Mission!=YangrenMission && Mission!=CoalitionMission) || Phase<0 || Phase>4 ||
+        (Phase==3 && Mission!=YangrenMission) || (Phase==4 && Mission!=CoalitionMission)) return false;
     Issue(ETacticalCommand::Skip);
     bLegacyJourney=false;bGrandHistoricalBattles=true;bStartWithCouncil=false;bRealtimeCommand=true;
     FirstMission=0;State->bNoPlayback=true;bPauseOnBattleAlert=false;Issue(ETacticalCommand::Restart);
     auto& J=State->Journey;
     J.ResetCampaign();J.Meet();J.grandCampaign=true;J.mission=Mission;
     if(Mission==YangrenMission) J.coalitionPlan=CoalitionPlan::Advance;
+    if(Mission==CoalitionMission) J.coalitionPlan=Approach==2 ? CoalitionPlan::Protect:CoalitionPlan::Advance;
     for(int Previous=0;Previous<Mission;++Previous)
         J.history[Previous].completed=J.history[Previous].won=J.history[Previous].campaignFlow=true;
     J.SelectDifficulty(JourneyDifficulty::Story);
-    State->PreparationChoice=1;Refresh();Issue(ETacticalCommand::Deploy);
+    State->PreparationChoice=1;Refresh();
+    if(Phase==4) { State->bNoPlayback=false;Refresh();return J.stage==JourneyStage::Preparation && J.HasCoalitionBattle(); }
+    Issue(ETacticalCommand::Deploy);
     if(!J.HasGrandBattle() || VisualUnits().Num()!=GrandBattleArmyCount) return false;
-    if(Approach>0 && !UseGrandApproach(Approach-1)) return false;
+    if(Approach>0 && Mission!=CoalitionMission && !UseGrandApproach(Approach-1)) return false;
     if(Phase>0)
     {
         Issue(ETacticalCommand::AutoBattle);
@@ -27,10 +31,10 @@ bool ATacticalField::PrepareGrandBattlePreview(int Mission,int Phase,int Approac
             const auto* reserve=J.intelligence[0].Find(8);
             if(Phase==3 && J.battleReview.grand.yangren.counterOn && reserve && reserve->current) break;
             AdvanceRealtime(.1f);AdvancePresentation(60);
-            if(Phase==1 && J.battleReview.grand.openedOn) break;
+            if(Phase==1 && (J.battleReview.grand.openedOn || J.battleReview.grand.coalition.rescuedOn)) break;
         }
         if(IsAutoBattle()) StopAutoBattle();
-        if(Phase==1 && !J.battleReview.grand.openedOn) return false;
+        if(Phase==1 && !J.battleReview.grand.openedOn && !J.battleReview.grand.coalition.rescuedOn) return false;
         if(Phase==2 && !J.won) return false;
         if(Phase==3 && (!J.battleReview.grand.yangren.counterOn || J.battleReview.grand.yangren.repelledOn)) return false;
     }

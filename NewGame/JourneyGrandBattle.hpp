@@ -1,6 +1,7 @@
 #pragma once
 #include "CampaignTypes.hpp"
 #include "JourneyYangrenBattle.hpp"
+#include "JourneyCoalitionBattle.hpp"
 
 namespace frontline
 {
@@ -20,5 +21,6 @@ namespace frontline
         int chosenOn=0,relievedOn=0,reliefOfficer=-1,leftReturned=0;
         int forcedSteps=0;
         JourneyYangrenBattle yangren;
+        JourneyCoalitionBattle coalition;
     };
 }

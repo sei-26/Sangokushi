@@ -57,6 +57,7 @@ namespace frontline
         std::vector<int> targets;
         for(const auto& contact:j.intelligence[0].contacts)
             if(contact.current && contact.observed.troops>0 && w.Hostile(w.player,contact.observed.faction) &&
+               (!j.HasCoalitionBattle() || (contact.observed.morale>=25 && (j.coalitionPlan!=CoalitionPlan::Protect || contact.id!=GrandCommander))) &&
                (!j.HasYangrenStrategy() || (contact.id!=GrandCommander && (contact.id!=8 || j.battleReview.grand.yangren.counterOn) && contact.observed.morale>=25)) &&
                (!j.HasGrandStrategy() || contact.id==GrandCommander || contact.observed.morale>=25) &&
                (!j.depotInterception || contact.id==3)) targets.push_back(contact.id);

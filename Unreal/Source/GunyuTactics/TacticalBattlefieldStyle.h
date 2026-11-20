@@ -40,7 +40,7 @@ namespace TacticalMap
         if (Map == JourneyMap::Guangzong || Map == JourneyMap::GuangzongFronts)
             return {FLinearColor(.263f,.222f,.134f),FLinearColor(.13f,.175f,.07f),
                 FLinearColor(.37f,.29f,.20f),FLinearColor(.51f,.31f,.15f),115.f,29000.f,.82f,76.f};
-        if (Map == JourneyMap::CoalitionFord)
+        if (Map == JourneyMap::CoalitionFord || Map==JourneyMap::CoalitionFronts)
             return {FLinearColor(.164f,.19f,.174f),FLinearColor(.089f,.155f,.10f),
                 FLinearColor(.30f,.33f,.32f),FLinearColor(.45f,.30f,.17f),200.f,29000.f,.87f,75.f};
         return {FLinearColor(.14f,.175f,.105f),FLinearColor(.09f,.145f,.042f),

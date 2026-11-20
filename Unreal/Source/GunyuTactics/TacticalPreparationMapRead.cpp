@@ -31,7 +31,16 @@ void ATacticalField::BuildPreparationMap()
     Map.bChooseRoute=J.IsRescue();Map.bSouthern=J.convoyRoute==JourneyConvoyRoute::SouthernWood;
     auto Add=[&](int Tile,const TCHAR* Name,const FString& Description,std::initializer_list<FString> Hints)
     { FPlanningSite Site;Site.Tile=Tile;Site.Name=Name;Site.Description=Description;for(const auto& H:Hints) Site.Hints.Add(H);Map.Sites.Add(MoveTemp(Site)); };
-    if(J.Definition().kind==JourneyObjective::HoldPositions)
+    if(J.HasCoalitionBattle())
+    {
+        const bool Retreat=J.coalitionPlan==CoalitionPlan::Protect;
+        Add(J.Definition().goal,Retreat ? TEXT("西岸の帰還地点"):TEXT("曹操と合流する前陣"),JourneyText(J.ObjectiveBrief()),{});
+        Add(Campaign::At(10,5),TEXT("曹操の先行隊"),TEXT("曹操は対岸で戦っている。壊滅する前に合流するか、援軍の包囲を開いて一緒に帰す。"),{});
+        Add(Campaign::At(9,9),TEXT("張邈の援軍"),TEXT("南の包囲隊を崩して、生きた援軍の隣へ主力を届ける。救出では援軍を先に橋へ通す。"),{});
+        Add(Campaign::At(7,4),TEXT("北の橋"),TEXT("対岸へ向かうもう一つの進路。橋の上で隊を止め続けない。"),{});
+        Add(CoalitionBridge,TEXT("南の橋"),TEXT("援軍と曹操の帰路。主力は西の帰還地点へ退き、橋の出口を空ける。"),{});
+    }
+    else if(J.Definition().kind==JourneyObjective::HoldPositions)
     {
         for(int I=0;I<2;++I)
             Add(I==0 ? J.Definition().goal:J.Definition().secondGoal,I==0 ? TEXT("北の烽火"):TEXT("南の烽火"),

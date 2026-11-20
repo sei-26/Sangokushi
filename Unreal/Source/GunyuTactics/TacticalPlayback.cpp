@@ -39,7 +39,7 @@ TArray<FVisualUnit> ATacticalField::ObserveUnits() const
         if(J.HasSunJian() && Id==3) Unit.HistoricalSpeaker=LuBu;
         if(J.HasYangrenStrategy() && Id==8) Unit.HistoricalSpeaker=LuBu;
         if(J.HasSunJian() && Id==StrategistJourney::AlliedArmy) Unit.HistoricalSpeaker=SunJian;
-        if(J.HasGrandBattle() && !J.HasSunJian() && Id==StrategistJourney::AlliedArmy) Unit.HistoricalSpeaker=HuangfuSong;
+        if(J.HasGrandBattle() && !J.HasSunJian() && Id==StrategistJourney::AlliedArmy) Unit.HistoricalSpeaker=J.HasCoalitionBattle() ? CaoCao:HuangfuSong;
         Unit.bTransport=Seen->arm==Arm::Transport;
         Unit.bCavalry=Seen->arm==Arm::Cavalry;
         Unit.Position = SurfaceLocation(Seen->tile);

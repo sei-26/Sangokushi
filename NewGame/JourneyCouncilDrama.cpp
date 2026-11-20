@@ -4,6 +4,13 @@ namespace frontline
 {
     std::vector<JourneyDialogueLine> JourneyCouncilConversation(const StrategistJourney& j,int who)
     {
+        if(j.HasCoalitionBattle())
+        {
+            const char32_t* advice[]={U"曹操殿も張邈殿の兵も、同じ側で戦っている。旗へ届く道を、私たちからつなごう。",
+                U"北か南か、渡る橋を分けよう。帰る時は、味方の進路を私たちで塞がぬことだ。",
+                U"包囲を割って援軍に声をかける！ 軍師、合流した後に追うか戻るか、俺に合図をくれ！"};
+            return {{who,advice[std::clamp(who,0,2)]},{3,U"進む旗と帰る旗、どちらも見て合図を出す。橋の向こうで一人にさせない。"}};
+        }
         if(j.mission==LuoyangMission)
         {
             const bool west=j.luoyangPlan==LuoyangPlan::WesternDepot;

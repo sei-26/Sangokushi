@@ -137,6 +137,7 @@ namespace frontline
         auto view = EnemyView(*observed, assumed);
         auto plans=AdaptivePlans(*view,chain,Context(*this),campaignFlow);
         if(HasGrandBattle()) ApplyGrandEnemyRoles(*view,plans);
+        if(HasCoalitionBattle()) ApplyCoalitionEnemyRoles(*view,plans);
         if(HasYangrenStrategy()) for(auto& plan:plans) if(plan.army==8)
         {
             if(plan.intent==JourneyEnemyIntent::Recover) continue;
@@ -154,6 +155,7 @@ namespace frontline
         auto observed=EnemyView(world,intelligence[1]);
         auto plans=AdaptivePlans(*observed,chain,Context(*this),campaignFlow);
         if(HasGrandBattle()) ApplyGrandEnemyRoles(*observed,plans);
+        if(HasCoalitionBattle()) ApplyCoalitionEnemyRoles(*observed,plans);
         if(HasYangrenStrategy()) for(auto& plan:plans) if(plan.army==8)
         {
             if(plan.intent==JourneyEnemyIntent::Recover) continue;

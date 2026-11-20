@@ -46,7 +46,10 @@ namespace frontline
       else if(reading) { grand.ordersEnabled=false;grand.approach=GrandApproach::None;grand.chosenOn=grand.relievedOn=grand.leftReturned=grand.forcedSteps=0;grand.reliefOfficer=-1; }
       auto& yangren=grand.yangren;
       if(version>=25) (*this)(yangren.active,yangren.approach,yangren.orderedOn,yangren.counterOn,yangren.repelledOn,yangren.mainReturned);
-      else if(reading) yangren={}; }
+      else if(reading) yangren={};
+      auto& coalition=grand.coalition;
+      if(version>=26) (*this)(coalition.active,coalition.rescuedBy,coalition.rescuedOn,coalition.returnedOn,coalition.caoReturned,coalition.reliefReturned);
+      else if(reading) coalition={}; }
     void JourneyArchive::IO(JourneyAssignment& v)
     { (*this)(v.duty,v.tile,v.completed); }
     void JourneyArchive::IO(JourneyResult& v)
@@ -80,6 +83,7 @@ namespace frontline
       if(version>=23) IO(v.grandCampaign);else if(reading) v.grandCampaign=false;
       if(version>=24) IO(v.grandStrategyCampaign);else if(reading) v.grandStrategyCampaign=false;
       if(version>=25) (*this)(v.shortPrelude,v.yangrenStrategyCampaign);else if(reading) v.shortPrelude=v.yangrenStrategyCampaign=false;
+      if(version>=26) IO(v.coalitionBattleCampaign);else if(reading) v.coalitionBattleCampaign=false;
       if(reading && version<24)
           v.world.bonds.erase(std::remove_if(v.world.bonds.begin(),v.world.bonds.end(),[&](const auto& bond)
               { return bond.a>=int(v.world.generals.size()) || bond.b>=int(v.world.generals.size()); }),v.world.bonds.end());

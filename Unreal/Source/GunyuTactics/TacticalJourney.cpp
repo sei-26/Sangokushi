@@ -112,7 +112,7 @@ void ATacticalField::BuildJourneyPresentation()
     P.Context = J.mission==YellowTurbanMission ? TEXT("184年・黄巾の乱。広宗郊外での義勇軍の作戦、会話、主人公の関与は創作です。"):
         J.mission==LuoyangMission ? TEXT("191年・孫堅の洛陽入りを背景に、義勇軍の二つの任務と会話を創作しています。"):
         J.HasSunJian() ? TEXT("191年・陽人。孫堅の戦いを背景に、義勇軍の参加と局地戦を創作しています。"):
-        J.mission==CoalitionMission ? TEXT("190年・反董卓連合。酸棗西での義勇軍の任務は創作です。"):
+        J.mission==CoalitionMission ? (J.HasCoalitionBattle() ? TEXT("190年・汴水。史実では曹操が徐栄に敗戦。義勇軍の従軍と戦果はIFです。"):TEXT("190年・反董卓連合。酸棗西での義勇軍の任務は創作です。")):
         TEXT("184年・黄巾の乱を背景とする序章。局地戦・会話・主人公の関与は創作です。");
     const auto& Camp = J.world.cities[0];
     P.Resources = FString::Printf(TEXT("野営地  兵 %d    兵糧 %d    軍資金 %d    信頼 %d"), Camp.troops, Camp.food, Camp.gold, J.trust);
@@ -176,9 +176,9 @@ void ATacticalField::BuildJourneyPresentation()
     for (int Index = 0; Index < int(J.history.size()); ++Index)
         if (J.history[Index].completed)
             P.History += J.history[Index].review.resolution==JourneyResolution::JoinedMainForce ?
-                FString::Printf(TEXT("第%d戦: 別働任務を本隊へ引き継ぎ（未出陣）  "),Index+1):J.history[Index].review.resolution==JourneyResolution::Unfought ?
-                FString::Printf(TEXT("第%d戦: 出陣見合わせ  "),Index+1):
-                FString::Printf(TEXT("第%d戦: %s / 帰還 %d / 損失 %d  "), Index + 1,
+                FString::Printf(TEXT("第%d戦: 別働任務を本隊へ引き継ぎ（未出陣）\n"),Index+1):J.history[Index].review.resolution==JourneyResolution::Unfought ?
+                FString::Printf(TEXT("第%d戦: 出陣見合わせ\n"),Index+1):
+                FString::Printf(TEXT("第%d戦: %s / 帰還 %d / 損失 %d\n"), Index + 1,
                 J.history[Index].rescued ? TEXT("季安の避難車を護送") : J.history[Index].won ? TEXT("任務達成") : J.history[Index].withdrawn ? TEXT("任務中止・撤収") : TEXT("未達"),
                 J.history[Index].survivors, J.history[Index].casualties);
     BuildOfficerConversation();
@@ -189,13 +189,14 @@ void ATacticalField::BuildJourneyPresentation()
     {
         const CoalitionPlan Plans[]={CoalitionPlan::Advance,CoalitionPlan::Protect};
         for(int Index=0;Index<2;++Index)
-            P.CoalitionChoices[Index]=FString::Printf(TEXT("%d　%s\n%s"),Index+1,*JourneyText(CoalitionPlanName(Plans[Index])),
-                *JourneyText(CampaignMissionDefinition(CoalitionMission,false,Plans[Index]).objective));
+            P.CoalitionChoices[Index]=FString::Printf(TEXT("%d　%s\n%s"),Index+1,
+                J.coalitionBattleCampaign ? (Index==0 ? TEXT("曹操と対岸を押す"):TEXT("張邈の援軍を救い、連合軍を連れ帰す")):*JourneyText(CoalitionPlanName(Plans[Index])),
+                *JourneyText((J.coalitionBattleCampaign ? CoalitionGrandMission(Plans[Index]):CampaignMissionDefinition(CoalitionMission,false,Plans[Index])).objective));
     }
     if(P.bComplete && J.campaignFlow)
     {
         if(J.mission==YellowTurbanMission) P.Heading=TEXT("第一章 完  ―  黄巾の乱");
-        if(J.mission==CoalitionMission) P.Heading=TEXT("第二章  ―  酸棗の初戦の記録");
+        if(J.mission==CoalitionMission) P.Heading=J.HasCoalitionBattle() ? TEXT("第二章  ―  汴水の会戦の記録"):TEXT("第二章  ―  酸棗の初戦の記録");
         if(J.CanBeginYangren()) P.PrimaryLabel=TEXT("陽人の戦いへ ／ Enter");
         if(J.CanChooseLuoyangPlan(LuoyangPlan::SouthGate))
         {
@@ -232,5 +233,6 @@ void ATacticalField::BuildJourneyPresentation()
             J.mission==LuoyangMission ? TEXT("反董卓連合の結末へ ／ Enter"):TEXT("次の戦役へ進む ／ Enter")):TEXT("軍議へ戻って再挑戦");
     }
     P.CampaignRoad=JourneyText(J.CampaignRoad());P.bShortPrelude=J.shortPrelude;
+    if(P.bDebrief && J.won && J.HasCoalitionBattle()) P.PrimaryLabel=TEXT("汴水の戦果を記録する ／ Enter");
     if(J.shortPrelude && J.CanJoinMainForce()) P.PrimaryLabel=TEXT("第一章 黄巾の本戦へ ／ Enter");
 }

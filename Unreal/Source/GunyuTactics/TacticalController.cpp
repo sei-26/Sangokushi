@@ -447,6 +447,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=Field->GrandBattleSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuEpicOnly")))
     { const bool Passed=Field->EpicCampaignSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuCoalitionGrandOnly")))
+    { const bool Passed=Field->CoalitionGrandSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuLuoyangOnly")))
     { const bool Passed=LuoyangSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningOnly")))

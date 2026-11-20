@@ -17,7 +17,18 @@ namespace frontline
     JourneyPlanExample PlanExample(const StrategistJourney& j)
     {
         JourneyPlanExample p;
-        if(j.mission==2)
+        if(j.HasCoalitionBattle())
+        {
+            const bool retreat=j.coalitionPlan==CoalitionPlan::Protect;
+            p.name=retreat ? U"南で包囲を開き、西岸で迎える":U"二つの橋から曹操へ合流する";
+            p.purpose=retreat ? U"張飛を南へ渡して包囲隊を崩す。劉備は橋の出口を空け、西の帰還地点を守る。":
+                U"劉備と張飛で橋を分け、曹操の前陣へ旗を立てる。曹操は敵本陣の北へ回る。";
+            p.assignments[1]={JourneyDuty::Ambush,Campaign::At(4,6)};
+            p.manualTask=retreat ? U"主力一隊が生きた援軍の隣へ届いた後、援軍、曹操の順に南橋を通す。二隊とも西岸へ戻り、主力が帰還地点を確保すると決着。":
+                U"対岸を確保して曹操と合流。主力の戦法と曹操の側面から徐栄の本陣を崩す。援軍も救えば、その兵が陽人で案内する。";
+            p.caution=U"見本の配置は関羽の伏兵だけ。救援と占領は主力を自分で動かす。橋の上と出口を空け、味方の帰還を妨げない。";
+        }
+        else if(j.mission==2)
         {
             p.name=U"二つの烽火を分担して守る";
             p.purpose=U"劉備を北の烽火、張飛を南の烽火へ。関羽は北の森林で援護の準備をする。";

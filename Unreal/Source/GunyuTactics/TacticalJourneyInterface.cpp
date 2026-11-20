@@ -98,6 +98,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
     }
     Text->AddSlot().AutoHeight()[Label([this] { for (const auto& P : Field->Presentation().Journey.Plans) if (P.bSelected) return TEXT("選んだ準備: ") + P.Description+TEXT("\n")+P.Tradeoff; return FString(); }, 16, Gold)];
     Text->AddSlot().AutoHeight().Padding(0, 16, 0, 0)[Label([this] { return Field->Presentation().Journey.bDebrief ? FString() : Field->Presentation().Report; }, 15)];
+    Text->AddSlot().AutoHeight().Padding(0,10,0,8)[Label([this] { return Field->Presentation().Journey.History; },14)];
     Contents->AddSlot().FillHeight(1)
         [SNew(SHorizontalBox)
          + SHorizontalBox::Slot().FillWidth(1)
@@ -131,7 +132,6 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
             return P.bCampaignFlow ? (Field->Presentation().Mission==0 ? TEXT("2  皆をつなぐと約束する\n次戦は南橋突破の配置。二隊連鎖で勝利を目指す"):TEXT("2  決戦でも皆をつなぐ\n二隊連鎖で勝つという約束を、次の采配にする")):TEXT("2  主人公：俺が合図を出して、皆をつなぐ\n次戦で二隊以上の戦法をつなぎ、任務を果たす");
         })]];
     Contents->AddSlot().AutoHeight()[Reply];
-    Contents->AddSlot().AutoHeight().Padding(0, 10, 0, 0)[Label([this] { return Field->Presentation().Journey.History; }, 14)];
     Contents->AddSlot().AutoHeight().Padding(0, 10, 0, 10)[Label([this] { return Field->Presentation().Journey.Relationships; }, 16, Gold)];
     Contents->AddSlot().AutoHeight()
         [SNew(SHorizontalBox)

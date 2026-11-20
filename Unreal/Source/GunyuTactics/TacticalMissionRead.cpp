@@ -8,6 +8,7 @@ void ATacticalField::BuildMissionPresentation()
     if(J.stage!=JourneyStage::Battle) return;
     H.MissionFocusTile=J.goal;H.bConvoyMission=J.HasConvoy();
     H.MissionDetail=H.Objective;
+    if(J.HasCoalitionBattle()) { BuildCoalitionBattlePresentation();return; }
     auto EnemiesNear=[&](int Tile)
     {
         int Count=0;

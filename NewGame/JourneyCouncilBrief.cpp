@@ -6,6 +6,12 @@ namespace frontline
 {
     CouncilBattleBrief BuildCouncilBattleBrief(const StrategistJourney& j)
     {
+        if(j.stage==JourneyStage::Preparation && j.HasCoalitionBattle())
+            return {j.coalitionPlan==CoalitionPlan::Protect ? U"南の援軍を救い、連合の旗を連れ帰す":U"二つの橋から、曹操の旗へ続く",
+                U"対岸には曹操、南には張邈の援軍。味方へ届く道と、その後の動きを一緒に決めよう。",
+                {{{j.goal,U"最後に旗を立てる地点",U"ここには私を残せる。だが橋の出口に立つと、味方も帰れない。少し奥で迎えよう。"},
+                  {7+4*Width,U"北の橋を使う",U"全員で同じ橋へ集まるな。こちらから回れば、敵と曹操の横へ出られる。"},
+                  {CoalitionBridge,U"南の包囲を開く",U"援軍の隣まで俺が行く。崩した敵を追いすぎたら、帰る橋を教えてくれ！"}}}};
         if(j.stage!=JourneyStage::Preparation || !j.campaignFlow || j.mission>=YellowTurbanMission)
             return {};
 
