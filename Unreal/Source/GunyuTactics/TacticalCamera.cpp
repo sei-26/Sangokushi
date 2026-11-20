@@ -54,6 +54,10 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
     const bool OverUI=IsPointerOverInterface();
     if(!bBlocked)
     {
+        if(WasInputKeyJustPressed(EKeys::K) || WasInputKeyJustPressed(EKeys::J) || WasInputKeyJustPressed(EKeys::U) || WasInputKeyJustPressed(EKeys::P) ||
+            WasInputKeyJustPressed(EKeys::Home) || IsInputKeyDown(EKeys::Left) || IsInputKeyDown(EKeys::Right) || IsInputKeyDown(EKeys::Up) || IsInputKeyDown(EKeys::Down) ||
+            (!OverUI && (WasInputKeyJustPressed(EKeys::MiddleMouseButton) || WasInputKeyJustPressed(EKeys::MouseScrollUp) || WasInputKeyJustPressed(EKeys::MouseScrollDown))))
+            Field->DismissGrandMoment();
         if(WasInputKeyJustPressed(EKeys::O)) bTacticCinema=!bTacticCinema;
         if(WasInputKeyJustPressed(EKeys::K)) CycleCameraView();
         if(WasInputKeyJustPressed(EKeys::J)) FocusSelectedOfficer();
@@ -85,6 +89,7 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
     ViewDistance=FMath::FInterpTo(ViewDistance,Distance,FMath::Min(Delta,.1f),10.f);
     FVector ViewFocus=Focus;float Radius=ViewDistance,Tilt=CameraElevation;
     ApplyTacticCamera(ViewFocus,Radius,Tilt);
+    ApplyGrandMomentCamera(ViewFocus,Radius,Tilt);
     float PresentedYaw=CameraYaw;
     const auto Action=Field->ReadActionFocus();const auto Cinema=Field->ReadTacticCinema();
     if(bTacticCinema && !bSaveMenuOpen && !bBattleLogOpen && !bMarchPlanOpen && !bTacticPickerOpen && Action.bActive && Action.bHasTarget)
@@ -103,6 +108,7 @@ void ATacticalController::UpdateBattleCamera(float Delta,bool bBlocked)
     if(CinematicResult) CinematicResult->SetRenderOpacity(Cue.Impact);
     if(CinematicRelay) CinematicRelay->SetRenderOpacity(gunyuresponse::Read(Field->CurrentBeat(),Field->VisualUnits(),Field->BeatProgress()).Weight);
     if(MissionMomentPanel) MissionMomentPanel->SetRenderOpacity(Field->ReadMissionResponse().Weight);
+    if(GrandMomentPanel) GrandMomentPanel->SetRenderOpacity(Field->ReadGrandMoment().Weight);
     LabelLayoutFrame=MAX_uint64;
 }
 void ATacticalController::BuildCameraInterface(TSharedRef<SCanvas> Canvas)

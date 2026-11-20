@@ -55,6 +55,7 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
 {
     if(Kind==EBattleCue::Strike || Kind==EBattleCue::Withdraw) State->RetryDefenseAid={};
     FBattleBeat Beat;
+    const auto GrandBefore=MissionBefore.Grand;
     Beat.Before = Before; Beat.After = ObserveUnits();
     if(Kind==EBattleCue::Enemy || Kind==EBattleCue::Guard || Kind==EBattleCue::Conceal)
     { Beat.MissionBefore=MoveTemp(MissionBefore);Beat.MissionAfter=CaptureMissionProgress(); }
@@ -62,6 +63,7 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
     if(State->Journey.IsPortAssault() && State->Journey.stage==JourneyStage::Debrief)
         Beat.PortCaptor=State->Journey.battleReview.port.capturedBy;
     if(Kind==EBattleCue::March) Beat.MissionBefore=Beat.MissionAfter=CaptureMissionProgress();
+    Beat.MissionBefore.Grand=GrandBefore;Beat.MissionAfter.Grand=CaptureMissionProgress().Grand;
     if(Kind==EBattleCue::March || Kind==EBattleCue::Enemy) AttachMissionCredit(Beat);
     if(State->bNoPlayback) return;
     const TCHAR* Names[] = {TEXT("進軍"), TEXT("通常攻撃"), TEXT("誘導"), TEXT("伏兵"), TEXT("突破"), TEXT("固守"), TEXT("伏兵準備"), TEXT("敵の指揮 / 交戦と補給"), TEXT("連鎖停止"), TEXT("全軍撤収 / 生存兵と残りの糧を回収"), TEXT("牽制"), TEXT("攪乱"), TEXT("全軍へ補給"), TEXT("青龍"), TEXT("咆哮")};
@@ -73,7 +75,7 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
     const auto& Z=Beat.MissionAfter;
     if(Kind==EBattleCue::Enemy && A.bBattle && Z.bBattle &&
         A.Convoy==Z.Convoy && A.Held==Z.Held && A.CompletedDuties==Z.CompletedDuties &&
-        A.ConfirmedReliefs==Z.ConfirmedReliefs && State->Journey.world.tacticEvents.empty())
+        A.ConfirmedReliefs==Z.ConfirmedReliefs && State->Journey.world.tacticEvents.empty() && gunyugrand::Compare(A.Grand,Z.Grand).Kind==EGrandMoment::None)
     {
         bool hasImpact=false;
         for(int Id=0;Id<Beat.Before.Num();++Id)
@@ -90,7 +92,7 @@ void ATacticalField::QueueAction(EBattleCue Kind, int Actor, int Target, const T
     BeginPlayback();
 }
 
-void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
+void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before,FMissionProgress MissionBefore)
 {
     State->RetryDefenseAid={};
     if (State->bNoPlayback) return;
@@ -141,12 +143,14 @@ void ATacticalField::QueueChain(const TArray<FVisualUnit>& Before)
     }
     if(!State->Beats.IsEmpty() && State->Journey.IsPortAssault() && State->Journey.stage==JourneyStage::Debrief)
         State->Beats.Last().PortCaptor=State->Journey.battleReview.port.capturedBy;
+    if(!State->Beats.IsEmpty()) State->Beats.Last().MissionBefore.Grand=MissionBefore.Grand;
     BeginPlayback();
 }
 
 void ATacticalField::BeginPlayback()
 {
     State->MissionResponse={};State->MissionResponseRemaining=0;
+    State->GrandMoment={};State->GrandMomentRemaining=0;
     State->bSupplyPlayback=false;
     State->BeatIndex = 0; State->BeatTime = 0; State->bImpactPlayed = false;
     State->Reachable.Reset(); State->Input = ETacticalInput::Select;
@@ -164,10 +168,12 @@ void ATacticalField::FinishPlayback(bool bShowMissionResponse)
     {
         PublishMissionResponse();
         PublishMissionSignals();
+        PublishGrandMoment();
     }
     else
     {
         State->MissionResponse={};State->MissionResponseRemaining=0;
+        State->GrandMoment={};State->GrandMomentRemaining=0;
         State->SettledMissionSignals={};State->MissionSignalRemaining={};
     }
     if(!State->Beats.IsEmpty() && State->Beats.Last().Kind==EBattleCue::Enemy) State->RetryDefenseAid={};
@@ -185,6 +191,7 @@ void ATacticalField::FinishPlayback(bool bShowMissionResponse)
 void ATacticalField::AdvancePresentation(float Delta)
 {
     State->MissionResponseRemaining=FMath::Max(0.f,State->MissionResponseRemaining-FMath::Max(0.f,Delta));
+    State->GrandMomentRemaining=FMath::Max(0.f,State->GrandMomentRemaining-FMath::Max(0.f,Delta));
     for(float& Remaining:State->MissionSignalRemaining)
         Remaining=FMath::Max(0.f,Remaining-FMath::Max(0.f,Delta));
     float Elapsed=FMath::Max(0.f,Delta)*FMath::Clamp(static_cast<float>(State->Realtime.speed),.5f,5.f);

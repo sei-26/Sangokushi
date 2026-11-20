@@ -18,7 +18,7 @@ FString ATacticalField::TacticReservationBlockReason() const
     const auto Tactic=State->SelectedTactics[Id];
     if(!TacticChain::CanUse(J.world,Id,Tactic)) return TEXT("この武将が使える戦法を選んでください。");
     for(int I=0;I<int(State->Orders.size());++I)
-        if(State->Orders[I].army==Id) return FString::Printf(TEXT("第%d手に予約済み。変更は予約欄の×から。"),I+1);
+        if(State->Orders[I].army==Id) return FString::Printf(TEXT("第%d手に予約済み。取消で組み直すか、詳しい采配へ。"),I+1);
     if(State->Orders.size()>=3) return TEXT("予約は最大3手。不要な手を×で外してください。");
     const auto& Definition=TacticChain::Definition(Tactic);
     if(Definition.unique && J.chain.signatureUsed[Id]) return TEXT("固有戦法は使用済み。戦法▼から通常戦法へ切替。");

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "TacticalPreparationMap.h"
 #include "CoreMinimal.h"
+#include "TacticalGrandMoment.h"
 
 enum class ETacticalCommand : uint8
 {
@@ -180,6 +181,7 @@ struct FBeaconDefensePresentation
 };
 struct FMissionProgress
 {
+    FGrandProgress Grand;
     int Convoy=-1,Total=0,Held=-1,Required=0;
     int ConvoyNext=-1,DirectedMovers=0;
     int CompletedDuties=0,PresentDuties=0,AmbushDuties=0;

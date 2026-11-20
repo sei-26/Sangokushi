@@ -65,6 +65,8 @@ struct FJourneyState
     bool bNoPlayback = false, bImpactPlayed = false;
     gunyuresponse::FRead MissionResponse;
     float MissionResponseRemaining=0;
+    FGrandMoment GrandMoment;
+    float GrandMomentRemaining=0;
     gunyumission::FSignals SettledMissionSignals;
     std::array<float,3> MissionSignalRemaining{};
     FRetryDefenseAid RetryDefenseAid; // Observed solo support awaiting this cycle's real defense check.

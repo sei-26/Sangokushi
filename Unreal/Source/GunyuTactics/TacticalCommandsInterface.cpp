@@ -43,8 +43,9 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
          [SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular",11)).AutoWrapText(true)
           .ColorAndOpacity_Lambda([this] { return FSlateColor(Field->Presentation().bTacticUnavailable ? FLinearColor(1,.65f,.32f):FLinearColor(.55f,.83f,.78f)); })
           .Text_Lambda([this] { return FText::FromString(Field->IsPlaying() ? TEXT("行動を再生中。演出完了後に命令できます。"):Field->Presentation().TacticAvailability); })]];
-    Orders->AddSlot().FillHeight(1)[ChainPlannerWidget()];
-    Orders->AddSlot().AutoHeight().Padding(0, 8, 0, 4)[Command(ETacticalCommand::Execute, [this] { return Field->Presentation().Orders.Num()==1 ? FString(TEXT("単独戦法を発動 / C")) : FString(TEXT("連鎖を発動 / C")); })];
+    Orders->AddSlot().AutoHeight()[SNew(SBox).HeightOverride(210)[ChainPlannerWidget()]];
+    Orders->AddSlot().AutoHeight().Padding(0, 8, 0, 4)[Button([this] { return Field->Presentation().Orders.Num()==1 ? FString(TEXT("単独戦法を今発動 / C")) : FString(TEXT("連鎖を今発動 / C")); },
+        [this] { Field->FireManualTactics(); },[this] { return Field->CanFireManualTactics(); },true)];
     Orders->AddSlot().AutoHeight()
         [ SNew(SHorizontalBox)
           + SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 4, 0)[Command(ETacticalCommand::Sample, [] { return TEXT("連鎖の見本"); })]
@@ -116,12 +117,13 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
       + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,4,0)[Command(ETacticalCommand::Move,[] { return TEXT("ここへ進め！"); })]
       + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::Hold,[] { return TEXT("ここを守れ！"); })]]];
     auto Content=SNew(SVerticalBox);
+    Content->AddSlot().AutoHeight().Padding(0,0,0,6)[ManualTacticsWidget()];
     Content->AddSlot().AutoHeight().Padding(0,0,0,6)[BuildGrandOrderInterface()];
-    Content->AddSlot().AutoHeight().Padding(0,0,0,8)[Button([this] { return bDetailedBattle ? TEXT("かんたんな采配へ戻る"):TEXT("詳しい采配を開く"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })];
+    Content->AddSlot().AutoHeight().Padding(0,0,0,8)[Button([this] { return bDetailedBattle ? TEXT("かんたんな采配へ戻る"):TEXT("連鎖の順番・詳しい采配"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })];
     Content->AddSlot().FillHeight(1)
         [SNew(SScrollBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Collapsed:EVisibility::Visible; })
          + SScrollBox::Slot()[Simple]];
-    Content->AddSlot().FillHeight(1)[SNew(SBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Visible:EVisibility::Collapsed; })[Orders]];
+    Content->AddSlot().FillHeight(1)[SNew(SScrollBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Visible:EVisibility::Collapsed; })+SScrollBox::Slot()[Orders]];
     auto Panel=SNew(STacticalChrome).Padding(12)
         .Visibility_Lambda([this] { return Field->Presentation().Journey.bVisible || (bTacticCinema && Field->ReadTacticCinema().bVisible) ? EVisibility::Collapsed:EVisibility::Visible; })[Content];
     InputPanels.Add(Panel);Canvas->AddSlot().Position(gunyulayout::CommandOrigin).Size(gunyulayout::CommandSize)[Panel];

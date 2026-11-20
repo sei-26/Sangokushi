@@ -69,7 +69,7 @@ void ATacticalField::BuildTacticTargets()
     if(State->Input!=ETacticalInput::Select) return; // Keep movement/lure cell hints distinct from target colors.
     H.TacticTargetSummary=FString::Printf(TEXT("成立見込み %d / 捕捉 %d隊"),H.ReadyTacticTargets,H.TacticTargets.Num());
     for(const auto& Order:State->Orders) if(Order.army==State->Selected)
-    { H.TacticTargetSummary=TEXT("予約済み / 変更は予約欄の×");break; }
+    { H.TacticTargetSummary=TEXT("予約済み / 取消か詳しい采配で変更");break; }
 }
 bool ATacticalField::SelectNextTacticTarget()
 {

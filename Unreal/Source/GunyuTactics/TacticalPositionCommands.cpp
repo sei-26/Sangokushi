@@ -36,8 +36,8 @@ bool ATacticalField::CommitTacticPosition()
             TEXT("行軍を指示できません。地形と部隊を確認しよう。");
         Refresh();return Queued;
     }
-    const auto Before=ObserveUnits();const bool Moved=State->Journey.Move(State->Selected,Tile);
+    const auto Before=ObserveUnits();const auto MissionBefore=CaptureMissionProgress();const bool Moved=State->Journey.Move(State->Selected,Tile);
     State->Report=JourneyText(State->Journey.message);
-    if(Moved) QueueAction(EBattleCue::March,State->Selected,-1,Before);
+    if(Moved) QueueAction(EBattleCue::March,State->Selected,-1,Before,MissionBefore);
     Refresh();return Moved;
 }

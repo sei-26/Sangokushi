@@ -9,6 +9,15 @@ FMissionProgress ATacticalField::CaptureMissionProgress() const
     const auto& J=State->Journey;FMissionProgress P;
     P.CommandTurn=J.turn;
     P.bBattle=J.stage==frontline::JourneyStage::Battle;P.bRescue=J.IsRescue();
+    if(J.HasGrandBattle())
+    {
+        const auto& G=J.battleReview.grand;auto& B=P.Grand;
+        B.bActive=true;B.bBattle=P.bBattle;B.bWon=J.won;B.Mission=J.mission;B.Goal=J.goal;
+        B.bRetreat=J.coalitionPlan==frontline::CoalitionPlan::Protect;
+        B.Opened=G.openedOn;B.Rallied=G.ralliedOn;B.Relieved=G.relievedOn;
+        B.Rescued=G.coalition.rescuedOn;B.Returned=G.coalition.returnedOn;
+        B.Counter=G.yangren.counterOn;B.Repelled=G.yangren.repelledOn;
+    }
     if(P.bBattle && J.campaignFlow)
         for(int Id=0;Id<3;++Id)
         {
@@ -56,6 +65,6 @@ void ATacticalField::PublishMissionResponse()
 }
 gunyuresponse::FRead ATacticalField::ReadMissionResponse() const
 {
-    if(IsPlaying() || State->Journey.stage!=frontline::JourneyStage::Battle || State->MissionResponseRemaining<=0) return {};
+    if(IsPlaying() || State->GrandMomentRemaining>0 || State->Journey.stage!=frontline::JourneyStage::Battle || State->MissionResponseRemaining<=0) return {};
     auto R=State->MissionResponse;R.Weight=FMath::SmoothStep(0.f,.35f,State->MissionResponseRemaining);return R;
 }

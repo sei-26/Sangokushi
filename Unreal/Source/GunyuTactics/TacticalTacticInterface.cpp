@@ -16,15 +16,14 @@ TSharedRef<SWidget> ATacticalController::TacticPickerButton()
         return Name+TEXT(" ▼");
     }, [this]
     {
-        bTacticPickerOpen = !bTacticPickerOpen;
-        IgnoreMapInputThroughFrame = Frames + 1;
+        ToggleTacticPicker();
     }, [this] { return !Field->IsPlaying() && !Field->Presentation().Tactics.IsEmpty(); });
 }
 
 void ATacticalController::BuildTacticInterface(TSharedRef<SCanvas> Canvas)
 {
     auto Content = SNew(SVerticalBox);
-    Content->AddSlot().AutoHeight()[Label([] { return TEXT("連鎖に使う戦法を選ぶ"); }, 19, Gold)];
+    Content->AddSlot().AutoHeight()[Label([] { return TEXT("戦法を選ぶ ／ 一人でも、仲間とつないでも"); }, 19, Gold)];
     Content->AddSlot().AutoHeight().Padding(0, 5, 0, 8)
         [Label([] { return TEXT("1指揮1手 / 選択・予約では消費しない"); }, 12)];
     auto Options = SNew(SUniformGridPanel).SlotPadding(FMargin(3));

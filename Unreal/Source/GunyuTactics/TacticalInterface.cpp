@@ -87,6 +87,7 @@ void ATacticalController::BuildInterface()
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MarchRouteOverlay(true)];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[MarchRouteOverlay()];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[GrandAdvanceOverlay()];
+    Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[GrandMomentOverlay()];
     Canvas->AddSlot().Position(gunyulayout::LabelOrigin).Size(gunyulayout::LabelSize)[MapLabelLeaderOverlay()];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[ChainPlanOverlay()];
     Canvas->AddSlot().Position(gunyulayout::MapOrigin).Size(gunyulayout::MapSize)[BattleActivityOverlay()];
@@ -109,6 +110,7 @@ void ATacticalController::BuildInterface()
     BuildChainReviewInterface(Canvas);
     BuildEpisodeInterface(Canvas);
     BuildMissionMomentInterface(Canvas);
+    BuildGrandMomentInterface(Canvas);
     BuildSaveInterface(Canvas);
     Overlay = SNew(SOverlay)
         + SOverlay::Slot()

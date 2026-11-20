@@ -63,6 +63,7 @@ void ATacticalField::DispatchQueuedChain()
 {
     auto& J=State->Journey;
     const auto Before=ObserveUnits();
+    const auto MissionBefore=CaptureMissionProgress();
     const auto WatchBefore=bRealtimeCommand ? JourneyBattleWatch::Capture(J,State->Realtime) : JourneyWatchSnapshot{};
     const bool WatchDecision=State->bAutoBattle && bPauseOnBattleAlert;
     const auto DecisionBefore=WatchDecision ? gunyudecision::Capture(J):gunyudecision::FSnapshot{};
@@ -74,7 +75,7 @@ void ATacticalField::DispatchQueuedChain()
             const auto& Event = Result.events[Index];
             State->Report += FString::Printf(TEXT("%d %s%s: %s  "), Index + 1, *JourneyText(TacticChain::Name(Event.tactic)), Event.success ? TEXT("成功") : TEXT("停止"), *JourneyText(Event.reason));
         }
-        QueueChain(Before);
+        QueueChain(Before,MissionBefore);
         RecordBattleWatch(WatchBefore);
         State->Orders.erase(State->Orders.begin(), State->Orders.begin() + Result.completed);
         if (J.stage != JourneyStage::Battle) State->Orders.clear();

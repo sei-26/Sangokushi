@@ -142,10 +142,11 @@ void ATacticalField::CommandAt(int Tile)
     else
     {
         const auto Before = ObserveUnits();
+        const auto MissionBefore=CaptureMissionProgress();
         const bool bMoved = J.Move(State->Selected, Tile);
         if (bMoved) State->Input = ETacticalInput::Select;
         State->Report = JourneyText(J.message);
-        if (bMoved) QueueAction(EBattleCue::March, State->Selected, -1, Before);
+        if (bMoved) QueueAction(EBattleCue::March, State->Selected, -1, Before,MissionBefore);
     }
     Refresh();
 }
@@ -210,9 +211,10 @@ void ATacticalField::Issue(ETacticalCommand Command)
         break;
     case ETacticalCommand::Strike:
     {
+        const auto MissionBefore=CaptureMissionProgress();
         const bool bSuccess = J.Strike(State->Selected, State->Target);
         State->Input = ETacticalInput::Select; State->Report = JourneyText(J.message);
-        if (bSuccess) QueueAction(EBattleCue::Strike, State->Selected, State->Target, Before);
+        if (bSuccess) QueueAction(EBattleCue::Strike, State->Selected, State->Target, Before,MissionBefore);
         break;
     }
     case ETacticalCommand::PrepareAmbush:
@@ -358,7 +360,7 @@ void ATacticalField::Action(FKey Key)
     // Q/W/E remain role-specific shortcuts; the visible button uses the officer's tactic.
     if ((Key == EKeys::Q && State->Selected == 0) || (Key == EKeys::W && State->Selected == 1) || (Key == EKeys::E && State->Selected == 2)) Issue(ETacticalCommand::QueueTactic);
     if (Key == EKeys::T) Issue(ETacticalCommand::Sample);
-    if (Key == EKeys::C) Issue(ETacticalCommand::Execute);
+    if (Key == EKeys::C) { if(CanFireManualTactics()) FireManualTactics();else Issue(ETacticalCommand::Execute); }
     if (Key == EKeys::R) Issue(ETacticalCommand::Clear);
     if (Key == EKeys::SpaceBar) Issue(ETacticalCommand::EndTurn);
     if (Key == EKeys::Enter) Issue(ETacticalCommand::Continue);

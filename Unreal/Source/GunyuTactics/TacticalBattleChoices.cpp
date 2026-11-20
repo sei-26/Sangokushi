@@ -16,7 +16,8 @@ void ATacticalField::BuildBattleChoices()
     if(State->bRealtimeStepping || State->bRealtimeChainRequested)
     { H.BattleChoiceReason=TEXT("命令を実行待ち。完了してから次の一手を選ぼう。");return; }
     if(!State->Orders.empty() || State->ChainSignal.Armed())
-    { H.BattleChoiceReason=TEXT("予約した策がある。詳しい采配で実行・見直しができる。");return; }
+    { H.BattleChoiceReason=State->ChainSignal.Armed() ? TEXT("連鎖は合図待ち。\n変更は詳しい采配へ。"):
+        TEXT("右上の「今発動」で実行。\n順番は詳しい采配で変更。");return; }
     if(BuildSupportActionChoices()) return;
     const auto* Seen=J.intelligence[0].Find(State->Target);
     if(J.depotInterception && State->Target==4)
