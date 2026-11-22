@@ -43,7 +43,7 @@ void ATacticalController::BuildEnemyInterface(TSharedRef<SCanvas> Canvas)
          + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("軍師の読み / 見える敵からの推定"); },17,Gold)]
          + SVerticalBox::Slot().AutoHeight().Padding(0,8)[Label([this] { return Field->Presentation().EnemyCounter; },14)]
          + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
-            + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([] { return TEXT("朱＝推定攻撃圏。視界外と交戦の結果は不明。"); },11)]
+            + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([] { return TEXT("朱＝推定攻撃圏。点線矢印＝移動の見込み。視界外は不明。"); },11)]
             + SHorizontalBox::Slot().AutoWidth()[Button([this] { return Field->Presentation().bThreatOverlay ? TEXT("攻撃圏 ON") : TEXT("攻撃圏 OFF"); },[this] { Field->ToggleThreatOverlay(); },[] { return true; },true)]]];
     InputPanels.Add(Detail);Canvas->AddSlot().Position(FVector2D(16,174)).Size(FVector2D(700,132))[Detail];
 }

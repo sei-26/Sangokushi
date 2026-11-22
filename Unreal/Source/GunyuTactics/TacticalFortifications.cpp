@@ -2,6 +2,7 @@
 #include "TacticalState.h"
 #include "TacticalMapMesh.h"
 #include "TacticalCommandPost.h"
+#include "JourneyBattlefield.hpp"
 #include "Components/InstancedStaticMeshComponent.h"
 
 // Site markers use only public cities and mission goals. They never inspect
@@ -110,6 +111,23 @@ void ATacticalField::BuildFortifications()
             else if(J.depotInterception) Gate(J.goal);
             else TacticalMap::CommandPost(P,[this](FVector Q) { return SurfaceHeight(Q); },Wood,Cloth);
             Flag(P+FVector(94,54,0),FLinearColor(.28f,.14f,.06f),1.12f);
+        }
+        else if(J.Battlefield()==frontline::JourneyMap::Retreat && !J.HasConvoy())
+        {
+            // An open road marker: no lintel or roof in front of the goal/formation.
+            const FVector P=SurfaceLocation(J.goal);
+            for(int Side:{-1,1})
+            {
+                FVector Foot=P+FVector(4,Side*132,0);Foot.Z=SurfaceHeight(Foot);
+                Stonework->AddInstance(FTransform(FRotator::ZeroRotator,Foot+FVector(0,0,12),FVector(.35,.34,.24)));
+                Flag(Foot,FLinearColor(.52f,.32f,.075f),1.08f);
+                for(int Post=0;Post<4;++Post)
+                {
+                    FVector Stake=P+FVector(74+Post*54,Side*(133+Post*4),0);Stake.Z=SurfaceHeight(Stake);
+                    Wood(Stake+FVector(0,0,27),FVector(7,7,54));
+                    if(Post<3) Wood(Stake+FVector(26,0,24),FVector(58,5,5));
+                }
+            }
         }
         else Gate(J.goal);
         if (J.mission==1 || (J.luoyangPlan==frontline::LuoyangPlan::WesternDepot && !J.depotInterception))

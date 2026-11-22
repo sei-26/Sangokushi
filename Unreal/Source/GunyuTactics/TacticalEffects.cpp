@@ -160,6 +160,14 @@ void ATacticalField::RenderEffects()
                 Quad(P-Side, P+Side, Q+Side, Q-Side, Threat);
             }
             Ring(B, 23, 4, Threat,true);
+            const FVector Along=(B-A).GetSafeNormal2D(),Across(-Along.Y,Along.X,0);
+            for(int Sign:{-1,1})
+            {
+                FVector P=B-Along*35+Across*(Sign*24);
+                P.Z=SurfaceHeight(P)+16;
+                const FVector Edge=FVector::CrossProduct((B-P).GetSafeNormal(),FVector::UpVector)*3;
+                Quad(P-Edge,P+Edge,B+Edge,B-Edge,FLinearColor(1,.34f,.12f,.9f));
+            }
         }
     }
     if(!Beat && H.bBattle && H.bTacticTargetOverlay)

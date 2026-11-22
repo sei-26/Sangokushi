@@ -1,3 +1,4 @@
+#include "TacticalGrandMoment.h"
 #include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "Components/AudioComponent.h"

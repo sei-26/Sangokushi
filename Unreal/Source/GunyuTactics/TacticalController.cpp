@@ -195,9 +195,17 @@ void ATacticalController::PlayerTick(float Delta)
     if(bCapture && Frames==4 && FParse::Value(FCommandLine::Get(),TEXT("PreludeOpening="),PreludePhase))
     {
         int Choice=0;FParse::Value(FCommandLine::Get(),TEXT("PreludePlan="),Choice);
+        int Policy=0;
+        if(FParse::Value(FCommandLine::Get(),TEXT("PreludeEnemyPolicy="),Policy)) Field->EnemyPolicy=FMath::Clamp(Policy,0,2);
         const bool Valid=PreparePreludeOpeningPreview(PreludePhase,Choice);
         UE_LOG(LogTemp,Display,TEXT("GUNYU_PRELUDE_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
         if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        int MarchCycles=0;
+        if(PreludePhase==2 && Choice==1 && FParse::Value(FCommandLine::Get(),TEXT("PreludeMarchCycles="),MarchCycles) && MarchCycles>=1 && MarchCycles<=3)
+        {
+            Field->SelectOfficer(2);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(12,11));
+            for(int I=0;I<MarchCycles;++I) { Field->Issue(ETacticalCommand::RealtimeStep);Field->AdvancePresentation(60); }
+        }
     }
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuManualTactics")))
     {

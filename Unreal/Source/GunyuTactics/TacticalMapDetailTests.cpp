@@ -49,6 +49,23 @@ bool ATacticalField::MapDetailSmokeTest()
         TEXT("changing only the route invalidates the landscape cache"))) return false;
     if(!Check(RoadDistance(TileLocation(Campaign::At(9,11)))<.01f && RoadDistance(TileLocation(Campaign::At(9,12)))>85,
         TEXT("road, ruts and clearings switch back to the actual street"))) return false;
+    // The ordinary breakout must keep its terrain/navigation semantics while gaining readable scenery.
+    Issue(ETacticalCommand::Restart);
+    for(int I=0;I<3;++I) Issue(ETacticalCommand::Dialogue);
+    Issue(ETacticalCommand::PromiseRoad);Issue(ETacticalCommand::Deploy);
+    if(!Check(State->Journey.mission==0 && !State->Journey.HasConvoy(),TEXT("ordinary retreat is a separate composition"))) return false;
+    if(!Check(RoadDistance(TileLocation(State->Journey.goal))<.01f && RoadDistance(TileLocation(Campaign::At(8,9)))>100,
+        TEXT("the street reaches the exit without replacing the ambush wood with a road"))) return false;
+    for(int Tile:{Campaign::At(8,9),Campaign::At(9,10),Campaign::At(9,11),State->Journey.goal})
+    {
+        const FVector Offset(420,380,1500);
+        if(!Check(PickSurfaceTile(SurfaceLocation(Tile)+Offset,-Offset.GetSafeNormal())==Tile,TEXT("forest, street and open exit keep their real selectable cells"))) return false;
+    }
+    if(!Check(ExportSession(Before),TEXT("ordinary retreat exports before visual rebuild"))) return false;
+    const auto RetreatRoad=State->LandscapeRoad;
+    State->TerrainSnapshot.Reset();UpdateRoadTopology();BuildTerrain();SelectOfficer(1);SelectOfficer(0);
+    if(!Check(ExportSession(After) && Before==After && State->LandscapeRoad==RetreatRoad,
+        TEXT("retreat art, rebuilt landmarks and selection do not move units or change costs/history"))) return false;
     FirstMission=SavedMission;EnemyPolicy=SavedPolicy;bStartWithCouncil=SavedCouncil;bRealtimeCommand=SavedRealtime;
     State->bNoPlayback=SavedPlayback;Issue(ETacticalCommand::Restart);
     UE_LOG(LogTemp,Display,TEXT("GUNYU_MAP_DETAIL: PASS (real convoy route, woodland detour, ground grading, picking, immutable scenery, cache invalidation)"));return true;

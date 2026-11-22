@@ -43,6 +43,12 @@ void ATacticalField::BuildMapScenery()
         }
     };
     const auto Map=J.Battlefield();
+    if(Map==JourneyMap::Retreat)
+    {
+        // The safe-side village is scenery beyond the eastern playable edge.
+        for(int I=0;I<3;++I)
+            House(TileLocation(Campaign::At(15,9+I))+FVector(50+(I%2)*90,-25,0),.78f+(I%2)*.12f,12-I*10);
+    }
     if(Map==JourneyMap::CoalitionFronts)
     {
         for(int Y:{5,9})
