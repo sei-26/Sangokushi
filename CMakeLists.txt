@@ -48,6 +48,8 @@ add_library(sangokushi_rules STATIC
     NewGame/JourneyGrandBattle.cpp
     NewGame/JourneyGrandApproach.cpp
     NewGame/JourneyPrelude.cpp
+    NewGame/JourneyPreludeOpening.cpp
+    NewGame/JourneyPreludeAftermath.cpp
     NewGame/JourneyCoalitionBattle.cpp
     NewGame/JourneyCoalitionDrama.cpp
     NewGame/JourneyYangrenBattle.cpp
@@ -171,6 +173,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_relief_advice tests/JourneyReliefAdviceTests.cpp)
     add_rules_test(journey_relief_approach tests/JourneyReliefApproachTests.cpp)
     add_rules_test(journey_opening tests/JourneyOpeningTests.cpp)
+    add_rules_test(journey_prelude_opening tests/JourneyPreludeOpeningTests.cpp)
     add_rules_test(journey_chain_signal tests/JourneyChainSignalTests.cpp)
     add_rules_test(journey_battle_watch tests/JourneyBattleWatchTests.cpp)
     add_rules_test(journey_enemy_plans tests/JourneyEnemyPlanTests.cpp)

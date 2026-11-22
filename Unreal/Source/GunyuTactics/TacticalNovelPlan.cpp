@@ -18,6 +18,7 @@ void ATacticalController::DeployNovelPlan()
 {
     if(!bEpisodeOpen || !bNovelPlan || !Field->CanIssue(ETacticalCommand::Deploy)) return;
     int Officer=CouncilTopic;
+    if(CouncilTopic<0 && Field->PreludeOpeningOfficer()>=0) Officer=Field->PreludeOpeningOfficer();
     const auto& Map=Field->Presentation().Journey.Map;
     if(bNovelMap && !bPlanningDuties)
     {

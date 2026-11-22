@@ -58,7 +58,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
          [SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
              + SHorizontalBox::Slot().FillWidth(1)[Label([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? FString(TEXT("この一戦で変わったこと")):P.Episode.Title; },23,Gold)]
-             + SHorizontalBox::Slot().AutoWidth()[Button([] { return TEXT("本幕を読む / H"); },[this] { OpenEpisode(); })]]
+             + SHorizontalBox::Slot().AutoWidth()[Button([this] { return Field->Presentation().Journey.bCampaignFlow && Field->Presentation().Mission==0 ? TEXT("三人と初陣を振り返る / H"):TEXT("本幕を読む / H"); },[this] { OpenEpisode(); })]]
           + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? P.CampaignChange:P.Episode.Setting; },15)]
           + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.Episode.Question; },16,Gold)]]];
     Text->AddSlot().AutoHeight()[OpeningRouteChoices()];

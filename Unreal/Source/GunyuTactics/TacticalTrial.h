@@ -170,6 +170,11 @@ public:
     bool AutoBattleSmokeTest();
     bool GrandBattleSmokeTest();
     bool EpicCampaignSmokeTest();
+    bool CanChoosePreludePlan() const;
+    FString PreludePlanLabel(int Choice) const;
+    bool ChoosePreludePlan(int Choice);
+    int PreludeOpeningOfficer() const;
+    FCouncilStageExchange ReadPreludeCouncil(int Choice) const;
     bool CoalitionGrandSmokeTest();
     bool CanFireManualTactics() const;
     bool FireManualTactics();
@@ -647,6 +652,9 @@ private:
     void BuildGrandMomentInterface(TSharedRef<class SCanvas>);
     TSharedRef<class SWidget> GrandMomentOverlay();
     bool ManualTacticsSmokeTest();
+    void ChoosePreludeOpening(int Choice);
+    bool PreludeOpeningSmokeTest();
+    bool PreparePreludeOpeningPreview(int Phase,int Choice);
     void ApplyGrandMomentCamera(FVector&,float&,float&) const;
     TSharedRef<class SWidget> PortraitWidget(TFunction<int()> Id, float Width, float Height);
     bool IsPointerOverInterface() const;

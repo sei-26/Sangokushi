@@ -67,6 +67,6 @@ TSharedRef<SWidget> ATacticalController::ManualTacticsWidget()
             [SNew(SHorizontalBox)
               + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,4,0)[SNew(SBox).Visibility_Lambda([this]
                 { return Field->Presentation().bGuardOrder ? EVisibility::Visible:EVisibility::Collapsed; })
-                [Command(ETacticalCommand::ReleaseGuard,[] { return TEXT("固守を解除"); })]]
+                [Command(ETacticalCommand::ReleaseGuard,[] { return TEXT("固守解除"); })]]
               + SHorizontalBox::Slot().FillWidth(2)[Command(ETacticalCommand::RealtimeStep,[] { return TEXT("1周期進める / ."); })]]]]];
 }

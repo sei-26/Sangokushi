@@ -22,7 +22,8 @@ int main()
         {
             auto e=BuildCouncilExchange(j,who,0);assert(!e.beats.empty());
             for(const auto& b:e.beats) assert(b.dialogue.speaker>=0 && b.dialogue.speaker<=3 && !b.dialogue.text.empty());
-            if(who==-1) assert(e.beats.size()==1 && e.beats.front().dialogue.text==brief.opening);
+            if(who==-1 && m==0) assert(e.beats.size()==3 && e.beats.front().dialogue.speaker==2 && e.beats.back().dialogue.speaker==3);
+            else if(who==-1) assert(e.beats.size()==1 && e.beats.front().dialogue.text==brief.opening);
             if(who>=0)
                 assert(e.beats.size()==2 && e.beats.front().dialogue.text==brief.roles[who].advice);
         }

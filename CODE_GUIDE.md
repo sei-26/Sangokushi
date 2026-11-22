@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+序章の二案と明示的な担当採用は `JourneyPreludeOpening.hpp/.cpp`、実記録に応える戦後は `JourneyPreludeAftermath.cpp`。UEの入口は `TacticalPreludeOpening.cpp` と `TacticalCouncilScene.cpp`。共通検証 `JourneyPreludeOpeningTests.cpp` と実エンジン `TacticalPreludeOpeningTests.cpp`。[二案・操作・互換性](PRELUDE_FIRST_DECISION.md)。
+
 手動戦法の常設欄と停止中の即時発動は `TacticalManualTactics.cpp`。会戦の実記録の差分は `TacticalGrandMomentRead.cpp`、再生終了後の公開は `TacticalGrandMoment.cpp`、肖像とカメラは `TacticalGrandMomentInterface.cpp`、合図の波は `TacticalGrandMomentOverlay.cpp`。`TacticalManualTacticsTests.cpp` / `TacticalGrandMomentTests.cpp` が実指揮・連鎖・保存不変・演出の先取り禁止を確認する。[操作と条件](GRAND_COMMAND_PRESENTATION.md)。
 
 連合戦の現行入口は `JourneyCoalitionBattle.hpp/.cpp` と `JourneyCoalitionDrama.cpp`。二方針の11部隊・救援・橋の実帰還を扱う。表示は `TacticalCoalitionBattlePresentation.cpp`、保存版26、共通検証 `JourneyCoalitionGrandTests.cpp` と実エンジン `TacticalCoalitionGrandQA.cpp`。[汴水の実装](COALITION_GRAND_BATTLE.md)。

@@ -191,6 +191,14 @@ void ATacticalController::PlayerTick(float Delta)
         UE_LOG(LogTemp,Display,TEXT("GUNYU_GRAND_MOMENT_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
         if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
     }
+    int PreludePhase=0;
+    if(bCapture && Frames==4 && FParse::Value(FCommandLine::Get(),TEXT("PreludeOpening="),PreludePhase))
+    {
+        int Choice=0;FParse::Value(FCommandLine::Get(),TEXT("PreludePlan="),Choice);
+        const bool Valid=PreparePreludeOpeningPreview(PreludePhase,Choice);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_PRELUDE_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuManualTactics")))
     {
         Field->PrepareTacticTargetPreview(FParse::Param(FCommandLine::Get(),TEXT("GunyuManualCombo")) ? 1:0);
@@ -470,6 +478,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=Field->CoalitionGrandSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGrandPresentationOnly")))
     { const bool Passed=ManualTacticsSmokeTest() && Field->GrandMomentSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPreludeOpeningOnly")))
+    { const bool Passed=PreludeOpeningSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuLuoyangOnly")))
     { const bool Passed=LuoyangSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPlanningOnly")))
@@ -633,6 +643,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=DutyResponseSmokeTest();
         if(bPassed) bPassed=ManualTacticsSmokeTest();
         if(bPassed) bPassed=Field->GrandMomentSmokeTest();
+        if(bPassed) bPassed=PreludeOpeningSmokeTest();
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR

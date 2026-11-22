@@ -2,6 +2,7 @@
 #include "TacticalState.h"
 #include "JourneyAftermathRole.hpp"
 #include "JourneyEpisode.hpp"
+#include "JourneyPreludeOpening.hpp"
 using namespace frontline;
 void ATacticalField::BuildStoryPresentation()
 {
@@ -23,6 +24,13 @@ void ATacticalField::BuildStoryPresentation()
     const auto Duty=ReadDutyAftermath(J);
     if(P.bCampaignFlow && P.bDebrief)
     {
+        if(J.mission==0)
+        {
+            const auto Opening=PreludeOpeningAftermath(J);
+            if(!Opening.lines.empty())
+                P.CampaignChange=JourneyText(EpisodeSpeakerName(Opening.lines[0].speaker))+TEXT("「")+
+                    JourneyText(Opening.lines[0].text)+TEXT("」\n")+P.CampaignChange;
+        }
         const auto Aftermath=ReadRoleAftermath(J);
         if(!Aftermath.lines.empty()) P.CampaignChange+=TEXT("\n")+JourneyText(Aftermath.summary);
         if(!Duty.summary.empty()) P.CampaignChange+=TEXT("\n")+JourneyText(Duty.summary);

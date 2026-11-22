@@ -2,6 +2,7 @@
 #include "JourneyCampaign.hpp"
 #include "JourneyAftermathRole.hpp"
 #include "StrategistJourney.hpp"
+#include "JourneyPreludeOpening.hpp"
 namespace frontline
 {
     JourneyEpisode BuildYellowTurbanEpisode(const StrategistJourney&);
@@ -10,6 +11,7 @@ namespace frontline
     JourneyEpisode BuildLuoyangEpisode(const StrategistJourney&);
     JourneyEpisode CampaignEpisode(const StrategistJourney& j)
     {
+        if(j.mission==0 && j.stage==JourneyStage::Debrief) return PreludeOpeningAftermath(j);
         if(j.stage==JourneyStage::Complete && !j.won)
         {
             const auto beat=CampaignBeat(j);

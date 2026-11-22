@@ -1,6 +1,7 @@
 #include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "JourneyCouncilStage.hpp"
+#include "JourneyPreludeOpening.hpp"
 
 using namespace frontline;
 
@@ -39,6 +40,13 @@ void ATacticalField::BuildOpeningOrder()
     Read.Name=JourneyText(J.world.generals[Unit.general].name);
     Read.Place=Assigned ? State->HUD.Officers[Id].DutyBadge:JourneyText(Suggestion.title);
     Read.ActionLabel=TEXT("地点を見る");
+
+    if(Id==0 && J.preparation==0 && MatchesPreludeOpening(*State->BeforeBattle,0))
+    {
+        Read.Tile=Unit.tile;Read.Place=TEXT("最初の一手：敵を森へ誘う");
+        Read.Instruction=TEXT("劉備の誘導で敵を森へ寄せよう。一人でも発動でき、関羽の伏兵へつなぐこともできる。");
+        Read.Action=EOpeningOrderAction::Tactics;Read.ActionLabel=TEXT("戦法一覧を開く");return;
+    }
 
     const auto& Order=State->Realtime.orders[Id];
     if(bRealtimeCommand && Order.kind!=JourneyDirective::None)
@@ -96,6 +104,7 @@ void ATacticalController::OpenFirstCommand()
     if(!ShowOpeningOrder()) return;
     const auto Read=Field->Presentation().OpeningOrder;
     Field->SelectOfficer(Read.Officer);
+    if(Read.Action==EOpeningOrderAction::Tactics) { ToggleTacticPicker();return; }
     const int Start=Field->Presentation().Officers[Read.Officer].Tile;
     FocusBattleTile(Read.Tile);
     if(Read.Action==EOpeningOrderAction::Move)

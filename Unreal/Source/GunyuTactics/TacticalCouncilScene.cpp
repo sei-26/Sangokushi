@@ -82,6 +82,7 @@ FString ATacticalController::CouncilChoiceLabel(int Index) const
     }
     if(CouncilTopic<0)
     {
+        if(Field->CanChoosePreludePlan()) return Field->PreludePlanLabel(Index);
         if(!P.Map.CouncilRoles.IsEmpty() && P.ExampleReason.IsEmpty())
             return Index==0 ? TEXT("作戦図で三人の役目を見る"):TEXT("関羽に、先手の策を聞く");
         return Index==0 ? TEXT("今の配置案を、地図で見せてくれ"):TEXT("関羽に、先手の策を聞く");
@@ -98,6 +99,7 @@ void ATacticalController::CouncilChoice(int Index)
     if(!CouncilSceneVisible() || Index<0 || Index>1) return;
     if(CouncilTopic<0)
     {
+        if(Field->CanChoosePreludePlan()) { ChoosePreludeOpening(Index);return; }
         const auto& P=Field->Presentation().Journey;
         if(Index==1) OpenCouncilVoice(1);
         else if(P.ExampleReason.IsEmpty()) OpenCouncilMap();

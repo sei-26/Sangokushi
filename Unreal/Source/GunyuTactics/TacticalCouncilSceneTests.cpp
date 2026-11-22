@@ -14,8 +14,8 @@ bool ATacticalController::CouncilSceneSmokeTest()
     if(!Check(EncodeJourneySave(*Save,Bytes) && Field->ImportSession(Bytes),TEXT("real unpaid campaign council"))) return false;
     Field->ExportSession(Before);OpenJourneyEntry();
     if(!Check(ReactionTextures.Num()==3 && ReactionTextures[0] && ReactionTextures[1] && ReactionTextures[2],TEXT("three transparent identity-preserving reaction portraits are loaded"))) return false;
-    if(!Check(CouncilSceneVisible() && CouncilTopic==-1 && IsEnsembleEpisode() && CouncilExchange.Lines.Num()==1,
-        TEXT("ordinary council puts the operation in its first line beside the three officers"))) return false;
+    if(!Check(CouncilSceneVisible() && CouncilTopic==-1 && IsEnsembleEpisode() && CouncilExchange.Lines.Num()==3 && CurrentCouncilLine().Speaker==2,
+        TEXT("the opening council frames the crisis and two real plans beside the three officers"))) return false;
     for(int I=0;I<3;++I)
     {
         if(!Check(ReactionBrushes[I]->ImageSize==FVector2D(1024,1536),TEXT("expression swaps preserve the verified source aspect even before texture streaming finishes"))) return false;

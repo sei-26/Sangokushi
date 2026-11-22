@@ -195,7 +195,9 @@ void ATacticalField::AdvancePresentation(float Delta)
     for(float& Remaining:State->MissionSignalRemaining)
         Remaining=FMath::Max(0.f,Remaining-FMath::Max(0.f,Delta));
     float Elapsed=FMath::Max(0.f,Delta)*FMath::Clamp(static_cast<float>(State->Realtime.speed),.5f,5.f);
-    if (bRealtimeCommand && !State->bSupplyPlayback)
+    // A settled victory/withdrawal has no tactical clock left to pause.
+    // Let its final beat reach the debrief even when the player withdrew from a pause.
+    if (bRealtimeCommand && !State->bSupplyPlayback && State->Journey.stage==frontline::JourneyStage::Battle)
         Elapsed=State->Realtime.paused && !State->bRealtimeStepping ? 0.f : Elapsed;
     State->VisualTime += Elapsed;
     if (IsPlaying())

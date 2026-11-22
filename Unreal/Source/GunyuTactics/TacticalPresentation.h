@@ -21,7 +21,7 @@ struct FOfficerPresentation
     bool bLiving = false, bSelected = false;
     int Tile = -1, DutyTile = -1;
 };
-enum class EOpeningOrderAction : uint8 { Inspect, Move, Hold };
+enum class EOpeningOrderAction : uint8 { Inspect, Move, Hold, Tactics };
 struct FOpeningOrderPresentation
 {
     int Officer=-1,Tile=-1;

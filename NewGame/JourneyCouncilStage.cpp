@@ -1,6 +1,7 @@
 ﻿#include "JourneyCouncilStage.hpp"
 #include "StrategistJourney.hpp"
 #include "JourneyPlanExample.hpp"
+#include "JourneyPreludeOpening.hpp"
 namespace frontline
 {
     CouncilExchange ContributionCouncil(const StrategistJourney&,const JourneyPlanExample&);
@@ -22,6 +23,7 @@ namespace frontline
     {
         CouncilExchange e;
         if(j.stage!=JourneyStage::Preparation || voice < -1 || voice>2 || preparation<0 || preparation>1) return e;
+        if(voice==-1 && accepted==CouncilDecision::None && CanChoosePreludeOpening(j)) return PreludeOpeningCouncil(j);
         const auto brief=BuildCouncilBattleBrief(j);
         auto Say=[&](int speaker,const char32_t* text,const char32_t* direction,
                      const char32_t* liu=U"",const char32_t* guan=U"",const char32_t* zhang=U"")
