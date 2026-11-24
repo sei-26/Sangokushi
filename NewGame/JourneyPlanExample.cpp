@@ -75,6 +75,14 @@ namespace frontline
                 p.caution=U"橋の上に味方が固まると後続が渡れない。必要なら命令を出し直す。";
             }
         }
+        else if(j.HasGrandStrategy())
+        {
+            p.name=U"北の救援と、中央の突破を分担する";
+            p.purpose=U"関羽は森を足場に北へ、劉備と張飛は中央橋と南渡しから前陣へ。開戦後、本隊を北へ回すか中央へ出すかを選ぼう。";
+            p.assignments[1]={JourneyDuty::Ambush,Campaign::At(6,5)};
+            p.manualTask=U"前陣の占領だけでは終わらない。皇甫嵩本隊を生かして合流し、敵本陣を崩し、主力が前陣を安全に確保して決着。北の救援も狙える。";
+            p.caution=U"北陣を撃破するか捕捉中に士気25以下へ崩し、生きた左翼へ主力を届けると救援。生還すれば救援役が次戦を支える。橋の上と出口は空けておこう。";
+        }
         else if(j.mission==YellowTurbanMission)
         {
             p.name=U"前陣を揺らし、張飛を街道へ回す";

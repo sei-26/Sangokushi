@@ -3,6 +3,7 @@
 #include "JourneyArchive.hpp"
 #include "JourneyEpisode.hpp"
 #include "JourneyBattlefield.hpp"
+#include "JourneyPlanExample.hpp"
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -68,6 +69,20 @@ static void PlayCampaign()
 
 int main()
 {
+    for(auto Difficulty:{JourneyDifficulty::Story,JourneyDifficulty::Standard})
+    {
+        auto Planning=std::make_unique<JourneySaveData>();auto& J=Planning->journey;
+        J.ResetCampaign();J.Meet();J.mission=YellowTurbanMission;J.grandCampaign=J.grandStrategyCampaign=true;assert(J.SelectDifficulty(Difficulty));
+        for(int M=0;M<YellowTurbanMission;++M) J.history[M].completed=J.history[M].won=J.history[M].campaignFlow=true;
+        const auto Camp=J.world.cities[0];const auto Example=PlanExample(J);
+        assert(J.HasGrandStrategy() && J.PlanningTerrain(Example.assignments[1].tile)==Terrain::Forest);
+        assert(J.ApplyPlanExample() && J.world.cities[0].food==Camp.food && J.world.cities[0].gold==Camp.gold);
+        assert(J.assignments[1].duty==JourneyDuty::Ambush && J.assignments[1].tile==Example.assignments[1].tile);
+        Planning->beforeBattle=J;
+        assert(J.Prepare(1,0) && J.world.armies[1].tile==Example.assignments[1].tile);
+        assert(J.world.tiles[J.world.armies[1].tile].terrain==Terrain::Forest);
+        RoundTrip(*Planning);
+    }
     auto left=Deploy();auto center=std::make_unique<JourneySaveData>(*left);
     auto& j=left->journey;
     assert(j.HasGrandStrategy() && j.Battlefield()==JourneyMap::GuangzongFronts);

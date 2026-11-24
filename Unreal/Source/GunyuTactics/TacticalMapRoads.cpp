@@ -64,6 +64,15 @@ void ATacticalField::UpdateRoadTopology()
         Add({{3,10},{6,10},{9,10},{11,9},{12,8},{14,7}});
         return;
     }
+    if(Map==JourneyMap::GuangzongFronts)
+    {
+        // Northern relief bypasses the river; the two real bridges join the
+        // central and southern approaches on their own banks.
+        Add({{4,6},{5,5},{6,3},{8,3},{10,3},{10,5},{11,6},{13,6},
+             {12,8},{10,8},{9,8},{8,8},{7,8},{6,8},{6,10},{7,11},
+             {8,11},{9,11},{11,11},{13,12}});
+        return;
+    }
     if(J.mission>1) return;
     // Only public terrain/route data. Never infer a road from a hidden army.
     for(int Tile : {frontline::Campaign::At(2,10),frontline::Campaign::At(3,10),

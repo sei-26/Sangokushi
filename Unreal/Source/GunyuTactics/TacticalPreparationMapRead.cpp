@@ -73,6 +73,16 @@ void ATacticalField::BuildPreparationMap()
     else if(J.mission==CoalitionMission)
         Add(J.Definition().goal,TEXT("董卓軍の前哨"),TEXT("北橋を渡り、隣接する敵を退けて一隊を入れる。"),
             {TEXT("先行隊へ合図を送れる場所だ。"),TEXT("前哨の守備を引き離そう。"),TEXT("俺を通す橋を決めてくれ！")});
+    else if(J.HasGrandStrategy())
+    {
+        Add(J.Definition().goal,TEXT("維持する前陣"),TEXT("中央橋か南渡しから主力を通して安全に確保する。占領だけでは終わらず、本隊と合流して敵本陣を崩すまで前陣を残す。"),
+            {TEXT("旗を立てる隊と、本隊を通す隊を分けよう。"),TEXT("前陣の確保を残し、北の救援にも道をつなぐ。"),TEXT("前陣を取って終わりじゃねえ。本陣まで一緒に押すぞ！")});
+        Add(GrandLeftAnchor,TEXT("北で耐える左翼"),TEXT("北陣を撃破するか捕捉中に士気25以下へ崩し、生きた左翼の隣、または左翼が北の林付近にいる間に林道へ主力を届けると救援。勝利時の生還が次戦の支援に残る。"),
+            {TEXT("本隊を北へ回しても、救援には私たちの一隊が要る。"),TEXT("北陣を崩すだけでなく、生きた左翼へ届こう。"),TEXT("中央を押すなら、北へ回る隊を残すか決めようぜ。")});
+        Add(GrandNorthPass,TEXT("北の林道"),TEXT("川の北を回る救援路。本隊もここへ向かうが、本隊が着くだけでは救援成功にならない。主力の一隊で左翼へ道をつなぐ。"),{});
+        Add(Campaign::At(8,8),TEXT("中央橋"),TEXT("本隊の中央強行軍が通る橋。主力を橋の先へ通し、橋と出口で味方を詰まらせない。"),{});
+        Add(Campaign::At(8,11),TEXT("南渡し"),TEXT("南から前陣の側面へ回る渡河点。中央の混雑を避けて通る隊を決めよう。"),{});
+    }
     else if(J.mission==YellowTurbanMission)
     {
         Add(J.Definition().goal,TEXT("黄巾の前陣"),TEXT("ここへ迫ると黄巾の南翼が街道へ向かう。敵が戻る前に前陣を取れば、官軍がその先へ進む。占領で決着。"),
@@ -114,7 +124,7 @@ void ATacticalField::BuildPreparationMap()
     }
     int Bridge=0;
     for(const auto& Cell:Map.Cells)
-        if(Cell.Terrain==uint8(Terrain::Bridge) && !J.HasCoalitionBattle())
+        if(Cell.Terrain==uint8(Terrain::Bridge) && !J.HasCoalitionBattle() && !J.HasGrandStrategy())
         {
             const bool Defense=J.Definition().kind==JourneyObjective::HoldPositions;
             const TCHAR* Name=Defense ? (Bridge==0 ? TEXT("西の橋"):TEXT("東の橋")) : (Bridge==0 ? TEXT("北橋"):TEXT("南橋"));
@@ -130,7 +140,7 @@ void ATacticalField::BuildPreparationMap()
                  TEXT("狭い所は一隊ずつだ。行く順番を決めようぜ！")});
             ++Bridge;
         }
-    if(J.mission==0 || J.mission==YellowTurbanMission)
+    if(J.mission==0 || (J.mission==YellowTurbanMission && !J.HasGrandStrategy()))
     {
         Add(J.Definition().positions[1],TEXT("伏兵の森"),J.campaignFlow ? FString(TEXT("関羽の通常出陣位置。先遣伏兵なら、ここから陸路２歩以内の森へ開戦前に入れる。関羽を選び、森林と伏兵を指定しよう。")):FString(TEXT("関羽の出陣位置。森林で伏兵を準備し、敵を近づける配置を考える。敵が動かない場合の手も残す。")),
             {TEXT("敵の目を引くなら、戻る場所も残しておきたい。"),TEXT("森で備える。敵が寄らぬ時の手も考えておけ。"),TEXT("敵が崩れたら俺だ。飛び出す道は空けとけよ！")});

@@ -131,6 +131,8 @@ namespace frontline
             (battleReview.grand.coalition.active || (stage==JourneyStage::Preparation && grandCampaign && coalitionBattleCampaign)); }
         void PrepareCoalitionBattle();
         std::vector<JourneyEnemyPlan> PlanCoalitionAllies() const;
+        // Read the same allied plan used by command resolution; enemy inputs are current contacts only.
+        std::vector<JourneyEnemyPlan> PlanGrandAllies() const;
         void ApplyCoalitionEnemyRoles(const Campaign&,std::vector<JourneyEnemyPlan>&) const;
         void CheckCoalitionBattle();
         bool PlansGrandBattle() const { return grandCampaign && campaignFlow &&
@@ -205,7 +207,6 @@ namespace frontline
 	private:
         void PrepareGrandBattle();
         void CheckGrandBattle();
-        std::vector<JourneyEnemyPlan> PlanGrandAllies() const;
         friend class JourneyRealtime;
         std::vector<JourneyEnemyPlan> PlanEnemyTurn() const;
         void ApplyEnemyPlans(const std::vector<JourneyEnemyPlan>& plans);

@@ -42,6 +42,6 @@ TSharedRef<SWidget> ATacticalController::BuildGrandOrderInterface()
             { const auto& H=Field->Presentation();return H.GrandRouteLegend.IsEmpty() ?
                 FString(H.GrandAdvanceRoute.Num()>1 ? TEXT("青い矢印：本隊の進軍予定"):TEXT("本隊は待機・交戦中")):H.GrandRouteLegend; },12,Gold)]
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,4)[SNew(SBox).Visibility_Lambda([this]
-            { const auto& H=Field->Presentation();return (H.Mission==frontline::CoalitionMission || H.Mission==frontline::YangrenMission) && H.bGrandBattle ? EVisibility::Visible:EVisibility::Collapsed; })
+            { return Field->Presentation().bGrandBattle ? EVisibility::Visible:EVisibility::Collapsed; })
             [Label([this] { return Field->Presentation().GrandOrderStatus; },12,Gold)]]];
 }

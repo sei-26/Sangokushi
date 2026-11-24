@@ -113,6 +113,19 @@ void ATacticalField::BuildFortifications()
                 for(int I=0;I<2;++I)
                     SupplyCrates->AddInstance(FTransform(FRotator(0,I*12,0),P+FVector(50+I*30,-90,0),FVector(.38)));
         }
+        else if(J.HasGrandStrategy())
+        {
+            for(int Tile:{J.goal,frontline::GrandLeftAnchor})
+            {
+                const FVector P=SurfaceLocation(Tile);
+                for(int Side:{-1,1})
+                {
+                    FVector Foot=P+FVector(0,Side*112,0);Foot.Z=SurfaceHeight(Foot);
+                    Stonework->AddInstance(FTransform(FRotator::ZeroRotator,Foot+FVector(0,0,8),FVector(.28,.28,.16)));
+                    Flag(Foot,Tile==J.goal ? FLinearColor(.52f,.30f,.035f):FLinearColor(.025f,.30f,.28f),1.05f);
+                }
+            }
+        }
         else if(J.HasYangrenStrategy())
         {
             // The heroes hold the crossroads; Sun Jian arrives at the adjacent
