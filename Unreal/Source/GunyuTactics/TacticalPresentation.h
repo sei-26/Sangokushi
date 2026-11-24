@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "TacticalPreparationMap.h"
 #include "CoreMinimal.h"
 #include "TacticalGrandMoment.h"
@@ -233,6 +233,8 @@ struct FTacticalPresentation
     TArray<FGrandChoice> GrandChoices;
     FString GrandOrderStatus;
     TArray<int> GrandAdvanceRoute;
+    TArray<int> ReliefAdvanceRoute;
+    FString GrandRouteLegend,CoalitionAllyStatus[2];
     FOpeningOrderPresentation OpeningOrder;
     struct FDutyProgress
     {
@@ -244,8 +246,8 @@ struct FTacticalPresentation
     FString BattleChoicePrompt;
     int MissionFocusTile=-1;
     bool bDecisionPaused=false;
-    struct FPortCrossing { int Tile=-1;FString Caption; };
-    FPortCrossing PortCrossings[2];
+    struct FMapCrossing { int Tile=-1;FString Caption; };
+    FMapCrossing Crossings[2];
     bool bPortOpening=false;
     bool bConvoyMission=false;
     FString Title, Objective, Target, Hint, Report, NextLabel, WithdrawLabel, Difficulty;

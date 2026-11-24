@@ -37,8 +37,12 @@ void ATacticalField::BuildPreparationMap()
         Add(J.Definition().goal,Retreat ? TEXT("西岸の帰還地点"):TEXT("曹操と合流する前陣"),JourneyText(J.ObjectiveBrief()),{});
         Add(Campaign::At(10,5),TEXT("曹操の先行隊"),TEXT("曹操は対岸で戦っている。壊滅する前に合流するか、援軍の包囲を開いて一緒に帰す。"),{});
         Add(Campaign::At(9,9),TEXT("張邈の援軍"),TEXT("南の包囲隊を崩して、生きた援軍の隣へ主力を届ける。救出では援軍を先に橋へ通す。"),{});
-        Add(Campaign::At(7,4),TEXT("北の橋"),TEXT("対岸へ向かうもう一つの進路。橋の上で隊を止め続けない。"),{});
-        Add(CoalitionBridge,TEXT("南の橋"),TEXT("援軍と曹操の帰路。主力は西の帰還地点へ退き、橋の出口を空ける。"),{});
+        Add(Campaign::At(7,4),TEXT("北橋"),TEXT("曹操の前陣へ向かう渡河点。橋の先へ進める隊と、南へ回す隊を分けて考える。"),
+            {TEXT("曹操と攻めるなら、渡った先の合流点まで一隊を通そう。"),TEXT("橋の上で止まるな。味方が続く道を空けよ。"),TEXT("北と南、俺たちがどっちを開くか決めようぜ！")});
+        Add(CoalitionBridge,TEXT("南橋"),Retreat ? TEXT("救援後は援軍が先、曹操が続く帰路。主力は西岸の帰還地点を確保し、橋の西の出口を空ける。"):
+            TEXT("南の援軍へ向かう渡河点。攻勢でも包囲を崩して援軍へ届けば、生還兵が次戦を支える。"),
+            {Retreat ? TEXT("救援しただけでは終わらない。二隊を通し、西岸を確保しよう。残敵掃討は要らない。"):TEXT("前陣への合流と、南の救援。誰にどちらを任せるか考えよう。"),
+             TEXT("帰路を味方で塞ぐな。橋を抜けた一つ先で支えよ。"),TEXT("援軍が先か。なら、渡る間の敵は俺が引き受ける！")});
     }
     else if(J.Definition().kind==JourneyObjective::HoldPositions)
     {
@@ -99,7 +103,7 @@ void ATacticalField::BuildPreparationMap()
     }
     int Bridge=0;
     for(const auto& Cell:Map.Cells)
-        if(Cell.Terrain==uint8(Terrain::Bridge))
+        if(Cell.Terrain==uint8(Terrain::Bridge) && !J.HasCoalitionBattle())
         {
             const bool Defense=J.Definition().kind==JourneyObjective::HoldPositions;
             const TCHAR* Name=Defense ? (Bridge==0 ? TEXT("西の橋"):TEXT("東の橋")) : (Bridge==0 ? TEXT("北橋"):TEXT("南橋"));

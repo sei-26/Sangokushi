@@ -1,4 +1,4 @@
-﻿#include "TacticalContributionQA.h"
+#include "TacticalContributionQA.h"
 #include "TacticalTrial.h"
 #include "../../../tests/JourneyContributionPlayer.hpp"
 bool PrepareContributionPreview(ATacticalField* Field,int Variant)
@@ -37,10 +37,10 @@ bool PreparePortHandoffPreview(ATacticalField* Field,int Stage)
     Move(1,Campaign::At(12,8));
     Field->AdvancePresentation(10);
     Move(2,PortBridgeExit);
-    if(!Field->IsPlaying() || Field->Presentation().PortCrossings[1].Caption.Contains(TEXT("張飛"))) return false;
+    if(!Field->IsPlaying() || Field->Presentation().Crossings[1].Caption.Contains(TEXT("張飛"))) return false;
     Field->AdvancePresentation(10);
-    if(!Field->Presentation().PortCrossings[0].Caption.Contains(TEXT("関羽")) ||
-        !Field->Presentation().PortCrossings[1].Caption.Contains(TEXT("張飛")) || Field->Presentation().bPortOpening) return false;
+    if(!Field->Presentation().Crossings[0].Caption.Contains(TEXT("関羽")) ||
+        !Field->Presentation().Crossings[1].Caption.Contains(TEXT("張飛")) || Field->Presentation().bPortOpening) return false;
     Field->SelectAt(PortBlocker);
     Field->SelectTactic(int(ChainTactic::Breakthrough));
     Field->Issue(ETacticalCommand::QueueTactic);

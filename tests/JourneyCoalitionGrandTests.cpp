@@ -36,6 +36,20 @@ static std::unique_ptr<JourneySaveData> Start(CoalitionPlan plan,JourneyDifficul
 }
 int main()
 {
+    {
+        auto s=Start(CoalitionPlan::Protect,JourneyDifficulty::Story);auto& j=s->journey;
+        assert(!CoalitionReturnReached(j.world,-1) && !CoalitionReturnReached(j.world,99));
+        j.world.armies[5].tile=Campaign::At(6,9);assert(CoalitionReturnReached(j.world,5));
+        j.world.armies[5].tile=CoalitionBridge;assert(!CoalitionReturnReached(j.world,5));
+        j.world.armies[5].tile=Campaign::At(6,4);assert(!CoalitionReturnReached(j.world,5));
+        j.world.armies[5].tile=Campaign::At(6,9);j.world.armies[6].tile=Campaign::At(5,10);
+        j.battleReview.grand.coalition.rescuedOn=j.turn;
+        assert(CoalitionReturnReached(j.world,5) && CoalitionReturnReached(j.world,6));
+        j.CheckCoalitionBattle();assert(!j.won && j.stage==JourneyStage::Battle); // Heroes must still secure the assembly site.
+        j.world.armies[0].tile=CoalitionRetreat;j.CheckCoalitionBattle();
+        assert(j.won && j.world.armies[10].troops>0);
+        j.world.armies[6].troops=0;assert(!CoalitionReturnReached(j.world,6));
+    }
     for(auto plan:{CoalitionPlan::Advance,CoalitionPlan::Protect})
         for(auto difficulty:{JourneyDifficulty::Story,JourneyDifficulty::Standard})
         {

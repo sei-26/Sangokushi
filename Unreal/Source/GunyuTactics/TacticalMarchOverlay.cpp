@@ -51,14 +51,14 @@ TSharedRef<SWidget> ATacticalController::MarchRouteOverlay(bool bConvoy)
     View->ForceVolatile(true);return View;
 }
 
-TSharedRef<SWidget> ATacticalController::GrandAdvanceOverlay()
+TSharedRef<SWidget> ATacticalController::GrandAdvanceOverlay(bool bRelief)
 {
     auto View=SNew(SMarchRouteOverlay).Visibility(EVisibility::HitTestInvisible).Clipping(EWidgetClipping::ClipToBounds)
-        .Color(FLinearColor(.18f,.88f,1.f,.95f)).Points([this]
+        .Color(bRelief ? FLinearColor(1.f,.76f,.22f,.95f):FLinearColor(.18f,.88f,1.f,.95f)).Points([this,bRelief]
         {
             TArray<FVector2f> Points;
             if(Field->IsPlaying() || !Field->Presentation().bBattle || Field->Presentation().Journey.bVisible) return Points;
-            for(int Tile:Field->Presentation().GrandAdvanceRoute)
+            for(int Tile:bRelief ? Field->Presentation().ReliefAdvanceRoute:Field->Presentation().GrandAdvanceRoute)
             {
                 const auto Point=MapLabelPosition(Field->SurfaceLocation(Tile)+FVector(0,0,18),FVector2D::ZeroVector);
                 if(Point.X<=-1000) return TArray<FVector2f>{};

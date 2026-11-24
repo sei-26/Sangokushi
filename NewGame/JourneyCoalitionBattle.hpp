@@ -3,9 +3,12 @@
 
 namespace frontline
 {
+    class Campaign;
     inline constexpr int CoalitionBridge=7+9*Width;
     inline constexpr int CoalitionRetreat=5+9*Width;
     inline constexpr int CoalitionVanguard=10+6*Width;
+    // Shared by the actual return condition and its read-only UI progress.
+    bool CoalitionReturnReached(const Campaign& world,int army);
     struct JourneyCoalitionBattle
     {
         bool active=false;

@@ -1,9 +1,9 @@
-﻿#include "TacticalTrial.h"
+#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalGroundGrid.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "ProceduralMeshComponent.h"
-#include "TacticalPortLandscape.h"
+#include "TacticalCrossingLandscape.h"
 #include "TacticalPortReadingQA.h"
 
 bool ATacticalField::MapDetailSmokeTest()
@@ -73,7 +73,7 @@ bool ATacticalField::MapDetailSmokeTest()
     for(bool North:{false,true})
     {
         if(!Check(PreparePortReadingPreview(this,1,North),TEXT("actual initial victory and reply select each port battlefield"))) return false;
-        const auto& Port=State->Journey;const auto Bridges=gunyuportlandscape::Bridges(Port);
+        const auto& Port=State->Journey;const auto Bridges=gunyucrossing::Bridges(Port);
         if(!Check(Bridges.Num()==2,TEXT("port has two real crossings"))) return false;
         for(int Tile:Bridges)
         {
@@ -94,7 +94,7 @@ bool ATacticalField::MapDetailSmokeTest()
         for(int I=0;I<Grass->GetInstanceCount();++I)
         {
             FTransform T;Grass->GetInstanceTransform(I,T,false);
-            if(!Check(!gunyuportlandscape::OnBridge(Port,T.GetLocation()),TEXT("grass and reeds do not grow through the bridge decks"))) return false;
+            if(!Check(!gunyucrossing::OnBridge(Port,T.GetLocation()),TEXT("grass and reeds do not grow through the bridge decks"))) return false;
         }
         for(int Tile:Port.ConvoyPath())
             if(!Check(RoadDistance(TileLocation(Tile))<.01f,TEXT("legacy convoy checkpoints remain on the south street"))) return false;

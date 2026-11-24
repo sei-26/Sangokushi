@@ -1,8 +1,8 @@
-﻿#include "TacticalTrial.h"
+#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalMapMesh.h"
 #include "TacticalGroundDetail.h"
-#include "TacticalPortLandscape.h"
+#include "TacticalCrossingLandscape.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
 // A continuous channel inside the existing river/bridge cells. The wet banks
@@ -83,10 +83,10 @@ void ATacticalField::BuildMapWater()
             for (int Side : {-1,1})
             {
                 FVector Start=Edge(T,Side),End=Edge(U,Side);
-                if(gunyuportlandscape::IsPort(J))
+                if(gunyucrossing::IsPort(J) || J.HasCoalitionBattle())
                 {
                     // Suppress only the actual deck samples, not the whole two-cell river approach.
-                    if(gunyuportlandscape::OnBridge(J,Channel(T)) || gunyuportlandscape::OnBridge(J,Channel(U))) continue;
+                    if(gunyucrossing::OnBridge(J,Channel(T)) || gunyucrossing::OnBridge(J,Channel(U))) continue;
                 }
                 else if (J.world.tiles[Tiles[I]].terrain==Terrain::Bridge || J.world.tiles[Tiles[I+1]].terrain==Terrain::Bridge) continue;
                 const FVector Across=(Start-Channel(T)).GetSafeNormal2D();
@@ -105,7 +105,7 @@ void ATacticalField::BuildMapWater()
                 if ((Step+I*3)%5==0)
                 {
                     FVector R=Start+Across*(13+(Step%3)*4);R.Z=SurfaceHeight(R)+14;
-                    if(!gunyuportlandscape::OnBridge(J,R))
+                    if(!gunyucrossing::OnBridge(J,R))
                         Grass->AddInstance(FTransform(FRotator(0,I*57+Step*23,0),R,FVector(.065,.10,.31+(Step%3)*.08)));
                 }
                 // Small, half-buried gravel on the wet side of the bank. Keep

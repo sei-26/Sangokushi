@@ -1,6 +1,6 @@
 #include "TacticalPortReadingQA.h"
 #include "TacticalTrial.h"
-#include "TacticalPortLandscape.h"
+#include "TacticalCrossingLandscape.h"
 #include "TacticalContributionQA.h"
 #include "JourneySave.hpp"
 #include <memory>
@@ -33,7 +33,7 @@ bool VerifyPortReading(ATacticalField* F)
         if(!Check(PreparePortReadingPreview(F,0,North),TEXT("the real first battle leads to either port approach"))) return false;
         auto Save=std::make_unique<JourneySaveData>();
         if(!F->ExportSession(Before) || !DecodeJourneySave(Before,*Save)) return false;
-        const auto Bridges=gunyuportlandscape::Bridges(Save->journey);
+        const auto Bridges=gunyucrossing::Bridges(Save->journey);
         if(!Check(Bridges.Num()==2 && Save->journey.Battlefield()==(North ? JourneyMap::PortNorth:JourneyMap::Port),TEXT("public preparation terrain contains the two actual bridges"))) return false;
         const auto& Map=F->Presentation().Journey.Map;
         for(int Tile:Bridges)
@@ -47,8 +47,8 @@ bool VerifyPortReading(ATacticalField* F)
         const int Food=Save->journey.world.cities[0].food,Cost=Save->journey.PreparationCosts(Save->preparation).TotalFood();
         F->Issue(ETacticalCommand::Deploy);F->ExportSession(After);if(!DecodeJourneySave(After,*Save)) return false;
         const auto& H=F->Presentation();
-        if(!Check(Save->journey.world.cities[0].food==Food-Cost && H.PortCrossings[0].Tile==Bridges[0] && H.PortCrossings[1].Tile==Bridges[1] &&
-            !H.PortCrossings[0].Caption.Contains(TEXT("突破")) && !H.PortCrossings[1].Caption.Contains(TEXT("突破")),TEXT("both bridges are named before crossing without claiming an achievement"))) return false;
+        if(!Check(Save->journey.world.cities[0].food==Food-Cost && H.Crossings[0].Tile==Bridges[0] && H.Crossings[1].Tile==Bridges[1] &&
+            !H.Crossings[0].Caption.Contains(TEXT("突破")) && !H.Crossings[1].Caption.Contains(TEXT("突破")),TEXT("both bridges are named before crossing without claiming an achievement"))) return false;
         if(!Check(H.MissionDetail.Contains(TEXT("同じ隊でも勝利")),TEXT("ordinary occupation and the optional team bonus are distinguished"))) return false;
         if(!Check(PreparePortReadingPreview(F,2,North) && F->CanIssue(ETacticalCommand::Continue),TEXT("both approaches finish a real paid battle"))) return false;
         if(!F->ExportSession(Before) || !F->ImportSession(Before)) return false;

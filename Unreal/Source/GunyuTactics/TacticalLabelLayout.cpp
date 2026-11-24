@@ -1,4 +1,4 @@
-﻿#include "TacticalTrial.h"
+#include "TacticalTrial.h"
 #include "TacticalChrome.h"
 #include "JourneyGrandBattle.hpp"
 #include "Campaign.hpp"
@@ -59,7 +59,7 @@ void ATacticalController::LayoutMapLabels()
     const int DutyTile=SelectedDutyTile();
     const int TrafficTile=DutyTile>=0 && H.DutyProgress.bTraffic ? H.DutyProgress.InspectTile:-1;
     const int Tiles[]={H.GoalTile,H.SecondGoalTile,DutyTile,TrafficTile,ShowOpeningOrder() ? H.OpeningOrder.Tile:-1,
-        H.PortCrossings[0].Tile,H.PortCrossings[1].Tile};
+        H.Crossings[0].Tile,H.Crossings[1].Tile};
     for(int Index=0;Index<UE_ARRAY_COUNT(Tiles) && H.bBattle;++Index)
     {
         const int Tile=Tiles[Index];
@@ -122,6 +122,9 @@ FString ATacticalController::UnitMapStatus(int Index) const
     if(U.bPressured) return TEXT("隙あり");
     if(U.Motion>.01f) return TEXT("行軍中");
     if(U.bConcealed) return TEXT("潜伏中");
+    const auto& H=Field->Presentation();
+    if(H.bGrandBattle && H.Mission==frontline::CoalitionMission && Index>=5 && Index<=6 && !H.CoalitionAllyStatus[Index-5].IsEmpty())
+        return H.CoalitionAllyStatus[Index-5];
     if(U.bGuarded) return TEXT("固守");
     if(U.bInspired) return TEXT("鼓舞");
     const auto& O=Field->Presentation().Officers;

@@ -1,9 +1,9 @@
-﻿#include "TacticalTrial.h"
+#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalMapMesh.h"
 #include "TacticalGroundDetail.h"
 #include "JourneyBattlefield.hpp"
-#include "TacticalPortLandscape.h"
+#include "TacticalCrossingLandscape.h"
 
 void ATacticalField::UpdateRoadTopology()
 {
@@ -18,7 +18,7 @@ void ATacticalField::UpdateRoadTopology()
         Add({{2,10},{3,10},{4,11},{6,11},{8,11},{9,11},{10,11},{11,10},{12,10},{14,10},{15,10}});
         return;
     }
-    if(gunyuportlandscape::IsPort(J))
+    if(gunyucrossing::IsPort(J))
     {
         // One continuous loop joins both real crossings without a diagonal road over water.
         // The south approach still passes every legacy convoy checkpoint.
@@ -28,7 +28,10 @@ void ATacticalField::UpdateRoadTopology()
     }
     if(Map==JourneyMap::CoalitionFronts)
     {
-        Add({{3,9},{5,9},{6,9},{7,9},{8,9},{10,9},{11,7},{13,5},{12,4},{9,4},{7,4},{5,4},{4,5}});
+        // Join the actual western assembly point, both crossings and Cao Cao's
+        // forward position. The east-bank road bends around the southern wood.
+        Add({{3,9},{5,9},{6,9},{7,9},{8,9},{9,9},{11,9},{11,8},{11,7},
+             {10,6},{10,5},{13,5},{13,4},{10,4},{7,4},{5,4},{5,6},{5,9}});
         return;
     }
     if(Map==JourneyMap::LuoyangGate)

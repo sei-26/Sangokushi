@@ -3,6 +3,12 @@
 
 namespace frontline
 {
+    bool CoalitionReturnReached(const Campaign& world,int army)
+    {
+        if(army<0 || army>=int(world.armies.size()) || world.armies[army].troops<=0) return false;
+        const int tile=world.armies[army].tile;
+        return tile%Width<=6 && world.MapDistance(tile,CoalitionRetreat)<=2;
+    }
     void StrategistJourney::PrepareCoalitionBattle()
     {
         auto& g=battleReview.grand;g.active=g.coalition.active=true;
@@ -106,8 +112,7 @@ namespace frontline
             }
         if(withdraw)
         {
-            const auto Returned=[&](int a) { return world.armies[a].tile%Width<=6 && world.MapDistance(world.armies[a].tile,CoalitionRetreat)<=2; };
-            if(c.rescuedOn && Returned(5) && Returned(6) && PositionSecured(goal))
+            if(c.rescuedOn && CoalitionReturnReached(world,5) && CoalitionReturnReached(world,6) && PositionSecured(goal))
             { c.returnedOn=turn;Finish(true,U"曹操と張邈の援軍が汴水の西岸へ戻った。徐栄の本陣を追わず、連合の旗と兵を守って会戦を終えた。"); }
             return;
         }

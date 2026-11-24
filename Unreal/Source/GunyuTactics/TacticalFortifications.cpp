@@ -95,7 +95,25 @@ void ATacticalField::BuildFortifications()
     }
     else
     {
-        if(J.Definition().kind==frontline::JourneyObjective::CaptureCamp)
+        if(J.HasCoalitionBattle())
+        {
+            // Both are friendly assembly sites, not an enemy camp to capture.
+            // Keep the entire formation center and the west/east path open.
+            const FVector P=SurfaceLocation(J.goal);
+            const bool Return=J.coalitionPlan==frontline::CoalitionPlan::Protect;
+            for(int Side:{-1,1})
+            {
+                FVector Foot=P+FVector(0,Side*120,0);Foot.Z=SurfaceHeight(Foot);
+                Stonework->AddInstance(FTransform(FRotator::ZeroRotator,Foot+FVector(0,0,9),FVector(.32,.32,.18)));
+                Flag(Foot,Return ? FLinearColor(.025f,.32f,.28f):FLinearColor(.035f,.14f,.40f),1.18f);
+                for(int I=0;I<3;++I)
+                    Wood(Foot+FVector((I-1)*36,Side*15,17),FVector(5,5,34));
+            }
+            if(!Return)
+                for(int I=0;I<2;++I)
+                    SupplyCrates->AddInstance(FTransform(FRotator(0,I*12,0),P+FVector(50+I*30,-90,0),FVector(.38)));
+        }
+        else if(J.Definition().kind==frontline::JourneyObjective::CaptureCamp)
         {
             const FVector P=SurfaceLocation(J.goal);
             if(J.luoyangPlan==frontline::LuoyangPlan::SouthGate)

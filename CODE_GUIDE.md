@@ -1,6 +1,8 @@
 # コードを読むための地図
 
-河港の橋の公開地形は `TacticalPortLandscape.h`、開戦時の橋名と実突破者・占領案内は `TacticalPortAssault.cpp`、軍議の助言は `TacticalPreparationMapRead.cpp`。道・岸・橋の板と地面は既存の地形ファイルへ分け、`TacticalPortReadingQA.cpp` と `TacticalMapDetailTests.cpp` で実進行と描画の不変を確認する。[二つの橋と占領](PORT_BATTLE_READABILITY.md)。
+汴水の西岸到着は `JourneyCoalitionBattle.hpp/.cpp` の `CoalitionReturnReached` を実判定と表示で共有する。二隊の進捗と移動予定は `TacticalCoalitionBattlePresentation.cpp`、進路は `TacticalMarchOverlay.cpp`、公開地形の橋は `TacticalCrossingLandscape.h`。旧 `TacticalPortLandscape.h` はこの共通名へ変更した。[汴水の橋・旗・味方の進行](COALITION_BATTLE_READABILITY.md)。
+
+河港の橋の公開地形は `TacticalCrossingLandscape.h`、開戦時の橋名と実突破者・占領案内は `TacticalPortAssault.cpp`、軍議の助言は `TacticalPreparationMapRead.cpp`。道・岸・橋の板と地面は既存の地形ファイルへ分け、`TacticalPortReadingQA.cpp` と `TacticalMapDetailTests.cpp` で実進行と描画の不変を確認する。[二つの橋と占領](PORT_BATTLE_READABILITY.md)。
 
 序章の街道と出口の美術は `TacticalMapRoads.cpp` / `TacticalFortifications.cpp`、実際の森林境界から作る落ち葉は `TacticalPreludeGround.h`。`TacticalMapDetailTests.cpp` が経路の切替・選択・保存の不変を検証する。[地形と推定線の改良](PRELUDE_LANDSCAPE_READABILITY.md)。
 

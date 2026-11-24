@@ -1,4 +1,4 @@
-﻿#include "TacticalTrial.h"
+#include "TacticalTrial.h"
 #include "HexGrid.hpp"
 #include "JourneyGrandBattle.hpp"
 #include "WorldLayout.hpp"
@@ -26,6 +26,8 @@ FString ATacticalController::GoalDutyStatus(int Index) const
 FVector2D ATacticalController::GoalLabelSize(int Index) const
 {
     auto Size=gunyumaplabel::GoalSize(Index,!Field->Presentation().Defenses.IsEmpty());
+    const auto& H=Field->Presentation();
+    if(Index<2 && H.bGrandBattle && H.Mission==frontline::CoalitionMission) Size=FVector2D(200,34);
     if(!GoalDutyStatus(Index).IsEmpty()) { Size.X=FMath::Max(Size.X,192.);Size.Y+=18; }
     return Size;
 }
@@ -54,10 +56,10 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
           + SVerticalBox::Slot().AutoHeight()[Label([this,Index]
           {
               const auto& H=Field->Presentation();
-              if(Index>=5) return H.PortCrossings[Index-5].Caption;
+              if(Index>=5) return H.Crossings[Index-5].Caption;
               if(Index==2 || Index==4)
                   for(int Bridge=0;Bridge<2;++Bridge)
-                      if(H.PortCrossings[Bridge].Tile>=0 && H.PortCrossings[Bridge].Tile==(Index==4 ? H.OpeningOrder.Tile:SelectedDutyTile()))
+                      if(H.Crossings[Bridge].Tile>=0 && H.Crossings[Bridge].Tile==(Index==4 ? H.OpeningOrder.Tile:SelectedDutyTile()))
                           return FString(Bridge==0 ? TEXT("北橋 ／ "):TEXT("南橋 ／ "))+
                               (Index==4 ? H.OpeningOrder.Name+TEXT("の目印"):FString(TEXT("軍議の担当地点")));
               if(Index==4) return TEXT("◆ ")+H.OpeningOrder.Name+TEXT("の目印");

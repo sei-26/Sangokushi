@@ -1,10 +1,10 @@
-﻿#include "TacticalTrial.h"
+#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalMapMesh.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "JourneyBattlefield.hpp"
-#include "TacticalPortLandscape.h"
+#include "TacticalCrossingLandscape.h"
 
 // Static, instanced scenery. Farm buildings sit at the edges of playable cells
 // so roads and formation centers stay open.
@@ -115,7 +115,7 @@ void ATacticalField::BuildMapScenery()
                     Beam(FVector(0,Side*85,Level),FVector(218,5,5));
                 Beam(FVector(0,Side*55,-13),FVector(228,10,13));
             }
-            if(gunyuportlandscape::IsPort(J))
+            if(gunyucrossing::IsPort(J) || J.HasCoalitionBattle())
                 for(int End:{-1,1})
                 {
                     FVector Ramp=Point(FVector(End*130,0,0));Ramp.Z=SurfaceHeight(Ramp)-4;
@@ -124,7 +124,7 @@ void ATacticalField::BuildMapScenery()
                 }
         }
     }
-    if(gunyuportlandscape::IsPort(J))
+    if(gunyucrossing::IsPort(J))
     {
         const int Mooring=Campaign::At(11,10);
         if(J.world.tiles[Mooring].terrain==Terrain::River)

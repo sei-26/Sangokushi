@@ -486,7 +486,7 @@ private:
     void BuildCommandInterface(TSharedRef<class SCanvas>);
     TSharedRef<class SWidget> BuildBattleChoicesInterface();
     TSharedRef<class SWidget> BuildGrandOrderInterface();
-    TSharedRef<class SWidget> GrandAdvanceOverlay();
+    TSharedRef<class SWidget> GrandAdvanceOverlay(bool bRelief=false);
     TSharedRef<class SWidget> BuildSupportChoicesInterface();
     TSharedRef<class SWidget> ChainPlannerWidget();
     TSharedRef<class SWidget> ChainPlanOverlay();

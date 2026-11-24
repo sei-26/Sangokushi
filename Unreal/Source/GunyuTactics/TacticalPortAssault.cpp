@@ -1,6 +1,6 @@
 #include "TacticalTrial.h"
 #include "TacticalState.h"
-#include "TacticalPortLandscape.h"
+#include "TacticalCrossingLandscape.h"
 
 void ATacticalField::BuildPortAssaultPresentation()
 {
@@ -9,12 +9,12 @@ void ATacticalField::BuildPortAssaultPresentation()
     auto& H=State->HUD;
     const auto& Port=J.battleReview.port;
     auto Name=[&J](int Officer) { return JourneyText(J.world.generals[J.world.armies[Officer].general].name); };
-    const auto Crossings=gunyuportlandscape::Bridges(J);
+    const auto Crossings=gunyucrossing::Bridges(J);
     for(int Bridge=0;Bridge<2 && Crossings.IsValidIndex(Bridge);++Bridge)
     {
         const int Officer=Port.crossedBy[Bridge];
-        H.PortCrossings[Bridge].Tile=Crossings[Bridge];
-        H.PortCrossings[Bridge].Caption=Officer>=0 ? FString(Bridge==0 ? TEXT("北橋を突破"):TEXT("南橋を突破"))+TEXT(" ／ ")+Name(Officer):
+        H.Crossings[Bridge].Tile=Crossings[Bridge];
+        H.Crossings[Bridge].Caption=Officer>=0 ? FString(Bridge==0 ? TEXT("北橋を突破"):TEXT("南橋を突破"))+TEXT(" ／ ")+Name(Officer):
             FString(Bridge==0 ? TEXT("北橋 ／ 側面へ回る"):TEXT("南橋 ／ 正面へ進む"));
     }
     H.MissionDetail+=TEXT("\n北橋は側面への道、南橋は指揮所に近い道。渡る隊と、最後に旗を立てる隊を決めよう。占領は同じ隊でも勝利になる。");

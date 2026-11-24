@@ -21,7 +21,7 @@
 
 ## コードの入口
 
-- `TacticalPortLandscape.h`：公開地形から橋を読む共通処理。
+- `TacticalCrossingLandscape.h`：公開地形から橋を読む共通処理。汴水との共用に合わせ、旧 `TacticalPortLandscape.h` から改名。
 - `TacticalPortAssault.cpp` / `TacticalMapLabels.cpp`：開戦時の橋名、担当と同地点の札、実突破者、占領と追加の連携の案内。
 - `TacticalPreparationMapRead.cpp`：実際の任務に合わせた橋の助言。
 - `TacticalMapRoads.cpp` / `TacticalBattlefieldStyle.h`：二つの橋を結ぶ道と配色。

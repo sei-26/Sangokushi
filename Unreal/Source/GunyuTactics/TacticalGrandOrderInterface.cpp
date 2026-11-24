@@ -1,6 +1,7 @@
 #include "TacticalTrial.h"
 #include "TacticalWidgets.h"
 #include "JourneyEpisode.hpp"
+#include "JourneyMission.hpp"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBox.h"
@@ -38,5 +39,9 @@ TSharedRef<SWidget> ATacticalController::BuildGrandOrderInterface()
         + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this]
             { return Field->Presentation().bGrandOrdersPending ? EVisibility::Visible:EVisibility::Collapsed; })[Choices]]
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,4)[Label([this]
-            { return Field->Presentation().GrandAdvanceRoute.Num()>1 ? TEXT("青い矢印：本隊の進軍予定"):TEXT("本隊は待機・交戦中"); },12,Gold)]];
+            { const auto& H=Field->Presentation();return H.GrandRouteLegend.IsEmpty() ?
+                FString(H.GrandAdvanceRoute.Num()>1 ? TEXT("青い矢印：本隊の進軍予定"):TEXT("本隊は待機・交戦中")):H.GrandRouteLegend; },12,Gold)]
+        + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,4)[SNew(SBox).Visibility_Lambda([this]
+            { const auto& H=Field->Presentation();return H.Mission==frontline::CoalitionMission && H.bGrandBattle ? EVisibility::Visible:EVisibility::Collapsed; })
+            [Label([this] { return Field->Presentation().GrandOrderStatus; },12,Gold)]]];
 }

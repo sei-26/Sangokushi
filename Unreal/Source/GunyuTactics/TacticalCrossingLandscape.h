@@ -3,14 +3,14 @@
 #include "HexGrid.hpp"
 #include "JourneyBattlefield.hpp"
 #include "StrategistJourney.hpp"
-namespace gunyuportlandscape
+namespace gunyucrossing
 {
     inline bool IsPort(const frontline::StrategistJourney& J)
     { return J.Battlefield()==frontline::JourneyMap::Port || J.Battlefield()==frontline::JourneyMap::PortNorth; }
     // Public bridge geometry, in north-to-south order. No armies, AI or ownership.
     inline TArray<int> Bridges(const frontline::StrategistJourney& J)
     {
-        TArray<int> Out;if(!IsPort(J)) return Out;
+        TArray<int> Out;if(!IsPort(J) && !J.HasCoalitionBattle()) return Out;
         for(int Y=1;Y<frontline::StrategistJourney::Rows-1;++Y)
             for(int X=1;X<frontline::StrategistJourney::Columns-1;++X)
             {
