@@ -4,6 +4,7 @@
 #include "TacticalMissionSignals.h"
 #include "TacticalContributionQA.h"
 #include "TacticalSupportQA.h"
+#include "TacticalPortReadingQA.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/World.h"
 #include "Engine/GameViewportClient.h"
@@ -205,6 +206,22 @@ void ATacticalController::PlayerTick(float Delta)
         {
             Field->SelectOfficer(2);Field->Issue(ETacticalCommand::Move);Field->CommandAt(frontline::Campaign::At(12,11));
             for(int I=0;I<MarchCycles;++I) { Field->Issue(ETacticalCommand::RealtimeStep);Field->AdvancePresentation(60); }
+        }
+    }
+    int PortReading=0;
+    if(bCapture && Frames==4 && FParse::Value(FCommandLine::Get(),TEXT("PortReading="),PortReading))
+    {
+        const bool Valid=PreparePortReadingPreview(Field,PortReading,FParse::Param(FCommandLine::Get(),TEXT("PortNorth")));
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_PORT_READING_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        bDetailedBattle=false;CloseEpisode();
+        if(PortReading==0)
+        {
+            OpenJourneyEntry();
+            int Bridge=-1;
+            if(FParse::Value(FCommandLine::Get(),TEXT("PortMap="),Bridge) && Bridge>=0 && Bridge<2)
+            { OpenCouncilMap();SelectPlanningTile(frontline::Campaign::At(11,Bridge==0 ? 8:11)); }
+            CouncilElapsed=NovelElapsed=1000;
         }
     }
     if(bCapture && Frames==4 && FParse::Param(FCommandLine::Get(),TEXT("GunyuManualTactics")))
@@ -575,6 +592,8 @@ void ATacticalController::PlayerTick(float Delta)
         UE_LOG(LogTemp,Display,TEXT("GUNYU_PORT_HANDOFF: %s (both bridges, timed clearance, real flag and next council)"),Passed ? TEXT("PASS"):TEXT("FAIL"));
         FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return;
     }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPortReadingOnly")))
+    { const bool Passed=VerifyPortReading(Field);FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if (bSmoke && Frames == 2)
     {
         bool bPassed = Field->AutoBattleSmokeTest();
@@ -652,6 +671,7 @@ void ATacticalController::PlayerTick(float Delta)
         if(bPassed) bPassed=ManualTacticsSmokeTest();
         if(bPassed) bPassed=Field->GrandMomentSmokeTest();
         if(bPassed) bPassed=PreludeOpeningSmokeTest();
+        if(bPassed) bPassed=VerifyPortReading(Field);
         FPlatformMisc::RequestExitWithStatus(false, bPassed ? 0 : 1);
     }
 #if WITH_EDITOR

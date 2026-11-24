@@ -55,6 +55,11 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
           {
               const auto& H=Field->Presentation();
               if(Index>=5) return H.PortCrossings[Index-5].Caption;
+              if(Index==2 || Index==4)
+                  for(int Bridge=0;Bridge<2;++Bridge)
+                      if(H.PortCrossings[Bridge].Tile>=0 && H.PortCrossings[Bridge].Tile==(Index==4 ? H.OpeningOrder.Tile:SelectedDutyTile()))
+                          return FString(Bridge==0 ? TEXT("北橋 ／ "):TEXT("南橋 ／ "))+
+                              (Index==4 ? H.OpeningOrder.Name+TEXT("の目印"):FString(TEXT("軍議の担当地点")));
               if(Index==4) return TEXT("◆ ")+H.OpeningOrder.Name+TEXT("の目印");
               if(Index==3) return FString(TEXT("◆ 行軍が重なる地点"));
               if(Index==0 && H.bPortOpening) return FString(TEXT("◆ 占領の好機"));

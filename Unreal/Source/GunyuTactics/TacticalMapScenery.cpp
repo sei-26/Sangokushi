@@ -4,6 +4,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "JourneyBattlefield.hpp"
+#include "TacticalPortLandscape.h"
 
 // Static, instanced scenery. Farm buildings sit at the edges of playable cells
 // so roads and formation centers stay open.
@@ -114,6 +115,25 @@ void ATacticalField::BuildMapScenery()
                     Beam(FVector(0,Side*85,Level),FVector(218,5,5));
                 Beam(FVector(0,Side*55,-13),FVector(228,10,13));
             }
+            if(gunyuportlandscape::IsPort(J))
+                for(int End:{-1,1})
+                {
+                    FVector Ramp=Point(FVector(End*130,0,0));Ramp.Z=SurfaceHeight(Ramp)-4;
+                    Stonework->AddInstance(FTransform(Rotation,Ramp,FVector(.50,1.58,.08)));
+                    for(int Side:{-1,1}) Beam(FVector(End*130,Side*86,18),FVector(44,5,5));
+                }
+        }
+    }
+    if(gunyuportlandscape::IsPort(J))
+    {
+        const int Mooring=Campaign::At(11,10);
+        if(J.world.tiles[Mooring].terrain==Terrain::River)
+        {
+            const FVector Boat=TileLocation(Mooring)+FVector(12,0,-6);
+            Wood(Boat,FVector(42,108,6));
+            for(int Side:{-1,1}) Wood(Boat+FVector(Side*20,0,9),FVector(5,110,18));
+            for(int End:{-1,1}) Wood(Boat+FVector(0,End*53,8),FVector(38,5,20));
+            Wood(Boat+FVector(0,-14,7),FVector(22,26,14));
         }
     }
     BuildFortifications();

@@ -27,13 +27,13 @@ namespace TacticalMap
                 FLinearColor(.34f,.27f,.21f),FLinearColor(.55f,.32f,.13f),265.f,38000.f,1.05f,75.f};
         if (Map == JourneyMap::Port)
             return {FLinearColor(.21f,.205f,.115f),FLinearColor(.13f,.18f,.065f),
-                FLinearColor(.30f,.27f,.19f),FLinearColor(.33f,.255f,.14f),145.f,24000.f,.90f};
+                FLinearColor(.30f,.27f,.19f),FLinearColor(.46f,.32f,.18f),145.f,24000.f,.90f,80.f};
         if (Map == JourneyMap::Valley)
             return {FLinearColor(.145f,.17f,.18f),FLinearColor(.075f,.13f,.12f),
                 FLinearColor(.30f,.32f,.34f),FLinearColor(.245f,.23f,.19f),260.f,48000.f,.78f};
         if (Map == JourneyMap::PortNorth)
             return {FLinearColor(.16f,.205f,.16f),FLinearColor(.10f,.18f,.115f),
-                FLinearColor(.26f,.31f,.32f),FLinearColor(.49f,.31f,.17f),205.f,31000.f,.98f,74.f};
+                FLinearColor(.26f,.31f,.32f),FLinearColor(.49f,.31f,.17f),205.f,31000.f,.98f,80.f};
         if (Map == JourneyMap::RefugeeRoad || Map == JourneyMap::CoalitionRoad)
             return {FLinearColor(.245f,.224f,.128f),FLinearColor(.14f,.19f,.071f),
                 FLinearColor(.37f,.31f,.22f),FLinearColor(.53f,.32f,.15f),130.f,27000.f,.83f,87.f};

@@ -3,6 +3,7 @@
 #include "TacticalMapMesh.h"
 #include "TacticalGroundDetail.h"
 #include "JourneyBattlefield.hpp"
+#include "TacticalPortLandscape.h"
 
 void ATacticalField::UpdateRoadTopology()
 {
@@ -15,6 +16,14 @@ void ATacticalField::UpdateRoadTopology()
     if(Map==JourneyMap::Retreat)
     {
         Add({{2,10},{3,10},{4,11},{6,11},{8,11},{9,11},{10,11},{11,10},{12,10},{14,10},{15,10}});
+        return;
+    }
+    if(gunyuportlandscape::IsPort(J))
+    {
+        // One continuous loop joins both real crossings without a diagonal road over water.
+        // The south approach still passes every legacy convoy checkpoint.
+        Add({{2,10},{3,10},{4,11},{6,11},{9,11},{10,11},{11,11},{12,11},
+             {12,10},{12,9},{12,8},{11,8},{10,8},{10,9},{10,10},{10,11}});
         return;
     }
     if(Map==JourneyMap::CoalitionFronts)
@@ -50,11 +59,6 @@ void ATacticalField::UpdateRoadTopology()
     if(Map==JourneyMap::Guangzong)
     {
         Add({{3,10},{6,10},{9,10},{11,9},{12,8},{14,7}});
-        return;
-    }
-    if(Map==JourneyMap::PortNorth)
-    {
-        Add({{4,6},{7,7},{9,8},{11,8},{12,8},{13,10},{12,11}});
         return;
     }
     if(J.mission>1) return;

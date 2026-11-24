@@ -2,12 +2,16 @@
 #include "TacticalState.h"
 #include "TacticalGroundGrid.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "ProceduralMeshComponent.h"
+#include "TacticalPortLandscape.h"
+#include "TacticalPortReadingQA.h"
 
 bool ATacticalField::MapDetailSmokeTest()
 {
     using namespace frontline;
     const int SavedMission=FirstMission,SavedPolicy=EnemyPolicy;
     const bool SavedCouncil=bStartWithCouncil,SavedPlayback=State->bNoPlayback,SavedRealtime=bRealtimeCommand;
+    const bool SavedLegacy=bLegacyJourney,SavedGrand=bGrandHistoricalBattles,SavedPause=bPauseOnBattleAlert;
     auto Check=[](bool Value,const TCHAR* Why)
     { if(!Value) UE_LOG(LogTemp,Error,TEXT("GUNYU_MAP_DETAIL: FAIL %s"),Why);return Value; };
     FirstMission=0;EnemyPolicy=1;bStartWithCouncil=true;bRealtimeCommand=false;State->bNoPlayback=true;
@@ -66,7 +70,42 @@ bool ATacticalField::MapDetailSmokeTest()
     State->TerrainSnapshot.Reset();UpdateRoadTopology();BuildTerrain();SelectOfficer(1);SelectOfficer(0);
     if(!Check(ExportSession(After) && Before==After && State->LandscapeRoad==RetreatRoad,
         TEXT("retreat art, rebuilt landmarks and selection do not move units or change costs/history"))) return false;
+    for(bool North:{false,true})
+    {
+        if(!Check(PreparePortReadingPreview(this,1,North),TEXT("actual initial victory and reply select each port battlefield"))) return false;
+        const auto& Port=State->Journey;const auto Bridges=gunyuportlandscape::Bridges(Port);
+        if(!Check(Bridges.Num()==2,TEXT("port has two real crossings"))) return false;
+        for(int Tile:Bridges)
+        {
+            if(!Check(RoadDistance(TileLocation(Tile))<.01f && FMath::IsNearlyZero(SurfaceHeight(TileLocation(Tile))),
+                TEXT("both port roads meet the real level bridge decks"))) return false;
+            for(int At:{Tile-1,Tile,Tile+1})
+            {
+                const FVector Offset(380,340,1500);
+                if(!Check(PickSurfaceTile(SurfaceLocation(At)+Offset,-Offset.GetSafeNormal())==At,TEXT("each bank and bridge remains selectable"))) return false;
+            }
+            const auto* Mesh=Ground->GetProcMeshSection(0);int Samples=0;
+            if(!Check(Mesh!=nullptr,TEXT("shared ground geometry exists"))) return false;
+            for(const auto& V:Mesh->ProcVertexBuffer)
+                if(FVector::DistSquared2D(FVector(V.Position),TileLocation(Tile))<45*45)
+                { ++Samples;if(!Check(V.Position.Z< -9.f,TEXT("ground stays below water under the wooden bridge, with no coplanar grass plane"))) return false; }
+            if(!Check(Samples>0,TEXT("bridge-bed samples are present"))) return false;
+        }
+        for(int I=0;I<Grass->GetInstanceCount();++I)
+        {
+            FTransform T;Grass->GetInstanceTransform(I,T,false);
+            if(!Check(!gunyuportlandscape::OnBridge(Port,T.GetLocation()),TEXT("grass and reeds do not grow through the bridge decks"))) return false;
+        }
+        for(int Tile:Port.ConvoyPath())
+            if(!Check(RoadDistance(TileLocation(Tile))<.01f,TEXT("legacy convoy checkpoints remain on the south street"))) return false;
+        if(!Check(Buildings->GetCollisionEnabled()==ECollisionEnabled::NoCollision && Stonework->GetCollisionEnabled()==ECollisionEnabled::NoCollision,
+            TEXT("bridge ramps, boat and rails add no physical movement blockers"))) return false;
+        if(!ExportSession(Before)) return false;
+        State->TerrainSnapshot.Reset();UpdateRoadTopology();BuildTerrain();SelectOfficer(1);SelectOfficer(0);
+        if(!Check(ExportSession(After) && Before==After,TEXT("port scenery rebuild changes no troops, budgets, orders or history"))) return false;
+    }
     FirstMission=SavedMission;EnemyPolicy=SavedPolicy;bStartWithCouncil=SavedCouncil;bRealtimeCommand=SavedRealtime;
+    bLegacyJourney=SavedLegacy;bGrandHistoricalBattles=SavedGrand;bPauseOnBattleAlert=SavedPause;
     State->bNoPlayback=SavedPlayback;Issue(ETacticalCommand::Restart);
     UE_LOG(LogTemp,Display,TEXT("GUNYU_MAP_DETAIL: PASS (real convoy route, woodland detour, ground grading, picking, immutable scenery, cache invalidation)"));return true;
 }

@@ -37,7 +37,7 @@ bool PreparePortHandoffPreview(ATacticalField* Field,int Stage)
     Move(1,Campaign::At(12,8));
     Field->AdvancePresentation(10);
     Move(2,PortBridgeExit);
-    if(!Field->IsPlaying() || Field->Presentation().PortCrossings[1].Tile>=0) return false;
+    if(!Field->IsPlaying() || Field->Presentation().PortCrossings[1].Caption.Contains(TEXT("張飛"))) return false;
     Field->AdvancePresentation(10);
     if(!Field->Presentation().PortCrossings[0].Caption.Contains(TEXT("関羽")) ||
         !Field->Presentation().PortCrossings[1].Caption.Contains(TEXT("張飛")) || Field->Presentation().bPortOpening) return false;

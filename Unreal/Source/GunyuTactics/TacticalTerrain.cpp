@@ -100,6 +100,7 @@ void ATacticalField::BuildTerrain()
             const bool bForest = Terrain == frontline::Terrain::Forest;
             const bool bRock = Terrain == frontline::Terrain::Mountain;
             const bool bWater = Terrain == frontline::Terrain::River;
+            const bool bBelowDeck = Terrain == frontline::Terrain::Bridge;
             FLinearColor Base=Style.Ground;
             if (bForest) Base = Style.Forest;
             if (bRock) Base = Style.Rock;
@@ -118,11 +119,11 @@ void ATacticalField::BuildTerrain()
                     const FVector Q = Center + U * ((I + 1) / float(Detail)) + V * (K / float(Detail));
                     const FVector R = Center + U * (I / float(Detail)) + V * ((K + 1) / float(Detail));
                     auto Color=[&](FVector Position) { return ColorAt(Position,Base,bVisible); };
-                    GroundMesh.Triangle(P,Q,R,bWater,Height,Color);
+                    GroundMesh.Triangle(P,Q,R,bWater || bBelowDeck,Height,Color);
                     if (I + K < Detail - 1)
                     {
                         const FVector S = Center + U * ((I + 1) / float(Detail)) + V * ((K + 1) / float(Detail));
-                        GroundMesh.Triangle(Q,S,R,bWater,Height,Color);
+                        GroundMesh.Triangle(Q,S,R,bWater || bBelowDeck,Height,Color);
                     }
                 }
             }
@@ -168,7 +169,7 @@ void ATacticalField::BuildTerrain()
                     Rocks->AddInstance(FTransform(FRotator(5+N*15,N*360,8-N*16),P,
                         FVector(.85+N*.72,.72+N*.55,.50+N*.36)*(Rock==0 ? 1.:.58)));
                 }
-            if (!bWater && !bRock)
+            if (!bWater && !bRock && !bBelowDeck)
                 for (int Tuft = 0; Tuft < 12; ++Tuft)
                 {
                     const float N = Grain(X * 17 + Tuft, Y * 7);
