@@ -7,13 +7,14 @@
 #include "TacticalBattleResponse.h"
 #include "TacticalMapLabelLayout.h"
 #include "TacticalMissionSignals.h"
+#include "HexGrid.hpp"
 
 void ATacticalController::LayoutMapLabels()
 {
     using namespace gunyumaplabel;
     LabelLayoutFrame=GFrameCounter;UnitLabelPositions.Init(Hidden,frontline::GrandBattleArmyCount);GoalLabelPositions.Init(Hidden,7);MapLabelLeaders.Reset();
     if(!Field || Field->Presentation().Journey.bVisible) return;
-    const auto& Units=Field->VisualUnits();const FVector2D Size(132,86);
+    const auto& Units=Field->VisualUnits();const auto& H=Field->Presentation();
     const bool WideShot=bTacticCinema && Field->ReadTacticCinema().bVisible;
     const auto Action=Field->ReadActionFocus();
     const bool Focused=WideShot && Action.bActive && Action.bHasTarget && Action.Weight>.20f;
@@ -55,7 +56,39 @@ void ATacticalController::LayoutMapLabels()
         else Occupied.Add(FSlateRect(290,106,1050,210));
     }
     if(bEnemyDetailsOpen && !Field->IsPlaying()) Occupied.Add(FSlateRect(16,174,716,306));
-    const auto& H=Field->Presentation();
+    TArray<int> Priority;
+    if(Action.bActive && Action.bHasTarget) { Priority.AddUnique(Action.Actor);Priority.AddUnique(Action.Target); }
+    Priority.AddUnique(H.Selected);
+    for(int Id=0;Id<Units.Num();++Id) if(gunyutargetui::MapTargetSelected(H,Units[Id])) Priority.AddUnique(Id);
+    if(H.MissionFocusTile>=0)
+        for(int Id=5;Id<Units.Num();++Id)
+            if(Units[Id].Id>=0 && !Units[Id].bEnemy && FVector::DistSquared2D(Units[Id].Position,Field->SurfaceLocation(H.MissionFocusTile))<1)
+                Priority.AddUnique(Id);
+    const int AttentionCount=Priority.Num();
+    for(int Id=0;Id<3;++Id) Priority.AddUnique(Id);
+    Priority.AddUnique(5);
+    for(int Id=0;Id<Units.Num();++Id) Priority.AddUnique(Id);
+    auto PlaceUnit=[&](int Id)
+    {
+        if(!Units.IsValidIndex(Id) || Units[Id].Id<0 || (Units[Id].Troops<=0 && !Field->IsPlaying())) return;
+        if(Focused && Id!=Action.Actor && Id!=Action.Target) return;
+        const auto& U=Units[Id];const auto Anchor=MapLabelPosition(U.Position+FVector(0,0,70),FVector2D::ZeroVector);
+        if(Anchor.X<Min.X-60 || Anchor.X>Max.X+60 || Anchor.Y<Min.Y-60 || Anchor.Y>Max.Y+60) return;
+        const auto Size=UnitLabelSize(Id),Base=MapLabelPosition(U.Position+FVector(0,0,240),Size);
+        const auto Chosen=Reserve(Base,Size,Min,Max,Occupied);
+        UnitLabelPositions[Id]=Chosen;
+        if(Chosen==Hidden) return;
+        const auto Edge=NearestEdge(Anchor,Chosen,Size);
+        if(FVector2D::Distance(Anchor,Edge)>5)
+        {
+            const auto* Read=gunyutargetui::Find(H,Id);
+            const FLinearColor Color=Read && Read->bSelected ? gunyutargetui::Color(*Read):
+                Id==H.Selected ? FLinearColor(1.f,.81f,.35f):U.bEnemy ? FLinearColor(.98f,.48f,.31f):FLinearColor(.44f,.88f,.82f);
+            MapLabelLeaders.Add({Anchor,Edge,Color,Id,Id==H.Selected || gunyutargetui::MapTargetSelected(H,U) ? 1.8f:1.1f});
+        }
+    };
+    // The currently controlled formation and observed target get space first.
+    for(int I=0;I<AttentionCount;++I) PlaceUnit(Priority[I]);
     const int DutyTile=SelectedDutyTile();
     const int TrafficTile=DutyTile>=0 && H.DutyProgress.bTraffic ? H.DutyProgress.InspectTile:-1;
     const int Tiles[]={H.GoalTile,H.SecondGoalTile,DutyTile,TrafficTile,ShowOpeningOrder() ? H.OpeningOrder.Tile:-1,
@@ -73,25 +106,11 @@ void ATacticalController::LayoutMapLabels()
         GoalLabelPositions[Index]=P;
         if(P!=Hidden && (Index>=2 || !P.Equals(Base,3)))
         {
-            const FVector2D Edge(FMath::Clamp(Anchor.X,P.X,P.X+PlateSize.X),FMath::Clamp(Anchor.Y,P.Y,P.Y+PlateSize.Y));
-            MapLabelLeaders.Add({Anchor,Edge});
+            const FVector2D Edge=NearestEdge(Anchor,P,PlateSize);
+            MapLabelLeaders.Add({Anchor,Edge,FLinearColor(.95f,.83f,.52f),-1,1.1f});
         }
     }
-    TArray<int> Priority;
-    if(Focused) { Priority.Add(Action.Actor);Priority.AddUnique(Action.Target); }
-    Priority.AddUnique(Field->Presentation().Selected);Priority.AddUnique(5);
-    for(int Id=0;Id<Units.Num();++Id) Priority.AddUnique(Id);
-    for(int Id:Priority)
-    {
-        if(!Units.IsValidIndex(Id) || Units[Id].Id<0 || (Units[Id].Troops<=0 && !Field->IsPlaying())) continue;
-        if(Focused && Id!=Action.Actor && Id!=Action.Target) continue;
-        const auto& U=Units[Id];const auto Anchor=MapLabelPosition(U.Position+FVector(0,0,70),FVector2D::ZeroVector);
-        if(Anchor.X<Min.X-60 || Anchor.X>Max.X+60 || Anchor.Y<Min.Y-60 || Anchor.Y>Max.Y+60) continue;
-        const auto Base=MapLabelPosition(U.Position+FVector(0,0,240),Size);
-        const auto Chosen=Reserve(Base,Size,Min,Max,Occupied);
-        UnitLabelPositions[Id]=Chosen;
-        if(Chosen!=Hidden && !Chosen.Equals(Base,3)) MapLabelLeaders.Add({Anchor,Chosen+FVector2D(Size.X*.5,U.Loss>0 ? 82:56)});
-    }
+    for(int I=AttentionCount;I<Priority.Num();++I) PlaceUnit(Priority[I]);
 }
 FString ATacticalController::UnitMapStatus(int Index) const
 {

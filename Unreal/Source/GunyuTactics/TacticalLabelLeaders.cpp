@@ -4,7 +4,7 @@
 #include "Rendering/DrawElements.h"
 namespace
 {
-    using FReadSegments=TFunction<TArray<TPair<FVector2D,FVector2D>>()>;
+    using FReadSegments=TFunction<TArray<gunyumaplabel::FLeader>()>;
     class SMapLabelLeaders : public SLeafWidget
     {
     public:
@@ -15,12 +15,16 @@ namespace
         {
             for(const auto& Line:Segments())
             {
-                TArray<FVector2f> Points{FVector2f(Line.Key-gunyulayout::LabelOrigin),FVector2f(Line.Value-gunyulayout::LabelOrigin)};
-                FSlateDrawElement::MakeLines(E,Layer,G.ToPaintGeometry(),MoveTemp(Points),ESlateDrawEffect::None,FLinearColor(.8f,.73f,.48f,.75f),true,1.f);
+                const FVector2f From(Line.From-gunyulayout::LabelOrigin),To(Line.To-gunyulayout::LabelOrigin);
+                const TArray<FVector2f> Points{From,To};
+                FSlateDrawElement::MakeLines(E,Layer,G.ToPaintGeometry(),Points,ESlateDrawEffect::None,FLinearColor(.005f,.012f,.015f,.85f),true,Line.Width+2.f);
+                FSlateDrawElement::MakeLines(E,Layer+1,G.ToPaintGeometry(),Points,ESlateDrawEffect::None,Line.Color,true,Line.Width);
+                const TArray<FVector2f> Marker{From+FVector2f(0,-3),From+FVector2f(3,0),From+FVector2f(0,3),From+FVector2f(-3,0),From+FVector2f(0,-3)};
+                FSlateDrawElement::MakeLines(E,Layer+2,G.ToPaintGeometry(),Marker,ESlateDrawEffect::None,Line.Color,true,1.2f);
             }
-            return Layer;
+            return Layer+2;
         }
-    private: TFunction<TArray<TPair<FVector2D,FVector2D>>()> Segments;
+    private: FReadSegments Segments;
     };
 }
 TSharedRef<SWidget> ATacticalController::MapLabelLeaderOverlay()
@@ -29,7 +33,7 @@ TSharedRef<SWidget> ATacticalController::MapLabelLeaderOverlay()
         .Segments([this]
         {
             if(LabelLayoutFrame!=GFrameCounter) LayoutMapLabels();
-            return bSaveMenuOpen || bBattleLogOpen || bMarchPlanOpen ? TArray<TPair<FVector2D,FVector2D>>{} : MapLabelLeaders;
+            return bSaveMenuOpen || bBattleLogOpen || bMarchPlanOpen ? TArray<gunyumaplabel::FLeader>{} : MapLabelLeaders;
         });
     View->ForceVolatile(true);return View;
 }

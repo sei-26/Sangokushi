@@ -176,6 +176,17 @@ void ATacticalController::PlayerTick(float Delta)
         UE_LOG(LogTemp, Display, TEXT("GUNYU_WINDOW: mode=%d viewport=%dx%d"), static_cast<int>(GEngine->GameViewport->GetWindow()->GetWindowMode()), Width, Height);
     }
     int GrandPreview=0;
+    const bool bLabelTest=bSmoke && FParse::Param(FCommandLine::Get(),TEXT("GunyuLabelsOnly"));
+    if(bLabelTest && Frames==3)
+    {
+        int Phase=0,Order=1;FParse::Value(FCommandLine::Get(),TEXT("LabelPhase="),Phase);FParse::Value(FCommandLine::Get(),TEXT("LabelOrder="),Order);
+        if(!Field->PrepareGrandBattlePreview(4,Phase,Order)) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        bDetailedBattle=false;bTacticCinema=false;CloseEpisode();ResetBattleCamera();
+    }
+    if(bLabelTest && Frames==120)
+    { const bool Passed=LabelLayoutSmokeTest(true);FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bCapture && Frames==125 && FParse::Param(FCommandLine::Get(),TEXT("GunyuLabelRead")))
+        if(!LabelLayoutSmokeTest(false)) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
     const bool bGrandPreview=FParse::Value(FCommandLine::Get(),TEXT("GrandPreview="),GrandPreview);
     if(Frames==3 && bGrandPreview)
     {
@@ -596,6 +607,7 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool Passed=VerifyPortReading(Field);FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if (bSmoke && Frames == 2)
     {
+        if(bLabelTest) return;
         bool bPassed = Field->AutoBattleSmokeTest();
         if(bPassed) bPassed=Field->SmokeTest();
         if (bPassed)

@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+部隊札の実寸と空行の整理は `TacticalMapLabels.cpp`、優先配置は `TacticalLabelLayout.cpp`、札の縁と線のデータは `TacticalMapLabelLayout.h`、接続線の描画は `TacticalLabelLeaders.cpp`。`TacticalLabelLayoutTests.cpp` で描画後の寸法・対応・選択・保存不変を確認する。[密集した会戦の札](BATTLE_LABEL_READABILITY.md)。
+
 汴水の西岸到着は `JourneyCoalitionBattle.hpp/.cpp` の `CoalitionReturnReached` を実判定と表示で共有する。二隊の進捗と移動予定は `TacticalCoalitionBattlePresentation.cpp`、進路は `TacticalMarchOverlay.cpp`、公開地形の橋は `TacticalCrossingLandscape.h`。旧 `TacticalPortLandscape.h` はこの共通名へ変更した。[汴水の橋・旗・味方の進行](COALITION_BATTLE_READABILITY.md)。
 
 河港の橋の公開地形は `TacticalCrossingLandscape.h`、開戦時の橋名と実突破者・占領案内は `TacticalPortAssault.cpp`、軍議の助言は `TacticalPreparationMapRead.cpp`。道・岸・橋の板と地面は既存の地形ファイルへ分け、`TacticalPortReadingQA.cpp` と `TacticalMapDetailTests.cpp` で実進行と描画の不変を確認する。[二つの橋と占領](PORT_BATTLE_READABILITY.md)。

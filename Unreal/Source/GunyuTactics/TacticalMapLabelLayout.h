@@ -3,7 +3,25 @@
 #include "Layout/SlateRect.h"
 namespace gunyumaplabel
 {
+    struct FLeader
+    {
+        FVector2D From,To;
+        FLinearColor Color;
+        int Army=-1;
+        float Width=1.1f;
+    };
     inline const FVector2D Hidden(-2000,-2000);
+    inline FVector2D NearestEdge(FVector2D Anchor,FVector2D Position,FVector2D Size)
+    {
+        FVector2D P(FMath::Clamp(Anchor.X,Position.X,Position.X+Size.X),FMath::Clamp(Anchor.Y,Position.Y,Position.Y+Size.Y));
+        if(P==Anchor)
+        {
+            const double Distances[]={Anchor.X-Position.X,Position.X+Size.X-Anchor.X,Anchor.Y-Position.Y,Position.Y+Size.Y-Anchor.Y};
+            int Side=0;for(int I=1;I<4;++I) if(Distances[I]<Distances[Side]) Side=I;
+            if(Side<2) P.X=Position.X+(Side==1 ? Size.X:0);else P.Y=Position.Y+(Side==3 ? Size.Y:0);
+        }
+        return P;
+    }
     inline FVector2D GoalSize(int Index,bool bBeacons)
     { return Index>=2 ? FVector2D(174,34):bBeacons ? FVector2D(180,70):FVector2D(140,34); }
     inline bool Intersects(const FSlateRect& A,const FSlateRect& B)

@@ -32,8 +32,20 @@ FVector2D ATacticalController::GoalLabelSize(int Index) const
     return Size;
 }
 
+FVector2D ATacticalController::UnitLabelSize(int Index) const
+{
+    // Width stays fixed, so the Slate prepass can wrap names consistently.
+    // The content includes the visible status, action progress and actual loss.
+    const auto Widget=UnitLabelContents.IsValidIndex(Index) ? UnitLabelContents[Index]:nullptr;
+    const float Desired=Widget.IsValid() ? Widget->GetDesiredSize().Y+2.f:86.f;
+    const auto& Units=Field->VisualUnits();
+    const bool Loss=Units.IsValidIndex(Index) && Units[Index].Loss>0;
+    return FVector2D(132,FMath::Clamp(Desired>3 ? Desired:86.f,Loss ? 84.f:54.f,124.f));
+}
+
 void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
 {
+    UnitLabelContents.SetNum(frontline::GrandBattleArmyCount);
     for (int Index = 0; Index < 7; ++Index)
         Canvas->AddSlot().Position_Lambda([this,Index] { return GoalLabelPosition(Index); })
         .Size_Lambda([this,Index] { return GoalLabelSize(Index); })
@@ -136,10 +148,13 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
              .Visibility_Lambda([this,Index] { return Field->IsPlaying() && Field->ReadUnitActivity(Index).bActive ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
              [SNew(SProgressBar).Style(&ProgressStyle()).Percent_Lambda([this,Index] { return Field->ReadUnitActivity(Index).Progress; })
               .FillColorAndOpacity_Lambda([this,Index] { return FSlateColor(Field->ReadUnitActivity(Index).Color); })]]
-          + SVerticalBox::Slot().AutoHeight()[Label([this, Index] { return Field->VisualUnits().IsValidIndex(Index) && Field->VisualUnits()[Index].Loss > 0 ? FString::Printf(TEXT("−%d"), Field->VisualUnits()[Index].Loss) : FString(); }, 21, FLinearColor(1.f, .35f, .15f))];
+          + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this,Index]
+            { const auto& U=Field->VisualUnits();return U.IsValidIndex(Index) && U[Index].Loss>0 ? EVisibility::HitTestInvisible:EVisibility::Collapsed; })
+            [Label([this, Index] { return Field->VisualUnits().IsValidIndex(Index) && Field->VisualUnits()[Index].Loss > 0 ? FString::Printf(TEXT("−%d"), Field->VisualUnits()[Index].Loss) : FString(); }, 21, FLinearColor(1.f, .35f, .15f))]];
+        UnitLabelContents[Index]=Contents;
         auto Plate=SNew(SBorder).Padding(1).BorderImage_Lambda([this,Index]
-            { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return FCoreStyle::Get().GetBrush(Read && Read->bSelected ? "WhiteBrush":"NoBrush"); })
-            .BorderBackgroundColor_Lambda([this,Index] { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return Read ? gunyutargetui::Color(*Read):FLinearColor::Transparent; })
+            { const auto& U=Field->VisualUnits();const auto& H=Field->Presentation();return FCoreStyle::Get().GetBrush(H.Selected==Index || (U.IsValidIndex(Index) && gunyutargetui::MapTargetSelected(H,U[Index])) ? "WhiteBrush":"NoBrush"); })
+            .BorderBackgroundColor_Lambda([this,Index] { const auto* Read=gunyutargetui::Find(Field->Presentation(),Index);return Read ? gunyutargetui::Color(*Read):Field->Presentation().Selected==Index ? Gold:FLinearColor(.98f,.48f,.31f); })
             .ColorAndOpacity_Lambda([this,Index]
             {
                 const auto A=Field->ReadActionFocus();
@@ -163,6 +178,7 @@ void ATacticalController::BuildMapLabels(TSharedRef<SCanvas> Canvas)
                 return FReply::Unhandled();
             })[SNew(SBorder).Padding(0).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
                 .BorderBackgroundColor(FLinearColor(.012f,.024f,.026f,.96f))[Contents]];
-        InputPanels.Add(Plate);Canvas->AddSlot().Position_Lambda([this,Index] { return LabelPosition(Index); }).Size(FVector2D(132,86))[Plate];
+        InputPanels.Add(Plate);Canvas->AddSlot().Position_Lambda([this,Index] { return LabelPosition(Index); })
+            .Size_Lambda([this,Index] { return UnitLabelSize(Index); })[Plate];
     }
 }

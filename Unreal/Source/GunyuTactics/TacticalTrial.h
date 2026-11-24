@@ -6,6 +6,7 @@
 #include "InputCoreTypes.h"
 #include "TacticalPresentation.h"
 #include "TacticalActivity.h"
+#include "TacticalMapLabelLayout.h"
 #include <vector>
 #include <cstdint>
 #include "TacticalTrial.generated.h"
@@ -473,12 +474,15 @@ private:
     void LayoutMapLabels();
     FVector2D GoalLabelPosition(int Index) const;
     FVector2D GoalLabelSize(int Index) const;
+    FVector2D UnitLabelSize(int Index) const;
+    bool LabelLayoutSmokeTest(bool bExerciseInput);
     FString GoalDutyStatus(int Index) const;
     FString UnitMapStatus(int Index) const;
     void SelectMapUnit(int Index);
     TArray<FVector2D> UnitLabelPositions;
+    TArray<TSharedPtr<class SWidget>> UnitLabelContents;
     TArray<FVector2D> GoalLabelPositions;
-    TArray<TPair<FVector2D,FVector2D>> MapLabelLeaders;
+    TArray<gunyumaplabel::FLeader> MapLabelLeaders;
     uint64 LabelLayoutFrame=MAX_uint64;
     TSharedRef<class SWidget> MapLabelLeaderOverlay();
     TSharedRef<class SWidget> BattleActivityOverlay();

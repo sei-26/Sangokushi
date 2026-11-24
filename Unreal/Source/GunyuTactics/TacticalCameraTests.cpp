@@ -80,8 +80,8 @@ bool ATacticalController::CameraPresentationSmokeTest()
         if(!Check(ActorPlate.X>-1000 && TargetPlate.X>-1000 && UnitLabelPositions[2].X<-1000,TEXT("cinematic plates identify the acting officer and current victim without passive clutter"))) return false;
         for(int Id:{Action.Actor,Action.Target}) for(FVector Point:{Action.Hero,Action.Blade})
         {
-            const auto P=MapLabelPosition(Point,FVector2D::ZeroVector),L=UnitLabelPositions[Id];
-            if(!Check(!(P.X>=L.X && P.X<=L.X+132 && P.Y>=L.Y && P.Y<=L.Y+86),TEXT("nameplates do not cover the actual commander or moving blade"))) return false;
+            const auto P=MapLabelPosition(Point,FVector2D::ZeroVector),L=UnitLabelPositions[Id],S=UnitLabelSize(Id);
+            if(!Check(!(P.X>=L.X && P.X<=L.X+S.X && P.Y>=L.Y && P.Y<=L.Y+S.Y),TEXT("nameplates do not cover the actual commander or moving blade"))) return false;
         }
     }
     else UE_LOG(LogTemp,Display,TEXT("GUNYU_VIEW_LABELS: SKIP (headless viewport; require rendered focused verification)"));
