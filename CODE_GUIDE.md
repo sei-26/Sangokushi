@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+陽人の方針別の案内・孫堅の移動予定は `TacticalYangrenStrategy.cpp`。現行 `YangrenCounter` の街道は `TacticalMapRoads.cpp`、辻と合流点の旗は `TacticalFortifications.cpp`、軍議の地点は `TacticalPreparationMapRead.cpp`、現行の勝利条件を伝える配置見本は `NewGame/JourneyPlanExample.cpp`。`TacticalGrandBattleQA.cpp` で両方針の実反撃・勝利と表示の境界を確認する。[陽人の地形・合流・反撃](YANGREN_BATTLE_READABILITY.md)。
+
 部隊札の実寸と空行の整理は `TacticalMapLabels.cpp`、優先配置は `TacticalLabelLayout.cpp`、札の縁と線のデータは `TacticalMapLabelLayout.h`、接続線の描画は `TacticalLabelLeaders.cpp`。`TacticalLabelLayoutTests.cpp` で描画後の寸法・対応・選択・保存不変を確認する。[密集した会戦の札](BATTLE_LABEL_READABILITY.md)。
 
 汴水の西岸到着は `JourneyCoalitionBattle.hpp/.cpp` の `CoalitionReturnReached` を実判定と表示で共有する。二隊の進捗と移動予定は `TacticalCoalitionBattlePresentation.cpp`、進路は `TacticalMarchOverlay.cpp`、公開地形の橋は `TacticalCrossingLandscape.h`。旧 `TacticalPortLandscape.h` はこの共通名へ変更した。[汴水の橋・旗・味方の進行](COALITION_BATTLE_READABILITY.md)。

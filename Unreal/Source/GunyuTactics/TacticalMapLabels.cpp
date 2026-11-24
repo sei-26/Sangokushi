@@ -27,7 +27,7 @@ FVector2D ATacticalController::GoalLabelSize(int Index) const
 {
     auto Size=gunyumaplabel::GoalSize(Index,!Field->Presentation().Defenses.IsEmpty());
     const auto& H=Field->Presentation();
-    if(Index<2 && H.bGrandBattle && H.Mission==frontline::CoalitionMission) Size=FVector2D(200,34);
+    if(Index<2 && H.bGrandBattle && (H.Mission==frontline::CoalitionMission || H.Mission==frontline::YangrenMission)) Size=FVector2D(200,34);
     if(!GoalDutyStatus(Index).IsEmpty()) { Size.X=FMath::Max(Size.X,192.);Size.Y+=18; }
     return Size;
 }

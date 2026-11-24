@@ -132,7 +132,8 @@ void ATacticalField::BuildTerrain()
                 {
                     const float N = Grain(X * 5 + Tree, Y);
                     const float Angle = Tree * 2.4f + X + Y * 1.8f;
-                    const float RootRadius=J.Battlefield()==frontline::JourneyMap::Retreat ? 78+N*16:40+N*40;
+                    const bool OpenCenter=J.Battlefield()==frontline::JourneyMap::Retreat || J.Battlefield()==frontline::JourneyMap::YangrenCounter;
+                    const float RootRadius=OpenCenter ? 78+N*16:40+N*40;
                     const FVector P = Center + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0) * RootRadius;
                     bool bBridgeApproach=false;
                     for (const auto& [NX,NY] : hexgrid::Neighbors(X,Y))

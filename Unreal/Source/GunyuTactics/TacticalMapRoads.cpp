@@ -44,7 +44,7 @@ void ATacticalField::UpdateRoadTopology()
         Add({{3,10},{5,8},{8,7},{10,7},{12,7},{14,6}});
         return;
     }
-    if(Map==JourneyMap::Yangren)
+    if(Map==JourneyMap::Yangren || Map==JourneyMap::YangrenCounter)
     {
         Add({{3,10},{6,10},{8,10},{10,10},{11,9},{11,8},{12,7},{14,6}});
         return;

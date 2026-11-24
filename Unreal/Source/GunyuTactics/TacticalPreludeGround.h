@@ -10,7 +10,7 @@ namespace gunyupreludeground
         TFunctionRef<FVector(int)> Location,TFunctionRef<float(FVector)> Height)
     {
         using namespace frontline;
-        if(J.Battlefield()!=JourneyMap::Retreat) return;
+        if(J.Battlefield()!=JourneyMap::Retreat && J.Battlefield()!=JourneyMap::YangrenCounter) return;
         for(int Y=1;Y<StrategistJourney::Rows-1;++Y) for(int X=1;X<StrategistJourney::Columns-1;++X)
         {
             const int Tile=Campaign::At(X,Y);
