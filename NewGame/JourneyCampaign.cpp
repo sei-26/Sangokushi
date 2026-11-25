@@ -198,6 +198,26 @@ namespace frontline
         }
         if(j.mission==YellowTurbanMission)
         {
+            if(j.HasGrandStrategy())
+            {
+                if(j.stage==JourneyStage::Debrief && !j.won)
+                    return {U"第一章 ／ 広宗の会戦",U"広宗の決着をつける前に、義勇軍は戦線を支え切れなかった。",
+                        U"軍議から立て直すか、敗戦の結果を引き受けて歴史の先へ進む。",U"皇甫嵩本隊と共闘する軍師"};
+                if(finished || j.stage==JourneyStage::Complete)
+                {
+                    const auto& g=j.history[YellowTurbanMission].review.grand;
+                    const bool saved=g.relievedOn>0 && g.leftReturned>0 && g.reliefOfficer>=0;
+                    return {U"第一章 完 ／ 黄巾の乱",saved ?
+                        U"広宗の本陣を破り、包囲されていた左翼も生還させた。義勇軍の采配が官軍の勝利を支えた。":
+                        U"広宗の本陣を破り、官軍の攻勢を勝利へつないだ。黄巾の乱は大きな転機を迎える。",
+                        saved ? U"次は反董卓連合。救った左翼の案内で、救援を担った武将の先行配置と士気＋10を得る。":
+                            U"次は反董卓連合。洛陽の政変で再び諸侯が集い、曹操と汴水の会戦へ向かう。",
+                        U"官軍の決戦を動かした軍師"};
+                }
+                return {U"第一章 ／ 広宗の会戦",U"皇甫嵩本隊と呼吸を合わせ、張角軍の本陣を攻める。",
+                    U"北道から左翼を救うか、中央橋の前陣を急いで本隊を通すか。主力の行き先で戦線が変わる。",
+                    U"皇甫嵩本隊と共闘する軍師"};
+            }
             if(j.stage==JourneyStage::Complete)
                 return {U"第一章 完 ／ 黄巾の乱",U"広宗と下曲陽で張角の一族が率いた蜂起は大きく崩れた。",U"第二章「反董卓連合」へ。洛陽の政変が諸侯を動かす。",U"義勇軍の軍師"};
             if(j.stage==JourneyStage::Debrief && !j.won)

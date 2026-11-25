@@ -10,6 +10,10 @@ bool ATacticalField::BattleChoicesSmokeTest()
     bRealtimeCommand=false;bStartWithCouncil=false;bLegacyJourney=false;FirstMission=0;EnemyPolicy=0;PlaybackSpeed=1;EffectsVolume=0;State->bNoPlayback=false;
     Issue(ETacticalCommand::Restart);
     if(!Check(State->HUD.BattleChoices.Num()==2 && State->BattleChoices[0].orders.size()==1 && State->BattleChoices[1].orders.size()>1,TEXT("simple battle offers real solo and team tradeoffs"))) return false;
+    for(int I=0;I<State->HUD.BattleChoices.Num();++I)
+        for(const auto& Order:State->BattleChoices[I].orders)
+            if(!Check(State->HUD.BattleChoices[I].Title.Contains(JourneyText(frontline::TacticChain::Name(Order.tactic))),
+                TEXT("each visible proposal names the tactics it will actually execute"))) return false;
     std::vector<std::uint8_t> Before,After;
     if(!Check(ExportSession(Before),TEXT("initial decision state exports"))) return false;
     const int Version=State->BattleChoiceVersion;const auto Plan=State->BattleChoices[0];

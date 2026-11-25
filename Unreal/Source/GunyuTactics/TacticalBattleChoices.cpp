@@ -37,9 +37,7 @@ void ATacticalField::BuildBattleChoices()
     {
         FTacticalPresentation::FBattleChoice Choice;Choice.Actor=Plan.orders.front().army;
         const FString Name=JourneyText(J.world.generals[J.world.armies[Choice.Actor].general].name);
-        Choice.Title=H.BattleChoices.IsEmpty() ? Name+TEXT("に一手を託す"):TEXT("仲間と畳みかける");
-        const bool Bait=std::any_of(Plan.orders.begin(),Plan.orders.end(),[](const ChainOrder& O) { return O.tactic==ChainTactic::Lure; });
-        if(Bait) Choice.Title=TEXT("誘って、一斉に打つ");
+        FString Tactics;
         Choice.Outcome=Plan.damage>=Seen->observed.troops ? TEXT("この敵を撃破できる見込み"):FString::Printf(TEXT("敵兵%dを減らす見込み"),Plan.damage);
         if(Plan.disordered && !J.chain.disordered[Plan.target]) Choice.Outcome+=TEXT("・混乱");
         else if(Plan.pressured && !J.chain.pressured[Plan.target]) Choice.Outcome+=TEXT("・隙を作る");
@@ -47,6 +45,8 @@ void ATacticalField::BuildBattleChoices()
         if(Plan.friendlyLoss>0) Choice.Outcome+=FString::Printf(TEXT(" / 味方損耗%d"),Plan.friendlyLoss);
         for(const auto& Order:Plan.orders)
         {
+            if(!Tactics.IsEmpty()) Tactics+=TEXT(" → ");
+            Tactics+=JourneyText(TacticChain::Name(Order.tactic));
             if(!Choice.Detail.IsEmpty()) Choice.Detail+=TEXT(" → ");
             const auto Officer=JourneyText(J.world.generals[J.world.armies[Order.army].general].name);
             if(!Choice.Cost.IsEmpty()) Choice.Cost+=TEXT("・");Choice.Cost+=Officer;
@@ -55,6 +55,8 @@ void ATacticalField::BuildBattleChoices()
             { Choice.Cost+=TEXT("（固有）");Choice.Detail+=TEXT("（一戦一度）"); }
             if(Order.tactic==ChainTactic::Lure) Choice.Detail+=FString::Printf(TEXT("（%d,%dへ後退）"),Order.destination%Width,Order.destination/Width);
         }
+        Choice.Title=Plan.orders.size()==1 ? Name+TEXT("「")+Tactics+TEXT("」"):
+            FString::Printf(TEXT("連鎖%d手："),int(Plan.orders.size()))+Tactics;
         Choice.Cost+=FString::Printf(TEXT(" / 士気計%d"),Plan.moraleCost);
         Choice.Detail+=TEXT("\n参加する隊の行動と士気を使って、今すぐ発動。参加しない隊の行動は使わない。捕捉からの見込みで、未知の状況では停止することもある。");
         H.BattleChoices.Add(MoveTemp(Choice));

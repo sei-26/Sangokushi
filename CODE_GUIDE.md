@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+現行の4枚企画書は `Docs/企画書`。編集可能なPPTXの生成元は `tools/presentations/build_core_pitch.mjs`。プロジェクトの既存美術と実際のUnreal画面を使い、実装済みと将来構想を分ける。通常指揮の「移動後の戦法」は `TacticalCommandsInterface.cpp` → `TacticalPositionInterface.cpp`、広宗の戦後概要は `NewGame/JourneyCampaign.cpp`。ゲーム全体の改善項目は `IMPROVEMENT_ROADMAP.md` で管理する。
+
 指揮欄の役目の集約は `TacticalCommandsInterface.cpp`、戦法操作と顔は `TacticalManualTactics.cpp`、単独／連鎖カードは `TacticalBattleChoicesInterface.cpp`。`TacticalSettledTarget.h` は捕捉中の対処済みの相手を読み、`TacticalBattleChoices.cpp` が自動追撃提案と古いカードだけを止める。`TacticalMissionTarget.h` は役目の敵の明示的な選択と、古い押下や行軍先指定への割り込みを防ぐ。[役目と戦法の指揮欄](COMMAND_PANEL_READABILITY.md)。
 
 広宗の現行見本は `NewGame/JourneyPlanExample.cpp`、軍議の五地点は `TacticalPreparationMapRead.cpp`。`TacticalGrandStrategy.cpp` は公開した `PlanGrandAllies()` から実際の一歩を読み、救援・前陣維持・本隊合流・本陣攻略を案内する。道・旗・検証の入口は [広宗の地形と役目](GUANGZONG_BATTLE_READABILITY.md)。

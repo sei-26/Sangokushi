@@ -4,6 +4,7 @@
 #include "JourneyEpisode.hpp"
 #include "JourneyBattlefield.hpp"
 #include "JourneyPlanExample.hpp"
+#include "JourneyCampaign.hpp"
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -144,6 +145,10 @@ int main()
             RoundTrip(*session);
             const auto episode=BuildJourneyEpisode(battle);
             assert(episode.lines.size()>=4);
+            const auto beat=CampaignBeat(battle);
+            assert(beat.change.find(U"本陣")!=std::u32string::npos);
+            assert((beat.next.find(U"士気＋10")!=std::u32string::npos)==
+                (g.relievedOn>0 && g.leftReturned>0 && g.reliefOfficer>=0));
             if(g.relievedOn && g.leftReturned>0)
             {
                 const int officer=g.reliefOfficer;

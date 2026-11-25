@@ -13,6 +13,8 @@ namespace
 }
 void ATacticalController::OpenTacticPositionComparison()
 {
+    if(!Field->CanCompareTacticPositions()) return;
+    Field->StopAutoBattle();
     if(!Field->BeginTacticPositionComparison()) return;
     bEnemyDetailsOpen=bMarchPlanOpen=bBattleLogOpen=bTacticPickerOpen=false;
     const auto& Units=Field->VisualUnits();const int Id=Field->Presentation().Selected;
@@ -105,6 +107,12 @@ bool ATacticalController::TacticPositionInterfaceSmokeTest()
     Passed=Passed && Tile>=0 && Field->Presentation().Position.SelectedTile==Tile && Field->Presentation().Position.bCanCommit && Field->VisualUnits()[2].Position.Equals(Before);
     Field->Issue(ETacticalCommand::Cancel);
     Passed=Passed && !Field->Presentation().Position.bVisible && Field->VisualUnits()[2].Position.Equals(Before);
+    Field->Issue(ETacticalCommand::AutoBattle);
+    Passed=Passed && Field->IsAutoBattle();
+    OpenTacticPositionComparison();
+    Passed=Passed && !Field->IsAutoBattle() && Field->Presentation().Position.bVisible &&
+        Field->VisualUnits()[2].Position.Equals(Before);
+    Field->Issue(ETacticalCommand::Cancel);
     Focus=SavedFocus;
     if(Passed) { UE_LOG(LogTemp,Display,TEXT("GUNYU_TACTIC_POSITION_UI: PASS (exclusive comparison, explicit hypothetical selection, normal cancel and unchanged visible army)")); }
     else { UE_LOG(LogTemp,Error,TEXT("GUNYU_TACTIC_POSITION_UI: FAIL")); }

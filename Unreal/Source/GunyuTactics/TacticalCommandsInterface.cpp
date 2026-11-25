@@ -107,7 +107,12 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
          + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("今の役目"); },11,Gold)]
          + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().MissionAdvice; },14)]]];
     Content->AddSlot().AutoHeight().Padding(0,0,0,6)[ManualTacticsWidget()];
-    Content->AddSlot().AutoHeight().Padding(0,0,0,8)[Button([this] { return bDetailedBattle ? TEXT("かんたんな采配へ戻る"):TEXT("連鎖の順番・詳しい采配"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })];
+    Content->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SHorizontalBox)
+      + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,4,0)
+        [SNew(SBox).ToolTipText(FText::FromString(TEXT("隣接1歩の移動後に、選んだ戦法が届くか比べる。仮選択だけでは動かない。自動指揮中は采配を引き取る。")))
+         [Button([] { return TEXT("移動後の戦法"); },[this] { OpenTacticPositionComparison(); },[this] { return Field->CanCompareTacticPositions(); })]]
+      + SHorizontalBox::Slot().FillWidth(1)
+        [Button([this] { return bDetailedBattle ? TEXT("通常の采配"):TEXT("詳しい采配"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })]];
     Content->AddSlot().FillHeight(1)
         [SNew(SScrollBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Collapsed:EVisibility::Visible; })
          + SScrollBox::Slot()[Simple]];
