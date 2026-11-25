@@ -117,7 +117,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
          + SHorizontalBox::Slot().AutoWidth().Padding(26, 0, 0, 0)
            [SNew(SBox).WidthOverride(292)[SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
             + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bPreparation || !Field->Presentation().Journey.BattleResponse.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })[SNew(STacticalChrome).Padding(3).Accent(FLinearColor(.62f,.45f,.20f))[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? 200.f:310.f; })[PortraitWidget([this] { return Field->Presentation().Journey.Portrait; }, 292, 310)]]]]
-            + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? 120.f:230.f; })
+            + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? 110.f:170.f; })
               .Visibility_Lambda([this] { return Field->Presentation().Journey.BattleResponse.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
               [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).Clipping(EWidgetClipping::ClipToBounds)
                [SNew(SImage).Image_Lambda([this]() -> const FSlateBrush*

@@ -1,6 +1,8 @@
 #include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "JourneySave.hpp"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 using namespace frontline;
 
 bool ATacticalField::MissionMarchSmokeTest()
@@ -9,6 +11,11 @@ bool ATacticalField::MissionMarchSmokeTest()
     { if(!Value) UE_LOG(LogTemp,Error,TEXT("GUNYU_MISSION_MARCH: FAIL %s"),Why);return Value; };
     const bool Mode=bRealtimeCommand,Grand=bGrandHistoricalBattles,Council=bStartWithCouncil,Legacy=bLegacyJourney;
     const bool Playback=State->bNoPlayback,Alerts=bPauseOnBattleAlert;const int Mission=FirstMission;
+    auto Restore=[&]
+    {
+        bRealtimeCommand=Mode;bGrandHistoricalBattles=Grand;bStartWithCouncil=Council;bLegacyJourney=Legacy;
+        State->bNoPlayback=Playback;bPauseOnBattleAlert=Alerts;FirstMission=Mission;Issue(ETacticalCommand::Restart);
+    };
     std::vector<std::uint8_t> Before,After,ExpectedBytes;
     if(!Check(PrepareGrandBattlePreview(YellowTurbanMission,0,1),TEXT("actual relief deployment"))) return false;
     SelectOfficer(0);State->Realtime.paused=false;Refresh();
@@ -21,8 +28,10 @@ bool ATacticalField::MissionMarchSmokeTest()
     if(!DecodeJourneySave(Before,*Expected)) return false;
     Expected->realtime.Queue(Expected->journey,Proposal.Army,JourneyDirective::March,Proposal.Destination);
     Expected->realtime.paused=true;
+    State->bConfirmEndTurn=State->bConfirmWithdrawal=true;
     if(!Check(EncodeJourneySave(*Expected,ExpectedBytes) && IssueMissionMarch(Proposal) && ExportSession(After) && After==ExpectedBytes,
         TEXT("issuing is exactly one normal march plus pause; all actions, officers, resources, intel and elapsed time stay unchanged"))) return false;
+    if(!Check(!State->bConfirmEndTurn && !State->bConfirmWithdrawal,TEXT("a fresh march clears obsolete end-turn and withdrawal confirmations"))) return false;
     const auto Ordered=After;
     if(!Check(!IssueMissionMarch(Proposal) && ExportSession(After) && Ordered==After,TEXT("a repeated click cannot replace a standing march"))) return false;
     if(!Check(ImportSession(Ordered) && State->Realtime.orders[Proposal.Army].destination==Proposal.Destination,
@@ -31,6 +40,12 @@ bool ATacticalField::MissionMarchSmokeTest()
     Issue(ETacticalCommand::RealtimeStep);AdvancePresentation(60);
     if(!Check(State->Journey.turn==Turn+1 && State->Journey.world.armies[Proposal.Army].tile!=Start,
         TEXT("movement requires a real simultaneous cycle with the other armies"))) return false;
+    if(FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionConfirmOnly")))
+    {
+        Restore();
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_CONFIRM: PASS (actual order and pause, unchanged session budgets, cleared stale confirmations, duplicate refusal, save/reload and real cycle)"));
+        return true;
+    }
 
     if(!PrepareGrandBattlePreview(YellowTurbanMission,0,1)) return false;
     SelectOfficer(0);const auto Stale=Presentation().MissionMarch;
@@ -117,8 +132,7 @@ bool ATacticalField::MissionMarchSmokeTest()
         Issue(ETacticalCommand::RealtimePause);
         if(!Check(IsAutoBattle() && !RealtimePaused() && !Presentation().bDecisionPaused,TEXT("resume keeps delegation; intervention remains optional"))) return false;
     }
-    bRealtimeCommand=Mode;bGrandHistoricalBattles=Grand;bStartWithCouncil=Council;bLegacyJourney=Legacy;
-    State->bNoPlayback=Playback;bPauseOnBattleAlert=Alerts;FirstMission=Mission;Issue(ETacticalCommand::Restart);
+    Restore();
     UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_MARCH: PASS (actual public march, no free actions, save/reload, real cycle, stale input, reservations, ambush and flag protection, fog, three battle outcomes, failure response and modern decision pauses)"));
     return true;
 }

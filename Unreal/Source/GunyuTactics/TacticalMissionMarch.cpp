@@ -57,6 +57,7 @@ bool ATacticalField::IssueMissionMarch(const FTacticalPresentation::FMissionMarc
     if(!Now.bCanIssue || Now.Army!=Pressed.Army || Now.Focus!=Pressed.Focus || Now.Destination!=Pressed.Destination || Now.Route!=Pressed.Route)
     { State->Report=TEXT("役目や進路が変わった。今の目標を確認して、もう一度指示しよう。");Refresh();return false; }
     if(!State->Realtime.Queue(State->Journey,Now.Army,JourneyDirective::March,Now.Destination)) return false;
+    State->bConfirmEndTurn=State->bConfirmWithdrawal=false;
     State->Realtime.paused=true;
     State->Report=TEXT("選んだ隊へ目標付近までの行軍を指示した。Spaceで再開。到着したら、戦法か守備を自分で選ぼう。");
     Refresh();return true;
