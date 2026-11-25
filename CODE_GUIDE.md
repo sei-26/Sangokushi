@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+指揮欄の役目の集約は `TacticalCommandsInterface.cpp`、戦法操作と顔は `TacticalManualTactics.cpp`、単独／連鎖カードは `TacticalBattleChoicesInterface.cpp`。`TacticalSettledTarget.h` は捕捉中の対処済みの相手を読み、`TacticalBattleChoices.cpp` が自動追撃提案と古いカードだけを止める。`TacticalMissionTarget.h` は役目の敵の明示的な選択と、古い押下や行軍先指定への割り込みを防ぐ。[役目と戦法の指揮欄](COMMAND_PANEL_READABILITY.md)。
+
 広宗の現行見本は `NewGame/JourneyPlanExample.cpp`、軍議の五地点は `TacticalPreparationMapRead.cpp`。`TacticalGrandStrategy.cpp` は公開した `PlanGrandAllies()` から実際の一歩を読み、救援・前陣維持・本隊合流・本陣攻略を案内する。道・旗・検証の入口は [広宗の地形と役目](GUANGZONG_BATTLE_READABILITY.md)。
 
 陽人の方針別の案内・孫堅の移動予定は `TacticalYangrenStrategy.cpp`。現行 `YangrenCounter` の街道は `TacticalMapRoads.cpp`、辻と合流点の旗は `TacticalFortifications.cpp`、軍議の地点は `TacticalPreparationMapRead.cpp`、現行の勝利条件を伝える配置見本は `NewGame/JourneyPlanExample.cpp`。`TacticalGrandBattleQA.cpp` で両方針の実反撃・勝利と表示の境界を確認する。[陽人の地形・合流・反撃](YANGREN_BATTLE_READABILITY.md)。

@@ -19,17 +19,17 @@ TSharedRef<SWidget> ATacticalController::BuildBattleChoicesInterface()
           .OnPressed_Lambda([this,PressedVersion] { *PressedVersion=Field->Presentation().BattleChoiceVersion; })
           .OnClicked_Lambda([this,Index,PressedVersion] { Field->UseBattleChoice(Index,*PressedVersion);return FReply::Handled(); })
           [SNew(SHorizontalBox)
-            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[PortraitWidget([Read] { return Read().Actor; },34,44)]
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[PortraitWidget([Read] { return Read().Actor; },28,36)]
             + SHorizontalBox::Slot().FillWidth(1).Padding(9,0)[SNew(SVerticalBox)
-              + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Title; },16,Gold)]
+              + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Title; },14,Gold)]
               + SVerticalBox::Slot().AutoHeight().Padding(0,3)[Label([Read] { return Read().Outcome; },12)]
               + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Cost; },11)]]];
-        Choices->AddSlot().AutoHeight().Padding(0,0,0,7)[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().SupportChoices.IsEmpty() ? FOptionalSize(112):FOptionalSize(102); })
+        Choices->AddSlot().AutoHeight().Padding(0,0,0,7)[SNew(SBox)
           .Visibility_Lambda([this,Index] { return Field->Presentation().BattleChoices.IsValidIndex(Index) ? EVisibility::Visible:EVisibility::Collapsed; })[Card]];
     }
     Choices->AddSlot().AutoHeight()[SNew(SBox)
       .Visibility_Lambda([this] { const auto& H=Field->Presentation();return H.BattleChoices.IsEmpty() && H.SupportChoices.IsEmpty() ? EVisibility::Visible:EVisibility::Collapsed; })
       [Label([this] { return Field->Presentation().BattleChoiceReason; },15)]];
-    return SNew(SBox).HeightOverride_Lambda([this] { const auto& H=Field->Presentation();const int Count=H.BattleChoices.Num();return FOptionalSize(Count>0 ? 26+Count*(H.SupportChoices.IsEmpty() ? 119:109):H.SupportChoices.IsEmpty() ? 90:0); })
+    return SNew(SBox)
       .Visibility_Lambda([this] { const auto& H=Field->Presentation();return H.BattleChoices.IsEmpty() && !H.SupportChoices.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })[Choices];
 }

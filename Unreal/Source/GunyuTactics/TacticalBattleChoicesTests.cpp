@@ -1,8 +1,10 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticalSettledTarget.h"
 bool ATacticalField::BattleChoicesSmokeTest()
 {
     const bool Mode=bRealtimeCommand,Council=bStartWithCouncil,Legacy=bLegacyJourney,Playback=State->bNoPlayback;
+    const bool Grand=bGrandHistoricalBattles,Alerts=bPauseOnBattleAlert;
     const int Mission=FirstMission,Policy=EnemyPolicy;const float Speed=PlaybackSpeed,Volume=EffectsVolume;
     auto Check=[](bool V,const TCHAR* Why) { if(!V) UE_LOG(LogTemp,Error,TEXT("GUNYU_BATTLE_CHOICES: FAIL %s"),Why);return V; };
     bRealtimeCommand=false;bStartWithCouncil=false;bLegacyJourney=false;FirstMission=0;EnemyPolicy=0;PlaybackSpeed=1;EffectsVolume=0;State->bNoPlayback=false;
@@ -32,7 +34,46 @@ bool ATacticalField::BattleChoicesSmokeTest()
     Issue(ETacticalCommand::Restart);Issue(ETacticalCommand::AutoBattle);
     if(!Check(State->HUD.BattleChoices.IsEmpty() && !UseBattleChoice(0,State->BattleChoiceVersion),TEXT("delegation owns its commands until explicit manual takeover"))) return false;
     StopAutoBattle();
+    if(!Check(PrepareGrandBattlePreview(frontline::YellowTurbanMission,3,1),TEXT("the actual Guangzong relief supplies a settled northern objective"))) return false;
+    std::vector<std::uint8_t> Relief;
+    if(!ExportSession(Relief)) return false;
+    auto& J=State->Journey;
+    const int Relieved=J.battleReview.grand.relievedOn;
+    State->Selected=1;State->Target=8;State->SelectedTactics[1]=frontline::ChainTactic::Feint;
+    J.chain.spent[1]=J.chain.disordered[1]=false;J.world.armies[1].morale=90;
+    int Adjacent=-1;
+    for(int Tile:J.world.MapNeighbors(J.world.armies[1].tile))
+        if(frontline::StrategistJourney::OnMap(Tile) && J.world.tiles[Tile].terrain!=frontline::Terrain::River &&
+            J.world.tiles[Tile].terrain!=frontline::Terrain::Mountain && frontline::TacticChain::Free(J.world,Tile)) { Adjacent=Tile;break; }
+    if(!Check(Adjacent>=0,TEXT("a legal adjacent tile supplies the explicit manual-pursuit fixture"))) return false;
+    J.world.armies[8].tile=Adjacent;J.world.armies[8].troops=1000;J.world.armies[8].morale=25;
+    J.battleReview.grand.relievedOn=0;J.RefreshIntelligence();Refresh();
+    if(!Check(!State->HUD.BattleChoices.IsEmpty(),TEXT("before relief, the same public enemy has a real usable tactic card"))) return false;
+    const int EarlierCard=State->BattleChoiceVersion;
+    J.battleReview.grand.relievedOn=Relieved;Refresh();
+    if(!Check(State->HUD.BattleChoices.IsEmpty() && State->HUD.BattleChoiceTarget.IsEmpty() &&
+        State->HUD.BattleChoicePrompt.Contains(TEXT("完了")),TEXT("settled relief replaces automatic pursuit with its public completed status"))) return false;
+    if(!ExportSession(Before)) return false;
+    Refresh();
+    if(!Check(!UseBattleChoice(0,EarlierCard) && ExportSession(After) && Before==After,
+        TEXT("a pre-relief pressed card cannot fire after completion, and reading consumes no action or resources"))) return false;
+    if(!Check(CanIssue(ETacticalCommand::QueueTactic),TEXT("a completed objective never disables the player's legal manual pursuit"))) return false;
+    Issue(ETacticalCommand::QueueTactic);
+    if(!Check(CanFireManualTactics() && FireManualTactics() && J.chain.spent[1] && J.lastChain.completed==1,
+        TEXT("explicit manual pursuit still fires through the real tactic pipeline and pays its action"))) return false;
+    Issue(ETacticalCommand::Skip);
+    if(!ImportSession(Relief)) return false;
+    auto Public=std::make_unique<frontline::StrategistJourney>(State->Journey);
+    for(auto& C:Public->intelligence[0].contacts) if(C.id==8) C.current=false;
+    if(!Check(gunyucommand::SettledTargetReason(*Public,8).IsEmpty(),TEXT("a stale contact never supplies completed-target intelligence"))) return false;
+    Public->mission=frontline::YangrenMission;Public->battleReview.grand.yangren.active=true;
+    Public->battleReview.grand.yangren.repelledOn=Public->turn;
+    for(auto& C:Public->intelligence[0].contacts) if(C.id==8) { C.current=true;C.observed.troops=1000;C.observed.morale=25; }
+    if(!Check(!gunyucommand::SettledTargetReason(*Public,8).IsEmpty(),TEXT("the Yangren presentation fixture recognises a currently observed repelled cavalry objective"))) return false;
+    for(auto& C:Public->intelligence[0].contacts) if(C.id==8) C.observed.morale=26;
+    if(!Check(gunyucommand::SettledTargetReason(*Public,8).IsEmpty(),TEXT("recovered cavalry remains eligible for normal tactical suggestions"))) return false;
+    bGrandHistoricalBattles=Grand;bPauseOnBattleAlert=Alerts;
     bRealtimeCommand=Mode;bStartWithCouncil=Council;bLegacyJourney=Legacy;FirstMission=Mission;EnemyPolicy=Policy;PlaybackSpeed=Speed;EffectsVolume=Volume;State->bNoPlayback=Playback;
     Issue(ETacticalCommand::Restart);
-    UE_LOG(LogTemp,Display,TEXT("GUNYU_BATTLE_CHOICES: PASS (solo/team tradeoffs, exact real costs, cached immutable reads, stale/double-click and reservation guards, paused immediate execution, delegation)"));return true;
+    UE_LOG(LogTemp,Display,TEXT("GUNYU_BATTLE_CHOICES: PASS (solo/team tradeoffs, exact real costs, stale/double-click and reservation guards, real relief, settled public targets, preserved manual pursuit, paused execution, delegation)"));return true;
 }

@@ -21,7 +21,7 @@ TSharedRef<SWidget> ATacticalController::BuildGrandOrderInterface()
             .OnClicked_Lambda([this,Index] { Field->UseGrandApproach(Index);return FReply::Handled(); })
             [SNew(SVerticalBox)
               + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Title; },16,Gold)]
-              + SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[Label([Read] { return Read().Reason; },12)]]];
+              + SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[Label([Read] { return Read().Reason; },11)]]];
     }
     return SNew(SBox).Visibility_Lambda([this]
         { return !Field->Presentation().GrandOrderStatus.IsEmpty() && !Field->IsPlaying() ? EVisibility::Visible:EVisibility::Collapsed; })
@@ -30,18 +30,15 @@ TSharedRef<SWidget> ATacticalController::BuildGrandOrderInterface()
             { return Field->Presentation().bYangrenCounter ? EVisibility::Visible:EVisibility::Collapsed; })
           [SNew(STacticalChrome).Padding(8).Accent(FLinearColor(.9f,.24f,.10f))
             [SNew(SHorizontalBox)
-              + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(42).HeightOverride(54)
+              + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(28).HeightOverride(36)
                 [SNew(SScaleBox).Stretch(EStretch::ScaleToFit)
                   [SNew(SImage).Image_Lambda([this] { return HistoricalPortraitBrush(frontline::LuBu); })]]]
               + SHorizontalBox::Slot().FillWidth(1).Padding(8,0)[SNew(SVerticalBox)
-                + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("呂布の反撃！"); },18,Gold)]
-                + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("騎兵を崩せ。孫堅を一人にするな。"); },13)]]]]]
+                + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("呂布の反撃！"); },16,Gold)]]]]]
         + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this]
             { return Field->Presentation().bGrandOrdersPending ? EVisibility::Visible:EVisibility::Collapsed; })[Choices]]
         + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,4)[Label([this]
             { const auto& H=Field->Presentation();return H.GrandRouteLegend.IsEmpty() ?
                 FString(H.GrandAdvanceRoute.Num()>1 ? TEXT("青い矢印：本隊の進軍予定"):TEXT("本隊は待機・交戦中")):H.GrandRouteLegend; },12,Gold)]
-        + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,4)[SNew(SBox).Visibility_Lambda([this]
-            { return Field->Presentation().bGrandBattle ? EVisibility::Visible:EVisibility::Collapsed; })
-            [Label([this] { return Field->Presentation().GrandOrderStatus; },12,Gold)]]];
+        ];
 }

@@ -1,5 +1,8 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalWidgets.h"
+#include "TacticalMissionTarget.h"
+#include "JourneySave.hpp"
+#include <memory>
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBox.h"
@@ -48,8 +51,60 @@ bool ATacticalController::TacticTargetInterfaceSmokeTest()
     Field->PrepareTacticTargetPreview(1);Passed=Passed && UnitMapStatus(3).Contains(TEXT("2手目可"));
     Field->Issue(ETacticalCommand::Move);
     Passed=Passed && !UnitMapStatus(3).Contains(TEXT("手目可")) && Field->Presentation().TacticTargetSummary.IsEmpty() && !FocusNextTacticTarget();
-    Field->Issue(ETacticalCommand::Cancel);Focus=SavedFocus;
-    if(Passed) { UE_LOG(LogTemp,Display,TEXT("GUNYU_TACTIC_TARGET_UI: PASS (observed badges, current contact focus, no automatic orders and destination-input isolation)")); }
+    Field->Issue(ETacticalCommand::Cancel);
+    std::vector<std::uint8_t> Original,Before,After,Normalised;
+    const bool Council=Field->bStartWithCouncil,Legacy=Field->bLegacyJourney,Grand=Field->bGrandHistoricalBattles;
+    const int Mission=Field->FirstMission;
+    Passed=Passed && Field->ExportSession(Original) && Field->PrepareGrandBattlePreview(frontline::YangrenMission,3,2);
+    if(Passed)
+    {
+        bool Reserved=false;
+        for(int Actor=0;Actor<3 && !Reserved;++Actor)
+        {
+            Field->SelectOfficer(Actor);Field->SelectTactic(int(frontline::ChainTactic::Feint));
+            const auto* Available=Field->Presentation().TacticTargets.FindByPredicate([](const FTacticTargetPresentation& T) { return T.bReady; });
+            if(Available)
+            { Field->SelectAt(Available->Tile);Field->Issue(ETacticalCommand::QueueTactic);Reserved=!Field->Presentation().Orders.IsEmpty(); }
+        }
+        Passed=Reserved;
+        const auto& H=Field->Presentation();
+        const auto* Other=H.TacticTargets.FindByPredicate([&](const FTacticTargetPresentation& T) { return T.Tile!=H.MissionFocusTile; });
+        Passed=Passed && Other!=nullptr;
+        if(Passed) Field->SelectAt(Other->Tile);
+        const auto* MissionRead=gunyucommand::MissionEnemy(Field->Presentation());
+        Passed=Passed && MissionRead;
+        if(Passed)
+        {
+            const int Army=MissionRead->Army,Tile=MissionRead->Tile;
+            if(Field->RealtimePaused()) Field->Issue(ETacticalCommand::RealtimePause);
+            Passed=Field->ExportSession(Before) && gunyucommand::SelectMissionEnemy(*Field,Army,Tile) && Field->ExportSession(After);
+            auto A=std::make_unique<frontline::JourneySaveData>(),B=std::make_unique<frontline::JourneySaveData>();
+            Passed=Passed && frontline::DecodeJourneySave(Before,*A) && frontline::DecodeJourneySave(After,*B);
+            if(Passed)
+            {
+                A->target=B->target;
+                A->realtime.paused=B->realtime.paused;
+                Passed=B->target==Army && B->realtime.paused && frontline::EncodeJourneySave(*A,Normalised) && Normalised==After;
+            }
+            FocusMissionObjective();Passed=Passed && Focus.Equals(Field->SurfaceLocation(Tile));
+            auto Hidden=Field->Presentation();
+            for(auto& T:Hidden.TacticTargets) if(T.Army==Army) T.bSelected=false;
+            Passed=Passed && gunyucommand::MissionEnemy(Hidden);
+            Hidden.TacticTargets.RemoveAll([Army](const FTacticTargetPresentation& T) { return T.Army==Army; });
+            Passed=Passed && !gunyucommand::MissionEnemy(Hidden);
+            const auto& Now=Field->Presentation();
+            const auto* Alternative=Now.TacticTargets.FindByPredicate([Army](const FTacticTargetPresentation& T) { return T.Army!=Army; });
+            if(Alternative) Field->SelectAt(Alternative->Tile);else Passed=false;
+            Passed=Passed && Field->ExportSession(Before) && !gunyucommand::SelectMissionEnemy(*Field,Army,Tile+1) && Field->ExportSession(After) && Before==After;
+            Field->Issue(ETacticalCommand::Move);
+            Passed=Passed && !Field->Presentation().bTacticTargetOverlay && Field->ExportSession(Before) &&
+                !gunyucommand::SelectMissionEnemy(*Field,Army,Tile) && Field->ExportSession(After) && Before==After;
+        }
+    }
+    Field->bStartWithCouncil=Council;Field->bLegacyJourney=Legacy;Field->bGrandHistoricalBattles=Grand;Field->FirstMission=Mission;
+    if(!Original.empty()) Passed=Field->ImportSession(Original) && Passed;
+    Focus=SavedFocus;
+    if(Passed) { UE_LOG(LogTemp,Display,TEXT("GUNYU_TACTIC_TARGET_UI: PASS (public badges, actual cavalry focus, explicit target selection, unchanged reservations and budgets, stale release and destination-input isolation)")); }
     else { UE_LOG(LogTemp,Error,TEXT("GUNYU_TACTIC_TARGET_UI: FAIL (badges, focus or input isolation)")); }
     return Passed;
 }

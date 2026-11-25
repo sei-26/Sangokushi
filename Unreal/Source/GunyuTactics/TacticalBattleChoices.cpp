@@ -1,5 +1,6 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "TacticalSettledTarget.h"
 using namespace frontline;
 void ATacticalField::BuildBattleChoices()
 {
@@ -23,7 +24,10 @@ void ATacticalField::BuildBattleChoices()
     if(J.depotInterception && State->Target==4)
     { H.BattleChoicePrompt=TEXT("荷駄隊を捕らえる");H.BattleChoiceReason=TEXT("攻める相手は護衛。車は東から止めよう。");return; }
     if(!Seen || !Seen->current || Seen->observed.troops<=0)
-    { H.BattleChoiceReason=H.MissionAdvice+TEXT("\n「目標へ」で場所を確認。");return; }
+    { H.BattleChoiceReason=TEXT("敵の札を選ぶと、単独と連鎖の策を比べられる。");return; }
+    const FString Settled=gunyucommand::SettledTargetReason(J,State->Target);
+    if(!Settled.IsEmpty())
+    { H.BattleChoicePrompt=TEXT("この敵への対処は完了");H.BattleChoiceReason=Settled;return; }
     H.BattleChoiceTarget=JourneyText(J.world.generals[Seen->observed.general].name);
     const auto Key=BattleChoiceContext(J,State->Target);
     if(Key!=State->BattleChoiceKey)
@@ -70,6 +74,8 @@ void ATacticalField::BuildBattleChoices()
 }
 bool ATacticalField::UseBattleChoice(int Index,int ExpectedVersion)
 {
+    if(!State->bSupportBattleChoices && !gunyucommand::SettledTargetReason(State->Journey,State->Target).IsEmpty())
+    { Refresh();return false; }
     if(IsPlaying() || State->Journey.stage!=JourneyStage::Battle || State->bAutoBattle || State->bRealtimeStepping || State->bRealtimeChainRequested || !State->Orders.empty() || State->ChainSignal.Armed()) return false;
     auto Key=State->bSupportBattleChoices ? JourneySupportActionContext(State->Journey,State->Realtime,State->Selected):BattleChoiceContext(State->Journey,State->Target);
     if(State->bSupportBattleChoices) Key.push_back(bRealtimeCommand);
