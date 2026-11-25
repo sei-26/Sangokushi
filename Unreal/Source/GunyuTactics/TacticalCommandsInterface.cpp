@@ -57,6 +57,15 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
        + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("主力へ糧1,800を分配・士気＋20。行動権は戻らない"); },11,Gold)]];
     auto Simple=SNew(SVerticalBox);
     Simple->AddSlot().AutoHeight().Padding(0,0,0,6)[BuildGrandOrderInterface()];
+    auto PressedMarch=MakeShared<FTacticalPresentation::FMissionMarch>();
+    Simple->AddSlot().AutoHeight().Padding(0,0,0,7)
+      [SNew(SButton).ButtonStyle(&CommandStyle()).IsFocusable(false).ContentPadding(FMargin(7,6))
+       .Visibility_Lambda([this] { return Field->Presentation().MissionMarch.bVisible ? EVisibility::Visible:EVisibility::Collapsed; })
+       .IsEnabled_Lambda([this] { return Field->Presentation().MissionMarch.bCanIssue; })
+       .ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().MissionMarch.Detail); })
+       .OnPressed_Lambda([this,PressedMarch] { *PressedMarch=Field->Presentation().MissionMarch; })
+       .OnClicked_Lambda([this,PressedMarch] { Field->IssueMissionMarch(*PressedMarch);return FReply::Handled(); })
+       [Label([this] { return Field->Presentation().MissionMarch.Label; },13,Gold)]];
     Simple->AddSlot().AutoHeight().Padding(0,0,0,8)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().bDecisionPaused ? EVisibility::Visible:EVisibility::Collapsed; })
        [Command(ETacticalCommand::AutoBattle,[] { return TEXT("ここから自分で指揮"); })]];

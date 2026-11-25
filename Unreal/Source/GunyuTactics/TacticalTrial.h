@@ -188,6 +188,8 @@ public:
     bool PrepareGrandBattlePreview(int Mission,int Phase,int Approach=0);
     bool CanUseGrandApproach() const;
     bool UseGrandApproach(int Index);
+    bool IssueMissionMarch(const FTacticalPresentation::FMissionMarch& Expected);
+    bool MissionMarchSmokeTest();
     bool PrepareDecisionPausePreview(bool bAlerts);
     bool BattleChoicesSmokeTest();
     bool UseBattleChoice(int Index,int ExpectedVersion);
@@ -354,6 +356,7 @@ private:
     bool DispatchReadySignal();
     bool SignalHasPendingMarch() const;
     void BuildMarchPresentation();
+    void BuildMissionMarch();
     void BuildDutyProgress();
     bool BuildDutyTraffic();
     bool CanResumeDuty() const;

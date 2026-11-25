@@ -122,6 +122,7 @@ struct FJourneyPresentation
     TArray<FDialoguePresentation> Conversation;
     FString StoryTitle,StoryFacts,PersonalTrust,PledgeText,ReplyPrompt;
     FJourneyEpisodePresentation Episode,CoalitionEpisode;
+    TArray<FDialoguePresentation> BattleResponse;
     FString CoalitionChoices[2];
     FString LuoyangChoices[2];
     FString PlanDifference,PlanReadiness,PlanObjective,PlanRoute;
@@ -245,6 +246,13 @@ struct FTacticalPresentation
     TArray<FBeaconDefensePresentation> Defenses;
     FString BattleChoicePrompt;
     int MissionFocusTile=-1;
+    struct FMissionMarch
+    {
+        int Army=-1,Focus=-1,Destination=-1;
+        FString Label,Detail;
+        TArray<int> Route;
+        bool bVisible=false,bCanIssue=false;
+    } MissionMarch;
     bool bDecisionPaused=false;
     struct FMapCrossing { int Tile=-1;FString Caption; };
     FMapCrossing Crossings[2];

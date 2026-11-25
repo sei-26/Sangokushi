@@ -6,7 +6,8 @@ namespace frontline { class StrategistJourney; }
 
 namespace gunyudecision
 {
-    enum class EKind { None, EscortBlocked, PortOpening, BeaconLost, GuangzongSplit, SunJianBlocked, DepotIntercept };
+    enum class EKind { None, EscortBlocked, PortOpening, BeaconLost, GuangzongSplit, SunJianBlocked, DepotIntercept,
+        GrandOpening,GrandRelief,GrandRally,GrandCounter,CoalitionReturned };
 
     struct FMoment
     {

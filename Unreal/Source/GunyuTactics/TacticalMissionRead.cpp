@@ -8,7 +8,6 @@ void ATacticalField::BuildMissionPresentation()
     if(J.stage!=JourneyStage::Battle) return;
     H.MissionFocusTile=J.goal;H.bConvoyMission=J.HasConvoy();
     H.MissionDetail=H.Objective;
-    if(J.HasCoalitionBattle()) { BuildCoalitionBattlePresentation();return; }
     auto EnemiesNear=[&](int Tile)
     {
         int Count=0;
@@ -16,7 +15,8 @@ void ATacticalField::BuildMissionPresentation()
             if(Seen.current && Seen.observed.troops>0 && J.world.Hostile(0,Seen.observed.faction) && J.world.MapDistance(Seen.observed.tile,Tile)<=1) ++Count;
         return Count;
     };
-    if(J.HasGrandBattle())
+    if(J.HasCoalitionBattle()) { BuildCoalitionBattlePresentation(); }
+    else if(J.HasGrandBattle())
     {
         const auto& Grand=J.battleReview.grand;
         const auto& Main=J.world.armies[StrategistJourney::AlliedArmy];

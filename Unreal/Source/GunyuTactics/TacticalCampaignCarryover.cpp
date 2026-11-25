@@ -10,7 +10,7 @@ FString ATacticalField::ReadCampaignCarryover() const
     const bool Won=J.won && (J.stage==JourneyStage::Debrief || J.stage==JourneyStage::Complete);
     if(!Planning && !Won) return {};
     if(Won && J.mission==0 && J.shortPrelude)
-        return TEXT("この戦いの生存兵・残った糧・武将の信頼を持って、皇甫嵩の本隊へ合流。別働任務は選んで遊べる。");
+        return TEXT("帰還兵・残った兵糧・武将の信頼を引き継ぎ、広宗の本戦へ。");
 
     if((Won && J.mission==0) || (Planning && J.mission==1))
     {

@@ -5,6 +5,8 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SScaleBox.h"
+#include "Widgets/Images/SImage.h"
 
 using namespace gunyuui;
 
@@ -37,7 +39,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
          .Padding(12).Accent(FLinearColor(.64f,.45f,.16f))
          [Label([this] { return Field->Presentation().Journey.Outcome; },17,Gold)]];
     Text->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SBox).Visibility_Lambda([this]
-        { return Field->Presentation().Journey.CampaignCarryover.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+        { const auto& J=Field->Presentation().Journey;return J.CampaignCarryover.IsEmpty() || !J.BattleResponse.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
         [SNew(STacticalChrome).Padding(12).Accent(FLinearColor(.35f,.65f,.56f))
           [Label([this] { return Field->Presentation().Journey.CampaignCarryover; },16,Gold)]]];
     auto People = SNew(SHorizontalBox).Visibility_Lambda([this] { const auto& P = Field->Presentation().Journey; return P.bPreparation || P.bDebrief ? EVisibility::Visible : EVisibility::Collapsed; });
@@ -53,14 +55,23 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
             + SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 8, 0)[Command(ETacticalCommand::PromiseRoad, [this] { return Field->Presentation().Journey.bRescue ? TEXT("○ 退路を開く") : TEXT("● 退路を開く"); })]
             + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::PromiseRescue, [this] { return Field->Presentation().Journey.bRescue ? TEXT("● 避難車まで送り届ける") : TEXT("○ 避難車まで送り届ける"); })] ]
          + SVerticalBox::Slot().AutoHeight().Padding(0, 8, 0, 12)[Label([this] { return Field->Presentation().Journey.PromiseText; }, 15)] ];
-    Text->AddSlot().AutoHeight().Padding(0,0,0,12)
-        [SNew(STacticalChrome).Padding(12).Accent(FLinearColor(.58f,.23f,.12f))
+    auto AftermathSummary=SNew(STacticalChrome).Padding(12).Accent(FLinearColor(.58f,.23f,.12f))
          [SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
              + SHorizontalBox::Slot().FillWidth(1)[Label([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? FString(TEXT("この一戦で変わったこと")):P.Episode.Title; },23,Gold)]
              + SHorizontalBox::Slot().AutoWidth()[Button([this] { return Field->Presentation().Journey.bCampaignFlow && Field->Presentation().Mission==0 ? TEXT("三人と初陣を振り返る / H"):TEXT("本幕を読む / H"); },[this] { OpenEpisode(); })]]
           + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? P.CampaignChange:P.Episode.Setting; },15)]
-          + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().Journey.Episode.Question; },16,Gold)]]];
+          + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& P=Field->Presentation().Journey;return P.BattleResponse.IsEmpty() ? P.Episode.Question:FString(); },16,Gold)]];
+    for(int Index=0;Index<3;++Index)
+    {
+        auto Read=[this,Index] { const auto& Lines=Field->Presentation().Journey.BattleResponse;return Lines.IsValidIndex(Index) ? Lines[Index]:FDialoguePresentation{}; };
+        Text->AddSlot().AutoHeight().Padding(0,2,0,12)
+          [SNew(SBox).Visibility_Lambda([this,Index] { return Field->Presentation().Journey.BattleResponse.IsValidIndex(Index) ? EVisibility::Visible:EVisibility::Collapsed; })
+           [SNew(SVerticalBox)
+            + SVerticalBox::Slot().AutoHeight()[Label([Read] { return Read().Name; },17,Gold)]
+            + SVerticalBox::Slot().AutoHeight().Padding(0,3)[Label([Read] { return Read().Text; },21)]]];
+    }
+    Text->AddSlot().AutoHeight().Padding(0,0,0,12)[AftermathSummary];
     Text->AddSlot().AutoHeight()[OpeningRouteChoices()];
     Text->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SBox).Visibility_Lambda([this]
         { return Field->CanIssue(ETacticalCommand::JoinMainForce) && !Field->Presentation().Journey.bShortPrelude ? EVisibility::Visible:EVisibility::Collapsed; })
@@ -71,7 +82,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
     Text->AddSlot().AutoHeight().Padding(0,0,0,12)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.CoalitionEpisode.Lines.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
        [Button([] { return TEXT("第二章　反董卓連合へ"); },[this] { OpenEpisode(true); })]];
-    Text->AddSlot().AutoHeight()[People];
+    Text->AddSlot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.BattleResponse.IsEmpty() ? EVisibility::Visible:EVisibility::Collapsed; })[People]];
     Text->AddSlot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? EVisibility::Collapsed:EVisibility::Visible; })[Label([this] { return Field->Presentation().Journey.Speaker; }, 25, Gold)]];
     Text->AddSlot().AutoHeight().Padding(0,10,0,12)[SNew(SBox).Visibility_Lambda([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? EVisibility::Collapsed:EVisibility::Visible; })[StoryConversationWidget()]];
     Text->AddSlot().AutoHeight().Padding(0, 0, 0, 16)
@@ -104,17 +115,30 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
          + SHorizontalBox::Slot().FillWidth(1)
            [SNew(SScrollBox)+SScrollBox::Slot()[Text]]
          + SHorizontalBox::Slot().AutoWidth().Padding(26, 0, 0, 0)
-           [SNew(SBox).WidthOverride(292)[SNew(SVerticalBox)
-            + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bPreparation ? EVisibility::Collapsed:EVisibility::Visible; })[SNew(STacticalChrome).Padding(3).Accent(FLinearColor(.62f,.45f,.20f))[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? 200.f:310.f; })[PortraitWidget([this] { return Field->Presentation().Journey.Portrait; }, 292, 310)]]]]
+           [SNew(SBox).WidthOverride(292)[SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
+            + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bPreparation || !Field->Presentation().Journey.BattleResponse.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })[SNew(STacticalChrome).Padding(3).Accent(FLinearColor(.62f,.45f,.20f))[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? 200.f:310.f; })[PortraitWidget([this] { return Field->Presentation().Journey.Portrait; }, 292, 310)]]]]
+            + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? 120.f:230.f; })
+              .Visibility_Lambda([this] { return Field->Presentation().Journey.BattleResponse.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
+              [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).Clipping(EWidgetClipping::ClipToBounds)
+               [SNew(SImage).Image_Lambda([this]() -> const FSlateBrush*
+                {
+                    const auto& J=Field->Presentation().Journey;const int Who=J.BattleResponse.IsEmpty() ? -1:J.BattleResponse[0].Speaker;
+                    return Who>=0 && Who<3 && FaceBrushes.IsValidIndex(Who) ? FaceBrushes[Who].Get():NovelPortraitBrush(Who);
+                })]]]
             + SVerticalBox::Slot().AutoHeight()[SNew(SBox).WidthOverride(292).Visibility_Lambda([this] { return Field->Presentation().Journey.bPreparation ? EVisibility::Visible : EVisibility::Collapsed; })[SNew(SHorizontalBox)+SHorizontalBox::Slot().AutoWidth()[PortraitWidget([this] { return Field->Presentation().Journey.Portrait; }, 104, 110)]]]
-            + SVerticalBox::Slot().AutoHeight().Padding(0, 16)[Label([this] { return Field->Presentation().Journey.Speaker; }, 23, Gold)]
+            + SVerticalBox::Slot().AutoHeight().Padding(0, 16)[Label([this] { const auto& J=Field->Presentation().Journey;return J.BattleResponse.IsEmpty() ? J.Speaker:J.BattleResponse[0].Name; }, 23, Gold)]
             + SVerticalBox::Slot().AutoHeight()[Plans]
+            + SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)
+              [SNew(SBox).Visibility_Lambda([this] { const auto& J=Field->Presentation().Journey;return !J.BattleResponse.IsEmpty() && !J.CampaignCarryover.IsEmpty() ? EVisibility::Visible:EVisibility::Collapsed; })
+               [SNew(SVerticalBox)
+                + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("次の戦いへ残るもの"); },18,Gold)]
+                + SVerticalBox::Slot().AutoHeight().Padding(0,6)[Label([this] { return Field->Presentation().Journey.CampaignCarryover; },18)]]]
             + SVerticalBox::Slot().AutoHeight()[Label([this]
             {
-                const auto& J=Field->Presentation().Journey;if(J.bPreparation) return FString();
+                const auto& J=Field->Presentation().Journey;if(J.bPreparation || !J.BattleResponse.IsEmpty()) return FString();
                 if(J.StoryFacts.IsEmpty()) return FString(TEXT("一策を、次の歴史へ。"));
                 const int End=J.StoryFacts.Find(TEXT("\n"));return End==INDEX_NONE ? J.StoryFacts:J.StoryFacts.Left(End);
-            },14,Gold)] ] ] ];
+            },14,Gold)] ] ] ] ];
     Contents->AddSlot().AutoHeight().Padding(0,6,0,4)[Label([this] { return Field->Presentation().Journey.PersonalTrust; },14,Gold)];
     auto Reply=SNew(SVerticalBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? EVisibility::Visible:EVisibility::Collapsed; });
     Reply->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().Journey.ReplyPrompt; },16,Gold)];

@@ -196,6 +196,28 @@ void ATacticalController::PlayerTick(float Delta)
         UE_LOG(LogTemp,Display,TEXT("GUNYU_GRAND_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
         if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
     }
+    if(bCapture && Frames==5 && bGrandPreview && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMarchCapture")))
+    {
+        const bool Valid=Field->IssueMissionMarch(Field->Presentation().MissionMarch);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_MISSION_MARCH_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+    }
+    if(bCapture && Frames==5 && bGrandPreview && FParse::Param(FCommandLine::Get(),TEXT("GunyuGrandDecisionCapture")))
+    {
+        if(!Field->Presentation().bAlertPause) Field->Issue(ETacticalCommand::RealtimeAlertPause);
+        Field->Issue(ETacticalCommand::AutoBattle);
+        for(int Cycle=0;Cycle<40 && Field->Presentation().bBattle;++Cycle)
+        {
+            Field->AdvanceRealtime(12.1f);Field->AdvancePresentation(60);
+            const auto& H=Field->Presentation();
+            if(H.bDecisionPaused && (H.Mission!=5 || H.MissionStep.Contains(TEXT("親衛騎兵")))) break;
+            if(Field->RealtimePaused() && !Field->IsPlaying()) Field->Issue(ETacticalCommand::RealtimePause);
+        }
+        const bool Valid=Field->Presentation().bDecisionPaused && Field->IsAutoBattle() && Field->RealtimePaused();
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_GRAND_DECISION_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
+        FocusMissionObjective();
+    }
     if(bCapture && Frames==4 && bGrandMomentCapture)
     {
         int Kind=0;FParse::Value(FCommandLine::Get(),TEXT("GrandMoment="),Kind);
@@ -579,6 +601,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=Field->ReliefSmokeTest() && ReliefInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuPositionOnly")))
     { const bool bPassed=Field->TacticPositionSmokeTest() && TacticPositionInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMarchOnly")))
+    { const bool Passed=Field->MissionMarchSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetOnly")))
     { const bool bPassed=Field->TacticTargetSmokeTest() && TacticTargetInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardOnly")))

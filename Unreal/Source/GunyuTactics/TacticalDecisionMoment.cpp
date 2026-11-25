@@ -23,6 +23,50 @@ namespace gunyudecision
         R.bBattle=J.stage==JourneyStage::Battle;
         if(!R.bBattle || !J.campaignFlow) return R;
         const auto& Sight=J.intelligence[0];
+        // Modern battles have their own turning points. Do not surface the old
+        // small-battle evacuation timer as a choice in the new Guangzong battle.
+        if(J.HasGrandStrategy())
+        {
+            const auto& G=J.battleReview.grand;
+            if(G.ralliedOn)
+                R.Moment={EKind::GrandRally,J.goal,TEXT("本隊が合流。前陣の旗を残し、敵本陣へ誰を出すか決めよう。")};
+            else if(G.openedOn)
+                R.Moment={EKind::GrandOpening,J.goal,TEXT("前陣を突破。本隊の行く手を空け、旗を守る隊を残そう。")};
+            else if(G.relievedOn && TacticChain::Living(J.world,6))
+                R.Moment={EKind::GrandRelief,J.world.armies[6].tile,TEXT("左翼へ救援が届いた。北の追撃を切り上げ、中央へ戻す隊を決めよう。")};
+            return R;
+        }
+        if(J.HasCoalitionBattle())
+        {
+            const auto& G=J.battleReview.grand;const auto& C=G.coalition;
+            if(J.coalitionPlan==CoalitionPlan::Protect)
+            {
+                if(C.returnedOn)
+                    R.Moment={EKind::CoalitionReturned,J.goal,TEXT("曹操と援軍が西岸へ帰還。主力の旗で帰還点を確保しよう。")};
+                else if(C.rescuedOn && TacticChain::Living(J.world,6))
+                    R.Moment={EKind::GrandRelief,J.world.armies[6].tile,TEXT("援軍へ救援が届いた。南橋は援軍を先に通し、曹操も連れ帰ろう。")};
+            }
+            else if(G.openedOn)
+                R.Moment={EKind::GrandOpening,J.goal,TEXT("対岸に旗が並んだ。曹操を支え、徐栄軍へ続けて攻めよう。")};
+            return R;
+        }
+        if(J.HasYangrenStrategy())
+        {
+            const auto& G=J.battleReview.grand;const auto& Y=G.yangren;
+            const auto* Cavalry=Sight.Find(8);
+            if(Y.repelledOn)
+                R.Moment={EKind::GrandRally,J.goal,TEXT("騎兵の反撃を退けた。孫堅を支えながら、辻を安全に確保しよう。")};
+            else if(Y.counterOn)
+                R.Moment={EKind::GrandCounter,Cavalry && Cavalry->current ? Cavalry->observed.tile:J.goal,
+                    TEXT("呂布の親衛騎兵が反撃。追撃を止め、孫堅と旗を支え合う隊を決めよう。")};
+            else if(!J.SunJianAtRally())
+            {
+                const int Tile=J.world.armies[StrategistJourney::AlliedArmy].tile;
+                if(Sight.EnemyNear(J.world,Tile,1))
+                    R.Moment={EKind::SunJianBlocked,Tile,TEXT("孫堅隊が止まった。辻を攻め続けるか、南道の援護へ回るか。")};
+            }
+            return R;
+        }
         if(J.HasConvoy())
         {
             const auto& Path=J.ConvoyPath();

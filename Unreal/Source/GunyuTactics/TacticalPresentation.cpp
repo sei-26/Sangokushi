@@ -90,7 +90,7 @@ void ATacticalField::BuildPresentation()
             : J.stage == JourneyStage::Complete ? TEXT("突破・護送・防衛の３戦を完了") : JourneyText(J.ObjectiveBrief());
         if (HUD.bComplete && J.campaignFlow)
         {
-            HUD.Title = J.mission==LuoyangMission ? TEXT("反董卓連合の記録"):J.HasSunJian() ? TEXT("陽人の戦いの記録"):J.mission==CoalitionMission ? TEXT("酸棗の初戦の記録"):
+            HUD.Title = J.mission==LuoyangMission ? TEXT("反董卓連合の記録"):J.HasSunJian() ? TEXT("陽人の戦いの記録"):J.mission==CoalitionMission ? (J.HasCoalitionBattle() ? TEXT("汴水の会戦の記録"):TEXT("酸棗の初戦の記録")):
                 J.mission==YellowTurbanMission ? TEXT("黄巾の乱の記録"):TEXT("序章の記録");
             HUD.Objective = HUD.Journey.CampaignNext;
         }
@@ -155,6 +155,7 @@ void ATacticalField::BuildPresentation()
     BuildOpeningOrder();
     BuildDutyProgress();
     BuildBattleChoices();
+    BuildMissionMarch();
     BuildSupportChoices();
     if (J.HasConvoy() && TacticChain::Living(J.world,StrategistJourney::ConvoyArmy))
     {

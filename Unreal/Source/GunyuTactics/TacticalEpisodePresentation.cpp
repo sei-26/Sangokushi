@@ -19,5 +19,16 @@ void ATacticalField::BuildEpisodePresentation()
         }
     };
     Copy(frontline::BuildJourneyEpisode(J),Journey.Episode);
+    if(Journey.bDebrief && J.campaignFlow)
+    {
+        int Voices=0;FDialoguePresentation Hero;bool HasHero=false;
+        for(const auto& Line:Journey.Episode.Lines)
+        {
+            if(Line.Speaker<0) continue;
+            if(Line.bProtagonist) { if(!HasHero) Hero=Line;HasHero=true;continue; }
+            if(Voices++<2) Journey.BattleResponse.Add(Line);
+        }
+        if(HasHero) Journey.BattleResponse.Add(Hero);
+    }
     if(Journey.bComplete) Copy(frontline::BuildCoalitionEpisode(J),Journey.CoalitionEpisode);
 }
