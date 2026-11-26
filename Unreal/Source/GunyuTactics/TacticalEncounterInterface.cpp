@@ -30,7 +30,14 @@ void ATacticalController::BuildEncounterInterface(TSharedRef<SCanvas> Canvas)
             + SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label([] { return TEXT("この出会いから、あなたの采配が始まる。"); },13)]
             + SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(330)
               [Button([this] { return Field->Presentation().Journey.PrimaryLabel; },[this] { Field->Issue(ETacticalCommand::Dialogue); },[this] { return Field->CanIssue(ETacticalCommand::Dialogue); })]]]];
-    Canvas->AddSlot().Position(FVector2D(64,590)).Size(FVector2D(1472,244))[Dialogue];InputPanels.Add(Dialogue);
+    Canvas->AddSlot().Position_Lambda([this] { return FVector2D(64,Field->CanChooseFirstRoad() ? 510:590); }).Size(FVector2D(1472,244))[Dialogue];InputPanels.Add(Dialogue);
+    auto Roads=SNew(SHorizontalBox);
+    const FString Choices[]={TEXT("1  森で追手を止める\n関羽を林へ。仲間と先鋒を崩して、道を開く。"),TEXT("2  出口を先に押さえる\n劉備を出口へ。関羽と張飛で追手を引き受ける。")};
+    for(int Choice=0;Choice<2;++Choice)
+        Roads->AddSlot().FillWidth(1).Padding(Choice==0 ? FMargin(0,0,10,0):FMargin(0))
+          [Button([Text=Choices[Choice]] { return Text; },[this,Choice] { ChooseEncounterRoad(Choice); },[this] { return Field->CanChooseFirstRoad(); })];
+    auto Decision=SNew(SBox).Visibility_Lambda([this] { return Field->CanChooseFirstRoad() ? EVisibility::Visible:EVisibility::Collapsed; })[Roads];
+    InputPanels.Add(Decision);Canvas->AddSlot().Position(FVector2D(64,768)).Size(FVector2D(1472,66))[Decision];
     auto Context=SNew(SBox).Visibility_Lambda(Visible)[Label([this] { return Field->Presentation().Journey.Context; },12)];
     Canvas->AddSlot().Position(FVector2D(80,854)).Size(FVector2D(1440,30))[Context];
 }

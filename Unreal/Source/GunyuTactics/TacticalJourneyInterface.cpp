@@ -28,7 +28,9 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
     Contents->AddSlot().AutoHeight()
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bCampaignFlow ? EVisibility::Visible:EVisibility::Collapsed; })
        [Label([this] { return Field->Presentation().Journey.CampaignPhase+TEXT(" ／ ")+Field->Presentation().Journey.CampaignStanding; },19,Gold)]];
-    Contents->AddSlot().AutoHeight().Padding(0, 12, 0, 18)[Label([this] { return Field->Presentation().Journey.Resources; }, 16, Gold)];
+    Contents->AddSlot().AutoHeight().Padding(0, 12, 0, 18)
+      [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bFirstReplyHidden ? EVisibility::Collapsed:EVisibility::Visible; })
+       [Label([this] { return Field->Presentation().Journey.Resources; }, 16, Gold)]];
     Contents->AddSlot().AutoHeight().Padding(0,0,0,8)[Label([this] { return Field->Presentation().Journey.CampaignRoad; },15,Gold)];
     Contents->AddSlot().AutoHeight().Padding(0,0,0,8)
       [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.PledgeText.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
@@ -117,7 +119,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
          + SHorizontalBox::Slot().AutoWidth().Padding(26, 0, 0, 0)
            [SNew(SBox).WidthOverride(292)[SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
             + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bPreparation || !Field->Presentation().Journey.BattleResponse.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })[SNew(STacticalChrome).Padding(3).Accent(FLinearColor(.62f,.45f,.20f))[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? 200.f:310.f; })[PortraitWidget([this] { return Field->Presentation().Journey.Portrait; }, 292, 310)]]]]
-            + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? 110.f:170.f; })
+            + SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride_Lambda([this] { const auto& P=Field->Presentation().Journey;return P.bNeedsReply && !P.bFirstReplyHidden ? 110.f:170.f; })
               .Visibility_Lambda([this] { return Field->Presentation().Journey.BattleResponse.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
               [SNew(SScaleBox).Stretch(EStretch::ScaleToFit).Clipping(EWidgetClipping::ClipToBounds)
                [SNew(SImage).Image_Lambda([this]() -> const FSlateBrush*
@@ -139,24 +141,31 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
                 if(J.StoryFacts.IsEmpty()) return FString(TEXT("一策を、次の歴史へ。"));
                 const int End=J.StoryFacts.Find(TEXT("\n"));return End==INDEX_NONE ? J.StoryFacts:J.StoryFacts.Left(End);
             },14,Gold)] ] ] ] ];
-    Contents->AddSlot().AutoHeight().Padding(0,6,0,4)[Label([this] { return Field->Presentation().Journey.PersonalTrust; },14,Gold)];
-    auto Reply=SNew(SVerticalBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bNeedsReply ? EVisibility::Visible:EVisibility::Collapsed; });
+    Contents->AddSlot().AutoHeight().Padding(0,6,0,4)
+      [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bFirstReplyHidden ? EVisibility::Collapsed:EVisibility::Visible; })
+       [Label([this] { return Field->Presentation().Journey.PersonalTrust; },14,Gold)]];
+    Contents->AddSlot().AutoHeight().Padding(0,8)
+      [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bFirstReplyHidden ? EVisibility::Visible:EVisibility::Collapsed; })
+       [Button([] { return TEXT("劉備と、次の戦いの話をする（任意）"); },[this] { Field->RevealFirstReply(); })]];
+    auto Reply=SNew(SVerticalBox).Visibility_Lambda([this] { const auto& P=Field->Presentation().Journey;return P.bNeedsReply && !P.bFirstReplyHidden ? EVisibility::Visible:EVisibility::Collapsed; });
     Reply->AddSlot().AutoHeight()[Label([this] { return Field->Presentation().Journey.ReplyPrompt; },16,Gold)];
     Reply->AddSlot().AutoHeight().Padding(0,5)[SNew(SHorizontalBox)
       + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,8,0)[Command(ETacticalCommand::StoryReplyPreserve,[this]
         {
             const auto& P=Field->Presentation().Journey;
-            if(P.bShortPrelude) return TEXT("1  兵を守ると約束する\n次の合戦を、出陣兵の損失一割以内で勝つ");
+            if(P.bShortPrelude) return TEXT("1  帰り道まで考えて、兵を守りたい\n約束：次の合戦を、出陣兵の損失一割以内で勝つ");
             return P.bCampaignFlow ? (Field->Presentation().Mission==0 ? TEXT("1  兵を守ると約束する\n次戦は北橋を回る配置。兵損失一割以内を目指す"):TEXT("1  決戦でも兵を連れ帰る\n兵損失一割以内という約束を、次の采配にする")):TEXT("1  主人公：次は、みんなを連れて帰る\n次戦の兵損失を一割以内に抑えて勝つ");
         })]
       + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::StoryReplyCoordinate,[this]
         {
             const auto& P=Field->Presentation().Journey;
-            if(P.bShortPrelude) return TEXT("2  皆をつなぐと約束する\n次の合戦で二隊以上の戦法をつなぎ、勝つ");
+            if(P.bShortPrelude) return TEXT("2  皆の力を、もっとつなぎたい\n約束：次の合戦で二隊以上の戦法をつなぎ、勝つ");
             return P.bCampaignFlow ? (Field->Presentation().Mission==0 ? TEXT("2  皆をつなぐと約束する\n次戦は南橋突破の配置。二隊連鎖で勝利を目指す"):TEXT("2  決戦でも皆をつなぐ\n二隊連鎖で勝つという約束を、次の采配にする")):TEXT("2  主人公：俺が合図を出して、皆をつなぐ\n次戦で二隊以上の戦法をつなぎ、任務を果たす");
         })]];
     Contents->AddSlot().AutoHeight()[Reply];
-    Contents->AddSlot().AutoHeight().Padding(0, 10, 0, 10)[Label([this] { return Field->Presentation().Journey.Relationships; }, 16, Gold)];
+    Contents->AddSlot().AutoHeight().Padding(0, 10, 0, 10)
+      [SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Journey.bFirstReplyHidden ? EVisibility::Collapsed:EVisibility::Visible; })
+       [Label([this] { return Field->Presentation().Journey.Relationships; }, 16, Gold)]];
     Contents->AddSlot().AutoHeight()
         [SNew(SHorizontalBox)
          + SHorizontalBox::Slot().FillWidth(1)

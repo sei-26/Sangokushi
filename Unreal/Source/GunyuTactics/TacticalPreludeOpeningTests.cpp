@@ -67,10 +67,15 @@ bool ATacticalController::PreludeOpeningSmokeTest()
             !Field->ChoosePreludePlan(1-Choice),TEXT("deployment pays once and creates a real ambush or march, with no stale battle adoption"))) return false;
         if(Choice==0)
         {
-            Field->ExportSession(Before);OpenFirstCommand();Field->ExportSession(After);
-            if(!Check(bTacticPickerOpen && Field->RealtimePaused() && Before==After,
-                TEXT("the opening cue leads to Liu Bei's tactics without sending a unit onto an occupied enemy tile or spending an action"))) return false;
-            ToggleTacticPicker();
+            const auto First=Field->Presentation().OpeningOrder;
+            const int Turn=S->journey.turn;
+            if(!Check(First.Action==EOpeningOrderAction::Solo,TEXT("the short opening now offers a legal solo first strike"))) return false;
+            OpenFirstCommand();Field->AdvancePresentation(60);Field->ExportSession(After);DecodeJourneySave(After,*S);
+            if(!Check(!bTacticPickerOpen && Field->RealtimePaused() && S->journey.turn==Turn &&
+                S->journey.lastChain.completed==1 && S->journey.chain.spent[First.Officer],
+                TEXT("the opening cue fires one paid normal tactic and returns to paused command without advancing the enemy cycle"))) return false;
+            for(int Officer=0;Officer<3;++Officer) if(Officer!=First.Officer)
+                if(!Check(!S->journey.chain.spent[Officer],TEXT("the solo opening leaves the other officers available"))) return false;
         }
         if(!Check(PreparePreludeOpeningPreview(3,Choice),TEXT("both paid opening plans can finish a real initial battle"))) return false;
         const auto& P=Field->Presentation().Journey;

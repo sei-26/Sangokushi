@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+序章の出会いでの道の採用・合法な単独初手・任意の戦後会話は `TacticalFirstExperience.cpp`。通常の配置と予約・発動へ接続する。`TacticalFirstExperienceTests.cpp` は実勝利と保存復元を含む検証、`TacticalFirstExperienceQA.cpp` は実進行による描画用の準備。`TacticalEncounterInterface.cpp` の二択と `TacticalJourneyInterface.cpp` の任意会話が入口。[仕様と範囲](FIRST_EXPERIENCE_UPGRADE.md)。
+
 目標への一隊の行軍は `TacticalMissionMarch.cpp`、押し始めた提案の保持は `TacticalCommandsInterface.cpp`。経路は共通ルールの既存 `JourneyRealtime` を使う。大会戦の節目は `TacticalDecisionMoment.cpp`、汴水を含む停止表示は `TacticalMissionRead.cpp`。戦後の短い応答は `TacticalEpisodePresentation.cpp` が実際の本幕から読み、`TacticalJourneyInterface.cpp` が人物の言葉と次戦への効果を示す。`TacticalMissionMarchTests.cpp` が行軍・保存・捕捉・実会戦・自動の停止を確認する。[仕様](BATTLE_JOURNEY_FLOW.md)。
 
 現行の4枚企画書は `Docs/企画書`。編集可能なPPTXの生成元は `tools/presentations/build_core_pitch.mjs`。プロジェクトの既存美術と実際のUnreal画面を使い、実装済みと将来構想を分ける。通常指揮の「移動後の戦法」は `TacticalCommandsInterface.cpp` → `TacticalPositionInterface.cpp`、広宗の戦後概要は `NewGame/JourneyCampaign.cpp`。ゲーム全体の改善項目は `IMPROVEMENT_ROADMAP.md` で管理する。

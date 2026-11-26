@@ -337,6 +337,7 @@ void ATacticalField::Action(FKey Key)
     {
         if(State->Journey.NeedsStoryReply())
         {
+            if(State->HUD.Journey.bFirstReplyHidden && (Key==EKeys::One || Key==EKeys::Two)) return;
             if(Key==EKeys::One) { Issue(ETacticalCommand::StoryReplyPreserve);return; }
             if(Key==EKeys::Two) { Issue(ETacticalCommand::StoryReplyCoordinate);return; }
         }

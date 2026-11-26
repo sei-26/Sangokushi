@@ -31,8 +31,8 @@ void ATacticalController::BuildCouncilScene(TSharedRef<SCanvas> Canvas)
             + SVerticalBox::Slot().AutoHeight()[Label([I] { return I==0 ? TEXT("劉備"):I==1 ? TEXT("関羽"):TEXT("張飛"); },26,Gold)]
             + SVerticalBox::Slot().AutoHeight()[Label([this,I]
               {
-                  const auto& Roles=Field->Presentation().Journey.Map.CouncilRoles;
-                  if(Roles.IsValidIndex(I)) return Roles[I].Title;
+                  const auto& HUD=Field->Presentation();const auto& Roles=HUD.Journey.Map.CouncilRoles;
+                  if(Roles.IsValidIndex(I)) return (HUD.Mission==0 && HUD.Journey.bShortPrelude ? FString(TEXT("相談：")):FString())+Roles[I].Title;
                   return FString(I==0 ? TEXT("任務を確かめる"):I==1 ? TEXT("先遣伏兵"):TEXT("予備糧"));
               },17)]]];
         Canvas->AddSlot().Position(FVector2D(48+I*510,372)).Size(FVector2D(484,72))[Voice];InputPanels.Add(Voice);

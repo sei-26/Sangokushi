@@ -57,6 +57,7 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
         CheckpointJourney(true);
         State->BeforeBattle = std::make_unique<StrategistJourney>(J);
         if(!J.Prepare(State->PreparationChoice, J.enemyPolicy)) { Refresh();return; }
+        State->bFirstReplyRevealed=false;
         State->RetryDefenseAid={};
         State->Realtime.Reset();State->bRealtimeInBattle=bRealtimeCommand;
         State->bRealtimeStepping=false;State->bRealtimeChainRequested=false;State->bRealtimePauseAfterPlayback=false;
@@ -75,6 +76,7 @@ void ATacticalField::IssueJourney(ETacticalCommand Command)
     }
     case ETacticalCommand::Retry:
         if(!J.RetryAtCouncil(*State->BeforeBattle)) return;
+        State->bFirstReplyRevealed=false;
         State->RetryDefenseAid={};
         if(!bLegacyJourney) J.UpgradeCampaignAtCouncil();
         State->Orders.clear(); State->Selected = 0; State->Target = 3;
@@ -127,6 +129,15 @@ void ATacticalField::BuildJourneyPresentation()
         const int Index = FMath::Clamp(State->DialogueIndex, 0, 2);
         P.Heading = TEXT("序章  ―  名もなき軍師"); P.Speaker = Names[Index]; P.Dialogue = Lines[Index]; P.Portrait = Index;
         P.PrimaryLabel = Index < 2 ? TEXT("話を聞く  /  Enter") : TEXT("軍議へ進む  /  Enter");
+        if(CanChooseFirstRoad())
+        {
+            const TCHAR* RoadLines[]={
+                TEXT("劉備「車輪が泥に取られた。追手も近い……道はあるか？」\n主人公「轍なら読める。森で追手を止めるか、出口を先に押さえるか……」"),
+                TEXT("関羽「轍の浅い方なら、人を通せる。敵を止める役は私たちが引き受けよう。」\n主人公「じゃあ、兵を動かす合図を……俺が？」"),
+                TEXT("張飛「道はお前が見つけたんだろ。だったら合図も頼むぜ！」\n主人公「分かった。誰を前へ出すか、誰を残すか。そこまで俺が考える。」")};
+            P.Heading=TEXT("序章 ― 轍を読む、名もない若者");P.Dialogue=RoadLines[Index];
+            P.PrimaryLabel=Index<2 ? TEXT("もう少し話を聞く / Enter"):TEXT("皆と相談して決める / Enter");
+        }
         P.Outcome = TEXT("あなたは道と荷を見てきた若者。まず任された一つの仕事で、英傑たちの信頼を得る。軍議で、どこまで守ると約束するかを選ぼう。");
     }
     else if (P.bPreparation)
@@ -226,6 +237,9 @@ void ATacticalField::BuildJourneyPresentation()
         P.Heading=J.won ? TEXT("戦役が動いた ／ 次の局面へ"):TEXT("再挑戦 ／ 次に変える一手");
         P.Dialogue=P.CampaignChange;P.Outcome=P.CampaignNext+TEXT("\n")+P.ReviewFacts;
         if(P.bNeedsReply) P.ReplyPrompt=TEXT("次戦の方針を会話で決める。返答は次戦の方針・約束につながり、実行結果で関係が分かれる。選ばず進むこともできる。");
+        P.bFirstReplyHidden=J.shortPrelude && J.mission==0 && P.bNeedsReply && !State->bFirstReplyRevealed;
+        if(J.shortPrelude && J.mission==0 && P.bNeedsReply)
+            P.ReplyPrompt=TEXT("劉備「君の合図に、皆が応えてくれたね。次の戦いで、何を大事にしたい？」\n約束は選ばず先へ進んでもよい。選んだ場合は、次の実戦の結果で関係が変わる。");
         P.PrimaryLabel=J.won ? (J.mission==2 ? TEXT("正式な軍師として、序章の終幕へ"):
             J.mission==YellowTurbanMission ? TEXT("黄巾の乱の結末へ ／ Enter"):
             J.mission==CoalitionMission ? TEXT("初戦の記録へ ／ Enter"):

@@ -103,6 +103,7 @@ void ATacticalController::OpenFirstCommand()
 {
     if(!ShowOpeningOrder()) return;
     const auto Read=Field->Presentation().OpeningOrder;
+    if(Read.Action==EOpeningOrderAction::Solo) { Field->UseFirstStrike(Read.SoloVersion,Read.SoloTarget);return; }
     Field->SelectOfficer(Read.Officer);
     if(Read.Action==EOpeningOrderAction::Tactics) { ToggleTacticPicker();return; }
     const int Start=Field->Presentation().Officers[Read.Officer].Tile;

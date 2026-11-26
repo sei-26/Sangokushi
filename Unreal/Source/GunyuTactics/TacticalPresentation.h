@@ -21,10 +21,11 @@ struct FOfficerPresentation
     bool bLiving = false, bSelected = false;
     int Tile = -1, DutyTile = -1;
 };
-enum class EOpeningOrderAction : uint8 { Inspect, Move, Hold, Tactics };
+enum class EOpeningOrderAction : uint8 { Inspect, Move, Hold, Tactics, Solo };
 struct FOpeningOrderPresentation
 {
     int Officer=-1,Tile=-1;
+    int SoloVersion=-1,SoloTarget=-1;
     FString Name,Place,Instruction,ActionLabel;
     EOpeningOrderAction Action=EOpeningOrderAction::Inspect;
 };
@@ -136,7 +137,7 @@ struct FJourneyPresentation
     bool bShortPrelude=false;
     FPreparationMap Map;
     TArray<FDialoguePresentation> PlanAdvice;
-    bool bNeedsReply=false;
+    bool bNeedsReply=false,bFirstReplyHidden=false;
     bool bChooseRoute=false,bSouthernRoute=false;
     bool bVisible = false, bPreparation = false, bDebrief = false, bComplete = false, bChoosePromise = false, bRescue = false;
 };

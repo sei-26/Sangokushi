@@ -7,6 +7,7 @@ using namespace gunyuui;
 
 TSharedRef<SWidget> ATacticalController::OpeningOrderCard()
 {
+    auto Pressed=MakeShared<FOpeningOrderPresentation>();
     return SNew(SBox).Visibility_Lambda([this] { return ShowOpeningOrder() ? EVisibility::Visible:EVisibility::Collapsed; })
         [SNew(STacticalChrome).Padding(9).Accent(FLinearColor(.34f,.71f,.60f))
          [SNew(SVerticalBox)
@@ -21,5 +22,10 @@ TSharedRef<SWidget> ATacticalController::OpeningOrderCard()
           + SVerticalBox::Slot().AutoHeight().Padding(0,0,0,5)
             [Label([this] { return Field->Presentation().OpeningOrder.Instruction; },14)]
           + SVerticalBox::Slot().AutoHeight()
-            [Button([this] { return Field->Presentation().OpeningOrder.ActionLabel; },[this] { OpenFirstCommand(); })]]];
+            [SNew(SButton).ButtonStyle(&CommandStyle()).IsFocusable(false).ContentPadding(FMargin(7,5))
+             .IsEnabled_Lambda([this] { return !Field->IsPlaying(); })
+             .OnPressed_Lambda([this,Pressed] { *Pressed=Field->Presentation().OpeningOrder; })
+             .OnClicked_Lambda([this,Pressed]
+              { if(Pressed->Action==EOpeningOrderAction::Solo) Field->UseFirstStrike(Pressed->SoloVersion,Pressed->SoloTarget);else OpenFirstCommand();return FReply::Handled(); })
+             [Label([this] { return Field->Presentation().OpeningOrder.ActionLabel; },14,Gold)]]]];
 }

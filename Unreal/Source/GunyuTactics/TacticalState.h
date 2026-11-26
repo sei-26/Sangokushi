@@ -29,6 +29,7 @@ struct FJourneyState
     bool bWatchPending=false,bWatchPauseAfterPlayback=false;
     gunyudecision::FMoment DecisionPending,DecisionPaused;
     bool bAutoBattle=false,bAutoCyclePending=false; // Explicit delegation; saves resume in manual control.
+    bool bFirstReplyRevealed=false; // View state only; a saved vow remains in Journey's existing story record.
     bool bRealtimeInBattle=false,bRealtimeStepping=false,bRealtimeChainRequested=false,bRealtimePauseAfterPlayback=false;
     TArray<TPair<int,int>> RealtimeRoutes;
     std::vector<frontline::ChainOrder> Orders;

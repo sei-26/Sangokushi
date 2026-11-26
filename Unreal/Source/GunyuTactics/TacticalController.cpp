@@ -153,7 +153,12 @@ void ATacticalController::PlayerTick(float Delta)
     }
     const FKey Commands[] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::M, EKeys::Escape, EKeys::A, EKeys::G, EKeys::F, EKeys::Q, EKeys::W, EKeys::E, EKeys::T, EKeys::C, EKeys::R, EKeys::SpaceBar, EKeys::Enter, EKeys::N, EKeys::F5, EKeys::Period, EKeys::X, EKeys::B};
     for (const FKey& Key : Commands)
-        if (!bModalInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && !bTacticPickerOpen && WasInputKeyJustPressed(Key)) Field->Action(Key);
+        if (!bModalInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && !bTacticPickerOpen && WasInputKeyJustPressed(Key))
+        {
+            if(Field->CanChooseFirstRoad() && (Key==EKeys::One || Key==EKeys::Two))
+            { ChooseEncounterRoad(Key==EKeys::One ? 0:1);break; }
+            else Field->Action(Key);
+        }
     if (!bModalInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && !IsInputKeyDown(EKeys::MiddleMouseButton) && Frames > IgnoreMapInputThroughFrame && !IsPointerOverInterface() && WasInputKeyJustPressed(EKeys::LeftMouseButton)) Field->ClickTile(PickTile());
     if (!bModalInputBlocked && !bBattleLogOpen && !bMarchPlanOpen && !IsInputKeyDown(EKeys::MiddleMouseButton) && Frames > IgnoreMapInputThroughFrame && !IsPointerOverInterface() && WasInputKeyJustPressed(EKeys::RightMouseButton))
     {
@@ -603,6 +608,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=Field->TacticPositionSmokeTest() && TacticPositionInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMarchOnly")))
     { const bool Passed=Field->MissionMarchSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuFirstExperienceOnly")))
+    { const bool Passed=Field->FirstExperienceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetOnly")))
     { const bool bPassed=Field->TacticTargetSmokeTest() && TacticTargetInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuGuardOnly")))
@@ -830,6 +837,14 @@ void ATacticalController::PlayerTick(float Delta)
     {
         Field->PrepareTacticTargetPreview(TargetPreview);CloseEpisode();
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetDestination"))) Field->Issue(ETacticalCommand::Move);
+    }
+    int FirstExperience=0;
+    if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("FirstExperience="),FirstExperience))
+    {
+        int Road=0;FParse::Value(FCommandLine::Get(),TEXT("FirstRoad="),Road);
+        const bool Valid=PrepareFirstExperiencePreview(FirstExperience,Road);
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_FIRST_EXPERIENCE_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
     }
     int PositionPreview=0;
     if(bCapture && Frames==8 && FParse::Value(FCommandLine::Get(),TEXT("TacticPosition="),PositionPreview))

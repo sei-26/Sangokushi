@@ -172,6 +172,11 @@ public:
     bool GrandBattleSmokeTest();
     bool EpicCampaignSmokeTest();
     bool CanChoosePreludePlan() const;
+    bool CanChooseFirstRoad() const;
+    bool ChooseFirstRoad(int Choice);
+    void RevealFirstReply();
+    bool UseFirstStrike(int ExpectedVersion,int ExpectedTarget);
+    bool FirstExperienceSmokeTest();
     FString PreludePlanLabel(int Choice) const;
     bool ChoosePreludePlan(int Choice);
     int PreludeOpeningOfficer() const;
@@ -395,6 +400,7 @@ private:
     void BuildOfficerConversation();
     void BuildStoryPresentation();
     void BuildEpisodePresentation();
+    void BuildFirstStrike();
     void BuildPreparationPresentation();
     void BuildPreparationMap();
     bool BattleStorySmokeTest();
@@ -662,6 +668,8 @@ private:
     void ChoosePreludeOpening(int Choice);
     bool PreludeOpeningSmokeTest();
     bool PreparePreludeOpeningPreview(int Phase,int Choice);
+    void ChooseEncounterRoad(int Choice);
+    bool PrepareFirstExperiencePreview(int Phase,int Road=0);
     void ApplyGrandMomentCamera(FVector&,float&,float&) const;
     TSharedRef<class SWidget> PortraitWidget(TFunction<int()> Id, float Width, float Height);
     bool IsPointerOverInterface() const;

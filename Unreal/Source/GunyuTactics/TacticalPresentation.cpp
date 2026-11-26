@@ -155,6 +155,7 @@ void ATacticalField::BuildPresentation()
     BuildOpeningOrder();
     BuildDutyProgress();
     BuildBattleChoices();
+    BuildFirstStrike();
     BuildMissionMarch();
     BuildSupportChoices();
     if (J.HasConvoy() && TacticChain::Living(J.world,StrategistJourney::ConvoyArmy))

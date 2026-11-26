@@ -182,6 +182,7 @@ void ATacticalField::StartTrial()
     State->Journey.enemyPolicy = FMath::Clamp(EnemyPolicy, 0, 2);
     State->Journey.promise = bStartWithCouncil && !State->Journey.shortPrelude ? frontline::JourneyPromise::EscortRefugees : frontline::JourneyPromise::OpenRoad;
     State->DialogueIndex = 0; State->PreparationChoice = 0; State->BeforeBattle.reset();
+    State->bFirstReplyRevealed=false;
     State->Interlocutor = 0; State->bConfirmWithdrawal = false;
     if (!bStartWithCouncil)
     {
