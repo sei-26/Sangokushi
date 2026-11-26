@@ -198,6 +198,7 @@ void ATacticalField::BuildPresentation()
         else Card.Detail = TEXT("先行する戦法が停止するため保留。順序や配置を見直そう。");
         HUD.Orders.Add(MoveTemp(Card));
     }
+    BuildCommandGuide();
     State->Reachable.Reset();
     if (!HUD.bBattle || !TacticChain::Living(J.world, State->Selected)) return;
     if (State->Input == ETacticalInput::Select) return;

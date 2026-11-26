@@ -142,6 +142,13 @@
       "provenance": "Original character-expression edit with built-in image_gen, 2026-11-01. Exact prompts and references: Unreal/ArtSource/Novel/council-expression-prompts.json."
     },
     {
+      "source": "Unreal/ArtSource/Novel/first-road-v1.png",
+      "destination": "/Game/Art/Novel",
+      "name": "T_FirstRoadV1",
+      "kind": "visual-novel",
+      "provenance": "Original built-in image_gen historical-scene, 2026-11-27. Exact prompt: Unreal/ArtSource/Novel/first-road-prompt.md."
+    },
+    {
       "source": "Unreal/ArtSource/Novel/zhang-warm-v1.png",
       "destination": "/Game/Art/Novel",
       "name": "T_ZhangWarmV1",

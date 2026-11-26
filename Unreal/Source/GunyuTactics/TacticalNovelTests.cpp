@@ -6,7 +6,7 @@ bool ATacticalController::NovelInterfaceSmokeTest()
 {
     auto Check=[](bool V,const TCHAR* Why) { if(!V) UE_LOG(LogTemp,Error,TEXT("GUNYU_NOVEL_UI: FAIL %s"),Why);return V; };
     CloseEpisode();Field->PrepareOpeningPreview(false);bNovelInstant=false;OpenEpisode();
-    if(!Check(NovelBackgrounds.Num()==2 && NovelBackgrounds[0] && NovelBackgrounds[1] && CutinTextures.Num()==5 && CutinTextures[3] && CutinTextures[4],TEXT("both original backgrounds, civilian and protagonist are available"))) return false;
+    if(!Check(NovelBackgrounds.Num()==3 && NovelBackgrounds[0] && NovelBackgrounds[1] && NovelBackgrounds[2] && CutinTextures.Num()==5 && CutinTextures[3] && CutinTextures[4],TEXT("camp and road backgrounds, civilian and protagonist are available"))) return false;
     if(!Check(IFileManager::Get().FileExists(*(FPaths::ProjectContentDir()/TEXT("UI/Fonts/BIZUDMincho-Regular.ttf"))),TEXT("the redistributable literary font ships with its source"))) return false;
     std::vector<std::uint8_t> Before,After;if(!Check(Field->ExportSession(Before),TEXT("council snapshot"))) return false;
     if(!Check(VisibleNovelText().IsEmpty() && NovelHistoryText(1).IsEmpty(),TEXT("typing and history do not reveal unread future lines"))) return false;

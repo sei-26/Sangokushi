@@ -1,6 +1,7 @@
 #include "TacticalTrial.h"
 #include "TacticalChrome.h"
 #include "TacticalTargetVisual.h"
+#include "TacticalCommandOverlayLayout.h"
 #include "JourneySave.hpp"
 #include <memory>
 
@@ -27,6 +28,9 @@ bool ATacticalController::LabelLayoutSmokeTest(bool bExerciseInput)
         if(P==gunyumaplabel::Hidden) continue;
         ++Shown;const FSlateRect R(P.X,P.Y,P.X+S.X,P.Y+S.Y);
         if(!Check(P.X>=16 && P.Y>=174 && R.Right<=1256.5 && R.Bottom<=712.5,TEXT("labels stay inside the playable view and clear of the command panel"))) return false;
+        if(!bDetailedBattle && !bTacticPickerOpen &&
+            !Check(!gunyumaplabel::Intersects(R,FSlateRect(16,gunyucommandlayout::EnemyTop,16+gunyucommandlayout::EnemyWidth,gunyucommandlayout::EnemyTop+gunyucommandlayout::EnemyHeight)),TEXT("nameplates remain clear of the normal observed-enemy read"))) return false;
+        if(!Check(!gunyumaplabel::Intersects(R,FSlateRect(16,gunyucommandlayout::FeedTop,16+gunyucommandlayout::FeedWidth,gunyucommandlayout::FeedTop+gunyucommandlayout::FeedHeight)),TEXT("nameplates remain clear of the report and command guide"))) return false;
         for(const auto& Other:Rects) if(!Check(!gunyumaplabel::Intersects(R,Other),TEXT("real nameplates do not overlap each other"))) return false;
         Rects.Add(R);
         for(const auto& V:Units) if(V.Id>=0 && V.Troops>0)

@@ -282,7 +282,7 @@ struct FTacticalPresentation
     TArray<FEnemyReadPresentation> EnemyReads;
     TArray<int> ThreatCells;
     int ThreatFrom = -1, ThreatNext = -1;
-    FString EnemyCounter;
+    FString EnemyCounter,CommandGuide;
     bool bThreatOverlay = true;
     FString SelectedTacticName, TacticAvailability;
     bool bTacticUnavailable=false;

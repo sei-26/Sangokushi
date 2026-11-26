@@ -22,4 +22,4 @@ for item in manifest['assets']:
     texture.set_editor_property('mip_gen_settings',unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
     texture.set_editor_property('never_stream',True);texture.set_editor_property('srgb',True)
     assert unreal.EditorAssetLibrary.save_loaded_asset(texture)
-unreal.log('GUNYU_NOVEL_ART: PASS (two full-bleed backgrounds, protagonist and civilian alpha sprites)')
+unreal.log('GUNYU_NOVEL_ART: PASS (original visual-novel textures available as editable UI assets)')

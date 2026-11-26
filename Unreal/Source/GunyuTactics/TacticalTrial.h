@@ -396,6 +396,7 @@ private:
     void BuildGuardPresentation();
     void RetargetObservedEnemy();
     void BuildEnemyPresentation();
+    void BuildCommandGuide();
     void BuildJourneyPresentation();
     void BuildOfficerConversation();
     void BuildStoryPresentation();

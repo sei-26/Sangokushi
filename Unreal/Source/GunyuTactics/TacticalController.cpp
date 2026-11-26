@@ -608,6 +608,12 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=Field->TacticPositionSmokeTest() && TacticPositionInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMarchOnly")))
     { const bool Passed=Field->MissionMarchSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuOpeningUpgradeOnly")))
+    {
+        const bool Passed=Field->FirstExperienceSmokeTest() && Field->EnemyReadSmokeTest() && NovelInterfaceSmokeTest() && NovelFlowSmokeTest();
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_OPENING_UPGRADE: %s"),Passed ? TEXT("PASS"):TEXT("FAIL"));
+        FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return;
+    }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuFirstExperienceOnly")))
     { const bool Passed=Field->FirstExperienceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetOnly")))

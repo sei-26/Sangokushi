@@ -89,11 +89,13 @@ TSharedRef<SWidget> ATacticalController::ManualTacticsWidget()
               { const auto& H=Field->Presentation();return H.bBusy ? FString(TEXT("行動の再生中。終わると次の戦法を選べる。")):H.TacticAvailability; },11)]]
           + SVerticalBox::Slot().AutoHeight()[SNew(SBox).Visibility_Lambda([this] { return Field->Presentation().Orders.IsEmpty() ? EVisibility::Collapsed:EVisibility::Visible; })
             [Label([this] { FString Text;for(const auto& O:Field->Presentation().Orders) { if(!Text.IsEmpty()) Text+=TEXT(" → ");Text+=O.ActorName+TEXT("・")+O.TacticName; }return Text; },11,Gold)]]
-          + SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SHorizontalBox)
+          + SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SBox)
+            .Visibility_Lambda([this] { const auto& H=Field->Presentation();return !H.Orders.IsEmpty() || H.bChainSignalArmed ? EVisibility::Visible:EVisibility::Collapsed; })
+            [SNew(SHorizontalBox)
             + SHorizontalBox::Slot().FillWidth(3).Padding(0,0,4,0)[Button([this]
               { return Field->Presentation().Orders.Num()>1 ? FString(TEXT("連鎖を今発動 / C")):FString(TEXT("単独を今発動 / C")); },
                 [this] { Field->FireManualTactics(); },[this] { return Field->CanFireManualTactics(); },true)]
-            + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::Clear,[] { return TEXT("取消"); })]]
+            + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::Clear,[] { return TEXT("取消"); })]]]
           + SVerticalBox::Slot().AutoHeight().Padding(0,4,0,0)[SNew(SBox).Visibility_Lambda([this]
             { return Field->Presentation().bRealtime ? EVisibility::Visible:EVisibility::Collapsed; })
             .ToolTipText(FText::FromString(TEXT("通常の1周期を進めて行動を回復。行軍・交戦・兵糧も進む。固守を継続している隊は、解除してから進めよう。")))

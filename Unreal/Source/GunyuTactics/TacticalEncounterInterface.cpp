@@ -4,6 +4,7 @@
 #include "Widgets/SCanvas.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScaleBox.h"
 using namespace gunyuui;
 void ATacticalController::BuildEncounterInterface(TSharedRef<SCanvas> Canvas)
 {
@@ -13,9 +14,13 @@ void ATacticalController::BuildEncounterInterface(TSharedRef<SCanvas> Canvas)
     for(int Slot=0;Slot<2;++Slot)
     {
         const FVector2D Size=Slot==0 ? FVector2D(gunyunovel::FullBodyWidth,gunyunovel::FullBodyHeight):FVector2D(650,975);
-        auto Figure=SNew(SBox).Visibility_Lambda(Visible)[NovelPortraitWidget([this,Slot] { return Slot==0 ? 3:Field->Presentation().Journey.Portrait; },Size.X,Size.Y)];
+        auto Figure=SNew(SBox).Visibility_Lambda(Visible)
+          [SNew(SScaleBox).Stretch(EStretch::ScaleToFit)
+           [NovelPortraitWidget([this,Slot] { return Slot==0 ? 3:Field->Presentation().Journey.Portrait; },Size.X,Size.Y)]];
         if(Slot==1) { Figure->SetRenderTransformPivot(FVector2D(.5,.5));Figure->SetRenderTransform(FSlateRenderTransform(FScale2D(-1,1))); }
-        Canvas->AddSlot().Position(Slot==0 ? FVector2D(-30,gunyunovel::FullBodyTop):FVector2D(850,60)).Size(Size)[Figure];
+        Canvas->AddSlot().Position_Lambda([this,Slot]
+          { return Field->CanChooseFirstRoad() ? FVector2D(Slot==0 ? -25:1175,150):Slot==0 ? FVector2D(-30,gunyunovel::FullBodyTop):FVector2D(850,60); })
+          .Size_Lambda([this,Size] { return Field->CanChooseFirstRoad() ? FVector2D(450,675):Size; })[Figure];
     }
     auto Intro=SNew(STacticalChrome).Padding(FMargin(22,12)).Opacity(.88f).Visibility_Lambda(Visible)
         [SNew(SVerticalBox)

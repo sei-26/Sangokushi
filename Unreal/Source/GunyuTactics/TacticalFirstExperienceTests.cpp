@@ -56,6 +56,17 @@ bool ATacticalField::FirstExperienceSmokeTest()
         if(!Check(!UseFirstStrike(Ready.SoloVersion,Ready.SoloTarget),TEXT("a double click cannot fire during playback"))) return false;
         AdvancePresentation(60);
         if(!Check(!IsPlaying() && RealtimePaused() && State->Journey.turn==Turn,TEXT("the first strike ends paused without an extra enemy cycle"))) return false;
+        if(!Check(Presentation().CommandGuide.Contains(TEXT("未行動")),TEXT("after the real solo tactic the guide points to the remaining officers"))) return false;
+        const auto Spent=State->Journey.chain.spent;
+        for(int Officer=0;Officer<3;++Officer) State->Journey.chain.spent[Officer]=true;
+        Refresh();if(!ExportSession(Before)) return false;Refresh();
+        if(!Check(Presentation().CommandGuide.Contains(TEXT("1周期")) && ExportSession(After) && Before==After,
+            TEXT("with all actions spent the guide explains the real cycle control without advancing or paying"))) return false;
+        State->Journey.chain.spent=Spent;Refresh();
+        const auto GuardOrders=State->Realtime;
+        State->Realtime.Queue(State->Journey,State->Selected,JourneyDirective::Hold);Refresh();
+        if(!Check(Presentation().bGuardOrder && Presentation().CommandGuide.Contains(TEXT("固守解除")),TEXT("a continuing guard is explained before cycle recovery"))) return false;
+        State->Realtime=GuardOrders;Refresh();
         State->bNoPlayback=true;Issue(ETacticalCommand::AutoBattle);
         for(int Cycle=0;Cycle<24 && State->Journey.stage==JourneyStage::Battle;++Cycle)
         { AdvanceRealtime(12.1f);AdvancePresentation(60);AdvanceRealtime(.1f);AdvancePresentation(60); }

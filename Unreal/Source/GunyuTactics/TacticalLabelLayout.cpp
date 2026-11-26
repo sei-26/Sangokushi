@@ -6,6 +6,7 @@
 #include "TacticalActionFocus.h"
 #include "TacticalBattleResponse.h"
 #include "TacticalMapLabelLayout.h"
+#include "TacticalCommandOverlayLayout.h"
 #include "TacticalMissionSignals.h"
 #include "HexGrid.hpp"
 
@@ -55,7 +56,14 @@ void ATacticalController::LayoutMapLabels()
         }
         else Occupied.Add(FSlateRect(290,106,1050,210));
     }
-    if(bEnemyDetailsOpen && !Field->IsPlaying()) Occupied.Add(FSlateRect(16,174,716,306));
+    if(!Field->IsPlaying() && !bTacticPickerOpen)
+    {
+        if(!bDetailedBattle) Occupied.Add(FSlateRect(16,gunyucommandlayout::EnemyTop,16+gunyucommandlayout::EnemyWidth,gunyucommandlayout::EnemyTop+gunyucommandlayout::EnemyHeight));
+        else Occupied.Add(FSlateRect(16,116,716,166));
+        if(bEnemyDetailsOpen)
+        { const float Top=gunyucommandlayout::EnemyDetailTop(bDetailedBattle);Occupied.Add(FSlateRect(16,Top,716,Top+132)); }
+    }
+    Occupied.Add(FSlateRect(16,gunyucommandlayout::FeedTop,16+gunyucommandlayout::FeedWidth,gunyucommandlayout::FeedTop+gunyucommandlayout::FeedHeight));
     TArray<int> Priority;
     if(Action.bActive && Action.bHasTarget) { Priority.AddUnique(Action.Actor);Priority.AddUnique(Action.Target); }
     Priority.AddUnique(H.Selected);

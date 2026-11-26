@@ -18,6 +18,14 @@ void ATacticalController::LoadNovelArt()
         if(NovelBackgrounds.Num()<2) { NovelBackgrounds.Add(Texture);NovelBackgroundBrushes.Add(Brush); }
         else { CutinTextures.Add(Texture);CutinBrushes.Add(Brush); }
     }
+    // The encounter needs its own place: the cart and the escape road are
+    // visible before the player is asked to decide who will hold the pursuers.
+    {
+        auto* Texture=LoadObject<UTexture2D>(nullptr,TEXT("/Game/Art/Novel/T_FirstRoadV1.T_FirstRoadV1"));
+        if(Texture) Texture->SetForceMipLevelsToBeResident(3600.f);
+        auto Brush=MakeShared<FSlateBrush>();Brush->SetResourceObject(Texture);Brush->DrawAs=ESlateBrushDrawType::Image;
+        Brush->ImageSize=FVector2D(1672,941);NovelBackgrounds.Add(Texture);NovelBackgroundBrushes.Add(Brush);
+    }
     ReactionTextures.Reset();ReactionBrushes.Reset();
     for(const TCHAR* Name:{TEXT("T_LiuWarmV1"),TEXT("T_GuanWarmV1"),TEXT("T_ZhangWarmV1")})
     {
@@ -62,7 +70,11 @@ TSharedRef<SWidget> ATacticalController::NovelBackdropWidget(TFunction<bool()> N
 {
     return SNew(SScaleBox).Stretch(EStretch::ScaleToFill).Clipping(EWidgetClipping::ClipToBounds)
         [SNew(SImage).Image_Lambda([this,Night]() -> const FSlateBrush*
-        { const int I=Night() ? 1:0;return NovelBackgroundBrushes.IsValidIndex(I) ? NovelBackgroundBrushes[I].Get():FCoreStyle::Get().GetBrush("NoBrush"); })];
+        {
+            const bool Road=Field && Field->CanChooseFirstRoad() && NovelBackgrounds.IsValidIndex(2) && NovelBackgrounds[2];
+            const int I=Road ? 2:Night() ? 1:0;
+            return NovelBackgroundBrushes.IsValidIndex(I) ? NovelBackgroundBrushes[I].Get():FCoreStyle::Get().GetBrush("NoBrush");
+        })];
 }
 TSharedRef<SWidget> ATacticalController::NovelPortraitWidget(TFunction<int()> Speaker,float Width,float Height)
 {
