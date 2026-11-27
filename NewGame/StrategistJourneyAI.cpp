@@ -1,5 +1,6 @@
 ﻿#include "StrategistJourney.hpp"
 #include "TacticBattlefield.hpp"
+#include "JourneyStrategicResponse.hpp"
 #include <memory>
 
 namespace frontline
@@ -137,6 +138,7 @@ namespace frontline
         auto view = EnemyView(*observed, assumed);
         auto plans=AdaptivePlans(*view,chain,Context(*this),campaignFlow);
         if(HasGrandBattle()) ApplyGrandEnemyRoles(*view,plans);
+        if(HasGrandStrategy()) ApplyGuangzongFlankResponse(*view,chain,goal,plans);
         if(HasCoalitionBattle()) ApplyCoalitionEnemyRoles(*view,plans);
         if(HasYangrenStrategy()) for(auto& plan:plans) if(plan.army==8)
         {
@@ -155,6 +157,7 @@ namespace frontline
         auto observed=EnemyView(world,intelligence[1]);
         auto plans=AdaptivePlans(*observed,chain,Context(*this),campaignFlow);
         if(HasGrandBattle()) ApplyGrandEnemyRoles(*observed,plans);
+        if(HasGrandStrategy()) ApplyGuangzongFlankResponse(*observed,chain,goal,plans);
         if(HasCoalitionBattle()) ApplyCoalitionEnemyRoles(*observed,plans);
         if(HasYangrenStrategy()) for(auto& plan:plans) if(plan.army==8)
         {
@@ -173,11 +176,13 @@ namespace frontline
     }
     void StrategistJourney::ApplyEnemyPlans(const std::vector<JourneyEnemyPlan>& plans)
     {
-        bool mainMoved=false;
+        bool mainMoved=false,flankMoved=false;
         for (const auto& plan : plans)
             if (plan.next!=plan.from && TacticChain::Free(world,plan.next))
             {
                 world.armies[plan.army].tile=world.armies[plan.army].target=plan.next;
+                if(HasGrandStrategy() && plan.army==4 && plan.role==JourneyEnemyRole::Counterattack && plan.from==GuangzongReserve)
+                { const auto* seen=intelligence[0].Find(4);flankMoved=seen && seen->current; }
                 if(plan.army==5) mainMoved=true;
                 // Re-forming costs the guard's brace. A blocked move above never pays this cost.
                 if(campaignFlow && world.armies[plan.army].stance==battle::Stance::Guard) world.armies[plan.army].stance=battle::Stance::Balanced;
@@ -192,6 +197,9 @@ namespace frontline
                    world.ActivateTactic(AlliedArmy,true))
                 { Report(U"味方本隊が鼓舞を発動。太鼓に応え、周囲の兵が顔を上げた。");break; }
         RefreshIntelligence();
+        if(flankMoved)
+            if(const auto* seen=intelligence[0].Find(4);seen && seen->current)
+                Report(U"黄巾の南翼が、中央の集中を見て北へ動いた。関羽「別隊が北へ回る。中央を押し切るか、一隊を返すか――軍師、旗を見て決めろ。」");
     }
     void StrategistJourney::EnemyTurn()
     {

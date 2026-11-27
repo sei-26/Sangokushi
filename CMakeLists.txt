@@ -14,11 +14,13 @@ add_library(sangokushi_rules STATIC
     NewGame/StrategistJourneyAI.cpp
     NewGame/JourneyEnemyPlan.cpp
     NewGame/JourneyEnemyDoctrine.cpp
+    NewGame/JourneyStrategicResponse.cpp
     NewGame/JourneyAutoBattle.cpp
     NewGame/JourneyAutoEngagement.cpp
     NewGame/JourneyAutoTactics.cpp
     NewGame/JourneyBattleChoices.cpp
     NewGame/JourneyAutoPosition.cpp
+    NewGame/JourneyCoalitionYield.cpp
     NewGame/JourneyRealtime.cpp
     NewGame/JourneyRealtimeRouting.cpp
     NewGame/JourneyMarch.cpp
@@ -144,6 +146,7 @@ if(BUILD_TESTING)
     add_rules_test(journey_auto tests/JourneyAutoBattleTests.cpp)
     add_rules_test(journey_grand tests/JourneyGrandBattleTests.cpp)
     add_rules_test(journey_grand_strategy tests/JourneyGrandStrategyTests.cpp)
+    add_rules_test(journey_strategic_response tests/JourneyStrategicResponseTests.cpp)
     add_rules_test(journey_epic_campaign tests/JourneyEpicCampaignTests.cpp)
     add_rules_test(journey_coalition_grand tests/JourneyCoalitionGrandTests.cpp)
     add_rules_test(journey_council_stage tests/JourneyCouncilStageTests.cpp)

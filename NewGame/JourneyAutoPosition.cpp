@@ -2,9 +2,11 @@
 #include <memory>
 namespace frontline
 {
+    void CoordinateCoalitionReturn(const StrategistJourney&,JourneyAutoPlan&);
     void CoordinateJourneyAutoMovement(const StrategistJourney& j,JourneyAutoPlan& plan)
     {
         const auto& w=j.world;
+        CoordinateCoalitionReturn(j,plan);
         for(int a=0;a<3;++a)
         {
             if(!TacticChain::Living(w,a) || j.chain.moved[a]) continue;

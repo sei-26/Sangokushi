@@ -1,5 +1,6 @@
 #include "JourneyEpisode.hpp"
 #include "StrategistJourney.hpp"
+#include "JourneyStrategicResponse.hpp"
 
 namespace frontline
 {
@@ -26,6 +27,12 @@ namespace frontline
         else
             e.lines={{CaoCao,U"合図は聞こえた。届かなかった道を、今度は一緒に見よう。兵をまた出すなら、同じ橋へ同じようには並べぬ。",U"汴水からの撤収。曹操の使者が軍師の陣を訪ねる。"},
                 {3,U"戻れた者の話を先に聞く。南か北か、どこで離れたか。それから、次の渡り方を決める。",U"主人公は兵の名と、最後に見た場所を記した。"}};
+        const int veteran=GuangzongVeteranOfficer(j);
+        if(j.stage==JourneyStage::Preparation && veteran>=0 && e.lines.size()>4)
+            e.lines[4]={veteran,veteran==2 ? U"軍師、見ろよ！ 広宗で引っ張り出した連中だ！ 今度は俺の後ろを守るってよ。……なら、背中は任せた！":
+                veteran==1 ? U"あの北の旗だ。広宗で救った兵が、今度は我らの背を支えると言う。軍師、お前の一手は、まだ終わっていなかったのだな。":
+                U"広宗の北で救った兵たちが来てくれた。『今度はこちらが支えます』とね。軍師、あの日選んだ道が、今日ここへつながった。",
+                U"広宗の生還兵が連合の後陣へ合流し、救援した武将の旗の後ろへ並ぶ。戦場では間を保ち、帰る隊へ道を譲る。"};
         return e;
     }
 }

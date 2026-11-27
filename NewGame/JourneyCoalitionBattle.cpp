@@ -1,4 +1,5 @@
 #include "StrategistJourney.hpp"
+#include "JourneyStrategicResponse.hpp"
 #include <memory>
 
 namespace frontline
@@ -23,6 +24,13 @@ namespace frontline
         Add(0,U"曹操",10,5,5000,92);
         Add(0,U"張邈の援軍",9,9,2200,75);
         Add(0,U"連合軍・後陣",5,4,3200,78);
+        if(GuangzongVeteranOfficer(*this)>=0)
+        {
+            world.generals[world.armies[7].general].name=U"広宗の義兵";
+            // The earned survivors join the existing rear; saving them must
+            // never replace a larger allied company with a weaker reward.
+            world.armies[7].troops+=history[YellowTurbanMission].review.grand.leftReturned;
+        }
         const int rate=CombatSettings(difficulty).enemyPercent;
         Add(1,U"徐栄軍・北岸",10,3,1600*rate/100,73);
         Add(1,U"徐栄軍・包囲隊",12,9,1800*rate/100,78);
@@ -58,6 +66,25 @@ namespace frontline
             }
             if(a==6 && g.coalition.rescuedOn) target=withdraw ? (p.from%Width>7 ? CoalitionBridge:Campaign::At(5,10)):Campaign::At(10,8);
             if(a==7) target=withdraw ? Campaign::At(4,8):Campaign::At(9,4);
+            if(a==7 && HasGuangzongVeterans(*this))
+            {
+                const int officer=GuangzongVeteranOfficer(*this);
+                const auto& hero=world.armies[officer];
+                if(TacticChain::Living(world,officer))
+                    target=world.MapDistance(p.from,hero.tile)>2 ? hero.tile:p.from;
+                // Keep the crossing and the victory flag free, even while covering a friend.
+                if(p.from==goal) target=Campaign::At(5,4);
+                else if(world.tiles[p.from].terrain==Terrain::Bridge)
+                    target=hero.tile%Width>7 ? Campaign::At(9,4):Campaign::At(5,4);
+                int distance=2;
+                for(const auto& c:intelligence[0].contacts)
+                    if(c.current && c.observed.troops>0 && world.MapDistance(p.from,c.observed.tile)<distance)
+                    { distance=world.MapDistance(p.from,c.observed.tile);target=c.observed.tile; }
+                // Once the relief returns, heroes need the bridge approaches
+                // as yield cells. Rejoin the western rear instead of following
+                // a rescuer onto those cells and pinning the whole column.
+                if(withdraw && g.coalition.rescuedOn) target=Campaign::At(4,8);
+            }
             if((!withdraw || !g.coalition.rescuedOn) && !(a==5 && !withdraw && g.openedOn))
             {
                 int best=2;
@@ -67,7 +94,7 @@ namespace frontline
                     if(distance<best) { best=distance;target=c.observed.tile; }
                 }
             }
-            const bool occupy=(withdraw && g.coalition.rescuedOn) || (a==5 && !withdraw && g.openedOn);
+            const bool occupy=((withdraw && g.coalition.rescuedOn) || (a==5 && !withdraw && g.openedOn)) && !(a==7 && HasGuangzongVeterans(*this));
             p.occupyTarget=occupy;
             p.target=target;p.next=JourneyAdvanceStep(*observed,p.from,target,occupy);
             plans.push_back(p);observed->armies[a].tile=p.next;
