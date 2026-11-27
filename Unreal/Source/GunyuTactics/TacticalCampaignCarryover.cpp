@@ -31,6 +31,8 @@ FString ATacticalField::ReadCampaignCarryover() const
         const auto& Support=J.GuangzongSupport();
         TArray<FString> Changes;
         const auto& previous=J.history[YellowTurbanMission];const auto& grand=previous.review.grand;
+        if(previous.won && grand.ordersEnabled && grand.approach==GrandApproach::CentralAssault && grand.forcedSteps>0)
+            Changes.Add(FString::Printf(TEXT("中央突破で本隊の前進を%d回支援。主力%d兵が帰還し、残る兵糧と共に次戦へ"),grand.forcedSteps,previous.survivors));
         if(previous.won && grand.relievedOn && grand.leftReturned>0)
             Changes.Add(JourneyText(J.world.generals[grand.reliefOfficer].name)+TEXT("が救った左翼の案内で先行配置・士気支援"));
         if(J.coalitionBattleCampaign && GuangzongVeteranOfficer(J)>=0)

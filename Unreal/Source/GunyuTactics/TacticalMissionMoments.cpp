@@ -4,11 +4,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 #include "JourneyDefense.hpp"
+#include "JourneyStrategicResponse.hpp"
 FMissionProgress ATacticalField::CaptureMissionProgress() const
 {
     const auto& J=State->Journey;FMissionProgress P;
     P.CommandTurn=J.turn;
     P.bBattle=J.stage==frontline::JourneyStage::Battle;P.bRescue=J.IsRescue();
+    if(frontline::HasGuangzongVeterans(J) && J.world.generals[J.world.armies[7].general].tactic==frontline::Tactic::Rally)
+    { P.VeteranOfficer=frontline::GuangzongVeteranOfficer(J);P.VeteranReadyDay=J.world.armies[7].tacticReadyDay; }
     if(J.HasGrandBattle())
     {
         const auto& G=J.battleReview.grand;auto& B=P.Grand;

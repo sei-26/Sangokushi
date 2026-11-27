@@ -150,6 +150,7 @@ FString ATacticalController::UnitMapStatus(int Index) const
     if(U.Motion>.01f) return TEXT("行軍中");
     if(U.bConcealed) return TEXT("潜伏中");
     const auto& H=Field->Presentation();
+    if(Index==7 && !H.VeteranStatus.IsEmpty()) return H.VeteranStatus;
     if(H.bGrandBattle && H.Mission==frontline::CoalitionMission && Index>=5 && Index<=6 && !H.CoalitionAllyStatus[Index-5].IsEmpty())
         return H.CoalitionAllyStatus[Index-5];
     if(U.bGuarded) return TEXT("固守");

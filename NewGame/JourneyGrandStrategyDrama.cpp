@@ -19,6 +19,9 @@ namespace frontline
         }
         if(!journey.won || episode.lines.size()<3) return;
         const auto& grand=journey.history[YellowTurbanMission].review.grand;
+        if(journey.stage!=JourneyStage::Complete && grand.approach==GrandApproach::CentralAssault && grand.forcedSteps>0)
+            episode.lines[1]={HuangfuSong,U"軍師、君が橋の先を開けたから、本隊の旗がここまで届いた。前陣を取って終わらず、最後まで道を残した。あの采配を、兵たちも覚えている。",
+                U"皇甫嵩が、中央を通った兵をねぎらう。戻った主力の兵と残る兵糧は、次の戦いへ引き継がれる。"};
         if(journey.stage==JourneyStage::Complete)
         {
             if(grand.relievedOn && grand.leftReturned>0)

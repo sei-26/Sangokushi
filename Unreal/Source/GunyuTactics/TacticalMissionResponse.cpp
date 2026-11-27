@@ -15,6 +15,17 @@ namespace gunyumission
             return B->Before.IsValidIndex(Id) && B->After.IsValidIndex(Id) && B->Before[Id].Id==Id && B->After[Id].Id==Id &&
                 !B->Before[Id].bEnemy && !B->After[Id].bEnemy && B->Before[Id].Troops>0 && B->After[Id].Troops>0;
         };
+        if(A.VeteranOfficer>=0 && A.VeteranOfficer<3 && A.VeteranOfficer==Z.VeteranOfficer &&
+           Z.VeteranReadyDay>A.VeteranReadyDay && Living(7) && Living(Z.VeteranOfficer))
+        {
+            R.Actor=Z.VeteranOfficer;R.Speaker=B->After[R.Actor].Name;
+            R.Caption=TEXT("広宗の旗が応える ／ 義兵の鼓舞");
+            const TCHAR* Lines[3]={TEXT("あの時の旗だ。軍師、今は私たちを支えてくれている。"),
+                TEXT("あの北の旗が、我らを支えている。軍師、お前の一手が返ってきたぞ。"),
+                TEXT("広宗の連中だ！ おい軍師、今度は俺が励まされちまったぞ！")};
+            R.Line=Lines[R.Actor];R.Reply=TEXT("義兵「今度は俺たちが支える！」");
+            R.Sound=gunyuresponse::ESound::Support;R.Weight=1;return R;
+        }
         int Event=-1,Preferred=0,Partner=-1;
         if(A.Convoy>=0 && Z.Convoy>A.Convoy && Z.Total>0 && A.Total==Z.Total && Living(5) &&
            !B->Before[5].Position.Equals(B->After[5].Position))

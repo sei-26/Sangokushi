@@ -50,6 +50,17 @@ namespace frontline
         return j.HasCoalitionBattle() && GuangzongVeteranOfficer(j)>=0 && j.world.armies.size()>7 &&
             j.world.generals[j.world.armies[7].general].name==U"広宗の義兵";
     }
+    bool QueueGuangzongVeteranSupport(StrategistJourney& j)
+    {
+        if(j.stage!=JourneyStage::Battle || !HasGuangzongVeterans(j) || !TacticChain::Living(j.world,7) || j.chain.disordered[7]) return false;
+        if(j.world.generals[j.world.armies[7].general].tactic!=Tactic::Rally) return false;
+        const int officer=GuangzongVeteranOfficer(j);
+        if(!TacticChain::Living(j.world,officer) || j.world.armies[officer].morale>75 ||
+            j.world.MapDistance(j.world.armies[7].tile,j.world.armies[officer].tile)>2) return false;
+        // Use the ordinary rally: queued now, paid and resolved by battle day,
+        // including the army's existing morale cost and persisted ready day.
+        return j.world.ActivateTactic(7,true);
+    }
     std::u32string RemainingOfficers(const StrategistJourney& j,const std::vector<ChainOrder>& orders)
     {
         std::u32string text;

@@ -860,7 +860,7 @@ void ATacticalController::PlayerTick(float Delta)
         const bool Valid=Field->PrepareStrategicDepthPreview(StrategicView);CloseEpisode();bDetailedBattle=false;
         ResetBattleCamera();
         GrandCameraMission=Field->Presentation().bGrandBattle ? Field->Presentation().Mission:-1;
-        if(StrategicView==2 && Field->VisualUnits().IsValidIndex(7)) Focus=Field->VisualUnits()[7].Position;
+        if((StrategicView==2 || StrategicView==4) && Field->VisualUnits().IsValidIndex(7)) Focus=Field->VisualUnits()[7].Position;
         if(StrategicView==3 && Field->VisualUnits().IsValidIndex(3))
         { Focus=Field->VisualUnits()[3].Position;Distance=ViewDistance=900;CameraYaw=125;CameraElevation=36;CameraPreset=-1;bTacticCinema=false; }
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuHintsOff"))) bCommandHints=false;

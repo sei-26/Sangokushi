@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+広宗→汴水の8通りの進行は `tests/JourneyWarFlowTests.cpp`。義兵の通常鼓舞は `JourneyStrategicResponse.cpp`、帰還隊と主力の退避先競合は `JourneyCoalitionYield.cpp`。捕捉後の任意停止は `TacticalDecisionMoment.cpp`、実発動への人物の反応は `TacticalMissionResponse.cpp`、広宗の盤外陣営は `TacticalMapScenery.cpp`。保存版26を維持する。[詳細](WAR_FLOW_AND_EARNED_SUPPORT.md)。
+
 中央への集中に対する敵の転進と、次戦の義兵の条件は `NewGame/JourneyStrategicResponse.cpp`。両側の観測を使う `StrategistJourneyAI.cpp` と、隊を準備して通常移動する `JourneyCoalitionBattle.cpp` が入口。次の軍議は `JourneyCoalitionDrama.cpp`、温存する隊は `TacticalBattleChoices.cpp`、公開状態に沿う隊列は `TacticalSoldierMotion.cpp`。[仕様・保存・検証](STRATEGIC_RESPONSE_AND_MEMORY.md)。
 
 街道の出会いは `TacticalNovelArt.cpp` / `TacticalEncounterInterface.cpp`。通常画面の敵情は `TacticalEnemyInterface.cpp` が既存の捕捉情報を使う。現在の操作・予約・残る行動の案内は `TacticalCommandGuide.cpp` で作り、`TacticalBattleFeed.cpp` へ表示する。[実装と情報の境界](OPENING_SCENE_AND_COMMAND_FLOW.md)。

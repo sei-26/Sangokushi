@@ -1,6 +1,7 @@
 #include "TacticalDecisionMoment.h"
 #include "StrategistJourney.hpp"
 #include "JourneyDefense.hpp"
+#include "JourneyStrategicResponse.hpp"
 
 namespace gunyudecision
 {
@@ -27,6 +28,12 @@ namespace gunyudecision
         // small-battle evacuation timer as a choice in the new Guangzong battle.
         if(J.HasGrandStrategy())
         {
+            if(const auto* Flank=Sight.Find(4);Flank && Flank->current && Flank->observed.troops>0)
+            {
+                R.VisibleFlankTile=Flank->observed.tile;
+                for(const auto& P:J.ReadEnemyPlans()) if(P.army==4 && P.role==JourneyEnemyRole::Counterattack &&
+                    (P.target==GrandNorthPass || P.targetArmy==6)) R.bFlankThreat=true;
+            }
             const auto& G=J.battleReview.grand;
             if(G.ralliedOn)
                 R.Moment={EKind::GrandRally,J.goal,TEXT("本隊が合流。前陣の旗を残し、敵本陣へ誰を出すか決めよう。")};
@@ -113,6 +120,10 @@ namespace gunyudecision
     FMoment Compare(const FSnapshot& Before,const FSnapshot& After)
     {
         if(!Before.bBattle || !After.bBattle) return {};
+        const bool FlankMoved=Before.VisibleFlankTile>=0 && After.VisibleFlankTile>=0 && Before.VisibleFlankTile!=After.VisibleFlankTile;
+        if(After.bFlankThreat && ((FlankMoved && (Before.VisibleFlankTile==frontline::GuangzongReserve || !Before.bFlankThreat)) || Before.VisibleFlankTile<0))
+            return {EKind::GuangzongFlank,After.VisibleFlankTile,
+                TEXT("北を狙う別隊を捕捉。中央を押し切るか、一隊を返すか。使った行動は戻らない。")};
         if(Before.HoldCount>0 && After.HoldCount==0 && After.LostBeacon>=0)
             return {EKind::BeaconLost,After.LostBeacon,TEXT("烽火の守りが崩れた。空いた翼を見て、誰を戻すか決めよう。")};
         return Before.Moment.Kind!=After.Moment.Kind ? After.Moment:FMoment{};

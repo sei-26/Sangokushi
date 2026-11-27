@@ -2,12 +2,21 @@
 #include "TacticalState.h"
 #include "TacticalCrossingLandscape.h"
 #include "JourneyCoalitionBattle.hpp"
+#include "JourneyStrategicResponse.hpp"
 using namespace frontline;
 
 void ATacticalField::BuildCoalitionBattlePresentation()
 {
     const auto& J=State->Journey;auto& H=State->HUD;const auto& G=J.battleReview.grand;const auto& C=G.coalition;
     const bool retreat=J.coalitionPlan==CoalitionPlan::Protect;
+    if(HasGuangzongVeterans(J) && TacticChain::Living(J.world,7))
+    {
+        const int Officer=GuangzongVeteranOfficer(J);
+        const FString Name=JourneyText(J.world.generals[J.world.armies[Officer].general].name);
+        H.VeteranStatus=J.world.armies[7].tacticReadyDay>J.world.day ? TEXT("鼓舞・準備中"):
+            retreat && C.rescuedOn ? TEXT("帰還を援護"):
+            J.world.MapDistance(J.world.armies[7].tile,J.world.armies[Officer].tile)<=2 ? Name+TEXT("隊を援護"):Name+TEXT("隊に続く");
+    }
     const bool caoHome=CoalitionReturnReached(J.world,5),reliefHome=CoalitionReturnReached(J.world,6);
     const int returned=int(caoHome)+int(reliefHome);
     H.GrandOrderStatus=retreat ? FString::Printf(TEXT("救援 %d/1 ｜ 西岸への帰還 %d/2隊"),C.rescuedOn ? 1:0,returned):

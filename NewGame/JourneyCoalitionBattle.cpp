@@ -60,7 +60,7 @@ namespace frontline
             {
                 if(withdraw && g.coalition.rescuedOn)
                     target=world.armies[6].tile%Width>7 ? Campaign::At(10,7):
-                        p.from%Width>7 ? CoalitionBridge:Campaign::At(6,9);
+                        p.from%Width>7 ? CoalitionBridge:Campaign::At(4,9);
                 else if(!withdraw && g.openedOn)
                     target=Campaign::At(13,4); // Cao Cao takes the north flank; heroes keep the southern approach clear.
             }

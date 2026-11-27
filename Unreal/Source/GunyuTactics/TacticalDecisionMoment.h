@@ -7,7 +7,7 @@ namespace frontline { class StrategistJourney; }
 namespace gunyudecision
 {
     enum class EKind { None, EscortBlocked, PortOpening, BeaconLost, GuangzongSplit, SunJianBlocked, DepotIntercept,
-        GrandOpening,GrandRelief,GrandRally,GrandCounter,CoalitionReturned };
+        GrandOpening,GrandRelief,GrandRally,GrandCounter,CoalitionReturned,GuangzongFlank };
 
     struct FMoment
     {
@@ -21,6 +21,8 @@ namespace gunyudecision
         FMoment Moment;
         int HoldCount=0, LostBeacon=-1;
         bool bBattle=false;
+        int VisibleFlankTile=-1;
+        bool bFlankThreat=false;
     };
 
     bool CanSeePortOpening(const frontline::StrategistJourney&);

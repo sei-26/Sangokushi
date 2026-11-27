@@ -44,6 +44,31 @@ void ATacticalField::BuildMapScenery()
         }
     };
     const auto Map=J.Battlefield();
+    if(Map==JourneyMap::GuangzongFronts)
+    {
+        // Rear camps sit beyond the two playable rims, leaving all three
+        // fighting lanes and their actual bridge approaches unobstructed.
+        for(int Side:{-1,1}) for(int Row=0;Row<3;++Row)
+        {
+            FVector P=TileLocation(Campaign::At(Side<0 ? 0:15,3+Row*3))+FVector(Side*110,0,0);
+            P.Z=SurfaceHeight(P);
+            const FRotator Facing(0,Side<0 ? 85:-85,0);
+            Tents->AddInstance(FTransform(Facing,P,FVector(.85f+Row*.06f)));
+            for(int I=0;I<3;++I)
+            {
+                FVector Crate=P+FVector(Side*60,-55+I*25,0);Crate.Z=SurfaceHeight(Crate);
+                SupplyCrates->AddInstance(FTransform(FRotator(0,I*17,0),Crate,FVector(.48)));
+            }
+            // Short, ground-conforming wheel ruts join the rear staging area;
+            // they are scenery, never a second road or navigation graph.
+            for(int Track:{-1,1}) for(int Segment=0;Segment<5;++Segment)
+            {
+                FVector A=P+FVector(-Side*(45+Segment*18),Track*11,0),B=A+FVector(-Side*18,0,0);
+                A.Z=SurfaceHeight(A)+1.8f;B.Z=SurfaceHeight(B)+1.8f;
+                Banks.Line(A,B,4.5f,FLinearColor(.13f,.087f,.046f));
+            }
+        }
+    }
     if(Map==JourneyMap::Retreat)
     {
         // The safe-side village is scenery beyond the eastern playable edge.

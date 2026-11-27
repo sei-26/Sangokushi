@@ -183,6 +183,7 @@ struct FBeaconDefensePresentation
 };
 struct FMissionProgress
 {
+    int VeteranOfficer=-1,VeteranReadyDay=0;
     FGrandProgress Grand;
     int Convoy=-1,Total=0,Held=-1,Required=0;
     int ConvoyNext=-1,DirectedMovers=0;
@@ -282,7 +283,7 @@ struct FTacticalPresentation
     TArray<FEnemyReadPresentation> EnemyReads;
     TArray<int> ThreatCells;
     int ThreatFrom = -1, ThreatNext = -1;
-    FString EnemyCounter,CommandGuide;
+    FString EnemyCounter,CommandGuide,VeteranStatus;
     bool bThreatOverlay = true;
     FString SelectedTacticName, TacticAvailability;
     bool bTacticUnavailable=false;

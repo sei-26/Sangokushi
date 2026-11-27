@@ -35,6 +35,38 @@ static void Fight(StrategistJourney& j)
     }
     assert(j.won);
 }
+static void SupportChecks(const JourneySaveData& earned)
+{
+    auto s=std::make_unique<JourneySaveData>(earned);auto& j=s->journey;
+    const int officer=GuangzongVeteranOfficer(j);assert(officer>=0);
+    j.world.armies[officer].tile=j.world.armies[officer].target=Campaign::At(3,8);
+    j.world.armies[officer].morale=60;
+    j.world.armies[7].tile=j.world.armies[7].target=Campaign::At(4,8);
+    j.RefreshIntelligence();
+    auto expected=std::make_unique<StrategistJourney>(j);
+    assert(expected->world.ActivateTactic(7,true));
+    // The automatic aid must be exactly the ordinary, paid rally: no hidden
+    // morale addition, skipped cooldown or extra food grant.
+    assert(j.EndTurn() && expected->EndTurn());
+    assert(j.world.armies[7].tacticReadyDay>j.world.day);
+    assert(j.world.armies[officer].morale==expected->world.armies[officer].morale);
+    assert(j.world.armies[7].morale==expected->world.armies[7].morale);
+    assert(j.world.armies[7].food==expected->world.armies[7].food);
+    assert(j.world.armies[7].tacticReadyDay==expected->world.armies[7].tacticReadyDay);
+    assert(!QueueGuangzongVeteranSupport(j));
+    std::vector<std::uint8_t> bytes;auto restored=std::make_unique<JourneySaveData>();
+    assert(EncodeJourneySave(*s,bytes) && DecodeJourneySave(bytes,*restored));
+    assert(restored->journey.world.armies[7].tacticReadyDay==j.world.armies[7].tacticReadyDay);
+    assert(!QueueGuangzongVeteranSupport(restored->journey));
+    j.world.armies[7].tacticReadyDay=j.world.day;
+    j.chain.disordered[7]=true;assert(!QueueGuangzongVeteranSupport(j));
+    j.chain.disordered[7]=false;
+    j.world.armies[7].tile=j.world.armies[7].target=Campaign::At(2,2);
+    assert(!QueueGuangzongVeteranSupport(j));
+    j.world.armies[7].tile=j.world.armies[7].target=Campaign::At(4,8);
+    j.world.generals[j.world.armies[7].general].tactic=Tactic::Charge;
+    assert(!QueueGuangzongVeteranSupport(j));
+}
 int main()
 {
     auto s=Start();auto& j=s->journey;
@@ -87,6 +119,7 @@ int main()
     std::vector<std::uint8_t> bytes;auto restored=std::make_unique<JourneySaveData>();
     assert(EncodeJourneySave(*s,bytes) && DecodeJourneySave(bytes,*restored) && HasGuangzongVeterans(restored->journey));
     assert(restored->journey.world.armies[7].troops==3200+result.leftReturned);
+    SupportChecks(*restored);
     auto old=std::make_unique<JourneySaveData>(*restored);
     old->journey.world.generals[old->journey.world.armies[7].general].name=U"連合軍・後陣";
     assert(!HasGuangzongVeterans(old->journey));

@@ -196,6 +196,7 @@ namespace frontline
                    world.MapDistance(world.armies[officer].tile,world.armies[AlliedArmy].tile)<=2 &&
                    world.ActivateTactic(AlliedArmy,true))
                 { Report(U"味方本隊が鼓舞を発動。太鼓に応え、周囲の兵が顔を上げた。");break; }
+        QueueGuangzongVeteranSupport(*this);
         RefreshIntelligence();
         if(flankMoved)
             if(const auto* seen=intelligence[0].Find(4);seen && seen->current)
@@ -253,6 +254,8 @@ namespace frontline
         world.AdvanceBattleDay();
         for(const auto& event:world.tacticEvents)
         {
+            if(HasGuangzongVeterans(*this) && event.general==world.armies[7].general && event.tactic==Tactic::Rally)
+                Report(U"広宗の義兵が「鼓舞」を発動。兵たち「今度は俺たちが支える！ 」"+world.generals[GuangzongVeteranOfficer(*this)].name+U"隊の近くへ、あの日救った旗が並んだ。");
             const auto* enemy=intelligence[0].Find(3);
             if(event.general==3 && event.tactic==Tactic::Rally && enemy && enemy->current)
                 Report(U"張梁が「鼓舞」を発動。近くの黄巾兵の士気が上がった。");

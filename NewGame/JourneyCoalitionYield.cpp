@@ -13,6 +13,10 @@ namespace frontline
         std::vector<int> passage;
         for(const auto& p:j.PlanCoalitionAllies()) if(p.army==5 || p.army==6)
         {
+            // Reserve both the currently planned detour and the route which
+            // opens after heroes yield. Otherwise a hero can step aside into
+            // the ally's actual detour, making both lose the same pulse forever.
+            if(p.next!=p.from) passage.push_back(p.next);
             const int next=JourneyAdvanceStep(*clear,p.from,p.target,p.occupyTarget);
             if(next!=p.from) passage.push_back(next);
         }
