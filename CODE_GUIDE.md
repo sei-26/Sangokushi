@@ -1,5 +1,7 @@
 # コードを読むための地図
 
+中央への集中に対する敵の転進と、次戦の義兵の条件は `NewGame/JourneyStrategicResponse.cpp`。両側の観測を使う `StrategistJourneyAI.cpp` と、隊を準備して通常移動する `JourneyCoalitionBattle.cpp` が入口。次の軍議は `JourneyCoalitionDrama.cpp`、温存する隊は `TacticalBattleChoices.cpp`、公開状態に沿う隊列は `TacticalSoldierMotion.cpp`。[仕様・保存・検証](STRATEGIC_RESPONSE_AND_MEMORY.md)。
+
 街道の出会いは `TacticalNovelArt.cpp` / `TacticalEncounterInterface.cpp`。通常画面の敵情は `TacticalEnemyInterface.cpp` が既存の捕捉情報を使う。現在の操作・予約・残る行動の案内は `TacticalCommandGuide.cpp` で作り、`TacticalBattleFeed.cpp` へ表示する。[実装と情報の境界](OPENING_SCENE_AND_COMMAND_FLOW.md)。
 
 序章の出会いでの道の採用・合法な単独初手・任意の戦後会話は `TacticalFirstExperience.cpp`。通常の配置と予約・発動へ接続する。`TacticalFirstExperienceTests.cpp` は実勝利と保存復元を含む検証、`TacticalFirstExperienceQA.cpp` は実進行による描画用の準備。`TacticalEncounterInterface.cpp` の二択と `TacticalJourneyInterface.cpp` の任意会話が入口。[仕様と範囲](FIRST_EXPERIENCE_UPGRADE.md)。

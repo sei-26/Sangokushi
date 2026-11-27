@@ -177,6 +177,8 @@ public:
     void RevealFirstReply();
     bool UseFirstStrike(int ExpectedVersion,int ExpectedTarget);
     bool FirstExperienceSmokeTest();
+    bool StrategicDepthSmokeTest();
+    bool PrepareStrategicDepthPreview(int Phase);
     FString PreludePlanLabel(int Choice) const;
     bool ChoosePreludePlan(int Choice);
     int PreludeOpeningOfficer() const;
@@ -604,7 +606,7 @@ private:
     bool PreparationReadSmokeTest();
     bool PreparationMeaningSmokeTest();
     bool bNovelAdvice=false,bNovelDetails=false;
-    bool bDetailedBattle=false;
+    bool bDetailedBattle=false,bCommandHints=true;
     FLinearColor NovelPortraitTone(int Speaker) const;
     const struct FSlateBrush* NovelPortraitBrush(int Speaker) const;
     const struct FSlateBrush* HistoricalPortraitBrush(int Speaker) const;

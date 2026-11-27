@@ -1,5 +1,6 @@
 #include "TacticalTrial.h"
 #include "TacticalState.h"
+#include "JourneyStrategicResponse.hpp"
 
 FString ATacticalField::ReadCampaignCarryover() const
 {
@@ -32,6 +33,8 @@ FString ATacticalField::ReadCampaignCarryover() const
         const auto& previous=J.history[YellowTurbanMission];const auto& grand=previous.review.grand;
         if(previous.won && grand.relievedOn && grand.leftReturned>0)
             Changes.Add(JourneyText(J.world.generals[grand.reliefOfficer].name)+TEXT("が救った左翼の案内で先行配置・士気支援"));
+        if(J.coalitionBattleCampaign && GuangzongVeteranOfficer(J)>=0)
+            Changes.Add(FString::Printf(TEXT("広宗の生還%d兵が次の後陣に合流し、救援した武将を援護"),grand.leftReturned));
         if(Support.swift) Changes.Add(TEXT("鄒靖の援兵が張飛の前進を支える"));
         if(Support.roadOfficer>=0) Changes.Add(TEXT("広宗で助けた民の案内で関羽が脇道から出陣"));
         return FString::Join(Changes,TEXT(" ／ "));

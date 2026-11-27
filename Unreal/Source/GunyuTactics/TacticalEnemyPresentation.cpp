@@ -37,6 +37,12 @@ void ATacticalField::BuildEnemyPresentation()
             Read.Counter+=TEXT("\n張梁は士気が落ちると、接敵中に一度だけ鼓舞。混乱で止められる。");
         if(J.HasSunJian() && Plan.army==3)
             Read.Counter=TEXT("呂布は平地で接敵すると騎兵突撃。森へ引くか、混乱で発動を止めよう。");
+        if(J.HasGrandStrategy() && Plan.army==4 && Plan.role==frontline::JourneyEnemyRole::Counterattack &&
+           (Plan.target==frontline::GrandNorthPass || Plan.targetArmy==6))
+        {
+            Read.Intent=TEXT("中央への集中を見て、北へ転進する見込み");
+            Read.Counter=TEXT("中央へ二隊以上が見え、北が手薄。北へ一隊を残すか、転進する別隊を止めよう。混乱中や接敵中は回り込めない。");
+        }
         Read.bSelected = Plan.army == State->Target;
         if (Read.bSelected)
         {

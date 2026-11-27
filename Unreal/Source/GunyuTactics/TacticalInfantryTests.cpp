@@ -10,8 +10,8 @@ bool ATacticalField::InfantryMotionSmokeTest()
     using namespace gunyumotion;
     auto Check=[](bool V,const TCHAR* Why) { if(!V) UE_LOG(LogTemp,Error,TEXT("GUNYU_INFANTRY: FAIL %s"),Why);return V; };
     TArray<FVisualUnit> Seen;Seen.SetNum(6);
-    Seen[0].Id=0;Seen[0].Troops=1400;Seen[0].Position=FVector(0,0,0);
-    Seen[3].Id=3;Seen[3].Troops=1800;Seen[3].bEnemy=true;Seen[3].Position=FVector(200,0,0);
+    Seen[0].Id=0;Seen[0].Troops=1400;Seen[0].Morale=90;Seen[0].Position=FVector(0,0,0);
+    Seen[3].Id=3;Seen[3].Troops=1800;Seen[3].Morale=85;Seen[3].bEnemy=true;Seen[3].Position=FVector(200,0,0);
     FBattleBeat Beat;Beat.Before=Beat.After=Seen;Beat.Actor=0;Beat.Target=3;Beat.Kind=EBattleCue::Strike;Beat.After[3].Troops-=300;
     auto Wind=Pose(Read(Seen[0],Seen,&Beat,.28f),0,0,0);
     auto Contact=Pose(Read(Seen[0],Seen,&Beat,.52f),0,0,0);
@@ -59,6 +59,15 @@ bool ATacticalField::InfantryMotionSmokeTest()
     }
     Seen[3].Loss=300;
     if(!Check(Read(Seen[3],Seen,&Beat,.47f).Recoil==0 && Read(Seen[3],Seen,&Beat,.56f).Recoil>0,TEXT("casualty recoil starts only after the actual impact"))) return false;
+    {
+        FBattleBeat Impact;Impact.Before=Impact.After=Seen;Impact.Actor=0;Impact.Target=3;Impact.Kind=EBattleCue::Strike;
+        Impact.Before[3].Id=Impact.After[3].Id=3;Impact.Before[3].Troops=1000;Impact.Before[3].Morale=85;
+        Impact.After[3].Troops=700;Impact.After[3].Morale=10;Impact.After[3].bDisordered=true;
+        const auto Early=Read(Impact.After[3],Impact.After,&Impact,.28f),Late=Read(Impact.After[3],Impact.After,&Impact,.74f);
+        if(!Check(Early.Disorder==0 && Early.Rout==0 && Late.Disorder>.5f && Late.Rout>0,
+            TEXT("broken ranks and low-morale recoil appear only after their result becomes public"))) return false;
+        if(!Check(!FormationOffset(Late,1,40).Equals(FormationOffset(Late,2,40)),TEXT("disordered ranks keep individual positions"))) return false;
+    }
     Beat.Kind=EBattleCue::Stop;
     if(!Check(!Read(Seen[0],Seen,&Beat,.52f).bAttack && Read(Seen[3],Seen,&Beat,.56f).Recoil==0,TEXT("stopped chains invent no thrust or impact"))) return false;
     Beat.Kind=EBattleCue::Strike;Beat.Target=4;

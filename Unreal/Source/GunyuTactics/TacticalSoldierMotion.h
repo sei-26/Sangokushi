@@ -9,6 +9,7 @@ namespace gunyumotion
         gunyuformation::EShape Before=gunyuformation::EShape::Line,Rest=Before,Action=Before;
         float Progress=0,StateBlend=1,FormationBlend=0,March=0,Recoil=0,Brace=0,Salute=0,Stature=1;
         bool bAttack=false;
+        float Disorder=0,Rout=0,Advance=0;
     };
     struct FPose
     {

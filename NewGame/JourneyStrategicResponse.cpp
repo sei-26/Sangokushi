@@ -19,9 +19,17 @@ namespace frontline
             bool engaged=false;
             for(const auto& a:seen.armies) if(a.troops>0 && seen.Hostile(1,a.faction) && seen.MapDistance(p.from,a.tile)<=1) engaged=true;
             if(engaged) continue; // A side manoeuvre cannot abandon current contact.
-            p.targetArmy=TacticChain::Living(seen,6) ? 6:-1;
-            p.target=p.targetArmy>=0 ? seen.armies[6].tile:GrandNorthPass;
-            const int next=JourneyAdvanceStep(seen,p.from,p.target,p.targetArmy<0);
+            const int targetArmy=TacticChain::Living(seen,6) ? 6:-1;
+            const int target=targetArmy>=0 ? seen.armies[6].tile:GrandNorthPass;
+            // A flank manoeuvre must go around the observed main force,
+            // rather than walk next to it and immediately become pinned.
+            auto route=std::make_unique<Campaign>(seen);
+            for(int a=0;a<3;++a) if(TacticChain::Living(seen,a))
+                for(int tile:seen.MapNeighbors(seen.armies[a].tile))
+                    if(tile!=p.from && tile!=target) route->tiles[tile].terrain=Terrain::River;
+            const int next=JourneyAdvanceStep(*route,p.from,target,targetArmy<0);
+            if(next==p.from) continue;
+            p.targetArmy=targetArmy;p.target=target;
             bool reserved=false;
             for(const auto& other:plans) if(other.army!=4 && other.next==next && other.next!=other.from) reserved=true;
             p.next=reserved ? p.from:next;p.role=JourneyEnemyRole::Counterattack;p.intent=JourneyEnemyIntent::Counterattack;

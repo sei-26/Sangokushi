@@ -1,6 +1,7 @@
 ﻿#include "TacticalTrial.h"
 #include "TacticalState.h"
 #include "TacticalSettledTarget.h"
+#include "JourneyStrategicResponse.hpp"
 using namespace frontline;
 void ATacticalField::BuildBattleChoices()
 {
@@ -49,7 +50,6 @@ void ATacticalField::BuildBattleChoices()
             Tactics+=JourneyText(TacticChain::Name(Order.tactic));
             if(!Choice.Detail.IsEmpty()) Choice.Detail+=TEXT(" → ");
             const auto Officer=JourneyText(J.world.generals[J.world.armies[Order.army].general].name);
-            if(!Choice.Cost.IsEmpty()) Choice.Cost+=TEXT("・");Choice.Cost+=Officer;
             Choice.Detail+=Officer+TEXT("「")+JourneyText(TacticChain::Name(Order.tactic))+TEXT("」");
             if(TacticChain::Definition(Order.tactic).unique)
             { Choice.Cost+=TEXT("（固有）");Choice.Detail+=TEXT("（一戦一度）"); }
@@ -57,7 +57,12 @@ void ATacticalField::BuildBattleChoices()
         }
         Choice.Title=Plan.orders.size()==1 ? Name+TEXT("「")+Tactics+TEXT("」"):
             FString::Printf(TEXT("連鎖%d手："),int(Plan.orders.size()))+Tactics;
-        Choice.Cost+=FString::Printf(TEXT(" / 士気計%d"),Plan.moraleCost);
+        int Ready=0;
+        for(int A=0;A<3;++A) if(TacticChain::Living(J.world,A) && !J.chain.spent[A] &&
+            std::none_of(Plan.orders.begin(),Plan.orders.end(),[&](const auto& O){return O.army==A;})) ++Ready;
+        const FString Reserve=Ready==1 ? JourneyText(RemainingOfficers(J,Plan.orders)):Ready==0 ? FString(TEXT("なし")):FString::Printf(TEXT("%d隊"),Ready);
+        Choice.Cost=FString::Printf(TEXT("士気%d / 温存："),Plan.moraleCost)+Reserve;
+        Choice.Detail+=TEXT("\nこの策で戦法の行動を使わない仲間：")+JourneyText(RemainingOfficers(J,Plan.orders));
         Choice.Detail+=TEXT("\n参加する隊の行動と士気を使って、今すぐ発動。参加しない隊の行動は使わない。捕捉からの見込みで、未知の状況では停止することもある。");
         H.BattleChoices.Add(MoveTemp(Choice));
     }

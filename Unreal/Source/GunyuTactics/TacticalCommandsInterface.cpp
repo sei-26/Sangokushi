@@ -60,7 +60,7 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
     auto PressedMarch=MakeShared<FTacticalPresentation::FMissionMarch>();
     Simple->AddSlot().AutoHeight().Padding(0,0,0,7)
       [SNew(SButton).ButtonStyle(&CommandStyle()).IsFocusable(false).ContentPadding(FMargin(7,6))
-       .Visibility_Lambda([this] { return Field->Presentation().MissionMarch.bVisible ? EVisibility::Visible:EVisibility::Collapsed; })
+       .Visibility_Lambda([this] { const auto& H=Field->Presentation();return H.MissionMarch.bVisible && (H.MissionMarch.bCanIssue || H.BattleChoices.IsEmpty()) ? EVisibility::Visible:EVisibility::Collapsed; })
        .IsEnabled_Lambda([this] { return Field->Presentation().MissionMarch.bCanIssue; })
        .ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().MissionMarch.Detail); })
        .OnPressed_Lambda([this,PressedMarch] { *PressedMarch=Field->Presentation().MissionMarch; })

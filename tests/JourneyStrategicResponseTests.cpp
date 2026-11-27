@@ -55,6 +55,9 @@ int main()
     ApplyGuangzongFlankResponse(*seen,j.chain,j.goal,plans);assert(plans[0].next==base.from);
     *seen=j.world;auto chain=j.chain;chain.disordered[4]=true;plans={base};
     ApplyGuangzongFlankResponse(*seen,chain,j.goal,plans);assert(plans[0].next==base.from);
+    *seen=j.world;for(int tile:seen->MapNeighbors(base.from)) seen->tiles[tile].terrain=Terrain::River;
+    plans={base};ApplyGuangzongFlankResponse(*seen,j.chain,j.goal,plans);
+    assert(plans[0].next==base.next && plans[0].target==base.target && plans[0].targetArmy==base.targetArmy);
     // Real movement still obeys hidden physical occupancy and cannot teleport.
     const int from=j.world.armies[4].tile,turn=j.turn;
     auto clear=std::make_unique<JourneySaveData>(*s);

@@ -16,8 +16,13 @@ namespace gunyumotion
     {
         FCompany M;M.Progress=FMath::Clamp(P,0.f,1.f);M.Facing=U.bEnemy ? -FVector::ForwardVector:FVector::ForwardVector;
         M.Before=M.Rest=M.Action=Rest(U);M.Brace=U.bGuarded ? 1.f:0.f;M.Stature=U.bConcealed ? .65f:1.f;
+        auto Disorder=[](const FVisualUnit& V) { return V.bDisordered ? 1.f:V.bPressured ? .3f:0.f; };
+        auto Rout=[](const FVisualUnit& V) { return FMath::Clamp((25-V.Morale)/25.f,0.f,1.f); };
+        M.Disorder=Disorder(U);M.Rout=Rout(U);
         if(U.Id<0 || !B || !Seen(B->Before,U.Id) || !B->After.IsValidIndex(U.Id)) return M;
         M.Before=Rest(B->Before[U.Id]);M.StateBlend=Ease(.48f,.84f,P);
+        M.Disorder=FMath::Lerp(Disorder(B->Before[U.Id]),M.Disorder,M.StateBlend);
+        M.Rout=FMath::Lerp(Rout(B->Before[U.Id]),M.Rout,M.StateBlend);
         M.Stature=FMath::Lerp(B->Before[U.Id].bConcealed ? .65f:1.f,M.Stature,Ease(.48f,.70f,P));
         M.Brace=FMath::Lerp(B->Before[U.Id].bGuarded ? 1.f:0.f,M.Brace,M.StateBlend);
         const bool TargetSeen=Displayed(Visible,B->Target) && Seen(B->Before,B->Target);
@@ -49,13 +54,17 @@ namespace gunyumotion
         if(B->Kind==EBattleCue::Guard && U.Id==B->Actor) M.Brace=Ease(.08f,.40f,P);
         M.Action=M.March>.001f ? gunyuformation::EShape::Column : M.bAttack && !U.bDisordered ? gunyuformation::EShape::Wedge:M.Rest;
         M.FormationBlend=M.March>.001f ? M.March : M.bAttack ? Pulse(.12f,.32f,.74f,.96f,P):0;
+        M.Advance=M.bAttack && !U.bDisordered ? Pulse(.26f,.44f,.58f,.82f,P):0;
         if(M.Facing.IsNearlyZero()) M.Facing=U.bEnemy ? -FVector::ForwardVector:FVector::ForwardVector;
         return M;
     }
     FVector FormationOffset(const FCompany& M,int Soldier,int Count)
     {
         const FVector Base=FMath::Lerp(gunyuformation::Offset(M.Before,Soldier,Count),gunyuformation::Offset(M.Rest,Soldier,Count),M.StateBlend);
-        return FMath::Lerp(Base,gunyuformation::Offset(M.Action,Soldier,Count),M.FormationBlend);
+        FVector Offset=FMath::Lerp(Base,gunyuformation::Offset(M.Action,Soldier,Count),M.FormationBlend);
+        Offset+=FVector(FMath::Sin(Soldier*2.3f)*8,FMath::Sin(Soldier*1.71f)*10,0)*M.Disorder;
+        Offset.X+=M.Advance*(Soldier<Count/3 ? 11.f:4.f)-M.Rout*(5+(Soldier%3)*4);
+        return Offset;
     }
     FPose Pose(const FCompany& M,int Soldier,int UnitId,float Time)
     {
@@ -67,14 +76,14 @@ namespace gunyumotion
         const float Hit=M.Recoil*(.65f+.35f*FMath::Abs(FMath::Sin(Soldier*2.1f)));
         const float Gait=Time*12+Soldier*.91f+UnitId*.7f;
         const float Idle=FMath::Sin(Time*2+Soldier*.73f+UnitId)*.3f;
-        R.Root=FVector(Thrust*7-Wind*3-Hit*9,Hit*FMath::Sin(Soldier*1.3f)*2,FMath::Abs(FMath::Sin(Gait))*M.March*1.7f);
+        R.Root=FVector(Thrust*7-Wind*3-Hit*13-M.Rout*3,(Hit*3+M.Disorder)*FMath::Sin(Soldier*1.3f),FMath::Abs(FMath::Sin(Gait))*M.March*1.7f-M.Disorder);
         R.Torso=FQuat::FindBetweenNormals(FVector::UpVector,FVector(.16f*Thrust-.09f*Wind-.23f*Hit+.04f*M.March,0,1).GetSafeNormal());
         auto Upper=[&](FVector V) { return FVector(0,0,27)+R.Torso.RotateVector(V-FVector(0,0,27)); };
         for(int I=0;I<2;++I)
         {
             const float Side=I==0 ? -1.f:1.f,Step=FMath::Sin(Gait+I*PI)*M.March,Lift=FMath::Max(0.f,Step);
-            R.Hip[I]=FVector(0,Side*7,25);
-            R.Knee[I]=FVector(Step*4+Lift*2+M.Brace*2,Side*7,14-M.Brace*2);
+            R.Hip[I]=FVector(-Hit*2,Side*7,25-M.Disorder*2);
+            R.Knee[I]=FVector(Step*4+Lift*2+M.Brace*2-Hit*2,Side*7,14-M.Brace*2-M.Disorder*2);
             R.Foot[I]=FVector(Step*9+Thrust*(I==1 ? 6:-3),Side*7,3+Lift*6);
             R.Shoulder[I]=Upper(FVector(0,Side*14,46));
         }
