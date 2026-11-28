@@ -256,6 +256,12 @@ struct FTacticalPresentation
         bool bVisible=false,bCanIssue=false;
     } MissionMarch;
     bool bDecisionPaused=false;
+    struct FDecisionBrief
+    {
+        bool bVisible=false;
+        int Kind=0,Turn=-1,Revision=-1,Focus=-1,Officer=-1;
+        FString Title,Context,KeepPlan,Takeover,Ready;
+    } Decision;
     struct FMapCrossing { int Tile=-1;FString Caption; };
     FMapCrossing Crossings[2];
     bool bPortOpening=false;

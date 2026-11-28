@@ -156,4 +156,5 @@ void ATacticalField::BuildMissionPresentation()
         }
         H.MissionDetail=H.MissionStep+TEXT("\n指揮を引き取るか、Spaceで武将に任せたまま再開できます。\n")+H.MissionDetail;
     }
+    BuildDecisionBrief();
 }

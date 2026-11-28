@@ -65,6 +65,11 @@ int main()
                 std::cerr<<"ally="<<p.army<<" from="<<p.from<<" next="<<p.next<<" target="<<p.target<<"\n";
         }
         assert(next.won && next.history[CoalitionMission].completed);
+        const auto episode=BuildJourneyEpisode(next);const auto& result=next.battleReview.grand.coalition;
+        assert(result.rescuedBy>=0 && result.reliefReturned>0);
+        bool voice=false;for(const auto& line:episode.lines)
+            voice|=line.speaker==result.rescuedBy && line.direction.find(U"救援を届けた武将")!=std::u32string::npos;
+        assert(voice);
     }
     std::cout<<"War flow: eight real Guangzong approaches, solo-only/normal tactics, earned outcomes, saved transition and Bianshui victory passed\n";
 }

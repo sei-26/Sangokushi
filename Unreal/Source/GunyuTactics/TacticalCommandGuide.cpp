@@ -52,7 +52,10 @@ void ATacticalField::BuildCommandGuide()
             TEXT("右の策は選ぶと発動する。単独で仕掛けるか、仲間とつなぐかを選ぼう。");return;
     }
     if(H.MissionMarch.bVisible)
-    { Text=bRealtimeCommand ? TEXT("目標へ一隊の行軍を指示できる。移動はSpaceで再開してから。"):TEXT("目標と敵の位置を見て、移動できる一歩を選ぼう。");return; }
+    {
+        Text=H.MissionMarch.bCanIssue ? TEXT("目標へ一隊の行軍を指示できる。移動はSpaceで再開してから。"):
+            H.MissionMarch.Label+TEXT("。別の隊や地図から、次の一手を選ぼう。");return;
+    }
     Text=bRealtimeCommand ? TEXT("下で武将を選び、地図で相手を選ぶ。Spaceで戦いを進められる。"):
         TEXT("下で武将を選び、地図で相手を選ぶ。Spaceで指揮を終える。");
 }

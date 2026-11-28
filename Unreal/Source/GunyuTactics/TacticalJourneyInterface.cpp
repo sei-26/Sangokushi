@@ -61,7 +61,7 @@ void ATacticalController::BuildJourneyInterface(TSharedRef<SCanvas> Canvas)
          [SNew(SVerticalBox)
           + SVerticalBox::Slot().AutoHeight()[SNew(SHorizontalBox)
              + SHorizontalBox::Slot().FillWidth(1)[Label([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? FString(TEXT("この一戦で変わったこと")):P.Episode.Title; },23,Gold)]
-             + SHorizontalBox::Slot().AutoWidth()[Button([this] { return Field->Presentation().Journey.bCampaignFlow && Field->Presentation().Mission==0 ? TEXT("三人と初陣を振り返る / H"):TEXT("本幕を読む / H"); },[this] { OpenEpisode(); })]]
+             + SHorizontalBox::Slot().AutoWidth()[Button([this] { const auto& H=Field->Presentation();const auto& P=H.Journey;return P.bCampaignFlow && H.Mission==0 ? TEXT("三人と初陣を振り返る / H"):P.bDebrief ? TEXT("全員のやり取り / H"):TEXT("本幕を読む / H"); },[this] { OpenEpisode(); })]]
           + SVerticalBox::Slot().AutoHeight().Padding(0,4)[Label([this] { const auto& P=Field->Presentation().Journey;return P.bCampaignFlow && P.bDebrief ? P.CampaignChange:P.Episode.Setting; },15)]
           + SVerticalBox::Slot().AutoHeight()[Label([this] { const auto& P=Field->Presentation().Journey;return P.BattleResponse.IsEmpty() ? P.Episode.Question:FString(); },16,Gold)]];
     for(int Index=0;Index<3;++Index)

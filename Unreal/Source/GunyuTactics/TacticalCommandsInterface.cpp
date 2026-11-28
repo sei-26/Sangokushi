@@ -60,7 +60,7 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
     auto PressedMarch=MakeShared<FTacticalPresentation::FMissionMarch>();
     Simple->AddSlot().AutoHeight().Padding(0,0,0,7)
       [SNew(SButton).ButtonStyle(&CommandStyle()).IsFocusable(false).ContentPadding(FMargin(7,6))
-       .Visibility_Lambda([this] { const auto& H=Field->Presentation();return H.MissionMarch.bVisible && (H.MissionMarch.bCanIssue || H.BattleChoices.IsEmpty()) ? EVisibility::Visible:EVisibility::Collapsed; })
+      .Visibility_Lambda([this] { const auto& H=Field->Presentation();return H.MissionMarch.bVisible && (H.MissionMarch.bCanIssue || H.BattleChoices.IsEmpty()) ? EVisibility::Visible:EVisibility::Collapsed; })
        .IsEnabled_Lambda([this] { return Field->Presentation().MissionMarch.bCanIssue; })
        .ToolTipText_Lambda([this] { return FText::FromString(Field->Presentation().MissionMarch.Detail); })
        .OnPressed_Lambda([this,PressedMarch] { *PressedMarch=Field->Presentation().MissionMarch; })
@@ -110,22 +110,24 @@ void ATacticalController::BuildCommandInterface(TSharedRef<SCanvas> Canvas)
       + SHorizontalBox::Slot().FillWidth(1)[Command(ETacticalCommand::Hold,[] { return TEXT("ここを守れ！"); })]]];
     auto Content=SNew(SVerticalBox);
     Content->AddSlot().AutoHeight().Padding(0,0,0,6)
-      [SNew(SBox).Visibility_Lambda([this] { return !ShowOpeningOrder() && !Field->Presentation().MissionAdvice.IsEmpty() ? EVisibility::Visible:EVisibility::Collapsed; })
+      [SNew(SBox).Visibility_Lambda([this] { return !ShowOpeningOrder() && !Field->Presentation().MissionAdvice.IsEmpty() && !Field->Presentation().Decision.bVisible ? EVisibility::Visible:EVisibility::Collapsed; })
        .ToolTipText_Lambda([this] { const auto& H=Field->Presentation();return FText::FromString(H.MissionDetail+TEXT("\n")+H.GrandOrderStatus); })
        [SNew(SVerticalBox)
          + SVerticalBox::Slot().AutoHeight()[Label([] { return TEXT("今の役目"); },11,Gold)]
          + SVerticalBox::Slot().AutoHeight()[Label([this] { return Field->Presentation().MissionAdvice; },14)]]];
     Content->AddSlot().AutoHeight().Padding(0,0,0,6)[ManualTacticsWidget()];
-    Content->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SHorizontalBox)
+    Content->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SHorizontalBox).Visibility_Lambda([this] { return Field->IsAutoBattle() ? EVisibility::Collapsed:EVisibility::Visible; })
       + SHorizontalBox::Slot().FillWidth(1).Padding(0,0,4,0)
         [SNew(SBox).ToolTipText(FText::FromString(TEXT("隣接1歩の移動後に、選んだ戦法が届くか比べる。仮選択だけでは動かない。自動指揮中は采配を引き取る。")))
          [Button([] { return TEXT("移動後の戦法"); },[this] { OpenTacticPositionComparison(); },[this] { return Field->CanCompareTacticPositions(); })]]
       + SHorizontalBox::Slot().FillWidth(1)
         [Button([this] { return bDetailedBattle ? TEXT("通常の采配"):TEXT("詳しい采配"); },[this] { bDetailedBattle=!bDetailedBattle;if(bDetailedBattle) Field->StopAutoBattle(); })]];
+    Content->AddSlot().FillHeight(1)[SNew(SScrollBox).Visibility_Lambda([this] { return Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })
+        + SScrollBox::Slot()[AutoCommandWidget()]];
     Content->AddSlot().FillHeight(1)
-        [SNew(SScrollBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Collapsed:EVisibility::Visible; })
+        [SNew(SScrollBox).Visibility_Lambda([this] { return bDetailedBattle || Field->IsAutoBattle() ? EVisibility::Collapsed:EVisibility::Visible; })
          + SScrollBox::Slot()[Simple]];
-    Content->AddSlot().FillHeight(1)[SNew(SScrollBox).Visibility_Lambda([this] { return bDetailedBattle ? EVisibility::Visible:EVisibility::Collapsed; })+SScrollBox::Slot()[Orders]];
+    Content->AddSlot().FillHeight(1)[SNew(SScrollBox).Visibility_Lambda([this] { return bDetailedBattle && !Field->IsAutoBattle() ? EVisibility::Visible:EVisibility::Collapsed; })+SScrollBox::Slot()[Orders]];
     auto Panel=SNew(STacticalChrome).Padding(12)
         .Visibility_Lambda([this] { return Field->Presentation().Journey.bVisible || (bTacticCinema && Field->ReadTacticCinema().bVisible) ? EVisibility::Collapsed:EVisibility::Visible; })[Content];
     InputPanels.Add(Panel);Canvas->AddSlot().Position(gunyulayout::CommandOrigin).Size(gunyulayout::CommandSize)[Panel];

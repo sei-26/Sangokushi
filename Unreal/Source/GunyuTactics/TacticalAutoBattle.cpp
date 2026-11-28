@@ -11,6 +11,9 @@ void ATacticalField::StopAutoBattle()
     State->Realtime.paused=true;State->bRealtimeStepping=false;
     for(int A=0;A<3;++A) State->Realtime.Cancel(A);
     State->Orders.clear();State->bRealtimeChainRequested=false;
+    if(!TacticChain::Living(State->Journey.world,State->Selected) || State->Journey.chain.spent[State->Selected])
+        for(int A=0;A<3;++A) if(TacticChain::Living(State->Journey.world,A) && !State->Journey.chain.spent[A])
+        { State->Selected=A;break; }
     State->Report=TEXT("ここからは俺が指揮する！ 戦場を止めた。使った行動や兵力はそのまま、次の一手を選ぼう。");
     Refresh();
 }

@@ -198,6 +198,10 @@ public:
     bool IssueMissionMarch(const FTacticalPresentation::FMissionMarch& Expected);
     bool MissionMarchSmokeTest();
     bool PrepareDecisionPausePreview(bool bAlerts);
+    void BuildDecisionBrief();
+    bool UseDecisionBrief(const FTacticalPresentation::FDecisionBrief& Expected,bool bTakeover);
+    bool DecisionBriefSmokeTest();
+    bool PrepareDecisionBriefPreview(int Kind);
     bool BattleChoicesSmokeTest();
     bool UseBattleChoice(int Index,int ExpectedVersion);
     bool UseSupportChoice(int Index,int ExpectedVersion);
@@ -500,6 +504,8 @@ private:
     TSharedRef<class SWidget> BattleActivityOverlay();
     void BuildRosterInterface(TSharedRef<class SCanvas>);
     void BuildCommandInterface(TSharedRef<class SCanvas>);
+    TSharedRef<class SWidget> DecisionBriefWidget();
+    TSharedRef<class SWidget> AutoCommandWidget();
     TSharedRef<class SWidget> BuildBattleChoicesInterface();
     TSharedRef<class SWidget> BuildGrandOrderInterface();
     TSharedRef<class SWidget> GrandAdvanceOverlay(bool bRelief=false);

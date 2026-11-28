@@ -136,6 +136,8 @@ void ATacticalController::PlayerTick(float Delta)
     const bool bGrandMomentCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("GunyuGrandMomentCapture"));
     int StrategicView=0;
     const bool bStrategicCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("StrategicDepth="),StrategicView);
+    int BriefView=0;
+    const bool bDecisionBriefCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DecisionBrief="),BriefView);
     int PortHandoffView=-1;
     const bool bPortHandoffCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("PortHandoffView="),PortHandoffView);
     const bool bAutoDecisionCapture=bCapture && FParse::Param(FCommandLine::Get(),TEXT("AutoDecisionPreview"));
@@ -146,7 +148,7 @@ void ATacticalController::PlayerTick(float Delta)
     int DutyResponse=0;const bool bDutyResponseCapture=bCapture && FParse::Value(FCommandLine::Get(),TEXT("DutyResponse="),DutyResponse);
     if (Field->IsPlaying() || Field->Presentation().Journey.bVisible || bSaveMenuOpen || bEpisodeOpen || bBattleLogOpen || bMarchPlanOpen || bChainReviewOpen || WasInputKeyJustPressed(EKeys::Escape)) bTacticPickerOpen = false;
     if(!bModalInputBlocked && !bMarchPlanOpen && !bBattleLogOpen && WasInputKeyJustPressed(EKeys::F2)) ToggleTacticPicker();
-    if (!bCinemaCapture && !bDecisionCapture && !bPortHandoffCapture && !bAutoDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture && !bDutyResponseCapture && !bGrandMomentCapture && !bStrategicCapture)
+    if (!bCinemaCapture && !bDecisionCapture && !bPortHandoffCapture && !bAutoDecisionCapture && !bSupportActionCapture && !bSupportComboCapture && !bDefenseCapture && !bRetryPayoffCapture && !bDutyResponseCapture && !bGrandMomentCapture && !bStrategicCapture && !bDecisionBriefCapture)
     {
         if (Field->bRealtimeCommand && !bCapture && !bSmoke && !FApp::HasFocus() && !Field->RealtimePaused())
             Field->Issue(ETacticalCommand::RealtimePause);
@@ -610,6 +612,8 @@ void ATacticalController::PlayerTick(float Delta)
     { const bool bPassed=Field->TacticPositionSmokeTest() && TacticPositionInterfaceSmokeTest();FPlatformMisc::RequestExitWithStatus(false,bPassed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuMissionMarchOnly")))
     { const bool Passed=Field->MissionMarchSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
+    if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuDecisionBriefOnly")))
+    { const bool Passed=Field->DecisionBriefSmokeTest();FPlatformMisc::RequestExitWithStatus(false,Passed ? 0:1);return; }
     if(bSmoke && Frames==2 && FParse::Param(FCommandLine::Get(),TEXT("GunyuStrategicDepthOnly")))
     {
         const bool Passed=Field->StrategicDepthSmokeTest() && Field->InfantryMotionSmokeTest();
@@ -854,6 +858,13 @@ void ATacticalController::PlayerTick(float Delta)
     {
         Field->PrepareTacticTargetPreview(TargetPreview);CloseEpisode();
         if(FParse::Param(FCommandLine::Get(),TEXT("GunyuTargetDestination"))) Field->Issue(ETacticalCommand::Move);
+    }
+    if(bDecisionBriefCapture && Frames==8)
+    {
+        const bool Valid=Field->PrepareDecisionBriefPreview(BriefView);CloseEpisode();bDetailedBattle=false;
+        ResetBattleCamera();GrandCameraMission=Field->Presentation().bGrandBattle ? Field->Presentation().Mission:-1;
+        UE_LOG(LogTemp,Display,TEXT("GUNYU_DECISION_BRIEF_CAPTURE: %s"),Valid ? TEXT("PASS"):TEXT("FAIL"));
+        if(!Valid) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
     }
     if(bStrategicCapture && Frames==8)
     {

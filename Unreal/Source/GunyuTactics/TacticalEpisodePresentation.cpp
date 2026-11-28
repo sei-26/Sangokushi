@@ -21,13 +21,19 @@ void ATacticalField::BuildEpisodePresentation()
     Copy(frontline::BuildJourneyEpisode(J),Journey.Episode);
     if(Journey.bDebrief && J.campaignFlow)
     {
+        int Preferred=-1;
+        if(J.HasCoalitionBattle() && J.won && J.battleReview.grand.coalition.rescuedOn && J.battleReview.grand.coalition.reliefReturned>0)
+            Preferred=J.battleReview.grand.coalition.rescuedBy;
+        const FDialoguePresentation* Personal=nullptr;
+        for(const auto& Line:Journey.Episode.Lines) if(Line.Speaker==Preferred && Preferred>=0) { Personal=&Line;break; }
         int Voices=0;FDialoguePresentation Hero;bool HasHero=false;
         for(const auto& Line:Journey.Episode.Lines)
         {
             if(Line.Speaker<0) continue;
             if(Line.bProtagonist) { if(!HasHero) Hero=Line;HasHero=true;continue; }
-            if(Voices++<2) Journey.BattleResponse.Add(Line);
+            if(Voices==0 || (Voices==1 && !Personal)) { Journey.BattleResponse.Add(Line);++Voices; }
         }
+        if(Personal && Journey.BattleResponse.Num()==1) Journey.BattleResponse.Add(*Personal);
         if(HasHero) Journey.BattleResponse.Add(Hero);
     }
     if(Journey.bComplete) Copy(frontline::BuildCoalitionEpisode(J),Journey.CoalitionEpisode);
